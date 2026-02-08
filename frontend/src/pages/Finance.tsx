@@ -13,7 +13,7 @@ const Finance = () => {
     const [activeTab, setActiveTab] = useState('dashboard');
     const [loading, setLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const { success, toastError } = useToast();
+    const { success, error: toastError } = useToast();
     const { confirm } = useConfirm();
     const { user } = useSelector((state: any) => state.auth);
     // Admin is Read Only for Finance

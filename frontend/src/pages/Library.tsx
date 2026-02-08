@@ -20,7 +20,7 @@ const Library = () => {
     const [fines, setFines] = useState<any[]>([]);
     const [students, setStudents] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const [searchTerm, setSearchTerm] = useState('');
+    const [, setSearchTerm] = useState('');
     const toast = useToast();
     const { confirm } = useConfirm();
 

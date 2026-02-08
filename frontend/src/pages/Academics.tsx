@@ -96,7 +96,7 @@ const Academics = () => {
     const [viewResultsGroupBy, setViewResultsGroupBy] = useState<'STREAM' | 'ENTIRE_CLASS'>('STREAM');
     const [resultContext, setResultContext] = useState({ level: '', classId: '', subjectId: '' });
     const [editingBoundaryId, setEditingBoundaryId] = useState<number | null>(null);
-    const [editingSystemId, setEditingSystemId] = useState<number | null>(null);
+    const [editingSystemId] = useState<number | null>(null);
     const [examResults, setExamResults] = useState<any[]>([]);
     const [studentScores, setStudentScores] = useState<any>({});
     const [selectedClass, setSelectedClass] = useState<any>(null);
@@ -1876,7 +1876,7 @@ const Academics = () => {
                                                             placeholder="-"
                                                             onChange={(e) => {
                                                                 const val = e.target.value;
-                                                                setStudentScores(prev => ({
+                                                                setStudentScores((prev: any) => ({
                                                                     ...prev,
                                                                     [key]: { ...prev[key as any], score: val } // Preserve ID if exists
                                                                 }));

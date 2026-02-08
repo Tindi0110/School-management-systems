@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
-    Plus, Building, Edit, Trash2,
-    Users, Printer, Package, Wrench, Bed as BedIcon,
+    Plus, Building, Edit, Trash2, Users, Users as UsersIcon, Printer, Package, Wrench, Bed as BedIcon,
     Layout, Clock, ShieldAlert
 } from 'lucide-react';
 import { hostelAPI, studentsAPI, staffAPI } from '../api/api';
@@ -207,18 +206,6 @@ const Hostels = () => {
         } finally {
             setIsSubmitting(false);
         }
-    };
-    const handleEditHostel = (h: any) => {
-        setHostelId(h.id);
-        const wardenId = typeof h.warden === 'object' ? h.warden?.id : h.warden;
-        setHostelFormData({
-            name: h.name,
-            gender_allowed: h.gender_allowed,
-            hostel_type: h.hostel_type,
-            capacity: h.capacity,
-            warden: wardenId ? wardenId.toString() : ''
-        });
-        setIsHostelModalOpen(true);
     };
     const handleDeleteHostel = async (id: number) => {
         if (!await confirm('Delete hostel? Warning: This may fail if rooms exist.', { type: 'danger' })) return;
@@ -467,26 +454,6 @@ const Hostels = () => {
         });
         setIsHostelModalOpen(true);
     };
-
-    const openEditRoom = (r: any) => {
-        // Find parent hostel to set context if needed, or just rely on API
-        // For now, assuming we edit within the context of the selected hostel
-        setRoomFormData({
-            hostel: r.hostel.toString(),
-            room_number: r.room_number,
-            room_type: r.room_type,
-            floor: r.floor,
-            capacity: r.capacity
-        });
-        // We need to know we are editing, so maybe store the room ID in a separate state or reuse selectedHostel logic? 
-        // Simplest: Add 'id' to roomFormData or use a selectedRoom state.
-        // Let's use a temporary state or hack: 
-        // Better: Add 'id' to roomFormData definition or a new state 'editingRoomId'
-        setRoomId(r.id);
-        setIsRoomModalOpen(true);
-    };
-
-
 
     // State for viewing rooms
     const [isViewRoomsModalOpen, setIsViewRoomsModalOpen] = useState(false);

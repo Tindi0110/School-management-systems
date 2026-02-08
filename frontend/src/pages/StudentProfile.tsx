@@ -33,6 +33,7 @@ const StudentProfile = () => {
     const [isDisciplineModalOpen, setIsDisciplineModalOpen] = useState(false);
     const [isHealthModalOpen, setIsHealthModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isClearanceModalOpen, setIsClearanceModalOpen] = useState(false);
     const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
     const [transferClassId, setTransferClassId] = useState('');
     const [classes, setClasses] = useState<any[]>([]);
@@ -204,16 +205,6 @@ const StudentProfile = () => {
         }
     };
 
-    const handleClearancePrint = () => {
-        const printContent = document.getElementById('clearance-form');
-        const win = window.open('', '', 'height=700,width=800');
-        win?.document.write('<html><head><title>Clearance Form</title>');
-        win?.document.write('</head><body>');
-        win?.document.write(printContent?.innerHTML || '');
-        win?.document.write('</body></html>');
-        win?.document.close();
-        win?.print();
-    };
 
 
 
