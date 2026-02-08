@@ -20,7 +20,6 @@ const Library = () => {
     const [fines, setFines] = useState<any[]>([]);
     const [students, setStudents] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const [, setSearchTerm] = useState('');
     const toast = useToast();
     const { confirm } = useConfirm();
 
@@ -54,7 +53,7 @@ const Library = () => {
 
     const [bookForm, setBookForm] = useState({ title: '', author: '', isbn: '', category: '', year: new Date().getFullYear(), initial_copies: 0 });
     const [copyForm, setCopyForm] = useState({ book: '', copy_number: '', condition: 'NEW', status: 'AVAILABLE', purchase_date: getToday() });
-    const [lendingForm, setLendingForm] = useState({ copy: '', student: '', due_date: '', });
+    const [lendingForm, setLendingForm] = useState({ copy: '', student: '', due_date: '' });
     const [fineForm, setFineForm] = useState({ student: '', amount: 0, reason: '', status: 'PENDING', date_issued: getToday(), fine_type: 'LATE' });
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -258,7 +257,6 @@ const Library = () => {
     };
     const handleEditFine = (f: any) => { setFineId(f.id); setFineForm({ ...f, student: String(f.student) }); setIsFineModalOpen(true); };
 
-    // Memoized Stats & Options to prevent render lag
     // Memoized Stats & Options to prevent render lag
     const stats = React.useMemo(() => ({
         totalBooks: books.length,
@@ -573,8 +571,6 @@ const Library = () => {
             )}
 
             {/* Modals */}
-            {/* Modals with Loading State Buttons */}
-
             <Modal isOpen={isBookModalOpen} onClose={() => setIsBookModalOpen(false)} title={bookId ? "Edit Book Title" : "Add New Title"}>
                 <form onSubmit={handleBookSubmit} className="space-y-4">
                     <div className="form-group"><label className="label">Title</label><input type="text" className="input" value={bookForm.title} onChange={e => setBookForm({ ...bookForm, title: e.target.value })} required /></div>
@@ -706,15 +702,15 @@ const Library = () => {
                     border-right: none;
                     cursor: pointer;
                 }
-                .tab-link.active { 
+                .tab-link.active {
                     border-bottom-color: var(--primary);
                     color: var(--primary);
                     background: rgba(30, 60, 114, 0.05);
                 }
-                .tab-link:hover:not(.active) { 
+                .tab-link:hover:not(.active) {
                     background: var(--bg-secondary);
                 }
-                .status-badge.success { 
+                .status-badge.success {
                     background: var(--success-light);
                     color: var(--success);
                     padding: 2px 8px;
@@ -723,7 +719,7 @@ const Library = () => {
                     font-weight: 700;
                     text-transform: uppercase;
                 }
-                .status-badge.secondary { 
+                .status-badge.secondary {
                     background: var(--bg-secondary);
                     color: var(--text-secondary);
                     padding: 2px 8px;
@@ -732,7 +728,7 @@ const Library = () => {
                     font-weight: 700;
                     text-transform: uppercase;
                 }
-                .badge { 
+                .badge {
                     padding: 2px 8px;
                     border-radius: 4px;
                     font-size: 10px;

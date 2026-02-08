@@ -217,6 +217,19 @@ const Hostels = () => {
             toastError(err.message || 'Failed to delete hostel.');
         }
     };
+    const handleEditHostel = (h: any) => {
+        setHostelId(h.id);
+        setSelectedHostel(h);
+        const wardenId = typeof h.warden === 'object' ? h.warden?.id : h.warden;
+        setHostelFormData({
+            name: h.name,
+            gender_allowed: h.gender_allowed,
+            hostel_type: h.hostel_type,
+            capacity: h.capacity,
+            warden: wardenId ? wardenId.toString() : ''
+        });
+        setIsHostelModalOpen(true);
+    };
 
     const handleRoomSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -233,7 +246,7 @@ const Hostels = () => {
             setIsSubmitting(false);
         }
     };
-    const handleEditRoom = (r: any) => { setRoomId(r.id); setRoomFormData({ ...r, hostel: String(r.hostel) }); setIsRoomModalOpen(true); };
+    const openEditRoom = (r: any) => { setRoomId(r.id); setRoomFormData({ ...r, hostel: String(r.hostel) }); setIsRoomModalOpen(true); };
     const handleDeleteRoom = async (id: number) => {
         if (!await confirm('Delete this room?', { type: 'danger' })) return;
         try {
@@ -442,18 +455,6 @@ const Hostels = () => {
         }
     };
 
-    const openEditHostel = (h: any) => {
-        setSelectedHostel(h);
-        const wardenId = typeof h.warden === 'object' ? h.warden?.id : h.warden;
-        setHostelFormData({
-            name: h.name,
-            gender_allowed: h.gender_allowed,
-            hostel_type: h.hostel_type,
-            capacity: h.capacity,
-            warden: wardenId ? wardenId.toString() : ''
-        });
-        setIsHostelModalOpen(true);
-    };
 
     // State for viewing rooms
     const [isViewRoomsModalOpen, setIsViewRoomsModalOpen] = useState(false);
@@ -559,7 +560,7 @@ const Hostels = () => {
                             </div>
                             <div className="flex gap-2 mt-6 pt-4 border-top">
                                 <button className="btn btn-sm btn-outline flex-1 gap-1" onClick={() => openViewRooms(h)} title="View Rooms"><BedIcon size={14} /> Rooms</button>
-                                <button className="btn btn-sm btn-outline flex-1 gap-2" onClick={() => openEditHostel(h)} title="Edit Details"><Edit size={14} /> Edit</button>
+                                <button className="btn btn-sm btn-outline flex-1 gap-2" onClick={() => handleEditHostel(h)} title="Edit Details"><Edit size={14} /> Edit</button>
                                 <button className="btn btn-sm btn-outline flex-1 gap-2" onClick={() => openViewResidents(h)} title="View Residents"><Users size={14} /> Users</button>
                                 <button className="btn btn-sm btn-outline text-error" onClick={(e) => { e.stopPropagation(); handleDeleteHostel(h.id); }} title="Delete Hostel"><Trash2 size={14} /></button>
 
@@ -912,8 +913,7 @@ const Hostels = () => {
                                 <option value="">Select Room...</option>
                                 {rooms
                                     .filter(r => String(r.hostel) === allocationFormData.hostel)
-                                    .map(r => <option key={r.id} value={r.id}>{r.room_number} ({r.available_beds || '?'} free)</option>)
-                                }
+                                    .map(r => <option key={r.id} value={r.id}>{r.room_number} ({r.available_beds || '?'} free)</option>)}
                             </select>
                         </div>
                         <div className="form-group">
@@ -937,8 +937,8 @@ const Hostels = () => {
                             {isTransferMode ? "Confirm Transfer" : allocationId ? "Update Allocation" : "Assign Student"}
                         </Button>
                     </div>
-                </form>
-            </Modal>
+                </form >
+            </Modal >
 
             <Modal isOpen={isAssetModalOpen} onClose={() => setIsAssetModalOpen(false)} title={assetId ? "Edit Asset" : "Add Hostel Asset"}>
                 <form onSubmit={handleAssetSubmit} className="space-y-4">
@@ -1122,7 +1122,7 @@ const Hostels = () => {
 
             <Modal isOpen={isDisciplineModalOpen} onClose={() => setIsDisciplineModalOpen(false)} title={disciplineId ? "Edit Discipline Record" : "Report Incident"}>
                 <form onSubmit={handleDisciplineSubmit} className="space-y-4">
-                    <SearchableSelect label="Student" options={students.map(s => ({ id: String(s.id), label: s.full_name, subLabel: s.admission_number }))} value={String(disciplineFormData.student || '')} onChange={(val) => setDisciplineFormData({ ...disciplineFormData, student: val })} required />
+                    <SearchableSelect label="Student" options={students.map(s => ({ id: String(s.id), label: s.full_name, subLabel: s.admission_number }))} value={String(disciplineFormData.student || '')} onChange={(val) => setDisciplineFormData({ ...disciplineFormData, student: String(val) })} required />
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group"><label className="label">Date</label><input type="date" className="input" value={disciplineFormData.date} onChange={e => setDisciplineFormData({ ...disciplineFormData, date: e.target.value })} required /></div>

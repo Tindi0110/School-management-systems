@@ -291,12 +291,15 @@ const StudentProfile = () => {
             toast.success('Student transferred successfully.');
             setIsTransferModalOpen(false);
             loadStudentData();
-            loadStudentData();
         } catch (error: any) {
             toast.error(error.message || 'Transfer failed.');
         } finally {
             setIsSubmitting(false);
         }
+    };
+
+    const handlePrintClearance = () => {
+        window.print();
     };
 
     const handleSuspend = async () => {
@@ -886,6 +889,23 @@ const StudentProfile = () => {
                         </Button>
                     </div>
                 </form>
+            </Modal>
+
+
+            <Modal isOpen={isClearanceModalOpen} onClose={() => setIsClearanceModalOpen(false)} title="Print Student Clearance" size="md">
+                <div className="space-y-4">
+                    <p className="text-secondary text-sm">Download or print the official clearance document for <strong>{student.full_name}</strong>.</p>
+                    <div className="p-4 bg-secondary-light rounded-lg border border-dashed border-primary/30 flex flex-col items-center gap-4">
+                        <FileText size={48} className="text-primary opacity-50" />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-primary">Official Transcript & Clearance</span>
+                    </div>
+                    <div className="modal-footer pt-4 flex gap-4">
+                        <Button variant="outline" className="flex-grow font-black uppercase" onClick={() => setIsClearanceModalOpen(false)}>Close</Button>
+                        <Button variant="primary" className="flex-grow font-black uppercase shadow-lg" onClick={handlePrintClearance} icon={<Printer size={18} />}>
+                            GENERATE PDF / PRINT
+                        </Button>
+                    </div>
+                </div>
             </Modal>
 
             {/* Clearance Form Template */}

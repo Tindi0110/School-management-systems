@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Calendar, Plus, Trash2, Edit, Clock, Book, User } from 'lucide-react';
+import { Calendar, Plus, Trash2, Edit, User } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 import { timetableAPI, classesAPI, subjectsAPI, staffAPI } from '../api/api';
