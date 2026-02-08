@@ -985,3 +985,100 @@ p {
     margin-top: 0.125rem;
   }
 }
+
+/* Print Styles: Clean Document Export */
+@media print {
+  /* Hide UI elements that are not part of the document */
+  .sidebar,
+  .top-bar,
+  .no-print,
+  .btn,
+  .actions,
+  .sidebar-nav,
+  .sidebar-header,
+  .sidebar-footer,
+  aside,
+  header {
+    display: none !important;
+  }
+
+  /* Reset layout for full-page document printing */
+  .dashboard-layout {
+    display: block !important;
+    height: auto !important;
+    background: white !important;
+  }
+
+  .main-content {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  .content-area {
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  /* Enhance table printing */
+  .table-container {
+    border: 1px solid #eee !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    width: 100% !important;
+    overflow: visible !important;
+  }
+
+  .table {
+    border-collapse: collapse !important;
+  }
+
+  .table th, 
+  .table td {
+    padding: 0.5rem !important;
+    border: 1px solid #eee !important;
+    font-size: 8pt !important;
+  }
+
+  .table th {
+    background-color: #f8fafc !important;
+    -webkit-print-color-adjust: exact;
+  }
+
+  /* Card and stat card adjustments */
+  .card, .stat-card {
+    border: 1px solid #eee !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+    background: white !important;
+  }
+
+  .stat-card {
+    padding: 0.5rem !important;
+    color: black !important;
+  }
+
+  .badge {
+    border: 1px solid #ccc !important;
+    -webkit-print-color-adjust: exact;
+  }
+
+  /* Typography adjustments */
+  body {
+    background: white !important;
+    font-size: 10pt !important;
+    color: black !important;
+  }
+
+  h1, h2, h3 {
+    margin-top: 1rem !important;
+    color: black !important;
+  }
+
+  /* Page breaks */
+  .page-break {
+    page-break-before: always;
+  }
+}

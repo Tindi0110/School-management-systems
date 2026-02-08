@@ -5,6 +5,8 @@ import {
     Settings, CheckCircle2, TrendingUp, Book, Layers, ShieldCheck, Trophy, Printer, Square, CheckSquare
 } from 'lucide-react';
 import { academicsAPI, staffAPI, studentsAPI } from '../api/api';
+import { exportToCSV } from '../utils/export';
+
 import Modal from '../components/Modal';
 import SearchableSelect from '../components/SearchableSelect';
 import { StatCard } from '../components/Card';
@@ -634,31 +636,31 @@ const Academics = () => {
         setIsExporting(true);
         try {
             let dataToExport: any[] = [];
-            let fileName = 'Academics_Report.csv';
+            let fileName = 'Academics_Report';
 
             if (activeTab === 'ATTENDANCE') {
                 dataToExport = attendanceRecords.map(att => {
                     const student = students.find(s => s.id === att.student);
                     const cls = classes.find(c => c.id === student?.current_class);
                     return {
-                        Date: att.date,
-                        Student: student?.full_name,
-                        Admission: student?.admission_number,
-                        Class: cls ? `${cls.name} ${cls.stream}` : 'N/A',
-                        Status: att.status,
-                        Remark: att.remark
+                        date: att.date,
+                        student_name: student?.full_name,
+                        admission: student?.admission_number,
+                        class: cls ? `${cls.name} ${cls.stream}` : 'N/A',
+                        status: att.status,
+                        remark: att.remark
                     };
                 });
-                fileName = `Attendance_${new Date().toISOString().split('T')[0]}.csv`;
+                fileName = `Attendance_Report`;
             } else if (activeTab === 'CLASSES') {
                 dataToExport = classes.map(c => ({
-                    Name: c.name,
-                    Stream: c.stream,
-                    Teacher: c.class_teacher_name,
-                    Students: c.student_count,
-                    Capacity: c.capacity
+                    name: c.name,
+                    stream: c.stream,
+                    teacher: c.class_teacher_name,
+                    students: c.student_count,
+                    capacity: c.capacity
                 }));
-                fileName = `Classes_${activeYear}.csv`;
+                fileName = `Classes_Report`;
             }
 
             if (dataToExport.length === 0) {
@@ -666,20 +668,7 @@ const Academics = () => {
                 return;
             }
 
-            const formatValue = (v: any) => v === null || v === undefined ? '' : `"${String(v).replace(/"/g, '""')}"`;
-            const headers = Object.keys(dataToExport[0]).join(',');
-            const rows = dataToExport.map(obj =>
-                Object.values(obj).map(formatValue).join(',')
-            ).join('\n');
-
-            const csvContent = "data:text/csv;charset=utf-8," + headers + "\n" + rows;
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", fileName);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            exportToCSV(dataToExport, fileName);
         } catch (err) {
             console.error("Export failed:", err);
             alert("Failed to export report.");
@@ -2020,11 +2009,6 @@ const Academics = () => {
             </Modal>
 
             <style>{`
-                @media print {
-                    .no-print { display: none !important; }
-                    .table-container { box-shadow: none !important; border: 1px solid #eee !important; width: 100% !important; }
-                    body { background: white !important; font-size: 9pt; }
-                }
                 .dropdown:hover .dropdown-content { display: block; }
                 .scrollbar-hide::-webkit-scrollbar { display: none; }
                 .checkbox-group { display: flex; align-items: center; gap: 0.5rem; }

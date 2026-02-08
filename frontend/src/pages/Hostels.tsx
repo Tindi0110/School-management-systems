@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import {
-    Plus, Building, Search, Edit, Trash2, User as UserIcon,
-    Home, Users as UsersIcon, Printer, CheckCircle, XCircle,
-    AlertTriangle, Package, Wrench, ClipboardList, Bed as BedIcon,
+    Plus, Building, Edit, Trash2,
+    Building as BuildingIcon, Users as UsersIcon, Printer, Download,
+    Package, Wrench, Bed as BedIcon,
     Users, Layout, ShieldAlert, Clock
 } from 'lucide-react';
 import { hostelAPI, studentsAPI, staffAPI } from '../api/api';
+import { exportToCSV } from '../utils/export';
 import Modal from '../components/Modal';
 import SearchableSelect from '../components/SearchableSelect';
 
@@ -22,7 +23,7 @@ const Hostels = () => {
     const [students, setStudents] = useState<any[]>([]);
     const [staff, setStaff] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const [searchTerm, setSearchTerm] = useState('');
+
 
     // Modal & Form States
     // ID States for Edit
@@ -55,25 +56,16 @@ const Hostels = () => {
     const [isTransferMode, setIsTransferMode] = useState(false); // New State
     const [allocationSort, setAllocationSort] = useState<'HOSTEL' | 'ROOM' | 'STATUS'>('HOSTEL'); // New State
     const [attendanceSort, setAttendanceSort] = useState<'DATE' | 'HOSTEL' | 'SESSION'>('DATE'); // New State
-    const [assetFormData, setAssetFormData] = useState({ asset_code: '', asset_type: 'FURNITURE', condition: 'GOOD', value: 0, quantity: 1, hostel: '', room: '' }); // Updated field from type to asset_type
+    const [assetFormData, setAssetFormData] = useState({ asset_code: '', asset_type: 'FURNITURE', type: 'FURNITURE', condition: 'GOOD', value: 0, quantity: 1, hostel: '', room: '' });
+    const [attendanceFormData, setAttendanceFormData] = useState({ student: '', date: new Date().toISOString().split('T')[0], status: 'PRESENT', session: 'EVENING', remarks: '' });
     const [assetSort, setAssetSort] = useState({ field: 'asset_code', direction: 'asc' });
-    const [attendanceFormData, setAttendanceFormData] = useState({ student: '', date: new Date().toISOString().split('T')[0], status: 'PRESENT', remarks: '' });
-    const [disciplineFormData, setDisciplineFormData] = useState({ student: '', offence: '', description: '', date: new Date().toISOString().split('T')[0], action_taken: '', severity: 'MINOR' }); // Updated fields
-    const [maintenanceFormData, setMaintenanceFormData] = useState({ hostel: '', room: '', issue: '', repair_cost: 0, status: 'PENDING', date: new Date().toISOString().split('T')[0] }); // Updated fields
+    const [disciplineFormData, setDisciplineFormData] = useState({ student: '', offence: '', description: '', date: new Date().toISOString().split('T')[0], action_taken: '', severity: 'MINOR' });
+    const [maintenanceFormData, setMaintenanceFormData] = useState({ hostel: '', room: '', issue: '', repair_cost: 0, status: 'PENDING', date: new Date().toISOString().split('T')[0] });
 
     // Filter States for Modals (Strict Cascading)
     const [filterHostel, setFilterHostel] = useState<string>(''); // Used across modals to drive Room dropdown
 
-    const exportToCSV = (data: any[], filename: string) => {
-        const headers = Object.keys(data[0] || {}).join(',');
-        const rows = data.map(row => Object.values(row).map(val => `"${val}"`).join(',')).join('\n');
-        const blob = new Blob([`${headers}\n${rows}`], { type: 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${filename}.csv`;
-        a.click();
-    };
+
     const [selectedHostel, setSelectedHostel] = useState<any>(null);
     const [viewHostelResidents, setViewHostelResidents] = useState<any[]>([]);
     const [isViewResidentsModalOpen, setIsViewResidentsModalOpen] = useState(false);
@@ -458,9 +450,9 @@ const Hostels = () => {
         setIsViewRoomsModalOpen(true);
     };
 
-    const startAddRoom = (h: any) => {
-        setRoomId(null); // Reset editing state
-        openAddRoom(h);
+    const openAddRoom = (h: any) => {
+        setFilterHostel(h.id.toString());
+        setIsRoomModalOpen(true);
     };
 
     const stats = {
@@ -470,19 +462,7 @@ const Hostels = () => {
         maintenanceIssues: maintenance.filter(m => m.status === 'PENDING').length
     };
 
-    const studentOptions = students.map(s => ({
-        id: s.id,
-        label: s.full_name,
-        subLabel: `ID: ${s.admission_number}`
-    }));
 
-    const availableBedOptions = beds
-        .filter(b => b.status === 'AVAILABLE')
-        .map(b => ({
-            id: b.id,
-            label: `Bed ${b.bed_number} (Rm ${b.room_number})`,
-            subLabel: `${b.hostel_name}`
-        }));
 
     if (loading) return <div className="spinner-container"><div className="spinner"></div></div>;
 
@@ -869,9 +849,10 @@ const Hostels = () => {
                     )}
                     {isTransferMode && (
                         <div className="bg-primary-light p-3 rounded mb-4 text-primary font-bold">
-                            Moving: {students.find(s => String(s.id) === allocationFormData.student)?.full_name}
+                            Moving: {students.find(s => String(s.id) === String(allocationFormData.student))?.full_name}
                         </div>
                     )}
+
 
                     <div className="form-group">
                         <label className="label">Hostel</label>
@@ -945,6 +926,7 @@ const Hostels = () => {
                 {attendanceMode === 'SINGLE' ? (
                     <form onSubmit={handleAttendanceSubmit} className="space-y-4">
                         <SearchableSelect label="Student" options={students.map(s => ({ id: String(s.id), label: s.full_name, subLabel: s.admission_number }))} value={String(attendanceFormData.student)} onChange={(val) => setAttendanceFormData({ ...attendanceFormData, student: val })} required />
+
                         <div className="grid grid-cols-2 gap-4">
                             <div className="form-group"><label className="label">Date</label><input type="date" className="input" value={attendanceFormData.date} onChange={e => setAttendanceFormData({ ...attendanceFormData, date: e.target.value })} required /></div>
                             <div className="form-group"><label className="label">Session</label><select className="select" value={attendanceFormData.session} onChange={e => setAttendanceFormData({ ...attendanceFormData, session: e.target.value })} required><option value="MORNING">Morning</option><option value="EVENING">Evening</option><option value="NIGHT">Night</option></select></div>
@@ -1060,6 +1042,7 @@ const Hostels = () => {
             <Modal isOpen={isDisciplineModalOpen} onClose={() => setIsDisciplineModalOpen(false)} title={disciplineId ? "Edit Discipline Record" : "Report Incident"}>
                 <form onSubmit={handleDisciplineSubmit} className="space-y-4">
                     <SearchableSelect label="Student" options={students.map(s => ({ id: String(s.id), label: s.full_name, subLabel: s.admission_number }))} value={String(disciplineFormData.student)} onChange={(val) => setDisciplineFormData({ ...disciplineFormData, student: val })} required />
+
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group"><label className="label">Date</label><input type="date" className="input" value={disciplineFormData.date} onChange={e => setDisciplineFormData({ ...disciplineFormData, date: e.target.value })} required /></div>
                         <div className="form-group"><label className="label">Severity</label><select className="select" value={disciplineFormData.severity} onChange={e => setDisciplineFormData({ ...disciplineFormData, severity: e.target.value })}><option value="MINOR">Minor</option><option value="MAJOR">Major</option><option value="CRITICAL">Critical</option></select></div>
@@ -1172,9 +1155,8 @@ const Hostels = () => {
                     .no-print { display: none !important; }
                     .print-only { display: block !important; }
                     body { background: white; color: black; }
-                    .table-container { box-shadow: none; border: 1px solid #ddd; }
-                    .table th { background: #f5f5f5 !important; color: black !important; }
                 }
+
                 .print-only { display: none; }
                 .tab-link { 
                     display: flex;

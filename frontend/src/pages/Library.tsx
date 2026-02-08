@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import {
     Plus, Search, Edit, Trash2, BookOpen, User as UserIcon,
     Calendar, CheckCircle, Book, Layers, ShieldAlert, Clock,
-    Printer, ArrowRight, Bookmark, Archive, Receipt
+    Printer, Download, ArrowRight, Bookmark, Archive, Receipt
 } from 'lucide-react';
 import { libraryAPI, studentsAPI } from '../api/api';
+import { exportToCSV } from '../utils/export';
 import Modal from '../components/Modal';
 import SearchableSelect from '../components/SearchableSelect';
 
@@ -283,6 +284,7 @@ const Library = () => {
                     <p className="text-secondary text-sm">Resource archiving, circulation, and digital tracking</p>
                 </div>
                 <div className="flex gap-md no-print">
+                    <button className="btn btn-outline" onClick={() => exportToCSV(books, 'Library_Catalog')}><Download size={18} /> Export CSV</button>
                     <button className="btn btn-outline" onClick={() => window.print()}><Printer size={18} /> Catalog Report</button>
                     {!isReadOnly && (
                         <button className="btn btn-primary" onClick={() => setIsLendModalOpen(true)}><BookOpen size={18} /> Process Lending</button>
@@ -316,6 +318,13 @@ const Library = () => {
                 <button className={`tab-link ${activeTab === 'copies' ? 'active' : ''}`} onClick={() => setActiveTab('copies')}><Layers size={16} /> Inventory (Copies)</button>
                 <button className={`tab-link ${activeTab === 'lendings' ? 'active' : ''}`} onClick={() => setActiveTab('lendings')}><Bookmark size={16} /> Circulation</button>
                 <button className={`tab-link ${activeTab === 'fines' ? 'active' : ''}`} onClick={() => setActiveTab('fines')}><ShieldAlert size={16} /> Fines & Discipline</button>
+                <button className="btn btn-sm btn-outline ml-auto" onClick={() => {
+                    const dataToExport = activeTab === 'catalog' ? books : activeTab === 'copies' ? copies : activeTab === 'lendings' ? lendings : fines;
+                    exportToCSV(dataToExport, `Library_${activeTab}`);
+                }}>
+                    <Download size={14} /> Export {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+                </button>
+
             </div>
 
             {/* Catalog Content */}

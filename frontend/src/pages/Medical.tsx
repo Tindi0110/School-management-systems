@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, Search, Edit, Trash2, Heart, Calendar, User as UserIcon, Activity } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Heart, Calendar, User as UserIcon, Activity, Printer, Download } from 'lucide-react';
 import { medicalAPI, studentsAPI } from '../api/api';
+import { exportToCSV } from '../utils/export';
 import Modal from '../components/Modal';
 import SearchableSelect from '../components/SearchableSelect';
 
@@ -105,10 +106,17 @@ const Medical = () => {
                     <h1>Medical Records</h1>
                     <p className="text-secondary">Official school health and infirmary logs</p>
                 </div>
-                <button className="btn btn-primary" onClick={() => openModal()}>
-                    <Plus size={18} />
-                    New Health Record
-                </button>
+                <div className="flex gap-2">
+                    <button className="btn btn-outline flex items-center gap-2" onClick={() => window.print()}>
+                        <Printer size={18} /> Reports
+                    </button>
+                    <button className="btn btn-outline flex items-center gap-2" onClick={() => exportToCSV(records, 'Medical_Records')}>
+                        <Download size={18} /> Export CSV
+                    </button>
+                    <button className="btn btn-primary" onClick={() => openModal()}>
+                        <Plus size={18} /> New Health Record
+                    </button>
+                </div>
             </div>
 
             <div className="card mb-4">

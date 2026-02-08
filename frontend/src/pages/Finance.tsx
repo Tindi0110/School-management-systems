@@ -888,14 +888,6 @@ const Finance = () => {
             </Modal>
 
 
-            <style>{`
-                @media print {
-                    .no-print { display: none !important; }
-                    .card { box-shadow: none !important; border: 1px solid #ddd; }
-                    body { background: white; }
-                    .table-container { max-height: none !important; overflow: visible !important; }
-                }
-            `}</style>
         </div >
     );
 };

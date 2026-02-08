@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import {
     Plus, Edit, Bus, MapPin, Navigation, ClipboardList, Wrench, ShieldAlert,
-    Droplet, Printer, Users, Clock, Trash2
+    Droplet, Printer, Download, Users, Clock, Trash2
 } from 'lucide-react';
 import { transportAPI, studentsAPI } from '../api/api';
+import { exportToCSV } from '../utils/export';
 import Modal from '../components/Modal';
 import SearchableSelect from '../components/SearchableSelect';
 
@@ -569,6 +570,7 @@ const Transport = () => {
                     <p className="text-secondary text-sm">Fleet management, route optimization, and student safety</p>
                 </div>
                 <div className="flex gap-4 no-print">
+                    <button className="btn btn-outline flex items-center gap-2" onClick={() => exportToCSV(vehicles, 'Fleet_Registry')}><Download size={18} /> Export Fleet</button>
                     <button className="btn btn-outline flex items-center gap-2" onClick={() => window.print()}><Printer size={18} /> Reports</button>
                     <button className="btn btn-primary flex items-center gap-2" onClick={() => { setEnrollmentId(null); setIsAllocationModalOpen(true); }}><Plus size={18} /> Enroll Student</button>
                     <button className="btn btn-success flex items-center gap-2" onClick={() => { setVehicleId(null); setIsVehicleModalOpen(true); }}><Bus size={18} /> Add Vehicle</button>
@@ -603,6 +605,12 @@ const Transport = () => {
                 <button className={`tab-link ${activeTab === 'maintenance' ? 'active' : ''}`} onClick={() => setActiveTab('maintenance')}><Wrench size={16} /> Repairs</button>
                 <button className={`tab-link ${activeTab === 'fuel' ? 'active' : ''}`} onClick={() => setActiveTab('fuel')}><Droplet size={16} /> Fuel Usage</button>
                 <button className={`tab-link ${activeTab === 'safety' ? 'active' : ''}`} onClick={() => setActiveTab('safety')}><ShieldAlert size={16} /> Safety</button>
+                <button className="btn btn-sm btn-outline ml-auto" onClick={() => {
+                    const dataToExport = activeTab === 'allocations' ? allocations : activeTab === 'routes' ? routes : activeTab === 'trips' ? trips : activeTab === 'maintenance' ? maintenanceRecords : fuelRecords;
+                    exportToCSV(dataToExport, `Transport_${activeTab}`);
+                }}>
+                    <Download size={14} /> Export {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+                </button>
             </div>
 
             {/* Fleet Content */}

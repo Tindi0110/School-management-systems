@@ -69,6 +69,9 @@ const Parents = () => {
                     <p className="text-secondary font-bold uppercase text-[10px] tracking-widest">Institutional Parent & Guardian Database</p>
                 </div>
                 <div className="flex gap-2">
+                    <button className="btn btn-sm btn-outline flex items-center gap-2" onClick={() => window.print()}>
+                        <Printer size={16} /> Reports
+                    </button>
                     <button className="btn btn-sm btn-outline" onClick={() => exportToCSV(parents, 'guardians_registry')}>
                         <Download size={16} /> Export CSV
                     </button>

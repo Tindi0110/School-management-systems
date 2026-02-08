@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Plus, Search, Edit, Trash2, Users, Briefcase, Printer, Download, List, LayoutGrid } from 'lucide-react';
 import { staffAPI } from '../api/api';
+import { exportToCSV } from '../utils/export';
 import Modal from '../components/Modal';
 
 const Staff = () => {
@@ -72,30 +73,7 @@ const Staff = () => {
     };
 
     const handleDownloadCSV = () => {
-        const headers = ['Full Name', 'Employee ID', 'Department', 'Role', 'Qualifications', 'Date Joined'];
-        const csvRows = [headers.join(',')];
-
-        filteredStaff.forEach(s => {
-            const row = [
-                `"${s.full_name || s.username}"`,
-                `"${s.employee_id}"`,
-                `"${s.department}"`,
-                `"${s.role}"`,
-                `"${(s.qualifications || '').replace(/"/g, '""')}"`,
-                `"${new Date(s.date_joined).toLocaleDateString()}"`
-            ];
-            csvRows.push(row.join(','));
-        });
-
-        const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.setAttribute('hidden', '');
-        a.setAttribute('href', url);
-        a.setAttribute('download', `Staff_Directory_${new Date().toISOString().split('T')[0]}.csv`);
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        exportToCSV(filteredStaff, 'Staff_Directory');
     };
 
     const openModal = (member?: any) => {
@@ -249,12 +227,6 @@ const Staff = () => {
                 </div>
             </div>
 
-            <div className="print-only mb-6">
-                <h1 className="text-center">Staff Directory Report</h1>
-                <p className="text-center text-secondary border-bottom pb-2">
-                    Organization: {groupBy === 'NONE' ? 'General' : `Grouped by ${groupBy}`} | Date: {new Date().toLocaleDateString()}
-                </p>
-            </div>
 
             {groupBy === 'NONE' ? (
                 <div className="table-container shadow-md">
@@ -321,17 +293,6 @@ const Staff = () => {
                 </form>
             </Modal>
 
-            <style>{`
-                @media print {
-                    .no-print { display: none !important; }
-                    .print-only { display: block !important; }
-                    body { background: white !important; font-size: 10pt; color: black !important; padding: 20px; }
-                    .card, .table-container { box-shadow: none !important; border: 1px solid #ddd !important; }
-                    .table th { background: #eee !important; color: black !important; border-bottom: 2px solid #333 !important; }
-                    .badge { border: 1px solid #000 !important; color: #000 !important; background: transparent !important; }
-                }
-                .print-only { display: none; }
-            `}</style>
         </div>
     );
 };

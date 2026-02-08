@@ -10,6 +10,7 @@ import { useSelector } from 'react-redux';
 import Modal from '../components/Modal';
 import { StatCard } from '../components/Card';
 import { useToast } from '../context/ToastContext';
+import { exportToCSV } from '../utils/export';
 
 const Students = () => {
     const navigate = useNavigate();
@@ -505,19 +506,6 @@ const Students = () => {
                 </form>
             </Modal>
 
-            <style>{`
-                @media print {
-                    .no-print { display: none !important; }
-                    body { background: white; -webkit-print-color-adjust: exact; }
-                    .table-container { box-shadow: none !important; border: 1px solid #ccc !important; width: 100% !important; }
-                    .table th { background-color: #f3f4f6 !important; color: black !important; border: 1px solid #ccc !important; }
-                    .table td { border: 1px solid #ccc !important; }
-                    .badge { border: 1px solid #000 !important; color: #000 !important; font-weight: bold; }
-                    
-                    /* Force PDF A4 sizing/margins if needed */
-                    @page { margin: 1cm; size: A4 landscape; }
-                }
-            `}</style>
         </div>
     );
 };
