@@ -10,10 +10,16 @@ import { exportToCSV } from '../utils/export';
 import Modal from '../components/Modal';
 import SearchableSelect from '../components/SearchableSelect';
 import { StatCard } from '../components/Card';
+import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
+import Button from '../components/common/Button';
 
 const Academics = () => {
     const [activeTab, setActiveTab] = useState<'SUMMARY' | 'CLASSES' | 'CURRICULUM' | 'EXAMS' | 'GRADING' | 'ATTENDANCE' | 'RESOURCES'>('SUMMARY');
     const [loading, setLoading] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const { success, error: toastError, warning, info } = useToast();
+    const { confirm } = useConfirm();
     const [searchTerm, setSearchTerm] = useState('');
 
 
@@ -115,22 +121,24 @@ const Academics = () => {
 
     const handleGradeSystemSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSubmitting(true);
         try {
             if (editingSystemId) {
-                // await academicsAPI.gradeSystems.update(editingSystemId, gradeForm); // Update not in API yet?
-                alert('Update not implemented yet');
+                toastError('Update not implemented yet');
             } else {
                 await academicsAPI.gradeSystems.create(gradeForm);
-                alert('Grade System Created');
+                success('Grade System Created');
             }
             loadAllAcademicData();
             setIsGradeModalOpen(false);
             setGradeForm({ name: '', is_default: false });
-        } catch (err) { alert('Error saving grade system'); }
+        } catch (err: any) { toastError(err.message || 'Error saving grade system'); }
+        finally { setIsSubmitting(false); }
     };
 
     const handleBoundarySubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSubmitting(true);
         try {
             const payload = {
                 ...boundaryForm,
@@ -141,31 +149,38 @@ const Academics = () => {
 
             if (editingBoundaryId) {
                 await academicsAPI.gradeBoundaries.update(editingBoundaryId, payload);
+                success('Boundary updated');
             } else {
-                // Ensure system ID is set
                 const systemId = payload.system || selectedSystem?.id;
-                if (!systemId) { alert("No grading system selected"); return; }
+                if (!systemId) { toastError("No grading system selected"); return; }
                 await academicsAPI.gradeBoundaries.create({ ...payload, system: systemId });
+                success('Boundary added');
             }
-            loadAllAcademicData(); // Reloads systems with new boundaries
+            loadAllAcademicData();
             setIsBoundaryModalOpen(false);
             setEditingBoundaryId(null);
             setBoundaryForm({ system: selectedSystem?.id || '', grade: '', min_score: 0, max_score: 100, points: 0, remarks: '' });
-        } catch (err) { alert('Error saving boundary'); }
+        } catch (err: any) { toastError(err.message || 'Error saving boundary'); }
+        finally { setIsSubmitting(false); }
     };
 
     const handleDeleteBoundary = async (id: number) => {
-        if (!window.confirm('Delete this boundary?')) return;
+        if (!await confirm('Delete this boundary?', { type: 'danger' })) return;
         try {
             await academicsAPI.gradeBoundaries.delete(id);
+            success('Boundary deleted');
             loadAllAcademicData();
-        } catch (err) { alert('Error deleting boundary'); }
+        } catch (err: any) { toastError(err.message || 'Error deleting boundary'); }
     };
 
     const handleDeleteSubject = async (id: number) => {
-        if (confirm('Delete this subject? This might affect existing results/allocations.')) {
-            try { await academicsAPI.subjects.delete(id); loadAllAcademicData(); }
-            catch (e) { alert('Failed to delete subject'); }
+        if (await confirm('Delete this subject? This might affect existing results/allocations.', { type: 'danger' })) {
+            try {
+                await academicsAPI.subjects.delete(id);
+                success('Subject deleted');
+                loadAllAcademicData();
+            }
+            catch (e: any) { toastError(e.message || 'Failed to delete subject'); }
         }
     };
 
@@ -176,9 +191,13 @@ const Academics = () => {
     };
 
     const handleDeleteGroup = async (id: number) => {
-        if (confirm('Delete this group? Subjects in this group may become unassigned.')) {
-            try { await academicsAPI.subjectGroups.delete(id); loadAllAcademicData(); }
-            catch (e) { alert('Failed to delete group'); }
+        if (await confirm('Delete this group? Subjects in this group may become unassigned.', { type: 'danger' })) {
+            try {
+                await academicsAPI.subjectGroups.delete(id);
+                success('Group deleted');
+                loadAllAcademicData();
+            }
+            catch (e: any) { toastError(e.message || 'Failed to delete group'); }
         }
     };
     const calculateMeanGrade = (results: any[]) => {
@@ -261,29 +280,29 @@ const Academics = () => {
         try {
             if (currentAllocationId) {
                 await academicsAPI.classSubjects.delete(currentAllocationId);
+                success('Subject removed');
             } else {
                 await academicsAPI.classSubjects.create({ class_id: selectedAllocationClass, subject: subjectId });
+                success('Subject added');
             }
             fetchClassAllocations(selectedAllocationClass);
-        } catch (err) { alert('Failed to update allocation'); }
+        } catch (err: any) { toastError(err.message || 'Failed to update allocation'); }
     };
 
     const syncClassSubjects = async () => {
         if (!classAllocations.length || !selectedAllocationClass) return;
-        if (!confirm('This will update subject lists for ALL students in this class. Continue?')) return;
+        if (!await confirm('This will update subject lists for ALL students in this class. Continue?')) return;
 
         setIsSyncing(true);
         try {
             let syncedCount = 0;
-            // Iterate allocations to sync each one
             for (const alloc of classAllocations) {
                 await academicsAPI.classSubjects.sync(alloc.id);
                 syncedCount++;
             }
-            alert(`Synced ${syncedCount} subjects to students successfully!`);
-        } catch (err) {
-            alert('Error syncing subjects.');
-            console.error(err);
+            success(`Synced ${syncedCount} subjects to students successfully!`);
+        } catch (err: any) {
+            toastError(err.message || 'Error syncing subjects.');
         } finally {
             setIsSyncing(false);
         }
@@ -291,17 +310,21 @@ const Academics = () => {
 
     const handleYearSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSubmitting(true);
         try {
             if (editingYearId) {
                 await academicsAPI.years.update(editingYearId, yearForm);
+                success('Year updated');
             } else {
                 await academicsAPI.years.create(yearForm);
+                success('Year added');
             }
             loadAllAcademicData();
             setIsYearModalOpen(false);
             setEditingYearId(null);
             setYearForm({ name: '', is_active: false });
-        } catch (err) { alert('Failed to save year'); }
+        } catch (err: any) { toastError(err.message || 'Failed to save year'); }
+        finally { setIsSubmitting(false); }
     };
 
     const openEditYear = (y: any) => {
@@ -311,26 +334,35 @@ const Academics = () => {
     };
     const handleTermSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        try { await academicsAPI.terms.create(termForm); loadAllAcademicData(); setIsTermModalOpen(false); } catch (err) { alert('Failed to save term'); }
+        setIsSubmitting(true);
+        try {
+            await academicsAPI.terms.create(termForm);
+            success('Term added');
+            loadAllAcademicData();
+            setIsTermModalOpen(false);
+        } catch (err: any) { toastError(err.message || 'Failed to save term'); }
+        finally { setIsSubmitting(false); }
     };
     const [editingSubjectId, setEditingSubjectId] = useState<number | null>(null);
     const [editingClassId, setEditingClassId] = useState<number | null>(null);
 
     const handleSubjectSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSubmitting(true);
         try {
             if (editingSubjectId) {
                 await academicsAPI.subjects.update(editingSubjectId, subjectForm);
-                // success('Subject updated successfully!');
+                success('Subject updated');
             } else {
                 await academicsAPI.subjects.create(subjectForm);
-                // success('Subject created successfully!');
+                success('Subject created');
             }
             loadAllAcademicData();
             setIsSubjectModalOpen(false);
             setEditingSubjectId(null);
             setSubjectForm({ name: '', code: '', group: '', is_optional: false });
-        } catch (err) { alert('Failed to save subject'); }
+        } catch (err: any) { toastError(err.message || 'Failed to save subject'); }
+        finally { setIsSubmitting(false); }
     };
 
     const openEditSubject = (s: any) => {
@@ -352,9 +384,9 @@ const Academics = () => {
 
     const handleAttendanceSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSubmitting(true);
         try {
             if (attendanceFilter.isBulk) {
-                // Bulk Submission
                 const promises = bulkAttendanceList.map(record =>
                     academicsAPI.attendance.create({
                         student: record.student_id,
@@ -363,45 +395,47 @@ const Academics = () => {
                     })
                 );
                 await Promise.all(promises);
-                alert(`Attendance recorded for ${bulkAttendanceList.length} students.`);
+                success(`Attendance recorded for ${bulkAttendanceList.length} students.`);
             } else if (editingAttendanceId) {
-                // Update Existing
                 await academicsAPI.attendance.update(editingAttendanceId, attendanceForm);
-                alert('Attendance record updated.');
+                success('Attendance record updated.');
             } else {
-                // Single Submission
                 await academicsAPI.attendance.create(attendanceForm);
-                alert('Attendance logged.');
+                success('Attendance logged.');
             }
             loadAllAcademicData();
             setIsAttendanceModalOpen(false);
             setEditingAttendanceId(null);
             setAttendanceForm({ student: '', status: 'PRESENT', remark: '' });
-        } catch (err) { alert('Failed to log attendance'); }
+        } catch (err: any) { toastError(err.message || 'Failed to log attendance'); }
+        finally { setIsSubmitting(false); }
     };
 
     const handleSyllabusSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSubmitting(true);
         try {
             if (editingSyllabusId) {
                 await academicsAPI.syllabus.update(editingSyllabusId, syllabusForm);
+                success('Syllabus updated');
             } else {
                 await academicsAPI.syllabus.create(syllabusForm);
+                success('Syllabus recorded');
             }
-            alert('Syllabus data saved successfully!');
             loadAllAcademicData();
             setIsSyllabusModalOpen(false);
             setEditingSyllabusId(null);
             setSyllabusForm({ subject: '', class_grade: '', coverage_percentage: 0 });
-        } catch (err) { console.error(err); alert('Failed to save syllabus data'); }
+        } catch (err: any) { toastError(err.message || 'Failed to save syllabus data'); }
+        finally { setIsSubmitting(false); }
     };
 
     const handleClassSubmit = async (e: React.FormEvent | React.MouseEvent) => {
         e.preventDefault();
-        // Manual Validations
-        if (!classForm.name) { alert("Class Level (e.g. Form 4) is required."); return; }
-        if (!classForm.stream) { alert("Stream (e.g. North) is required."); return; }
+        if (!classForm.name) { toastError("Class Level (e.g. Form 4) is required."); return; }
+        if (!classForm.stream) { toastError("Stream (e.g. North) is required."); return; }
 
+        setIsSubmitting(true);
         try {
             const payload = {
                 ...classForm,
@@ -412,18 +446,19 @@ const Academics = () => {
 
             if (editingClassId) {
                 await academicsAPI.classes.update(editingClassId, payload);
-                alert('Class unit updated successfully!');
+                success('Class unit updated successfully!');
             } else {
                 await academicsAPI.classes.create(payload);
-                alert('Class unit created successfully!');
+                success('Class unit created successfully!');
             }
             loadAllAcademicData();
             setIsClassModalOpen(false);
             setEditingClassId(null);
             setClassForm({ name: '', stream: '', year: activeYear, class_teacher: '', capacity: 40 });
         } catch (err: any) {
-            console.error('Error creating/updating class:', err);
-            alert('Failed to save class. Please try again.');
+            toastError(err.message || 'Failed to save class.');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -443,19 +478,21 @@ const Academics = () => {
 
     const handleExamSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSubmitting(true);
         try {
             if (editingExamId) {
                 await academicsAPI.exams.update(editingExamId, examForm);
-                alert('Exam details updated.');
+                success('Exam details updated.');
             } else {
                 await academicsAPI.exams.create(examForm);
-                alert('Exam scheduled.');
+                success('Exam scheduled.');
             }
             loadAllAcademicData();
             setIsExamModalOpen(false);
             setEditingExamId(null);
             setExamForm({ name: '', exam_type: 'END_TERM', term: '', weighting: 100, date_started: '', is_active: true });
-        } catch (err) { alert('Failed to save exam'); }
+        } catch (err: any) { toastError(err.message || 'Failed to save exam'); }
+        finally { setIsSubmitting(false); }
     };
 
     const openEditExam = (e: any) => {
@@ -496,7 +533,6 @@ const Academics = () => {
         setLoading(true);
         try {
             const res = await academicsAPI.results.getAll({ exam_id: exam.id });
-            // Enrich results with student details (name, admission, class info from 'students' state)
             const enriched = res.data.map((r: any) => {
                 const s = students.find(st => st.id === r.student);
                 const cls = classes.find(c => c.id === s?.current_class);
@@ -506,13 +542,12 @@ const Academics = () => {
                     admission_number: s?.admission_number || 'N/A',
                     class_name: cls?.name || 'Unassigned',
                     class_stream: cls?.stream || 'General',
-                    form_level: cls?.name || 'Unknown' // For grouping
+                    form_level: cls?.name || 'Unknown'
                 };
             });
             setExamResults(enriched);
-        } catch (err) {
-            console.error(err);
-            alert("Failed to load results");
+        } catch (err: any) {
+            toastError(err.message || "Failed to load results");
         } finally {
             setLoading(false);
         }
@@ -547,63 +582,57 @@ const Academics = () => {
 
     const handleSetActiveTerm = async (term: any) => {
         const newStatus = !term.is_active;
-        if (!window.confirm(`Are you sure you want to ${newStatus ? 'ACTIVATE' : 'DEACTIVATE'} ${term.name}?`)) return;
+        if (!await confirm(`Are you sure you want to ${newStatus ? 'ACTIVATE' : 'DEACTIVATE'} ${term.name}?`)) return;
 
-        // Robust payload: Ensure year is an ID
         const yearId = typeof term.year === 'object' && term.year ? term.year.id : term.year;
-
-        const payload = {
-            ...term,
-            year: yearId,
-            is_active: newStatus
-        };
+        const payload = { ...term, year: yearId, is_active: newStatus };
 
         try {
             await academicsAPI.terms.update(term.id, payload);
-            alert(`Success: Term ${term.name} is now ${newStatus ? 'ACTIVE' : 'INACTIVE'}`);
+            success(`Term ${term.name} is now ${newStatus ? 'ACTIVE' : 'INACTIVE'}`);
             setTerms(prev => prev.map(t => t.id === term.id ? { ...t, is_active: newStatus } : t));
             setTimeout(() => loadAllAcademicData(), 500);
         } catch (err: any) {
-            console.error(err);
-            const errMsg = err.response?.data ? JSON.stringify(err.response.data) : 'Unknown error';
-            alert(`Failed to update term status. Server says: ${errMsg}`);
+            toastError(err.message || 'Failed to update term status');
         }
     };
 
     const executeDelete = async () => {
         if (!deleteConfirm.id) return;
+        setIsSubmitting(true);
         try {
             if (deleteConfirm.type === 'EXAM') {
                 await academicsAPI.exams.delete(deleteConfirm.id);
-                // alert('Exam deleted.');
+                success('Exam deleted');
             } else if (deleteConfirm.type === 'TERM') {
                 await academicsAPI.terms.delete(deleteConfirm.id);
+                success('Term deleted');
             } else if (deleteConfirm.type === 'POLICY') {
                 await academicsAPI.gradeSystems.delete(deleteConfirm.id);
+                success('Grading policy removed');
             }
             loadAllAcademicData();
             setDeleteConfirm({ isOpen: false, type: null, id: null });
         } catch (err: any) {
-            alert(`Delete failed: ${err.message || 'Unknown error'}`);
+            toastError(err.message || 'Delete failed');
             setDeleteConfirm({ isOpen: false, type: null, id: null });
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
     const handleBulkResultSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSubmitting(true);
         try {
-            // Need to process matrix entries: key = "studentId-subjectId"
             const promises = Object.entries(studentScores).map(async ([key, data]: any) => {
                 const [studentId, subjectId] = key.split('-');
                 const score = data.score;
                 const resultId = data.id;
 
                 if (!score || score.trim() === '') {
-                    // If empty and has ID -> Delete
-                    if (resultId) {
-                        return academicsAPI.results.delete(resultId);
-                    }
-                    return; // Ignore empty new entries
+                    if (resultId) return academicsAPI.results.delete(resultId);
+                    return;
                 }
 
                 const payload = {
@@ -611,24 +640,22 @@ const Academics = () => {
                     exam: selectedExam.id,
                     subject: parseInt(subjectId),
                     score: parseFloat(score),
-                    grade: 'A', // Backend should auto-calculate based on grading system ideally
+                    grade: 'A',
                     recorded_by: 1
                 };
 
-                if (resultId) {
-                    return academicsAPI.results.update(resultId, payload);
-                } else {
-                    return academicsAPI.results.create(payload);
-                }
+                if (resultId) return academicsAPI.results.update(resultId, payload);
+                else return academicsAPI.results.create(payload);
             });
 
             await Promise.all(promises);
-            alert('Results matrix saved successfully!');
+            success('Results matrix saved successfully!');
             setIsResultModalOpen(false);
             loadAllAcademicData();
-        } catch (err) {
-            console.error(err);
-            alert('Failed to save some results. Please check connection.');
+        } catch (err: any) {
+            toastError(err.message || 'Failed to save some results');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -664,14 +691,13 @@ const Academics = () => {
             }
 
             if (dataToExport.length === 0) {
-                alert("No data available to export for this view.");
+                warning("No data available to export for this view.");
                 return;
             }
 
             exportToCSV(dataToExport, fileName);
-        } catch (err) {
-            console.error("Export failed:", err);
-            alert("Failed to export report.");
+        } catch (err: any) {
+            toastError(err.message || "Failed to export report.");
         } finally {
             setIsExporting(false);
         }

@@ -31,7 +31,11 @@ api.interceptors.response.use(
       localStorage.removeItem('user');
       window.location.href = '/login';
     }
-    return Promise.reject(error);
+    const message = error.response?.data?.detail ||
+      error.response?.data?.error ||
+      (typeof error.response?.data === 'string' ? error.response?.data : null) ||
+      error.message;
+    return Promise.reject({ ...error, message });
   }
 );
 

@@ -4,6 +4,7 @@ import { Provider } from 'react-redux'
 import { store } from './store'
 import './index.css'
 import { ToastProvider } from './context/ToastContext'
+import { ConfirmProvider } from './context/ConfirmContext'
 import { ErrorBoundary } from './components/common/ErrorBoundary'
 
 // Eager load critical components
@@ -41,80 +42,82 @@ function App() {
     <Provider store={store}>
       <ErrorBoundary name="Toast Notification System">
         <ToastProvider>
-          <Router>
-            <Suspense fallback={<PageLoader />}>
-              <ErrorBoundary name="Main Routing System">
-                <Routes>
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/register" element={<Register />} />
-                  <Route path="/forgot-password" element={<ForgotPassword />} />
-                  <Route path="/" element={
-                    <ProtectedRoute>
-                      <DashboardLayout />
-                    </ProtectedRoute>
-                  }>
-                    {/* Dashboard - Accessible to everyone who is authenticated */}
-                    <Route index element={
-                      <ProtectedRoute><Dashboard /></ProtectedRoute>
-                    } />
-
-                    {/* Students Module */}
-                    <Route path="students/*" element={
-                      <ProtectedRoute requiredPermission="view_students">
-                        <ErrorBoundary name="Student Module"><Students /></ErrorBoundary>
+          <ConfirmProvider>
+            <Router>
+              <Suspense fallback={<PageLoader />}>
+                <ErrorBoundary name="Main Routing System">
+                  <Routes>
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/forgot-password" element={<ForgotPassword />} />
+                    <Route path="/" element={
+                      <ProtectedRoute>
+                        <DashboardLayout />
                       </ProtectedRoute>
-                    } />
-                    <Route path="students/:id" element={
-                      <ProtectedRoute requiredPermission="view_students"><StudentProfile /></ProtectedRoute>
-                    } />
+                    }>
+                      {/* Dashboard - Accessible to everyone who is authenticated */}
+                      <Route index element={
+                        <ProtectedRoute><Dashboard /></ProtectedRoute>
+                      } />
 
-                    {/* Parents Module */}
-                    <Route path="parents" element={
-                      <ProtectedRoute requiredPermission="view_parents"><Parents /></ProtectedRoute>
-                    } />
+                      {/* Students Module */}
+                      <Route path="students/*" element={
+                        <ProtectedRoute requiredPermission="view_students">
+                          <ErrorBoundary name="Student Module"><Students /></ErrorBoundary>
+                        </ProtectedRoute>
+                      } />
+                      <Route path="students/:id" element={
+                        <ProtectedRoute requiredPermission="view_students"><StudentProfile /></ProtectedRoute>
+                      } />
 
-                    {/* Academics Module */}
-                    <Route path="academics" element={
-                      <ProtectedRoute requiredPermission="view_academics"><Academics /></ProtectedRoute>
-                    } />
-                    <Route path="timetable" element={
-                      <ProtectedRoute requiredPermission="view_academics"><Timetable /></ProtectedRoute>
-                    } />
+                      {/* Parents Module */}
+                      <Route path="parents" element={
+                        <ProtectedRoute requiredPermission="view_parents"><Parents /></ProtectedRoute>
+                      } />
 
-                    {/* Staff Module */}
-                    <Route path="staff" element={
-                      <ProtectedRoute requiredPermission="view_staff"><Staff /></ProtectedRoute>
-                    } />
+                      {/* Academics Module */}
+                      <Route path="academics" element={
+                        <ProtectedRoute requiredPermission="view_academics"><Academics /></ProtectedRoute>
+                      } />
+                      <Route path="timetable" element={
+                        <ProtectedRoute requiredPermission="view_academics"><Timetable /></ProtectedRoute>
+                      } />
 
-                    {/* Finance Module - High Security */}
-                    <Route path="finance" element={
-                      <ProtectedRoute requiredPermission="view_finance"><Finance /></ProtectedRoute>
-                    } />
+                      {/* Staff Module */}
+                      <Route path="staff" element={
+                        <ProtectedRoute requiredPermission="view_staff"><Staff /></ProtectedRoute>
+                      } />
 
-                    {/* Hostel Module */}
-                    <Route path="hostels" element={
-                      <ProtectedRoute requiredPermission="view_hostel"><Hostels /></ProtectedRoute>
-                    } />
+                      {/* Finance Module - High Security */}
+                      <Route path="finance" element={
+                        <ProtectedRoute requiredPermission="view_finance"><Finance /></ProtectedRoute>
+                      } />
 
-                    {/* Transport Module */}
-                    <Route path="transport" element={
-                      <ProtectedRoute requiredPermission="view_transport"><Transport /></ProtectedRoute>
-                    } />
+                      {/* Hostel Module */}
+                      <Route path="hostels" element={
+                        <ProtectedRoute requiredPermission="view_hostel"><Hostels /></ProtectedRoute>
+                      } />
 
-                    {/* Library Module */}
-                    <Route path="library" element={
-                      <ProtectedRoute requiredPermission="view_library"><Library /></ProtectedRoute>
-                    } />
+                      {/* Transport Module */}
+                      <Route path="transport" element={
+                        <ProtectedRoute requiredPermission="view_transport"><Transport /></ProtectedRoute>
+                      } />
 
-                    {/* Medical Module */}
-                    <Route path="medical" element={
-                      <ProtectedRoute requiredPermission="view_medical"><Medical /></ProtectedRoute>
-                    } />
-                  </Route>
-                </Routes>
-              </ErrorBoundary>
-            </Suspense>
-          </Router>
+                      {/* Library Module */}
+                      <Route path="library" element={
+                        <ProtectedRoute requiredPermission="view_library"><Library /></ProtectedRoute>
+                      } />
+
+                      {/* Medical Module */}
+                      <Route path="medical" element={
+                        <ProtectedRoute requiredPermission="view_medical"><Medical /></ProtectedRoute>
+                      } />
+                    </Route>
+                  </Routes>
+                </ErrorBoundary>
+              </Suspense>
+            </Router>
+          </ConfirmProvider>
         </ToastProvider>
       </ErrorBoundary>
     </Provider>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
     Plus, Building, Edit, Trash2,
-    Building as BuildingIcon, Users as UsersIcon, Printer, Download,
+    Building as BuildingIcon, Users as UsersIcon, Printer,
     Package, Wrench, Bed as BedIcon,
     Users, Layout, ShieldAlert, Clock
 } from 'lucide-react';
@@ -9,6 +9,9 @@ import { hostelAPI, studentsAPI, staffAPI } from '../api/api';
 import { exportToCSV } from '../utils/export';
 import Modal from '../components/Modal';
 import SearchableSelect from '../components/SearchableSelect';
+import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
+import Button from '../components/common/Button';
 
 const Hostels = () => {
     const [activeTab, setActiveTab] = useState('registry');
@@ -23,6 +26,9 @@ const Hostels = () => {
     const [students, setStudents] = useState<any[]>([]);
     const [staff, setStaff] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const { success, error: toastError } = useToast();
+    const { confirm } = useConfirm();
 
 
     // Modal & Form States
@@ -111,13 +117,12 @@ const Hostels = () => {
 
     const handleAllocationSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSubmitting(true);
         try {
-            // For Transfer
             if (isTransferMode && allocationId) {
                 await hostelAPI.allocations.transfer(allocationId, Number(allocationFormData.bed));
-                alert('Student transferred successfully.');
+                success('Student transferred successfully.');
             } else {
-                // Normal Create/Update
                 const payload = {
                     student: Number(allocationFormData.student),
                     room: Number(allocationFormData.room),
@@ -126,24 +131,17 @@ const Hostels = () => {
                 };
                 if (allocationId) await hostelAPI.allocations.update(allocationId, payload);
                 else await hostelAPI.allocations.create(payload);
-                alert(allocationId ? 'Allocation updated.' : 'Student assigned to hostel successfully.');
+                success(allocationId ? 'Allocation updated.' : 'Student assigned to hostel successfully.');
             }
             loadData();
             setIsAllocationModalOpen(false);
             setAllocationId(null);
             setIsTransferMode(false);
             setAllocationFormData({ student: '', hostel: '', room: '', bed: '', status: 'ACTIVE' });
-        } catch (error: any) {
-            console.error(error);
-            const data = error.response?.data;
-            let msg = 'Failed to process request';
-            if (data) {
-                if (typeof data === 'string') msg = data;
-                else if (data.detail) msg = data.detail;
-                else if (data.error) msg = data.error;
-                else msg = Object.entries(data).map(([field, errors]) => `${field}: ${Array.isArray(errors) ? errors.join(', ') : errors}`).join('\n');
-            }
-            alert(msg);
+        } catch (err: any) {
+            toastError(err.message || 'Failed to process request');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -180,23 +178,36 @@ const Hostels = () => {
     }
 
     const handleDeleteAllocation = async (id: number) => {
-        if (!window.confirm('Remove this allocation?')) return;
+        if (!await confirm('Remove this allocation?', { type: 'danger' })) return;
         try {
             await hostelAPI.allocations.delete(id);
+            success('Allocation removed');
             loadData();
-        } catch (error: any) {
-            console.error(error);
-            alert('Failed to delete allocation: ' + (error.response?.data?.detail || 'Unknown error'));
+        } catch (err: any) {
+            toastError(err.message || 'Failed to delete allocation');
         }
     };
 
     const handleHostelSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSubmitting(true);
         try {
-            if (hostelId) { await hostelAPI.hostels.update(hostelId, hostelFormData); alert('Hostel updated.'); }
-            else { await hostelAPI.hostels.create(hostelFormData); alert('Hostel created.'); }
-            loadData(); setIsHostelModalOpen(false); setHostelId(null); setHostelFormData({ name: '', gender_allowed: 'M', hostel_type: 'BOARDING', capacity: 100, warden: '' });
-        } catch (error: any) { console.error(error); alert('Failed to save hostel.'); }
+            if (hostelId) {
+                await hostelAPI.hostels.update(hostelId, hostelFormData);
+                success('Hostel updated.');
+            } else {
+                await hostelAPI.hostels.create(hostelFormData);
+                success('Hostel created.');
+            }
+            loadData();
+            setIsHostelModalOpen(false);
+            setHostelId(null);
+            setHostelFormData({ name: '', gender_allowed: 'M', hostel_type: 'BOARDING', capacity: 100, warden: '' });
+        } catch (err: any) {
+            toastError(err.message || 'Failed to save hostel.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
     const handleEditHostel = (h: any) => {
         setHostelId(h.id);
@@ -211,35 +222,40 @@ const Hostels = () => {
         setIsHostelModalOpen(true);
     };
     const handleDeleteHostel = async (id: number) => {
-        if (!window.confirm('Delete hostel? Warning: This may fail if rooms exist.')) return;
+        if (!await confirm('Delete hostel? Warning: This may fail if rooms exist.', { type: 'danger' })) return;
         try {
             await hostelAPI.hostels.delete(id);
+            success('Hostel deleted');
             loadData();
-        } catch (error: any) {
-            console.error(error);
-            alert('Failed to delete hostel. ' + (error.response?.data?.detail || 'Ensure it is empty first.'));
+        } catch (err: any) {
+            toastError(err.message || 'Failed to delete hostel.');
         }
     };
 
     const handleRoomSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSubmitting(true);
         try {
             const payload = { ...roomFormData, hostel: Number(roomFormData.hostel), capacity: Number(roomFormData.capacity) };
             if (roomId) await hostelAPI.rooms.update(roomId, payload);
             else await hostelAPI.rooms.create(payload);
+            success(roomId ? 'Room updated.' : 'Room added.');
             loadData(); setIsRoomModalOpen(false); setRoomId(null); setRoomFormData({ hostel: '', room_number: '', room_type: 'DORM', floor: 'Ground', capacity: 4 });
-            alert(roomId ? 'Room updated.' : 'Room added.');
-        } catch (error: any) { console.error(error); alert('Failed to save room.'); }
+        } catch (err: any) {
+            toastError(err.message || 'Failed to save room.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
     const handleEditRoom = (r: any) => { setRoomId(r.id); setRoomFormData({ ...r, hostel: String(r.hostel) }); setIsRoomModalOpen(true); };
     const handleDeleteRoom = async (id: number) => {
-        if (!window.confirm('Delete this room?')) return;
+        if (!await confirm('Delete this room?', { type: 'danger' })) return;
         try {
             await hostelAPI.rooms.delete(id);
+            success('Room deleted');
             loadData();
-        } catch (error: any) {
-            console.error(error);
-            alert('Failed to delete room: ' + (error.response?.data?.detail || 'Check for active allocations.'));
+        } catch (err: any) {
+            toastError(err.message || 'Failed to delete room');
         }
     };
 
@@ -247,6 +263,7 @@ const Hostels = () => {
 
     const handleAssetSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSubmitting(true);
         try {
             const payload = {
                 ...assetFormData,
@@ -256,27 +273,42 @@ const Hostels = () => {
             };
             if (assetId) await hostelAPI.assets.update(assetId, payload);
             else await hostelAPI.assets.create(payload);
+            success(assetId ? 'Asset updated.' : 'Asset recorded.');
             loadData(); setIsAssetModalOpen(false); setAssetId(null);
-            setAssetFormData({ asset_code: '', asset_type: 'FURNITURE', condition: 'GOOD', value: 0, quantity: 1, hostel: '', room: '' });
-            alert(assetId ? 'Asset updated.' : 'Asset recorded.');
+            setAssetFormData({ asset_code: '', asset_type: 'FURNITURE', type: 'FURNITURE', condition: 'GOOD', value: 0, quantity: 1, hostel: '', room: '' });
         } catch (err: any) {
-            console.error(err);
-            const msg = err.response?.data ? (typeof err.response.data === 'object' ? JSON.stringify(err.response.data) : err.response.data) : err.message;
-            alert(`Failed to save asset: ${msg}`);
+            toastError(err.message || 'Failed to save asset');
+        } finally {
+            setIsSubmitting(false);
         }
     };
     const handleEditAsset = (a: any) => { setAssetId(a.id); setAssetFormData({ ...a, hostel: String(a.hostel) }); setIsAssetModalOpen(true); };
-    const handleDeleteAsset = async (id: number) => { if (window.confirm('Delete this asset?')) { await hostelAPI.assets.delete(id); loadData(); } };
+    const handleDeleteAsset = async (id: number) => {
+        if (await confirm('Delete this asset?', { type: 'danger' })) {
+            try {
+                await hostelAPI.assets.delete(id);
+                success('Asset deleted');
+                loadData();
+            } catch (err: any) {
+                toastError(err.message || 'Failed to delete asset');
+            }
+        }
+    };
 
     const handleAttendanceSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSubmitting(true);
         try {
             const payload = { ...attendanceFormData, student: Number(attendanceFormData.student) };
             if (attendanceId) await hostelAPI.attendance.update(attendanceId, payload);
             else await hostelAPI.attendance.create(payload);
+            success(attendanceId ? 'Attendance updated.' : 'Attendance logged.');
             loadData(); setIsAttendanceModalOpen(false); setAttendanceId(null); setAttendanceFormData({ student: '', date: new Date().toISOString().split('T')[0], status: 'PRESENT', session: 'EVENING', remarks: '' });
-            alert(attendanceId ? 'Attendance updated.' : 'Attendance logged.');
-        } catch (err: any) { console.error(err); alert('Failed to save attendance.'); }
+        } catch (err: any) {
+            toastError(err.message || 'Failed to save attendance.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleBulkAttendanceSubmit = async () => {
@@ -331,16 +363,27 @@ const Hostels = () => {
         setBulkAttendanceData({});
 
         if (successCount === studentIds.length) {
-            alert(`Roll call complete. processed ${successCount}/${studentIds.length} students successfully.`);
+            success(`Roll call complete. Processed ${successCount}/${studentIds.length} students successfully.`);
         } else {
-            alert(`Roll call complete. Processed ${successCount}/${studentIds.length}.\n\nErrors potentially due to validation:\n${errors.slice(0, 3).join('\n')}${errors.length > 3 ? '\n...' : ''}`);
+            toastError(`Roll call complete. Processed ${successCount}/${studentIds.length}.\n\nErrors potentially due to validation:\n${errors.slice(0, 3).join('\n')}${errors.length > 3 ? '\n...' : ''}`);
         }
     };
     const handleEditAttendance = (a: any) => { setAttendanceId(a.id); setAttendanceFormData({ ...a, student: String(a.student) }); setAttendanceMode('SINGLE'); setIsAttendanceModalOpen(true); };
-    const handleDeleteAttendance = async (id: number) => { if (window.confirm('Delete attendance record?')) { await hostelAPI.attendance.delete(id); loadData(); } };
+    const handleDeleteAttendance = async (id: number) => {
+        if (await confirm('Delete attendance record?', { type: 'danger' })) {
+            try {
+                await hostelAPI.attendance.delete(id);
+                success('Record deleted');
+                loadData();
+            } catch (err: any) {
+                toastError(err.message || 'Failed to delete record');
+            }
+        }
+    };
 
     const handleDisciplineSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSubmitting(true);
         try {
             const payload = {
                 student: Number(disciplineFormData.student),
@@ -352,43 +395,66 @@ const Hostels = () => {
             };
             if (disciplineId) await hostelAPI.discipline.update(disciplineId, payload);
             else await hostelAPI.discipline.create(payload);
+            success(disciplineId ? 'Record updated.' : 'Discipline record added.');
             loadData(); setIsDisciplineModalOpen(false); setDisciplineId(null);
             setDisciplineFormData({ student: '', offence: '', description: '', date: new Date().toISOString().split('T')[0], action_taken: '', severity: 'MINOR' });
-            alert(disciplineId ? 'Record updated.' : 'Discipline record added.');
-        } catch (err: any) { console.error(err); alert('Failed to save discipline record.'); }
+        } catch (err: any) {
+            toastError(err.message || 'Failed to save discipline record.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
     const handleEditDiscipline = (d: any) => { setDisciplineId(d.id); setDisciplineFormData({ ...d, student: String(d.student) }); setIsDisciplineModalOpen(true); };
-    const handleDeleteDiscipline = async (id: number) => { if (window.confirm('Delete record?')) { await hostelAPI.discipline.delete(id); loadData(); } };
+    const handleDeleteDiscipline = async (id: number) => {
+        if (await confirm('Delete record?', { type: 'danger' })) {
+            try {
+                await hostelAPI.discipline.delete(id);
+                success('Record deleted');
+                loadData();
+            } catch (err: any) {
+                toastError(err.message || 'Failed to delete record');
+            }
+        }
+    };
 
     const handleMaintenanceSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSubmitting(true);
         try {
             const payload = { ...maintenanceFormData, hostel: Number(maintenanceFormData.hostel) };
-            // Ensure fields match backend expectations
             const backendPayload = {
                 hostel: payload.hostel,
                 room: payload.room ? Number(payload.room) : null,
                 issue: payload.issue,
                 repair_cost: payload.repair_cost,
                 status: payload.status,
-                date_reported: payload.date || new Date().toISOString().split('T')[0], // Map date to backend field
+                date_reported: payload.date || new Date().toISOString().split('T')[0],
                 reported_by: null
             };
 
             if (maintenanceId) await hostelAPI.maintenance.update(maintenanceId, backendPayload);
             else await hostelAPI.maintenance.create(backendPayload);
+            success(maintenanceId ? 'Request updated.' : 'Maintenance request logged.');
             loadData(); setIsMaintenanceModalOpen(false); setMaintenanceId(null);
             setMaintenanceFormData({ hostel: '', room: '', issue: '', repair_cost: 0, status: 'PENDING', date: new Date().toISOString().split('T')[0] });
-            alert(maintenanceId ? 'Request updated.' : 'Maintenance request logged.');
         } catch (err: any) {
-            console.error(err);
-            // Show specific error from backend if available
-            const msg = err.response?.data ? (typeof err.response.data === 'object' ? JSON.stringify(err.response.data) : err.response.data) : err.message;
-            alert(`Failed to save maintenance request: ${msg}`);
+            toastError(err.message || 'Failed to save maintenance request');
+        } finally {
+            setIsSubmitting(false);
         }
     };
     const handleEditMaintenance = (m: any) => { setMaintenanceId(m.id); setMaintenanceFormData({ ...m, hostel: String(m.hostel) }); setIsMaintenanceModalOpen(true); };
-    const handleDeleteMaintenance = async (id: number) => { if (window.confirm('Delete request?')) { await hostelAPI.maintenance.delete(id); loadData(); } };
+    const handleDeleteMaintenance = async (id: number) => {
+        if (await confirm('Delete request?', { type: 'danger' })) {
+            try {
+                await hostelAPI.maintenance.delete(id);
+                success('Request deleted');
+                loadData();
+            } catch (err: any) {
+                toastError(err.message || 'Failed to delete request');
+            }
+        }
+    };
 
     const openEditHostel = (h: any) => {
         setSelectedHostel(h);
@@ -423,8 +489,13 @@ const Hostels = () => {
 
 
 
-    // State for editing room
-    const [editingRoomId, setEditingRoomId] = useState<number | null>(null);
+    // State for viewing rooms
+    const [isViewRoomsModalOpen, setIsViewRoomsModalOpen] = useState(false);
+
+    const openViewRooms = (h: any) => {
+        setSelectedHostel(h);
+        setIsViewRoomsModalOpen(true);
+    };
 
     const openViewResidents = (h: any) => {
         setSelectedHostel(h);
@@ -438,20 +509,8 @@ const Hostels = () => {
     };
 
     const openAddRoom = (h: any) => {
-        setSelectedHostel(h);
-        setRoomFormData({ hostel: h.id.toString(), room_number: '', room_type: 'DORM', floor: 'Ground', capacity: 4 });
-        setIsRoomModalOpen(true);
-    };
-
-    const [isViewRoomsModalOpen, setIsViewRoomsModalOpen] = useState(false);
-
-    const openViewRooms = (h: any) => {
-        setSelectedHostel(h);
-        setIsViewRoomsModalOpen(true);
-    };
-
-    const openAddRoom = (h: any) => {
         setFilterHostel(h.id.toString());
+        setRoomFormData({ hostel: h.id.toString(), room_number: '', room_type: 'DORM', floor: 'Ground', capacity: 4 });
         setIsRoomModalOpen(true);
     };
 
@@ -475,8 +534,8 @@ const Hostels = () => {
                     <p className="text-secondary text-sm">Institutional residence logistics, safety, and inventory</p>
                 </div>
                 <div className="flex gap-md no-print">
-                    <button className="btn btn-outline" onClick={() => window.print()}><Printer size={18} /> Reports</button>
-                    <button className="btn btn-primary" onClick={() => setIsAllocationModalOpen(true)}><Plus size={18} /> New Admission</button>
+                    <Button variant="outline" onClick={() => window.print()} icon={<Printer size={18} />}>Reports</Button>
+                    <Button onClick={() => setIsAllocationModalOpen(true)} icon={<Plus size={18} />}>New Admission</Button>
                 </div>
             </div>
 
@@ -534,7 +593,7 @@ const Hostels = () => {
                             </div>
                             <div className="flex gap-2 mt-6 pt-4 border-top">
                                 <button className="btn btn-sm btn-outline flex-1 gap-1" onClick={() => openViewRooms(h)} title="View Rooms"><BedIcon size={14} /> Rooms</button>
-                                <button className="btn btn-sm btn-outline flex-1 gap-2" onClick={() => handleEditHostel(h)} title="Edit Details"><Edit size={14} /> Edit</button>
+                                <button className="btn btn-sm btn-outline flex-1 gap-2" onClick={() => openEditHostel(h)} title="Edit Details"><Edit size={14} /> Edit</button>
                                 <button className="btn btn-sm btn-outline flex-1 gap-2" onClick={() => openViewResidents(h)} title="View Residents"><Users size={14} /> Users</button>
                                 <button className="btn btn-sm btn-outline text-error" onClick={(e) => { e.stopPropagation(); handleDeleteHostel(h.id); }} title="Delete Hostel"><Trash2 size={14} /></button>
 
@@ -818,7 +877,16 @@ const Hostels = () => {
                             </select>
                         </div>
                     </div>
-                    <div className="modal-footer"><button type="submit" className="btn btn-primary w-full">{hostelId ? "Update Hostel" : "Create Hostel"}</button></div>
+                    <div className="modal-footer">
+                        <Button
+                            type="submit"
+                            className="w-full"
+                            loading={isSubmitting}
+                            loadingText={hostelId ? "Updating..." : "Creating..."}
+                        >
+                            {hostelId ? "Update Hostel" : "Create Hostel"}
+                        </Button>
+                    </div>
                 </form>
             </Modal>
 
@@ -838,14 +906,23 @@ const Hostels = () => {
                         <div className="form-group"><label className="label">Type</label><select className="select" value={roomFormData.room_type} onChange={e => setRoomFormData({ ...roomFormData, room_type: e.target.value })}><option value="DORM">Dormitory</option><option value="CUBICLE">Cubicle</option><option value="SINGLE">Single</option></select></div>
                         <div className="form-group"><label className="label">Capacity</label><input type="number" className="input" value={roomFormData.capacity} onChange={e => setRoomFormData({ ...roomFormData, capacity: parseInt(e.target.value) })} required /></div>
                     </div>
-                    <div className="modal-footer"><button type="submit" className="btn btn-primary w-full">{roomId ? "Update Room" : "Add Room"}</button></div>
+                    <div className="modal-footer">
+                        <Button
+                            type="submit"
+                            className="w-full"
+                            loading={isSubmitting}
+                            loadingText={roomId ? "Updating..." : "Adding..."}
+                        >
+                            {roomId ? "Update Room" : "Add Room"}
+                        </Button>
+                    </div>
                 </form>
             </Modal>
 
             <Modal isOpen={isAllocationModalOpen} onClose={() => setIsAllocationModalOpen(false)} title={isTransferMode ? "Transfer Student" : allocationId ? "Edit Allocation" : "Assign Student"}>
                 <form onSubmit={handleAllocationSubmit} className="space-y-4">
                     {!isTransferMode && (
-                        <SearchableSelect label="Select Student" options={students.map(s => ({ id: String(s.id), label: s.full_name, subLabel: s.admission_number }))} value={String(allocationFormData.student)} onChange={(val) => setAllocationFormData({ ...allocationFormData, student: val })} required />
+                        <SearchableSelect label="Select Student" options={students.map(s => ({ id: String(s.id), label: s.full_name, subLabel: s.admission_number }))} value={String(allocationFormData.student || '')} onChange={(val) => setAllocationFormData({ ...allocationFormData, student: val })} required />
                     )}
                     {isTransferMode && (
                         <div className="bg-primary-light p-3 rounded mb-4 text-primary font-bold">
@@ -884,7 +961,16 @@ const Hostels = () => {
                             </select>
                         </div>
                     </div>
-                    <div className="modal-footer"><button type="submit" className="btn btn-primary w-full">{isTransferMode ? "Confirm Transfer" : allocationId ? "Update Allocation" : "Assign Student"}</button></div>
+                    <div className="modal-footer">
+                        <Button
+                            type="submit"
+                            className="w-full"
+                            loading={isSubmitting}
+                            loadingText={isTransferMode ? "Transferring..." : "Saving..."}
+                        >
+                            {isTransferMode ? "Confirm Transfer" : allocationId ? "Update Allocation" : "Assign Student"}
+                        </Button>
+                    </div>
                 </form>
             </Modal>
 
@@ -913,7 +999,16 @@ const Hostels = () => {
                         <div className="form-group"><label className="label">Quantity</label><input type="number" className="input" value={assetFormData.quantity} onChange={e => setAssetFormData({ ...assetFormData, quantity: parseInt(e.target.value) })} min="1" required /></div>
                         <div className="form-group"><label className="label">Value (KES)</label><input type="number" className="input" value={assetFormData.value} onChange={e => setAssetFormData({ ...assetFormData, value: parseFloat(e.target.value) })} /></div>
                     </div>
-                    <div className="modal-footer"><button type="submit" className="btn btn-primary w-full">{assetId ? "Update Asset" : "Add Asset"}</button></div>
+                    <div className="modal-footer">
+                        <Button
+                            type="submit"
+                            className="w-full"
+                            loading={isSubmitting}
+                            loadingText={assetId ? "Updating..." : "Adding..."}
+                        >
+                            {assetId ? "Update Asset" : "Add Asset"}
+                        </Button>
+                    </div>
                 </form>
             </Modal>
 
@@ -925,7 +1020,7 @@ const Hostels = () => {
 
                 {attendanceMode === 'SINGLE' ? (
                     <form onSubmit={handleAttendanceSubmit} className="space-y-4">
-                        <SearchableSelect label="Student" options={students.map(s => ({ id: String(s.id), label: s.full_name, subLabel: s.admission_number }))} value={String(attendanceFormData.student)} onChange={(val) => setAttendanceFormData({ ...attendanceFormData, student: val })} required />
+                        <SearchableSelect label="Student" options={students.map(s => ({ id: String(s.id), label: s.full_name, subLabel: s.admission_number }))} value={String(attendanceFormData.student || '')} onChange={(val) => setAttendanceFormData({ ...attendanceFormData, student: val })} required />
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="form-group"><label className="label">Date</label><input type="date" className="input" value={attendanceFormData.date} onChange={e => setAttendanceFormData({ ...attendanceFormData, date: e.target.value })} required /></div>
@@ -935,7 +1030,16 @@ const Hostels = () => {
                             <div className="form-group"><label className="label">Status</label><select className="select" value={attendanceFormData.status} onChange={e => setAttendanceFormData({ ...attendanceFormData, status: e.target.value })}><option value="PRESENT">Present</option><option value="ABSENT">Absent</option><option value="PERMITTED">Permitted</option></select></div>
                             <div className="form-group"><label className="label">Remarks</label><input type="text" className="input" value={attendanceFormData.remarks} onChange={e => setAttendanceFormData({ ...attendanceFormData, remarks: e.target.value })} /></div>
                         </div>
-                        <div className="modal-footer"><button type="submit" className="btn btn-primary w-full">{attendanceId ? "Update Attendance" : "Log Attendance"}</button></div>
+                        <div className="modal-footer">
+                            <Button
+                                type="submit"
+                                className="w-full"
+                                loading={isSubmitting}
+                                loadingText={attendanceId ? "Updating..." : "Logging..."}
+                            >
+                                {attendanceId ? "Update Attendance" : "Log Attendance"}
+                            </Button>
+                        </div>
                     </form>
                 ) : (
                     <div className="space-y-4">
@@ -1034,14 +1138,25 @@ const Hostels = () => {
                                 </table>
                             </div>
                         )}
-                        <div className="modal-footer"><button type="button" className="btn btn-primary w-full" onClick={handleBulkAttendanceSubmit} disabled={!bulkAttendanceRoom}>Submit Roll Call ({Object.keys(bulkAttendanceData).length})</button></div>
+                        <div className="modal-footer">
+                            <Button
+                                type="button"
+                                className="w-full"
+                                onClick={handleBulkAttendanceSubmit}
+                                disabled={!bulkAttendanceRoom}
+                                loading={isSubmitting}
+                                loadingText="Saving Roll Call..."
+                            >
+                                Submit Roll Call ({Object.keys(bulkAttendanceData).length})
+                            </Button>
+                        </div>
                     </div>
                 )}
             </Modal>
 
             <Modal isOpen={isDisciplineModalOpen} onClose={() => setIsDisciplineModalOpen(false)} title={disciplineId ? "Edit Discipline Record" : "Report Incident"}>
                 <form onSubmit={handleDisciplineSubmit} className="space-y-4">
-                    <SearchableSelect label="Student" options={students.map(s => ({ id: String(s.id), label: s.full_name, subLabel: s.admission_number }))} value={String(disciplineFormData.student)} onChange={(val) => setDisciplineFormData({ ...disciplineFormData, student: val })} required />
+                    <SearchableSelect label="Student" options={students.map(s => ({ id: String(s.id), label: s.full_name, subLabel: s.admission_number }))} value={String(disciplineFormData.student || '')} onChange={(val) => setDisciplineFormData({ ...disciplineFormData, student: val })} required />
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group"><label className="label">Date</label><input type="date" className="input" value={disciplineFormData.date} onChange={e => setDisciplineFormData({ ...disciplineFormData, date: e.target.value })} required /></div>
@@ -1050,7 +1165,17 @@ const Hostels = () => {
                     <div className="form-group"><label className="label">Offence</label><input type="text" className="input" value={disciplineFormData.offence} onChange={e => setDisciplineFormData({ ...disciplineFormData, offence: e.target.value })} required placeholder="e.g. Late coming" /></div>
                     <div className="form-group"><label className="label">Description</label><textarea className="input" rows={2} value={disciplineFormData.description} onChange={e => setDisciplineFormData({ ...disciplineFormData, description: e.target.value })} required placeholder="Details of what happened..." /></div>
                     <div className="form-group"><label className="label">Action Taken</label><input type="text" className="input" value={disciplineFormData.action_taken} onChange={e => setDisciplineFormData({ ...disciplineFormData, action_taken: e.target.value })} required /></div>
-                    <div className="modal-footer"><button type="submit" className="btn btn-error w-full text-white">{disciplineId ? "Update Record" : "Report Incident"}</button></div>
+                    <div className="modal-footer">
+                        <Button
+                            type="submit"
+                            variant="danger"
+                            className="w-full text-white"
+                            loading={isSubmitting}
+                            loadingText="Reporting..."
+                        >
+                            {disciplineId ? "Update Record" : "Report Incident"}
+                        </Button>
+                    </div>
                 </form>
             </Modal>
 
@@ -1076,7 +1201,16 @@ const Hostels = () => {
                     </div>
                     <div className="form-group"><label className="label">Description</label><textarea className="input" rows={3} value={maintenanceFormData.issue} onChange={e => setMaintenanceFormData({ ...maintenanceFormData, issue: e.target.value })} required placeholder="Describe the maintenance issue..."></textarea></div>
                     <div className="form-group"><label className="label">Status</label><select className="select" value={maintenanceFormData.status} onChange={e => setMaintenanceFormData({ ...maintenanceFormData, status: e.target.value })}><option value="PENDING">Pending</option><option value="IN_PROGRESS">In Progress</option><option value="COMPLETED">Completed</option></select></div>
-                    <div className="modal-footer"><button type="submit" className="btn btn-warning w-full text-white">{maintenanceId ? "Update Request" : "Log Request"}</button></div>
+                    <div className="modal-footer">
+                        <Button
+                            type="submit"
+                            className="w-full bg-amber-600 text-white hover:bg-amber-700"
+                            loading={isSubmitting}
+                            loadingText="Saving..."
+                        >
+                            {maintenanceId ? "Update Request" : "Log Request"}
+                        </Button>
+                    </div>
                 </form>
             </Modal>
 
@@ -1085,7 +1219,7 @@ const Hostels = () => {
                 <div className="p-1">
                     <div className="flex justify-between items-center mb-4 p-2 bg-secondary-light rounded-lg">
                         <p className="mb-0 text-sm font-bold">Total Rooms: {rooms.filter(r => r.hostel === selectedHostel?.id).length}</p>
-                        <button className="btn btn-sm btn-primary" onClick={() => { setIsViewRoomsModalOpen(false); startAddRoom(selectedHostel); }}>+ Add Room</button>
+                        <Button variant="primary" size="sm" onClick={() => { setIsViewRoomsModalOpen(false); openAddRoom(selectedHostel); }}>+ Add Room</Button>
                     </div>
                     {rooms.filter(r => r.hostel === selectedHostel?.id).length === 0 ? (
                         <p className="text-secondary text-center p-4 italic">No rooms configured.</p>

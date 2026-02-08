@@ -10,12 +10,15 @@ import { useSelector } from 'react-redux';
 import Modal from '../components/Modal';
 import { StatCard } from '../components/Card';
 import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
 import { exportToCSV } from '../utils/export';
+import Button from '../components/common/Button';
 
 const Students = () => {
     const navigate = useNavigate();
     const { user } = useSelector((state: any) => state.auth);
     const { success, error: errorToast, warning, info } = useToast();
+    const { confirm } = useConfirm();
     const [students, setStudents] = useState<any[]>([]);
     const [classes, setClasses] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -161,7 +164,7 @@ const Students = () => {
     };
 
     const deleteStudent = async (id: number) => {
-        if (!confirm('Are you sure you want to permanently delete this student? This action cannot be undone.')) return;
+        if (!await confirm('Are you sure you want to permanently delete this student? This action cannot be undone.', { type: 'danger' })) return;
         try {
             await studentsAPI.delete(id);
             success('Student deleted successfully.');
@@ -276,7 +279,7 @@ const Students = () => {
                                     if (s.user) {
                                         info(`User Account Active: ${s.user}`);
                                     } else {
-                                        if (confirm(`Generate User Account for ${s.full_name}?`)) {
+                                        if (await confirm(`Generate User Account for ${s.full_name}?`)) {
                                             try { await studentsAPI.linkUser(s.id); success('User generated successfully'); loadData(); }
                                             catch (e) { errorToast('Linking failed'); }
                                         }
@@ -316,23 +319,23 @@ const Students = () => {
                     <p className="text-secondary font-bold uppercase text-xs tracking-widest">SIS Management | Enrollment: {students.length}</p>
                 </div>
                 <div className="flex gap-md">
-                    <button className="btn btn-outline" onClick={() => exportToCSV(students, 'student_registry')}>
-                        <Download size={16} /> Export CSV
-                    </button>
-                    <button
-                        className="btn btn-outline"
+                    <Button variant="outline" onClick={() => exportToCSV(students, 'student_registry')} icon={<Download size={16} />}>
+                        Export CSV
+                    </Button>
+                    <Button
+                        variant="outline"
                         onClick={() => {
-                            // Ensure title is set for PDF export
                             document.title = "Student_Registry_Report";
                             window.print();
                         }}
+                        icon={<Printer size={16} />}
                     >
-                        <Printer size={16} /> PDF Registry
-                    </button>
+                        PDF Registry
+                    </Button>
                     {(user?.role === 'ADMIN' || user?.role === 'REGISTRAR') && (
-                        <button className="btn btn-primary font-black shadow-lg" onClick={() => openModal()}>
-                            <Plus size={16} /> NEW ADMISSION
-                        </button>
+                        <Button onClick={() => openModal()} icon={<Plus size={16} />}>
+                            NEW ADMISSION
+                        </Button>
                     )}
                 </div>
             </div>
@@ -498,10 +501,15 @@ const Students = () => {
                     </div>
 
                     <div className="modal-footer mt-8 pt-6 border-top flex justify-end gap-md">
-                        <button type="button" className="btn btn-outline" onClick={closeModal}>Cancel</button>
-                        <button type="submit" className="btn btn-primary px-8 font-black shadow-lg" disabled={isSubmitting}>
-                            {isSubmitting ? 'ADMITTING...' : (editingStudent ? 'UPDATE RECORD' : 'COMPLETE ADMISSION')}
-                        </button>
+                        <Button variant="outline" type="button" onClick={closeModal}>Cancel</Button>
+                        <Button
+                            type="submit"
+                            className="px-8 font-black shadow-lg"
+                            loading={isSubmitting}
+                            loadingText={editingStudent ? "UPDATING..." : "ADMITTING..."}
+                        >
+                            {editingStudent ? 'UPDATE RECORD' : 'COMPLETE ADMISSION'}
+                        </Button>
                     </div>
                 </form>
             </Modal>
