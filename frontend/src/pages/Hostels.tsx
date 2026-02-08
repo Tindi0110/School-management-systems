@@ -3,7 +3,7 @@ import {
     Plus, Building, Edit, Trash2,
     Building as BuildingIcon, Users as UsersIcon, Printer,
     Package, Wrench, Bed as BedIcon,
-    Users, Layout, ShieldAlert, Clock
+    Layout
 } from 'lucide-react';
 import { hostelAPI, studentsAPI, staffAPI } from '../api/api';
 import { exportToCSV } from '../utils/export';
@@ -62,8 +62,8 @@ const Hostels = () => {
     const [isTransferMode, setIsTransferMode] = useState(false); // New State
     const [allocationSort, setAllocationSort] = useState<'HOSTEL' | 'ROOM' | 'STATUS'>('HOSTEL'); // New State
     const [attendanceSort, setAttendanceSort] = useState<'DATE' | 'HOSTEL' | 'SESSION'>('DATE'); // New State
-    const [assetFormData, setAssetFormData] = useState({ asset_code: '', asset_type: 'FURNITURE', type: 'FURNITURE', condition: 'GOOD', value: 0, quantity: 1, hostel: '', room: '' });
-    const [attendanceFormData, setAttendanceFormData] = useState({ student: '', date: new Date().toISOString().split('T')[0], status: 'PRESENT', session: 'EVENING', remarks: '' });
+    const [assetFormData, setAssetFormData] = useState<any>({ asset_code: '', asset_type: 'FURNITURE', type: 'FURNITURE', condition: 'GOOD', value: 0, quantity: 1, hostel: '', room: '' });
+    const [attendanceFormData, setAttendanceFormData] = useState<any>({ student: '', date: new Date().toISOString().split('T')[0], status: 'PRESENT', session: 'EVENING', remarks: '' });
     const [assetSort, setAssetSort] = useState({ field: 'asset_code', direction: 'asc' });
     const [disciplineFormData, setDisciplineFormData] = useState({ student: '', offence: '', description: '', date: new Date().toISOString().split('T')[0], action_taken: '', severity: 'MINOR' });
     const [maintenanceFormData, setMaintenanceFormData] = useState({ hostel: '', room: '', issue: '', repair_cost: 0, status: 'PENDING', date: new Date().toISOString().split('T')[0] });
@@ -922,7 +922,7 @@ const Hostels = () => {
             <Modal isOpen={isAllocationModalOpen} onClose={() => setIsAllocationModalOpen(false)} title={isTransferMode ? "Transfer Student" : allocationId ? "Edit Allocation" : "Assign Student"}>
                 <form onSubmit={handleAllocationSubmit} className="space-y-4">
                     {!isTransferMode && (
-                        <SearchableSelect label="Select Student" options={students.map(s => ({ id: String(s.id), label: s.full_name, subLabel: s.admission_number }))} value={String(allocationFormData.student || '')} onChange={(val) => setAllocationFormData({ ...allocationFormData, student: val })} required />
+                        <SearchableSelect label="Select Student" options={students.map(s => ({ id: String(s.id), label: s.full_name, subLabel: s.admission_number }))} value={String(allocationFormData.student || '')} onChange={(val) => setAllocationFormData({ ...allocationFormData, student: val.toString() })} required />
                     )}
                     {isTransferMode && (
                         <div className="bg-primary-light p-3 rounded mb-4 text-primary font-bold">

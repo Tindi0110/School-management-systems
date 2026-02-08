@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
-    Plus, Search, Edit, Trash2, BookOpen, User as UserIcon,
-    Calendar, CheckCircle, Book, Layers, ShieldAlert, Clock,
+    Plus, Edit, Trash2, BookOpen,
+    Book, Layers, ShieldAlert,
     Printer, Download, ArrowRight, Bookmark, Archive, Receipt
 } from 'lucide-react';
 import { libraryAPI, studentsAPI } from '../api/api';

@@ -100,8 +100,8 @@ const StudentProfile = () => {
                 blood_group: studentRes.data.health_record?.blood_group || '',
                 allergies: studentRes.data.health_record?.allergies || '',
                 chronic_conditions: studentRes.data.health_record?.chronic_conditions || '',
-                emergency_contact_name: studentRes.data.health_record?.emergency_contact_name || studentRes.data.guardian_name,
-                emergency_contact_phone: studentRes.data.health_record?.emergency_contact_phone || studentRes.data.guardian_phone,
+                emergency_contact_name: studentRes.data.health_record?.emergency_contact_name || studentRes.data.guardian_name || '',
+                emergency_contact_phone: studentRes.data.health_record?.emergency_contact_phone || studentRes.data.guardian_phone || '',
                 student: Number(id)
             });
             setHealthId(studentRes.data.health_record?.id || null);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-    Plus, Search, Edit, Trash2, Users,
+    Plus, Edit, Trash2, Users,
     School, Calendar, ClipboardCheck, BarChart3, FileText,
     Settings, CheckCircle2, TrendingUp, Book, Layers, Trophy, Printer, Square, CheckSquare
 } from 'lucide-react';
@@ -18,7 +18,7 @@ const Academics = () => {
     const [activeTab, setActiveTab] = useState<'SUMMARY' | 'CLASSES' | 'CURRICULUM' | 'EXAMS' | 'GRADING' | 'ATTENDANCE' | 'RESOURCES' | 'ALLOCATION'>('SUMMARY');
     const [loading, setLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const { success, error: toastError, warning } = useToast();
+    const { success, error: toastError } = useToast();
     const { confirm } = useConfirm();
 
 
