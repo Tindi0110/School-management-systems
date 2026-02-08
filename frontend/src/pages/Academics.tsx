@@ -312,8 +312,6 @@ const Academics = () => {
         try { await academicsAPI.terms.create(termForm); loadAllAcademicData(); setIsTermModalOpen(false); } catch (err) { alert('Failed to save term'); }
     };
     const [editingSubjectId, setEditingSubjectId] = useState<number | null>(null);
-
-    // const { success, error, info } = useToast();
     const [editingClassId, setEditingClassId] = useState<number | null>(null);
 
     const handleSubjectSubmit = async (e: React.FormEvent) => {
