@@ -1,0 +1,37 @@
+services:
+  # Backend Web Service
+  - type: web
+    name: sms-backend
+    env: python
+    buildCommand: ./build.sh
+    startCommand: gunicorn sms.wsgi:application
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: sms-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: "*"
+      - key: CORS_ALLOWED_ORIGINS
+        value: "http://localhost:5173" # Update after frontend deploy
+
+  # Frontend Static Site
+  - type: web
+    name: sms-frontend
+    env: static
+    buildCommand: npm run build
+    staticPublishDir: dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        fromService:
+          name: sms-backend
+          type: web
+          property: url
+
+databases:
+  - name: sms-db
+    plan: free # Change to starter for production

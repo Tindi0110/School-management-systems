@@ -54,6 +54,7 @@ export const studentsAPI = {
   getOne: (id: number) => api.get(`/students/${id}/`),
   create: (data: any) => api.post('/students/', data),
   update: (id: number, data: any) => api.put(`/students/${id}/`, data),
+  patch: (id: number, data: any) => api.patch(`/students/${id}/`, data),
   delete: (id: number) => api.delete(`/students/${id}/`),
   forceDelete: (id: number) => api.delete(`/students/${id}/force_delete/`),
   linkUser: (id: number) => api.post(`/students/${id}/link_user/`),
@@ -62,6 +63,8 @@ export const studentsAPI = {
   parents: {
     getAll: () => api.get('/parents/'),
     create: (data: any) => api.post('/parents/', data),
+    update: (id: number, data: any) => api.put(`/parents/${id}/`, data),
+    delete: (id: number) => api.delete(`/parents/${id}/`),
     getForStudent: (studentId: number) => api.get(`/parents/?student_id=${studentId}`),
   },
   admissions: {
@@ -141,6 +144,7 @@ export const academicsAPI = {
   gradeSystems: {
     getAll: () => api.get('/grade-systems/'),
     create: (data: any) => api.post('/grade-systems/', data),
+    update: (id: number, data: any) => api.put(`/grade-systems/${id}/`, data),
     delete: (id: number) => api.delete(`/grade-systems/${id}/`),
   },
   gradeBoundaries: {
@@ -165,11 +169,14 @@ export const academicsAPI = {
   attendance: {
     getAll: () => api.get('/attendance/'),
     create: (data: any) => api.post('/attendance/', data),
+    update: (id: number, data: any) => api.put(`/attendance/${id}/`, data),
     delete: (id: number) => api.delete(`/attendance/${id}/`),
   },
   resources: {
     getAll: () => api.get('/learning-resources/'),
     create: (data: any) => api.post('/learning-resources/', data),
+    update: (id: number, data: any) => api.put(`/learning-resources/${id}/`, data),
+    delete: (id: number) => api.delete(`/learning-resources/${id}/`),
   },
   alerts: {
     getAll: () => api.get('/alerts/'),

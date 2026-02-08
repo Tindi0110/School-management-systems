@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-    Plus, Search, Edit, Trash2, GraduationCap, Phone, User as UserIcon,
-    UserCheck, ShieldAlert, Archive, MapPin, CreditCard, Printer,
-    TrendingUp, Download
+    Plus, Search, Edit, Trash2, User as UserIcon,
+    UserCheck, MapPin, Printer, TrendingUp, Download
 } from 'lucide-react';
 import { studentsAPI, academicsAPI, hostelAPI } from '../api/api';
 import { useSelector } from 'react-redux';
@@ -60,7 +59,7 @@ const Students = () => {
             setStudents(studentsRes.data);
             setClasses(classesRes.data);
         } catch (error) {
-            console.error('Error loading data:', error);
+            // Error handled by Toast in some cases or just silent
         } finally {
             setLoading(false);
         }
@@ -138,7 +137,7 @@ const Students = () => {
                             warning('No vacant beds found.');
                         }
                     } catch (hErr) {
-                        console.error('Hostel assignment failed:', hErr);
+                        // Silent fail for auto-hostel
                     }
                 }
             }
@@ -153,7 +152,6 @@ const Students = () => {
             }
 
         } catch (error: any) {
-            console.error('Submission error:', error);
             const errorMsg = error.response?.data
                 ? JSON.stringify(error.response.data).replace(/[\{\}\"\[\]]/g, ' ').trim()
                 : 'Failed to save record.';
@@ -170,7 +168,6 @@ const Students = () => {
             success('Student deleted successfully.');
             loadData();
         } catch (error: any) {
-            console.error('Delete failed:', error);
             errorToast('Failed to delete student. They may have linked records (fees, exams).');
         }
     };

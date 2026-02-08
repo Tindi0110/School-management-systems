@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Calendar, Plus, Trash2, Edit, Clock, User, Book } from 'lucide-react';
-import { useToast } from '../context/ToastContext'; // Assuming this exists or we use alert
+import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
 import { timetableAPI, classesAPI, subjectsAPI, staffAPI } from '../api/api';
 import Modal from '../components/Modal';
+import Button from '../components/common/Button';
 
 const Timetable = () => {
     const [slots, setSlots] = useState<any[]>([]);
@@ -10,7 +12,10 @@ const Timetable = () => {
     const [subjects, setSubjects] = useState<any[]>([]);
     const [staff, setStaff] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [selectedClass, setSelectedClass] = useState<string>('');
+    const toast = useToast();
+    const { confirm } = useConfirm();
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingSlot, setEditingSlot] = useState<any>(null);
@@ -79,29 +84,36 @@ const Timetable = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSubmitting(true);
         try {
             const payload = { ...slotForm, class_assigned: selectedClass };
             if (editingSlot) {
                 await timetableAPI.update(editingSlot.id, payload);
+                toast.success('Timetable slot updated!');
             } else {
                 await timetableAPI.create(payload);
+                toast.success('Timetable slot added!');
             }
             setIsModalOpen(false);
             setEditingSlot(null);
             loadTimetable(selectedClass);
-            alert('Timetable updated!');
         } catch (error: any) {
-            alert('Failed to save slot: ' + (error.response?.data?.detail || error.message));
+            console.error(error);
+            toast.error(error.response?.data?.detail || error.message || 'Failed to save slot');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
     const handleDelete = async (id: number) => {
-        if (!confirm('Remove this slot?')) return;
-        try {
-            await timetableAPI.delete(id);
-            loadTimetable(selectedClass);
-        } catch (error) {
-            alert('Failed to delete slot');
+        if (await confirm('Are you sure you want to remove this schedule slot?')) {
+            try {
+                await timetableAPI.delete(id);
+                toast.success('Slot removed successfully');
+                loadTimetable(selectedClass);
+            } catch (error) {
+                toast.error('Failed to delete slot');
+            }
         }
     };
 
@@ -148,9 +160,9 @@ const Timetable = () => {
                         <option value="">Select Class...</option>
                         {classes.map(c => <option key={c.id} value={c.id}>{c.name} {c.stream}</option>)}
                     </select>
-                    <button className="btn btn-primary" onClick={() => openModal()} disabled={!selectedClass}>
-                        <Plus size={18} /> Add Slot
-                    </button>
+                    <Button variant="primary" onClick={() => openModal()} disabled={!selectedClass} icon={<Plus size={18} />}>
+                        Add Slot
+                    </Button>
                 </div>
             </div>
 
@@ -171,8 +183,8 @@ const Timetable = () => {
                                                     {slot.start_time.slice(0, 5)} - {slot.end_time.slice(0, 5)}
                                                 </span>
                                                 <div className="hidden group-hover:flex gap-1 absolute top-2 right-2 bg-white pl-2">
-                                                    <button className="text-primary hover:text-blue-700" onClick={() => openModal(slot)}><Edit size={12} /></button>
-                                                    <button className="text-error hover:text-red-700" onClick={() => handleDelete(slot.id)}><Trash2 size={12} /></button>
+                                                    <Button variant="ghost" size="sm" className="p-1 h-auto text-primary" onClick={() => openModal(slot)} icon={<Edit size={12} />} />
+                                                    <Button variant="ghost" size="sm" className="p-1 h-auto text-error" onClick={() => handleDelete(slot.id)} icon={<Trash2 size={12} />} />
                                                 </div>
                                             </div>
                                             <p className="font-black text-sm mb-0.5">{slot.subject_name}</p>
@@ -232,7 +244,9 @@ const Timetable = () => {
                     </div>
 
                     <div className="modal-footer">
-                        <button type="submit" className="btn btn-primary w-full font-black uppercase">Save to Schedule</button>
+                        <Button type="submit" variant="primary" className="w-full font-black uppercase" loading={isSubmitting} loadingText="Saving...">
+                            Save to Schedule
+                        </Button>
                     </div>
                 </form>
             </Modal>

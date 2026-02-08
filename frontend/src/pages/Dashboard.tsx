@@ -113,7 +113,7 @@ const Dashboard = () => {
                 const yearsData = yearsRes.data.results || yearsRes.data || [];
                 const termsData = termsRes.data.results || termsRes.data || [];
 
-                console.log("Dashboard Active Year Debug:", { yearsData, termsData });
+                const termsData = termsRes.data.results || termsRes.data || [];
 
                 // 1. Try to find explicitly active year
                 let activeY = yearsData.find((y: any) => y.is_active === true)?.name;
@@ -134,12 +134,12 @@ const Dashboard = () => {
                 const activeT = termsData.find((t: any) => t.is_active === true)?.name || 'NO ACTIVE TERM';
                 setActiveAcademic({ year: activeY, term: activeT });
             } catch (err) {
-                console.error("Failed to load academic cycles", err);
+                // Silent
             }
 
 
         } catch (error) {
-            console.error('Error loading dashboard data:', error);
+            // Dashboard error
         } finally {
             setLoading(false);
         }

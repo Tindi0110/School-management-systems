@@ -8,6 +8,9 @@ import { libraryAPI, studentsAPI } from '../api/api';
 import { exportToCSV } from '../utils/export';
 import Modal from '../components/Modal';
 import SearchableSelect from '../components/SearchableSelect';
+import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
+import Button from '../components/common/Button';
 
 const Library = () => {
     const [activeTab, setActiveTab] = useState('catalog');
@@ -18,6 +21,8 @@ const Library = () => {
     const [students, setStudents] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const toast = useToast();
+    const { confirm } = useConfirm();
 
     const userString = localStorage.getItem('user');
     const user = userString ? JSON.parse(userString) : null;
@@ -92,15 +97,14 @@ const Library = () => {
         e.preventDefault();
         e.stopPropagation();
 
-        // Delete requested
-
-        if (window.confirm(confirmMsg)) {
+        if (await confirm(confirmMsg)) {
             try {
                 await apiCall(id);
+                toast.success('Deleted successfully');
                 await refreshFn();
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Delete failed:', error);
-                alert('Delete failed. Please check console for details.');
+                toast.error(error.response?.data?.detail || 'Delete failed.');
             }
         }
     };
@@ -139,11 +143,11 @@ const Library = () => {
             setIsBookModalOpen(false);
             setBookId(null);
             setBookForm({ title: '', author: '', isbn: '', category: '', year: new Date().getFullYear(), initial_copies: 0 } as any);
-            alert('Book saved successfully.');
+            toast.success('Book saved successfully.');
         } catch (err: any) {
             console.error(err);
             const msg = err.response?.data?.isbn ? `ISBN Error: ${err.response.data.isbn}` : (err.response?.data?.detail || 'Failed to save book.');
-            alert(msg);
+            toast.error(msg);
         }
         finally { setIsSubmitting(false); }
     };
@@ -166,8 +170,8 @@ const Library = () => {
             setIsCopyModalOpen(false);
             setCopyId(null);
             setCopyForm({ book: '', copy_number: '', condition: 'NEW', status: 'AVAILABLE', purchase_date: new Date().toISOString().split('T')[0] });
-            alert('Inventory updated.');
-        } catch (err) { console.error(err); alert('Failed to save copy.'); }
+            toast.success('Inventory updated.');
+        } catch (err) { console.error(err); toast.error('Failed to save copy.'); }
         finally { setIsSubmitting(false); }
     };
     const handleEditCopy = (c: any) => { setCopyId(c.id); setCopyForm({ ...c, book: String(c.book) }); setIsCopyModalOpen(true); };
@@ -175,15 +179,15 @@ const Library = () => {
     // Lendings
     const handleLendSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!lendingForm.copy || !lendingForm.student) { alert('Select copy and student.'); return; }
+        if (!lendingForm.copy || !lendingForm.student) { toast.error('Select copy and student.'); return; }
 
         const selectedStudent = students.find(s => s.id === Number(lendingForm.student));
-        if (!selectedStudent) { alert('Invalid student selected.'); return; }
+        if (!selectedStudent) { toast.error('Invalid student selected.'); return; }
 
         const userId = selectedStudent.user || selectedStudent.student_user_id;
 
         if (!userId) {
-            alert(`Student ${selectedStudent.full_name} needs a linked User Account to borrow books.`);
+            toast.error(`Student ${selectedStudent.full_name} needs a linked User Account to borrow books.`);
             return;
         }
 
@@ -200,7 +204,7 @@ const Library = () => {
 
             // Optimistic Success: Alert & Close immediately
             const bookTitle = books.find(b => b.id === Number(copies.find(c => c.id === Number(lendingForm.copy))?.book))?.title;
-            alert(`Success: "${bookTitle}" issued to ${selectedStudent.full_name}. Due by ${lendingForm.due_date}`);
+            toast.success(`"${bookTitle}" issued to ${selectedStudent.full_name}. Due by ${lendingForm.due_date}`);
 
             setIsLendModalOpen(false);
             setLendingId(null);
@@ -212,7 +216,7 @@ const Library = () => {
         } catch (err: any) {
             console.error(err);
             const msg = err.response?.data?.detail || 'Failed to issue book.';
-            alert(`Error: ${msg}`);
+            toast.error(`Error: ${msg}`);
         } finally {
             setIsSubmitting(false);
         }
@@ -238,7 +242,7 @@ const Library = () => {
             else await libraryAPI.fines.create(payload);
 
             // Optimistic Success
-            alert('Fine recorded.');
+            toast.success('Fine recorded.');
             setIsFineModalOpen(false);
             setFineId(null);
             setFineForm({ student: '', amount: 0, reason: '', status: 'PENDING', date_issued: new Date().toISOString().split('T')[0], fine_type: 'LATE' });
@@ -247,7 +251,7 @@ const Library = () => {
             loadFines();
         } catch (err: any) {
             console.error(err);
-            alert('Failed to save fine.');
+            toast.error('Failed to save fine.');
         } finally {
             setIsSubmitting(false);
         }
@@ -284,10 +288,10 @@ const Library = () => {
                     <p className="text-secondary text-sm">Resource archiving, circulation, and digital tracking</p>
                 </div>
                 <div className="flex gap-md no-print">
-                    <button className="btn btn-outline" onClick={() => exportToCSV(books, 'Library_Catalog')}><Download size={18} /> Export CSV</button>
-                    <button className="btn btn-outline" onClick={() => window.print()}><Printer size={18} /> Catalog Report</button>
+                    <Button variant="outline" onClick={() => exportToCSV(books, 'Library_Catalog')} icon={<Download size={18} />}>Export CSV</Button>
+                    <Button variant="outline" onClick={() => window.print()} icon={<Printer size={18} />}>Catalog Report</Button>
                     {!isReadOnly && (
-                        <button className="btn btn-primary" onClick={() => setIsLendModalOpen(true)}><BookOpen size={18} /> Process Lending</button>
+                        <Button variant="primary" onClick={() => setIsLendModalOpen(true)} icon={<BookOpen size={18} />}>Process Lending</Button>
                     )}
                 </div>
             </div>
@@ -318,12 +322,12 @@ const Library = () => {
                 <button className={`tab-link ${activeTab === 'copies' ? 'active' : ''}`} onClick={() => setActiveTab('copies')}><Layers size={16} /> Inventory (Copies)</button>
                 <button className={`tab-link ${activeTab === 'lendings' ? 'active' : ''}`} onClick={() => setActiveTab('lendings')}><Bookmark size={16} /> Circulation</button>
                 <button className={`tab-link ${activeTab === 'fines' ? 'active' : ''}`} onClick={() => setActiveTab('fines')}><ShieldAlert size={16} /> Fines & Discipline</button>
-                <button className="btn btn-sm btn-outline ml-auto" onClick={() => {
+                <Button variant="outline" size="sm" className="ml-auto" onClick={() => {
                     const dataToExport = activeTab === 'catalog' ? books : activeTab === 'copies' ? copies : activeTab === 'lendings' ? lendings : fines;
                     exportToCSV(dataToExport, `Library_${activeTab}`);
-                }}>
-                    <Download size={14} /> Export {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
-                </button>
+                }} icon={<Download size={14} />}>
+                    Export {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+                </Button>
 
             </div>
 
@@ -334,7 +338,7 @@ const Library = () => {
                         <h3>Asset Catalog</h3>
                         <div className="flex gap-2">
                             {!isReadOnly && (
-                                <button className="btn btn-primary btn-sm" onClick={() => { setBookId(null); setIsBookModalOpen(true); }}><Plus size={14} /> Add Title</button>
+                                <Button variant="primary" size="sm" onClick={() => { setBookId(null); setIsBookModalOpen(true); }} icon={<Plus size={14} />}>Add Title</Button>
                             )}
                         </div>
                     </div>
@@ -368,13 +372,11 @@ const Library = () => {
                                             <div className="flex gap-2">
                                                 {!isReadOnly && (
                                                     <>
-                                                        <button type="button" className="btn btn-sm btn-ghost text-primary" onClick={() => handleEditBook(b)}><Edit size={14} /></button>
-                                                        <button type="button" className="btn btn-sm btn-ghost text-error" onClick={(e) => handleDelete(e, b.id, libraryAPI.books.delete, 'Delete this title?', loadCatalog)}>
-                                                            <Trash2 size={14} />
-                                                        </button>
+                                                        <Button variant="ghost" size="sm" className="text-primary" onClick={() => handleEditBook(b)} icon={<Edit size={14} />} />
+                                                        <Button variant="ghost" size="sm" className="text-error" onClick={(e) => handleDelete(e, b.id, libraryAPI.books.delete, 'Delete this title?', loadCatalog)} icon={<Trash2 size={14} />} />
                                                     </>
                                                 )}
-                                                <button type="button" className="btn btn-sm btn-outline text-xs" onClick={() => { setActiveTab('copies'); setViewingInventoryBookId(b.id); }}>View Units</button>
+                                                <Button variant="outline" size="sm" onClick={() => { setActiveTab('copies'); setViewingInventoryBookId(b.id); }}>View Units</Button>
                                             </div>
                                         </td>
                                     </tr>
@@ -393,7 +395,7 @@ const Library = () => {
                             <div className="flex justify-between items-center mb-4">
                                 <h3>Inventory Summary</h3>
                                 {!isReadOnly && (
-                                    <button className="btn btn-primary btn-sm" onClick={() => { setCopyId(null); setIsCopyModalOpen(true); }}><Plus size={14} /> Add Copy</button>
+                                    <Button variant="primary" size="sm" onClick={() => { setCopyId(null); setIsCopyModalOpen(true); }} icon={<Plus size={14} />}>Add Copy</Button>
                                 )}
                             </div>
                             <table className="table">
@@ -419,9 +421,9 @@ const Library = () => {
                                                 <td><span className="badge badge-success">{available}</span></td>
                                                 <td><span className="badge badge-warning">{issued}</span></td>
                                                 <td>
-                                                    <button className="btn btn-sm btn-outline flex items-center gap-1" onClick={() => setViewingInventoryBookId(b.id)}>
-                                                        View Units <ArrowRight size={14} />
-                                                    </button>
+                                                    <Button variant="outline" size="sm" onClick={() => setViewingInventoryBookId(b.id)} icon={<ArrowRight size={14} />}>
+                                                        View Units
+                                                    </Button>
                                                 </td>
                                             </tr>
                                         );
@@ -433,13 +435,13 @@ const Library = () => {
                         <>
                             <div className="flex justify-between items-center mb-4">
                                 <div className="flex items-center gap-2">
-                                    <button className="btn btn-sm btn-ghost" onClick={() => setViewingInventoryBookId(null)}>← Back</button>
+                                    <Button variant="ghost" size="sm" onClick={() => setViewingInventoryBookId(null)}>← Back</Button>
                                     <h3>{books.find(b => b.id === viewingInventoryBookId)?.title} - Copies</h3>
                                 </div>
                                 {!isReadOnly && (
-                                    <button className="btn btn-primary btn-sm" onClick={() => { setCopyId(null); setCopyForm({ ...copyForm, book: String(viewingInventoryBookId) }); setIsCopyModalOpen(true); }}>
-                                        <Plus size={14} /> Add Copy to this Title
-                                    </button>
+                                    <Button variant="primary" size="sm" onClick={() => { setCopyId(null); setCopyForm({ ...copyForm, book: String(viewingInventoryBookId) }); setIsCopyModalOpen(true); }} icon={<Plus size={14} />}>
+                                        Add Copy to this Title
+                                    </Button>
                                 )}
                             </div>
                             <table className="table">
@@ -463,10 +465,8 @@ const Library = () => {
                                                 <div className="flex gap-2">
                                                     {!isReadOnly && (
                                                         <>
-                                                            <button className="btn btn-sm btn-ghost text-primary" onClick={() => handleEditCopy(c)}><Edit size={14} /></button>
-                                                            <button className="btn btn-sm btn-ghost text-error" onClick={(e) => handleDelete(e, c.id, libraryAPI.copies.delete, 'Remove this copy completely?', loadCatalog)}>
-                                                                <Trash2 size={14} />
-                                                            </button>
+                                                            <Button variant="ghost" size="sm" className="text-primary" onClick={() => handleEditCopy(c)} icon={<Edit size={14} />} />
+                                                            <Button variant="ghost" size="sm" className="text-error" onClick={(e) => handleDelete(e, c.id, libraryAPI.copies.delete, 'Remove this copy completely?', loadCatalog)} icon={<Trash2 size={14} />} />
                                                         </>
                                                     )}
                                                 </div>
@@ -489,7 +489,7 @@ const Library = () => {
                     <div className="flex justify-between items-center mb-4">
                         <h3>Circulation Record</h3>
                         {!isReadOnly && (
-                            <button className="btn btn-primary btn-sm" onClick={() => { setLendingId(null); setIsLendModalOpen(true); }}><Plus size={14} /> Issue Book</button>
+                            <Button variant="primary" size="sm" onClick={() => { setLendingId(null); setIsLendModalOpen(true); }} icon={<Plus size={14} />}>Issue Book</Button>
                         )}
                     </div>
                     <table className="table">
@@ -516,16 +516,14 @@ const Library = () => {
                                     <td>
                                         <div className="flex gap-2">
                                             {!isReadOnly && !l.date_returned && (
-                                                <button className="btn btn-sm btn-success text-xs" onClick={() => libraryAPI.lendings.returnBook(l.id).then(() => { loadLendings(); loadCatalog(); })}>
+                                                <Button size="sm" onClick={() => libraryAPI.lendings.returnBook(l.id).then(() => { loadLendings(); loadCatalog(); })}>
                                                     Return
-                                                </button>
+                                                </Button>
                                             )}
                                             {!isReadOnly && (
                                                 <>
-                                                    <button className="btn btn-sm btn-ghost text-primary" onClick={() => handleEditLending(l)}><Edit size={14} /></button>
-                                                    <button className="btn btn-sm btn-ghost text-error" onClick={(e) => handleDelete(e, l.id, libraryAPI.lendings.delete, 'Delete this lending record?', loadLendings)}>
-                                                        <Trash2 size={14} />
-                                                    </button>
+                                                    <Button variant="ghost" size="sm" className="text-primary" onClick={() => handleEditLending(l)} icon={<Edit size={14} />} />
+                                                    <Button variant="ghost" size="sm" className="text-error" onClick={(e) => handleDelete(e, l.id, libraryAPI.lendings.delete, 'Delete this lending record?', loadLendings)} icon={<Trash2 size={14} />} />
                                                 </>
                                             )}
                                         </div>
@@ -543,7 +541,7 @@ const Library = () => {
                     <div className="flex justify-between items-center mb-4">
                         <h3>Library Fines & Discipline</h3>
                         {!isReadOnly && (
-                            <button className="btn btn-primary btn-sm" onClick={() => { setFineId(null); setIsFineModalOpen(true); }}><Plus size={14} /> Record Fine</button>
+                            <Button variant="primary" size="sm" onClick={() => { setFineId(null); setIsFineModalOpen(true); }} icon={<Plus size={14} />}>Record Fine</Button>
                         )}
                     </div>
                     <table className="table">
@@ -561,10 +559,8 @@ const Library = () => {
                                         <div className="flex gap-2">
                                             {!isReadOnly && (
                                                 <>
-                                                    <button className="btn btn-sm btn-ghost text-primary" onClick={() => handleEditFine(f)}><Edit size={14} /></button>
-                                                    <button className="btn btn-sm btn-ghost text-error" onClick={(e) => handleDelete(e, f.id, libraryAPI.fines.delete, 'Delete this fine?', loadFines)}>
-                                                        <Trash2 size={14} />
-                                                    </button>
+                                                    <Button variant="ghost" size="sm" className="text-primary" onClick={() => handleEditFine(f)} icon={<Edit size={14} />} />
+                                                    <Button variant="ghost" size="sm" className="text-error" onClick={(e) => handleDelete(e, f.id, libraryAPI.fines.delete, 'Delete this fine?', loadFines)} icon={<Trash2 size={14} />} />
                                                 </>
                                             )}
                                         </div>
@@ -604,9 +600,9 @@ const Library = () => {
                         />
                     </div>
                     <div className="modal-footer">
-                        <button type="submit" className="btn btn-primary w-full" disabled={isSubmitting}>
-                            {isSubmitting ? 'Saving...' : (bookId ? "Update Title & Copies" : "Add Title & Copies")}
-                        </button>
+                        <Button type="submit" variant="primary" className="w-full" loading={isSubmitting} loadingText="Saving...">
+                            {bookId ? "Update Title & Copies" : "Add Title & Copies"}
+                        </Button>
                     </div>
                 </form>
             </Modal>
@@ -641,9 +637,9 @@ const Library = () => {
                         <div className="form-group"><label className="label">Purchase Date</label><input type="date" className="input" value={copyForm.purchase_date} onChange={e => setCopyForm({ ...copyForm, purchase_date: e.target.value })} required /></div>
                     </div>
                     <div className="modal-footer">
-                        <button type="submit" className="btn btn-primary w-full" disabled={isSubmitting}>
-                            {isSubmitting ? 'Saving...' : (copyId ? "Update Copy" : "Add Copy")}
-                        </button>
+                        <Button type="submit" variant="primary" className="w-full" loading={isSubmitting} loadingText="Saving...">
+                            {copyId ? "Update Copy" : "Add Copy"}
+                        </Button>
                     </div>
                 </form>
             </Modal>
@@ -654,9 +650,9 @@ const Library = () => {
                     <SearchableSelect label="Assign to Student *" options={studentOptions} value={String(lendingForm.student)} onChange={(val) => setLendingForm({ ...lendingForm, student: val })} required />
                     <div className="form-group"><label className="label">Return Deadline *</label><input type="date" className="input" value={lendingForm.due_date} onChange={e => setLendingForm({ ...lendingForm, due_date: e.target.value })} required /></div>
                     <div className="modal-footer">
-                        <button type="submit" className="btn btn-primary w-full" disabled={isSubmitting}>
-                            {isSubmitting ? 'Processing Issue...' : (lendingId ? "Update Lending" : "Finalize Lending")}
-                        </button>
+                        <Button type="submit" variant="primary" className="w-full" loading={isSubmitting} loadingText="Processing Issue...">
+                            {lendingId ? "Update Lending" : "Finalize Lending"}
+                        </Button>
                     </div>
                 </form>
             </Modal>
@@ -686,9 +682,9 @@ const Library = () => {
                         <div className="form-group"><label className="label">Date Issued</label><input type="date" className="input" value={fineForm.date_issued} onChange={e => setFineForm({ ...fineForm, date_issued: e.target.value })} required /></div>
                     </div>
                     <div className="modal-footer">
-                        <button type="submit" className="btn btn-error text-white w-full" disabled={isSubmitting}>
-                            {isSubmitting ? 'Recording...' : (fineId ? "Update Fine" : "Record Fine")}
-                        </button>
+                        <Button type="submit" variant="danger" className="w-full" loading={isSubmitting} loadingText="Recording...">
+                            {fineId ? "Update Fine" : "Record Fine"}
+                        </Button>
                     </div>
                 </form>
             </Modal>

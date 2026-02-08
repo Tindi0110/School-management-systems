@@ -7,6 +7,9 @@ import { transportAPI, studentsAPI } from '../api/api';
 import { exportToCSV } from '../utils/export';
 import Modal from '../components/Modal';
 import SearchableSelect from '../components/SearchableSelect';
+import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
+import Button from '../components/common/Button';
 
 const Transport = () => {
     const [activeTab, setActiveTab] = useState('fleet');
@@ -90,21 +93,21 @@ const Transport = () => {
         loadData();
     }, []);
 
+    const toast = useToast();
+    const { confirm } = useConfirm();
+
     const loadData = async () => {
         setLoading(true);
-        // Helper to safely fetch data
         const fetchData = async (apiCall: any, setter: any, name: string) => {
             try {
                 const res = await apiCall;
                 setter(res.data);
             } catch (err) {
                 console.error(`Failed to load ${name}:`, err);
-                // Optional: Validating if it's a 403 or 500
             }
         };
 
         try {
-            // Vital Data (Parallel)
             await Promise.all([
                 fetchData(transportAPI.vehicles.getAll(), setVehicles, 'vehicles'),
                 fetchData(transportAPI.routes.getAll(), setRoutes, 'routes'),
@@ -113,7 +116,6 @@ const Transport = () => {
                 fetchData(studentsAPI.getAll(), setStudents, 'students')
             ]);
 
-            // Non-Vital Data (Can fail without breaking page)
             await Promise.all([
                 fetchData(transportAPI.fuel.getAll(), setFuelRecords, 'fuel'),
                 fetchData(transportAPI.tripLogs.getAll(), setTrips, 'trips'),
@@ -123,7 +125,7 @@ const Transport = () => {
 
         } catch (error) {
             console.error("Critical Error loading Transport Data", error);
-            alert("Some data failed to load. Please check console.");
+            toast.error("Failed to load some transport data. Please try again later.");
         } finally {
             setLoading(false);
         }
@@ -131,20 +133,24 @@ const Transport = () => {
 
     const handleEnrollmentSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSaving(true);
         try {
             if (enrollmentId) {
                 await transportAPI.allocations.update(enrollmentId, enrollmentForm);
+                toast.success('Enrollment updated successfully');
             } else {
                 await transportAPI.allocations.create(enrollmentForm);
+                toast.success('Student successfully enrolled for transport');
             }
             loadData();
             setIsAllocationModalOpen(false);
             setEnrollmentId(null);
             setEnrollmentForm({ student: '', route: '', pickup_point: '', start_date: new Date().toISOString().split('T')[0] });
-            alert(enrollmentId ? 'Enrollment updated.' : 'Student successfully enrolled.');
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            alert('Failed to save enrollment.');
+            toast.error(error.response?.data?.detail || 'Failed to save enrollment.');
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -160,29 +166,32 @@ const Transport = () => {
     };
 
     const handleDeleteAllocation = async (id: number) => {
-        if (!window.confirm('Remove this student from transport?')) return;
+        if (!await confirm('Are you sure you want to remove this student from transport?')) return;
         try {
             await transportAPI.allocations.delete(id);
+            toast.success('Enrollment removed successfully');
             loadData();
-            alert('Enrollment removed.');
         } catch (error: any) {
             console.error(error);
-            alert('Failed to remove enrollment: ' + (error.response?.data?.detail || error.message));
+            toast.error(error.response?.data?.detail || 'Failed to remove enrollment');
         }
     };
 
     const handleVehicleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSaving(true);
         try {
             const payload = {
                 ...vehicleForm,
-                insurance_expiry: vehicleForm.insurance_expiry || null // Send null if empty string
+                insurance_expiry: vehicleForm.insurance_expiry || null
             };
 
             if (vehicleId) {
                 await transportAPI.vehicles.update(vehicleId, payload);
+                toast.success('Vehicle information updated');
             } else {
                 await transportAPI.vehicles.create(payload);
+                toast.success('New vehicle registered to fleet');
             }
             loadData();
             setIsVehicleModalOpen(false);
@@ -191,9 +200,11 @@ const Transport = () => {
                 registration_number: '', make_model: '', vehicle_type: 'BUS',
                 seating_capacity: 14, status: 'ACTIVE', insurance_expiry: ''
             });
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            alert('Failed to save vehicle');
+            toast.error(error.response?.data?.detail || 'Failed to save vehicle');
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -213,45 +224,49 @@ const Transport = () => {
 
     const handleRouteSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSaving(true);
         try {
             if (routeId) {
                 await transportAPI.routes.update(routeId, routeForm);
+                toast.success('Route updated successfully');
             } else {
                 await transportAPI.routes.create(routeForm);
+                toast.success('Route successfully mapped');
             }
             loadData();
             setIsRouteModalOpen(false);
             setRouteId(null);
             setRouteForm({ name: '', route_code: '', distance_km: 0, base_cost: 0 });
-            alert(routeId ? 'Route updated.' : 'Route successfully mapped.');
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            alert('Failed to save route.');
+            toast.error(error.response?.data?.detail || 'Failed to save route.');
+        } finally {
+            setIsSaving(false);
         }
     };
 
     const handleDeleteVehicle = async (id: number) => {
-        if (!window.confirm('Are you sure you want to delete this vehicle? This action cannot be undone.')) return;
+        if (!await confirm('Are you sure you want to delete this vehicle? This action cannot be undone.')) return;
         try {
             await transportAPI.vehicles.delete(id);
+            toast.success('Vehicle deleted successfully');
             loadData();
-            alert('Vehicle deleted successfully.');
         } catch (error: any) {
             console.error(error);
-            alert('Failed to delete vehicle: ' + (error.response?.data?.detail || 'It may be assigned to trips or maintenance records.'));
+            toast.error(error.response?.data?.detail || 'Failed to delete vehicle. It may be assigned to trips or maintenance records.');
         }
     };
 
     // Route CRUD
     const handleDeleteRoute = async (id: number) => {
-        if (!window.confirm('Delete this route? This will affect all assigned students.')) return;
+        if (!await confirm('Delete this route? This will affect all assigned students.')) return;
         try {
             await transportAPI.routes.delete(id);
+            toast.success('Route deleted successfully');
             loadData();
-            alert('Route deleted.');
         } catch (error: any) {
             console.error(error);
-            alert('Failed to delete route: ' + (error.response?.data?.detail || 'Check for linked pickups or allocations.'));
+            toast.error(error.response?.data?.detail || 'Failed to delete route. Check for linked pickups or allocations.');
         }
     };
 
@@ -270,7 +285,6 @@ const Transport = () => {
         e.preventDefault();
         setIsSaving(true);
         try {
-            // Smart Calculation logic only on Create or if 0
             const parentRoute = routes.find(r => r.id === pointForm.route_id);
             let calculatedCost = pointForm.additional_cost;
 
@@ -289,19 +303,20 @@ const Transport = () => {
 
             if (pointId) {
                 await transportAPI.pickupPoints.update(pointId, payload);
+                toast.success('Pickup point updated');
             } else {
                 await transportAPI.pickupPoints.create(payload);
+                toast.success(`Service point added. Fee set to KES ${payload.additional_cost}`);
             }
 
             loadData();
             setIsPointModalOpen(false);
             setPointId(null);
             setPointForm({ route_id: 0, point_name: '', pickup_time: '', dropoff_time: '', distance_from_school: 0, additional_cost: 0 });
-            alert(pointId ? 'Point updated.' : `Service point added. Fee set to KES ${payload.additional_cost}`);
         } catch (error: any) {
             console.error(error);
-            const msg = error.response?.data ? (typeof error.response.data === 'object' ? JSON.stringify(error.response.data) : error.response.data) : error.message;
-            alert(`Failed to save pickup point: ${msg}`);
+            const msg = error.response?.data?.detail || error.message;
+            toast.error(`Failed to save pickup point: ${msg}`);
         } finally {
             setIsSaving(false);
         }
@@ -309,38 +324,41 @@ const Transport = () => {
 
     const handleTripSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
         if (!tripForm.route || !tripForm.vehicle || !tripForm.driver_name) {
-            alert('Please fill in all required fields (Route, Vehicle, Driver).');
+            toast.error('Please fill in all required fields (Route, Vehicle, Driver).');
             return;
         }
 
+        setIsSaving(true);
         try {
             const payload = {
                 route: Number(tripForm.route),
                 vehicle: Number(tripForm.vehicle),
                 date: tripForm.date,
-                departure_time: tripForm.start_time, // Map start_time -> departure_time
-                arrival_time: tripForm.end_time, // Map end_time -> arrival_time
-                attendant: tripForm.driver_name, // Map driver_name -> attendant (since driver is FK)
-                trip_type: 'MORNING', // Default or add selector
-                driver: null // Optional FK
+                departure_time: tripForm.start_time,
+                arrival_time: tripForm.end_time,
+                attendant: tripForm.driver_name,
+                trip_type: 'MORNING',
+                driver: null
             };
 
             if (tripId) {
                 await transportAPI.tripLogs.update(tripId, payload);
+                toast.success('Trip log updated');
             } else {
                 await transportAPI.tripLogs.create(payload);
+                toast.success('Trip log recorded');
             }
             loadData();
             setIsTripModalOpen(false);
             setTripId(null);
             setTripForm({ route: '', vehicle: '', date: new Date().toISOString().split('T')[0], start_time: '', end_time: '', driver_name: '' });
-            alert(tripId ? 'Trip log updated.' : 'Trip log recorded.');
         } catch (error: any) {
             console.error(error);
-            const msg = error.response?.data ? (typeof error.response.data === 'object' ? JSON.stringify(error.response.data) : error.response.data) : error.message;
-            alert(`Failed to save trip log: ${msg}`);
+            const msg = error.response?.data?.detail || error.message;
+            toast.error(`Failed to save trip log: ${msg}`);
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -358,13 +376,14 @@ const Transport = () => {
     };
 
     const handleDeleteTrip = async (id: number) => {
-        if (!window.confirm('Delete this trip log?')) return;
+        if (!await confirm('Delete this trip log?')) return;
         try {
             await transportAPI.tripLogs.delete(id);
+            toast.success('Trip log deleted');
             loadData();
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            alert('Failed to delete trip log.');
+            toast.error(error.response?.data?.detail || 'Failed to delete trip log.');
         }
     };
 
@@ -372,34 +391,37 @@ const Transport = () => {
         e.preventDefault();
 
         if (!maintenanceForm.vehicle || !maintenanceForm.description) {
-            alert('Please select a vehicle and describe the issue.');
+            toast.error('Please select a vehicle and describe the issue.');
             return;
         }
 
+        setIsSaving(true);
         try {
             const payload = {
                 vehicle: Number(maintenanceForm.vehicle),
                 description: maintenanceForm.description,
                 cost: maintenanceForm.cost,
-                service_date: maintenanceForm.date, // Map date -> service_date
+                service_date: maintenanceForm.date,
                 status: maintenanceForm.status
-                // Allowed null: mileage_at_service, next_service_due, performed_by
             };
 
             if (maintenanceId) {
                 await transportAPI.maintenance.update(maintenanceId, payload);
+                toast.success('Maintenance record updated');
             } else {
                 await transportAPI.maintenance.create(payload);
+                toast.success('Maintenance request logged');
             }
             loadData();
             setIsMaintenanceModalOpen(false);
             setMaintenanceId(null);
             setMaintenanceForm({ vehicle: '', description: '', cost: 0, date: new Date().toISOString().split('T')[0], status: 'PENDING' });
-            alert(maintenanceId ? 'Maintenance record updated.' : 'Maintenance request logged.');
         } catch (error: any) {
             console.error(error);
-            const msg = error.response?.data ? (typeof error.response.data === 'object' ? JSON.stringify(error.response.data) : error.response.data) : error.message;
-            alert(`Failed to save maintenance record: ${msg}`);
+            const msg = error.response?.data?.detail || error.message;
+            toast.error(`Failed to save maintenance record: ${msg}`);
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -416,41 +438,45 @@ const Transport = () => {
     };
 
     const handleDeleteMaintenance = async (id: number) => {
-        if (!window.confirm('Delete this maintenance record?')) return;
+        if (!await confirm('Delete this maintenance record?')) return;
         try {
             await transportAPI.maintenance.delete(id);
+            toast.success('Maintenance record deleted');
             loadData();
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            alert('Failed to delete maintenance record.');
+            toast.error(error.response?.data?.detail || 'Failed to delete maintenance record.');
         }
     };
 
     const handleSafetySubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        console.log("Submitting Safety:", safetyForm);
 
         if (!safetyForm.vehicle || !safetyForm.description) {
-            alert('Please select a vehicle and describe the incident.');
+            toast.error('Please select a vehicle and describe the incident.');
             return;
         }
 
+        setIsSaving(true);
         try {
             const payload = { ...safetyForm, incident_type: safetyForm.type, vehicle: Number(safetyForm.vehicle) };
             if (incidentId) {
                 await transportAPI.incidents.update(incidentId, payload);
+                toast.success('Incident report updated');
             } else {
                 await transportAPI.incidents.create(payload);
+                toast.success('Safety incident reported');
             }
             loadData();
             setIsSafetyModalOpen(false);
             setIncidentId(null);
             setSafetyForm({ vehicle: '', date: new Date().toISOString().split('T')[0], type: 'ACCIDENT', description: '', severity: 'MINOR' });
-            alert(incidentId ? 'Incident updated.' : 'Incident reported.');
         } catch (error: any) {
             console.error(error);
-            const msg = error.response?.data ? (typeof error.response.data === 'object' ? JSON.stringify(error.response.data) : error.response.data) : error.message;
-            alert(`Failed to save incident report: ${msg}`);
+            const msg = error.response?.data?.detail || error.message;
+            toast.error(`Failed to save incident report: ${msg}`);
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -467,13 +493,14 @@ const Transport = () => {
     };
 
     const handleDeleteIncident = async (id: number) => {
-        if (!window.confirm('Delete this incident report?')) return;
+        if (!await confirm('Delete this incident report?')) return;
         try {
             await transportAPI.incidents.delete(id);
+            toast.success('Incident report deleted');
             loadData();
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            alert('Failed to delete incident.');
+            toast.error(error.response?.data?.detail || 'Failed to delete incident.');
         }
     };
 
@@ -496,14 +523,14 @@ const Transport = () => {
     };
 
     const handleDeletePoint = async (id: number) => {
-        if (!window.confirm('Delete this pickup point?')) return;
+        if (!await confirm('Delete this pickup point?')) return;
         try {
             await transportAPI.pickupPoints.delete(id);
+            toast.success('Pickup point deleted');
             loadData();
-            alert('Point deleted.');
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            alert('Failed to delete point.');
+            toast.error(error.response?.data?.detail || 'Failed to delete point.');
         }
     };
 
@@ -514,29 +541,33 @@ const Transport = () => {
 
     const handleFuelSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSaving(true);
         try {
             await transportAPI.fuel.create({
                 ...fuelForm,
                 vehicle: Number(fuelForm.vehicle)
             });
-            alert('Fuel record added & Synced to Finance!');
+            toast.success('Fuel record added & Synced to Finance!');
             setIsFuelModalOpen(false);
             setFuelForm({ date: new Date().toISOString().split('T')[0], vehicle: '', liters: 0, amount: 0, mileage: 0, receipt_no: '' });
             loadData();
         } catch (error: any) {
             console.error(error);
-            alert('Failed to save fuel record.');
+            toast.error(error.response?.data?.detail || 'Failed to save fuel record.');
+        } finally {
+            setIsSaving(false);
         }
     };
 
     const handleDeleteFuel = async (id: number) => {
-        if (!window.confirm('Delete this fuel record?')) return;
+        if (!await confirm('Delete this fuel record?')) return;
         try {
             await transportAPI.fuel.delete(id);
+            toast.success('Fuel record deleted');
             loadData();
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            alert('Failed to delete fuel record.');
+            toast.error(error.response?.data?.detail || 'Failed to delete fuel record.');
         }
     };
 
@@ -569,11 +600,11 @@ const Transport = () => {
                     <h1>Institutional Logistics</h1>
                     <p className="text-secondary text-sm">Fleet management, route optimization, and student safety</p>
                 </div>
-                <div className="flex gap-4 no-print">
-                    <button className="btn btn-outline flex items-center gap-2" onClick={() => exportToCSV(vehicles, 'Fleet_Registry')}><Download size={18} /> Export Fleet</button>
-                    <button className="btn btn-outline flex items-center gap-2" onClick={() => window.print()}><Printer size={18} /> Reports</button>
-                    <button className="btn btn-primary flex items-center gap-2" onClick={() => { setEnrollmentId(null); setIsAllocationModalOpen(true); }}><Plus size={18} /> Enroll Student</button>
-                    <button className="btn btn-success flex items-center gap-2" onClick={() => { setVehicleId(null); setIsVehicleModalOpen(true); }}><Bus size={18} /> Add Vehicle</button>
+                <div className="flex gap-2 no-print">
+                    <Button variant="outline" size="sm" onClick={() => exportToCSV(vehicles, 'Fleet_Registry')} icon={<Download size={14} />}>Export Fleet</Button>
+                    <Button variant="outline" size="sm" onClick={() => window.print()} icon={<Printer size={14} />}>Reports</Button>
+                    <Button variant="primary" size="sm" onClick={() => { setEnrollmentId(null); setIsAllocationModalOpen(true); }} icon={<Plus size={14} />}>Enroll Student</Button>
+                    <Button variant="success" size="sm" onClick={() => { setVehicleId(null); setIsVehicleModalOpen(true); }} icon={<Bus size={14} />}>Add Vehicle</Button>
                 </div>
             </div>
 
@@ -605,12 +636,12 @@ const Transport = () => {
                 <button className={`tab-link ${activeTab === 'maintenance' ? 'active' : ''}`} onClick={() => setActiveTab('maintenance')}><Wrench size={16} /> Repairs</button>
                 <button className={`tab-link ${activeTab === 'fuel' ? 'active' : ''}`} onClick={() => setActiveTab('fuel')}><Droplet size={16} /> Fuel Usage</button>
                 <button className={`tab-link ${activeTab === 'safety' ? 'active' : ''}`} onClick={() => setActiveTab('safety')}><ShieldAlert size={16} /> Safety</button>
-                <button className="btn btn-sm btn-outline ml-auto" onClick={() => {
+                <Button variant="outline" size="sm" className="ml-auto" onClick={() => {
                     const dataToExport = activeTab === 'allocations' ? allocations : activeTab === 'routes' ? routes : activeTab === 'trips' ? trips : activeTab === 'maintenance' ? maintenanceRecords : fuelRecords;
                     exportToCSV(dataToExport, `Transport_${activeTab}`);
-                }}>
-                    <Download size={14} /> Export {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
-                </button>
+                }} icon={<Download size={14} />}>
+                    Export {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+                </Button>
             </div>
 
             {/* Fleet Content */}
@@ -633,9 +664,9 @@ const Transport = () => {
                                 <div className="flex justify-between"><span className="text-secondary">Insurance Info:</span><span className={`font-semibold ${new Date(v.insurance_expiry) < new Date() ? 'text-error' : ''}`}>{v.insurance_expiry || 'N/A'}</span></div>
                             </div>
                             <div className="flex gap-2 mt-6 border-top pt-4">
-                                <button className="btn btn-sm btn-ghost flex-1 text-primary" onClick={() => handleEditVehicle(v)}><Edit size={14} /> Edit</button>
-                                <button className="btn btn-sm btn-ghost text-error" onClick={() => handleDeleteVehicle(v.id)}><Trash2 size={14} /></button>
-                                <button className="btn btn-sm btn-outline flex-1" onClick={() => handleLogFuel(v)}>Logs</button>
+                                <Button variant="ghost" size="sm" className="flex-1 text-primary" onClick={() => handleEditVehicle(v)} icon={<Edit size={14} />}>Edit</Button>
+                                <Button variant="ghost" size="sm" className="text-error" onClick={() => handleDeleteVehicle(v.id)} icon={<Trash2 size={14} />} />
+                                <Button variant="outline" size="sm" className="flex-1" onClick={() => handleLogFuel(v)}>Logs</Button>
                             </div>
                         </div>
                     ))}
@@ -672,19 +703,19 @@ const Transport = () => {
                                             <span className="text-secondary flex items-center gap-2"><Clock size={12} /> {p.pickup_time}</span>
                                             <span className="badge badge-primary text-[10px]">KES {parseFloat(p.additional_cost || 0).toLocaleString()}</span>
                                             <div className="flex gap-1">
-                                                <button className="btn btn-xs btn-ghost text-primary p-0" onClick={() => handleEditPoint(p)}><Edit size={10} /></button>
-                                                <button className="btn btn-xs btn-ghost text-error p-0" onClick={() => handleDeletePoint(p.id)}><Trash2 size={10} /></button>
+                                                <Button variant="ghost" size="sm" className="text-primary p-0" onClick={() => handleEditPoint(p)} icon={<Edit size={10} />} />
+                                                <Button variant="ghost" size="sm" className="text-error p-0" onClick={() => handleDeletePoint(p.id)} icon={<Trash2 size={10} />} />
                                             </div>
                                         </div>
                                     ))}
-                                    <button className="btn btn-xs btn-outline w-full mt-2 border-dashed" onClick={() => { setPointId(null); setPointForm({ ...pointForm, route_id: r.id, point_name: '', pickup_time: '', dropoff_time: '', distance_from_school: 0, additional_cost: 0 }); setIsPointModalOpen(true); }}><Plus size={12} /> Add Point</button>
+                                    <Button variant="outline" size="sm" className="w-full mt-2 border-dashed" onClick={() => { setPointId(null); setPointForm({ ...pointForm, route_id: r.id, point_name: '', pickup_time: '', dropoff_time: '', distance_from_school: 0, additional_cost: 0 }); setIsPointModalOpen(true); }} icon={<Plus size={12} />}>Add Point</Button>
                                 </div>
                             </div>
                             <div className="flex justify-between items-center text-xs border-top pt-4 mt-4">
                                 <span className="text-secondary flex items-center gap-2"><Navigation size={12} /> {r.distance_km} KM Loop</span>
                                 <div className="flex gap-2">
-                                    <button className="btn btn-xs btn-ghost text-primary" onClick={() => handleEditRoute(r)}><Edit size={12} /> Edit</button>
-                                    <button className="btn btn-xs btn-ghost text-error" onClick={() => handleDeleteRoute(r.id)}><Trash2 size={12} /></button>
+                                    <Button variant="ghost" size="sm" className="text-primary" onClick={() => handleEditRoute(r)} icon={<Edit size={12} />}>Edit</Button>
+                                    <Button variant="ghost" size="sm" className="text-error" onClick={() => handleDeleteRoute(r.id)} icon={<Trash2 size={12} />} />
                                 </div>
                             </div>
                         </div>
@@ -725,8 +756,8 @@ const Transport = () => {
                                     <td><span className={`status-badge ${a.status === 'ACTIVE' ? 'success' : 'secondary'}`}>{a.status}</span></td>
                                     <td>
                                         <div className="flex gap-2">
-                                            <button className="btn btn-sm btn-ghost text-primary" onClick={() => handleEditAllocation(a)}><Edit size={14} /></button>
-                                            <button className="btn btn-sm btn-ghost text-error" onClick={() => handleDeleteAllocation(a.id)}><Trash2 size={14} /></button>
+                                            <Button variant="ghost" size="sm" className="text-primary" onClick={() => handleEditAllocation(a)} icon={<Edit size={14} />} />
+                                            <Button variant="ghost" size="sm" className="text-error" onClick={() => handleDeleteAllocation(a.id)} icon={<Trash2 size={14} />} />
                                         </div>
                                     </td>
                                 </tr>
@@ -741,7 +772,7 @@ const Transport = () => {
                 <div className="table-container fade-in">
                     <div className="flex justify-between items-center mb-4">
                         <h3>Daily Trip Logs</h3>
-                        <button className="btn btn-primary btn-sm" onClick={() => { setTripId(null); setIsTripModalOpen(true); }}><Plus size={14} /> New Trip</button>
+                        <Button variant="primary" size="sm" onClick={() => { setTripId(null); setIsTripModalOpen(true); }} icon={<Plus size={14} />}>New Trip</Button>
                     </div>
                     <table className="table">
                         <thead><tr><th>Date</th><th>Route</th><th>Vehicle</th><th>Driver</th><th>Time</th><th>Actions</th></tr></thead>
@@ -756,8 +787,8 @@ const Transport = () => {
                                     <td><span className="badge badge-primary">{t.departure_time || t.start_time} - {t.arrival_time || t.end_time}</span></td>
                                     <td>
                                         <div className="flex gap-2">
-                                            <button className="btn btn-sm btn-ghost text-primary" onClick={() => handleEditTrip(t)}><Edit size={14} /></button>
-                                            <button className="btn btn-sm btn-ghost text-error" onClick={() => handleDeleteTrip(t.id)}><Trash2 size={14} /></button>
+                                            <Button variant="ghost" size="sm" className="text-primary" onClick={() => handleEditTrip(t)} icon={<Edit size={14} />} />
+                                            <Button variant="ghost" size="sm" className="text-error" onClick={() => handleDeleteTrip(t.id)} icon={<Trash2 size={14} />} />
                                         </div>
                                     </td>
                                 </tr>
@@ -772,7 +803,7 @@ const Transport = () => {
                 <div className="table-container fade-in">
                     <div className="flex justify-between items-center mb-4">
                         <h3>Maintenance & Repairs</h3>
-                        <button className="btn btn-primary btn-sm" onClick={() => { setMaintenanceId(null); setIsMaintenanceModalOpen(true); }}><Wrench size={14} /> Log Repair</button>
+                        <Button variant="primary" size="sm" onClick={() => { setMaintenanceId(null); setIsMaintenanceModalOpen(true); }} icon={<Wrench size={14} />}>Log Repair</Button>
                     </div>
                     <table className="table">
                         <thead><tr><th>Date</th><th>Vehicle</th><th>Issue</th><th>Cost (KES)</th><th>Status</th><th>Actions</th></tr></thead>
@@ -787,8 +818,8 @@ const Transport = () => {
                                     <td><span className={`status-badge ${m.status === 'COMPLETED' ? 'success' : 'secondary'}`}>{m.status}</span></td>
                                     <td>
                                         <div className="flex gap-2">
-                                            <button className="btn btn-sm btn-ghost text-primary" onClick={() => handleEditMaintenance(m)}><Edit size={14} /></button>
-                                            <button className="btn btn-sm btn-ghost text-error" onClick={() => handleDeleteMaintenance(m.id)}><Trash2 size={14} /></button>
+                                            <Button variant="ghost" size="sm" className="text-primary" onClick={() => handleEditMaintenance(m)} icon={<Edit size={14} />} />
+                                            <Button variant="ghost" size="sm" className="text-error" onClick={() => handleDeleteMaintenance(m.id)} icon={<Trash2 size={14} />} />
                                         </div>
                                     </td>
                                 </tr>
@@ -803,7 +834,7 @@ const Transport = () => {
                 <div className="table-container fade-in">
                     <div className="flex justify-between items-center mb-4">
                         <h3>Safety & Incident Reports</h3>
-                        <button className="btn btn-error btn-sm text-white" onClick={() => { setIncidentId(null); setIsSafetyModalOpen(true); }}><ShieldAlert size={14} /> Report Incident</button>
+                        <Button variant="danger" size="sm" onClick={() => { setIncidentId(null); setIsSafetyModalOpen(true); }} icon={<ShieldAlert size={14} />}>Report Incident</Button>
                     </div>
                     <table className="table">
                         <thead><tr><th>Date</th><th>Vehicle</th><th>Type</th><th>Severity</th><th>Description</th><th>Actions</th></tr></thead>
@@ -818,8 +849,8 @@ const Transport = () => {
                                     <td>{i.description}</td>
                                     <td>
                                         <div className="flex gap-2">
-                                            <button className="btn btn-sm btn-ghost text-primary" onClick={() => handleEditIncident(i)}><Edit size={14} /></button>
-                                            <button className="btn btn-sm btn-ghost text-error" onClick={() => handleDeleteIncident(i.id)}><Trash2 size={14} /></button>
+                                            <Button variant="ghost" size="sm" className="text-primary" onClick={() => handleEditIncident(i)} icon={<Edit size={14} />} />
+                                            <Button variant="ghost" size="sm" className="text-error" onClick={() => handleDeleteIncident(i.id)} icon={<Trash2 size={14} />} />
                                         </div>
                                     </td>
                                 </tr>
@@ -834,7 +865,7 @@ const Transport = () => {
                 <div className="table-container fade-in">
                     <div className="flex justify-between items-center mb-4">
                         <h3>Fuel Consumption Records</h3>
-                        <button className="btn btn-primary btn-sm" onClick={() => setIsFuelModalOpen(true)}><Droplet size={14} /> Log Fuel</button>
+                        <Button variant="primary" size="sm" onClick={() => setIsFuelModalOpen(true)} icon={<Droplet size={14} />}>Log Fuel</Button>
                     </div>
                     <table className="table">
                         <thead>
@@ -859,7 +890,7 @@ const Transport = () => {
                                     <td className="font-mono">{f.mileage?.toLocaleString()}</td>
                                     <td className="text-xs">{f.receipt_no || '-'}</td>
                                     <td>
-                                        <button className="btn btn-sm btn-ghost text-error" onClick={() => handleDeleteFuel(f.id)}><Trash2 size={14} /></button>
+                                        <Button variant="ghost" size="sm" className="text-error" onClick={() => handleDeleteFuel(f.id)} icon={<Trash2 size={14} />} />
                                     </td>
                                 </tr>
                             ))}
@@ -883,7 +914,7 @@ const Transport = () => {
                         </select>
                     </div>
                     <div className="form-group"><label className="label">Start Date</label><input type="date" className="input" value={enrollmentForm.start_date} onChange={e => setEnrollmentForm({ ...enrollmentForm, start_date: e.target.value })} required /></div>
-                    <div className="modal-footer"><button type="submit" className="btn btn-primary w-full">{enrollmentId ? "Update Enrollment" : "Confirm Enrollment"}</button></div>
+                    <div className="modal-footer"><Button type="submit" variant="primary" className="w-full" loading={isSaving} loadingText={enrollmentId ? "Updating..." : "Enrolling..."}>{enrollmentId ? "Update Enrollment" : "Confirm Enrollment"}</Button></div>
                 </form>
             </Modal>
 
@@ -911,7 +942,7 @@ const Transport = () => {
                         </div>
                         <div className="form-group"><label className="label">Insurance Expiry</label><input type="date" className="input" value={vehicleForm.insurance_expiry} onChange={e => setVehicleForm({ ...vehicleForm, insurance_expiry: e.target.value })} /></div>
                     </div>
-                    <div className="modal-footer pt-4"><button type="submit" className="btn btn-primary w-full uppercase font-black">{vehicleId ? 'Update Vehicle' : 'Register Vehicle'}</button></div>
+                    <div className="modal-footer pt-4"><Button type="submit" variant="primary" className="w-full uppercase font-black" loading={isSaving} loadingText={vehicleId ? "Updating..." : "Registering..."}>{vehicleId ? 'Update Vehicle' : 'Register Vehicle'}</Button></div>
                 </form>
             </Modal>
 
@@ -923,7 +954,7 @@ const Transport = () => {
                     </div>
                     <div className="form-group"><label className="label">Route Name / Destination</label><input type="text" className="input" placeholder="e.g. Westlands via Waiyaki Way" value={routeForm.name} onChange={e => setRouteForm({ ...routeForm, name: e.target.value })} required /></div>
                     <div className="form-group"><label className="label">Base Fee (KES)</label><input type="number" className="input" value={routeForm.base_cost} onChange={e => setRouteForm({ ...routeForm, base_cost: parseFloat(e.target.value) })} required /></div>
-                    <div className="modal-footer pt-4"><button type="submit" className="btn btn-primary w-full uppercase font-black">{routeId ? "Update Route" : "Map Route"}</button></div>
+                    <div className="modal-footer pt-4"><Button type="submit" variant="primary" className="w-full uppercase font-black" loading={isSaving} loadingText={routeId ? "Updating..." : "Mapping..."}>{routeId ? "Update Route" : "Map Route"}</Button></div>
                 </form>
             </Modal>
 
@@ -940,9 +971,9 @@ const Transport = () => {
                     </div>
                     <p className="text-xs text-secondary mt-2">* Fee is automatically calculated based on distance if left as 0.</p>
                     <div className="modal-footer pt-4">
-                        <button type="submit" className="btn btn-primary w-full uppercase font-black" disabled={isSaving}>
-                            {isSaving ? (pointId ? "Updating..." : "Adding...") : (pointId ? "Update Point" : "Add Point")}
-                        </button>
+                        <Button type="submit" variant="primary" className="w-full uppercase font-black" loading={isSaving} loadingText={pointId ? "Updating..." : "Adding..."}>
+                            {pointId ? "Update Point" : "Add Point"}
+                        </Button>
                     </div>
                 </form>
             </Modal>
@@ -966,7 +997,7 @@ const Transport = () => {
                         <div className="form-group"><label className="label">Start Time</label><input type="time" className="input" value={tripForm.start_time} onChange={e => setTripForm({ ...tripForm, start_time: e.target.value })} required /></div>
                         <div className="form-group"><label className="label">End Time</label><input type="time" className="input" value={tripForm.end_time} onChange={e => setTripForm({ ...tripForm, end_time: e.target.value })} required /></div>
                     </div>
-                    <div className="modal-footer pt-4"><button type="submit" className="btn btn-primary w-full">{tripId ? "Update Trip Log" : "Save Trip Log"}</button></div>
+                    <div className="modal-footer pt-4"><Button type="submit" variant="primary" className="w-full" loading={isSaving} loadingText={tripId ? "Updating..." : "Saving..."}>{tripId ? "Update Trip Log" : "Save Trip Log"}</Button></div>
                 </form>
             </Modal>
 
@@ -990,7 +1021,7 @@ const Transport = () => {
                             <option value="COMPLETED">Completed</option>
                         </select>
                     </div>
-                    <div className="modal-footer pt-4"><button type="submit" className="btn btn-warning w-full text-white">{maintenanceId ? "Update Maintenance" : "Log Maintenance"}</button></div>
+                    <div className="modal-footer pt-4"><Button type="submit" variant="primary" className="w-full" loading={isSaving} loadingText={maintenanceId ? "Updating..." : "Logging..."}>{maintenanceId ? "Update Maintenance" : "Log Maintenance"}</Button></div>
                 </form>
             </Modal>
 
@@ -1023,7 +1054,7 @@ const Transport = () => {
                         </div>
                     </div>
                     <div className="form-group"><label className="label">Description of Incident</label><textarea className="input" rows={4} value={safetyForm.description} onChange={e => setSafetyForm({ ...safetyForm, description: e.target.value })} required></textarea></div>
-                    <div className="modal-footer pt-4"><button type="submit" className="btn btn-error w-full text-white">{incidentId ? "Update Report" : "Submit Report"}</button></div>
+                    <div className="modal-footer pt-4"><Button type="submit" variant="danger" className="w-full" loading={isSaving} loadingText={incidentId ? "Updating..." : "Reporting..."}>{incidentId ? "Update Report" : "Submit Report"}</Button></div>
                 </form>
             </Modal>
 
@@ -1046,7 +1077,7 @@ const Transport = () => {
                         <div className="form-group"><label className="label">Mileage (Odometer)</label><input type="number" className="input" value={fuelForm.mileage} onChange={e => setFuelForm({ ...fuelForm, mileage: parseInt(e.target.value) })} required /></div>
                         <div className="form-group"><label className="label">Receipt No.</label><input type="text" className="input" value={fuelForm.receipt_no} onChange={e => setFuelForm({ ...fuelForm, receipt_no: e.target.value })} /></div>
                     </div>
-                    <div className="modal-footer pt-4"><button type="submit" className="btn btn-primary w-full">Save & Sync to Finance</button></div>
+                    <div className="modal-footer pt-4"><Button type="submit" variant="primary" className="w-full" loading={isSaving} loadingText="Saving...">Save & Sync to Finance</Button></div>
                 </form>
             </Modal>
 

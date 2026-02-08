@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, Search, Edit, Trash2, Heart, Calendar, User as UserIcon, Activity, Printer, Download } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Calendar, User as UserIcon, Activity, Printer, Download } from 'lucide-react';
 import { medicalAPI, studentsAPI } from '../api/api';
 import { exportToCSV } from '../utils/export';
 import Modal from '../components/Modal';
 import SearchableSelect from '../components/SearchableSelect';
+import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
+import Button from '../components/common/Button';
 
 const Medical = () => {
     const [records, setRecords] = useState<any[]>([]);
@@ -18,6 +21,9 @@ const Medical = () => {
         treatment_given: '',
         notes: '',
     });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const toast = useToast();
+    const { confirm } = useConfirm();
 
     useEffect(() => {
         loadData();
@@ -40,26 +46,35 @@ const Medical = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSubmitting(true);
         try {
             if (editingRecord) {
                 await medicalAPI.update(editingRecord.id, formData);
+                toast.success('Medical record updated successfully');
             } else {
                 await medicalAPI.create(formData);
+                toast.success('Medical record created successfully');
             }
             loadData();
             closeModal();
         } catch (error: any) {
-            alert(error.response?.data?.detail || 'Failed to save medical record');
+            console.error('Error saving medical record:', error);
+            toast.error(error.response?.data?.detail || 'Failed to save medical record');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
     const handleDelete = async (id: number) => {
-        if (!confirm('Are you sure you want to delete this medical record?')) return;
-        try {
-            await medicalAPI.delete(id);
-            loadData();
-        } catch (error) {
-            alert('Failed to delete medical record');
+        if (await confirm('Are you sure you want to delete this medical record?')) {
+            try {
+                await medicalAPI.delete(id);
+                toast.success('Medical record deleted successfully');
+                loadData();
+            } catch (error) {
+                console.error('Error deleting medical record:', error);
+                toast.error('Failed to delete medical record');
+            }
         }
     };
 
@@ -107,15 +122,15 @@ const Medical = () => {
                     <p className="text-secondary">Official school health and infirmary logs</p>
                 </div>
                 <div className="flex gap-2">
-                    <button className="btn btn-outline flex items-center gap-2" onClick={() => window.print()}>
-                        <Printer size={18} /> Reports
-                    </button>
-                    <button className="btn btn-outline flex items-center gap-2" onClick={() => exportToCSV(records, 'Medical_Records')}>
-                        <Download size={18} /> Export CSV
-                    </button>
-                    <button className="btn btn-primary" onClick={() => openModal()}>
-                        <Plus size={18} /> New Health Record
-                    </button>
+                    <Button variant="outline" onClick={() => window.print()} icon={<Printer size={18} />}>
+                        Reports
+                    </Button>
+                    <Button variant="outline" onClick={() => exportToCSV(records, 'Medical_Records')} icon={<Download size={18} />}>
+                        Export CSV
+                    </Button>
+                    <Button variant="primary" onClick={() => openModal()} icon={<Plus size={18} />}>
+                        New Health Record
+                    </Button>
                 </div>
             </div>
 
@@ -178,12 +193,8 @@ const Medical = () => {
                                     <td className="text-sm">{record.nurse_name || 'System'}</td>
                                     <td>
                                         <div className="flex gap-sm">
-                                            <button className="btn btn-sm btn-outline" onClick={() => openModal(record)} title="Edit">
-                                                <Edit size={14} />
-                                            </button>
-                                            <button className="btn btn-sm btn-danger" onClick={() => handleDelete(record.id)} title="Delete">
-                                                <Trash2 size={14} />
-                                            </button>
+                                            <Button variant="ghost" size="sm" onClick={() => openModal(record)} icon={<Edit size={14} />} title="Edit" />
+                                            <Button variant="danger" size="sm" onClick={() => handleDelete(record.id)} icon={<Trash2 size={14} />} title="Delete" />
                                         </div>
                                     </td>
                                 </tr>
@@ -220,8 +231,10 @@ const Medical = () => {
                     </div>
 
                     <div className="modal-footer">
-                        <button type="button" className="btn btn-outline" onClick={closeModal}>Cancel</button>
-                        <button type="submit" className="btn btn-primary">{editingRecord ? 'Update Log' : 'Save Record'}</button>
+                        <Button type="button" variant="outline" onClick={closeModal}>Cancel</Button>
+                        <Button type="submit" variant="primary" loading={isSubmitting} loadingText={editingRecord ? 'Updating...' : 'Saving...'}>
+                            {editingRecord ? 'Update Log' : 'Save Record'}
+                        </Button>
                     </div>
                 </form>
             </Modal>

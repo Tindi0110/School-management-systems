@@ -3,11 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
     User, BookOpen, CreditCard, ShieldAlert, Heart, FileText,
     ArrowLeft, Printer, Edit, Phone, TrendingUp, AlertTriangle,
-    Plus, MessageSquare, History, ShieldCheck, FilePlus, Users,
-    GraduationCap, Trash2
+    Plus, MessageSquare, FilePlus, Users, Trash2
 } from 'lucide-react';
 import { studentsAPI, academicsAPI, financeAPI } from '../api/api';
 import Modal from '../components/Modal';
+import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
+import Button from '../components/common/Button';
 
 type TabType = 'SUMMARY' | 'ACADEMIC' | 'FINANCE' | 'DISCIPLINE' | 'HEALTH' | 'ACTIVITIES' | 'DOCUMENTS';
 
@@ -23,6 +25,9 @@ const StudentProfile = () => {
     const [activities, setActivities] = useState<any[]>([]);
     const [parents, setParents] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const toast = useToast();
+    const { confirm } = useConfirm();
 
     // Modals
     const [isDisciplineModalOpen, setIsDisciplineModalOpen] = useState(false);
@@ -38,7 +43,9 @@ const StudentProfile = () => {
             try {
                 const res = await academicsAPI.classes.getAll();
                 setClasses(res.data);
-            } catch (e) { console.error(e); }
+            } catch (e) {
+                // Silent
+            }
         };
         fetchClasses();
     }, []);
@@ -103,7 +110,7 @@ const StudentProfile = () => {
             setPayments(paymentsRes.data.filter((p: any) => p.student === Number(id)));
 
         } catch (error) {
-            console.error('Error loading profile:', error);
+            // Error
         } finally {
             setLoading(false);
         }
@@ -111,16 +118,23 @@ const StudentProfile = () => {
 
     const handleDisciplineSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSubmitting(true);
         try {
             if (disciplineId) {
                 await studentsAPI.discipline.update(disciplineId, { ...disciplineForm, student: Number(id) });
+                toast.success('Discipline record updated');
             } else {
                 await studentsAPI.discipline.create({ ...disciplineForm, student: Number(id) });
+                toast.success('Discipline record created');
             }
             loadStudentData();
             setIsDisciplineModalOpen(false);
             setDisciplineId(null);
-        } catch (err) { alert('Failed to save record'); }
+        } catch (err: any) {
+            toast.error(err.message || 'Failed to save record');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleEditDiscipline = (d: any) => {
@@ -136,27 +150,30 @@ const StudentProfile = () => {
     };
 
     const handleDeleteDiscipline = async (dId: number) => {
-        if (!confirm('Permanently delete this record?')) return;
-        try {
-            await studentsAPI.discipline.delete(dId);
-            loadStudentData();
-        } catch (err) { alert('Failed to delete record'); }
+        if (await confirm('Permanently delete this record?')) {
+            try {
+                await studentsAPI.discipline.delete(dId);
+                toast.success('Record deleted');
+                loadStudentData();
+            } catch (err) { toast.error('Failed to delete record'); }
+        }
     };
 
     const handleDeleteHealth = async () => {
-        if (!healthId || !confirm('Clear all medical data for this student?')) return;
+        if (!healthId || !(await confirm('Clear all medical data for this student?'))) return;
         try {
             await studentsAPI.health.delete(healthId);
             setHealthId(null);
             setHealthForm({ ...healthForm, blood_group: '', allergies: '', chronic_conditions: '', emergency_contact_name: '', emergency_contact_phone: '' });
             loadStudentData();
             setIsHealthModalOpen(false);
-            alert('Medical record cleared');
-        } catch (err) { alert('Failed to clear data'); }
+            toast.success('Medical record cleared');
+        } catch (err) { toast.error('Failed to clear data'); }
     };
 
     const handleHealthSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSubmitting(true);
         try {
             if (healthId) {
                 await studentsAPI.health.update(healthId, { ...healthForm, student: Number(id) });
@@ -165,22 +182,26 @@ const StudentProfile = () => {
             }
             loadStudentData();
             setIsHealthModalOpen(false);
-            alert('Health record updated successfully');
+            toast.success('Health record updated successfully');
         } catch (err) {
-            console.error(err);
-            alert('Failed to update medical info');
+            toast.error('Failed to update medical info');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
     const handleEditSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSubmitting(true);
         try {
             await studentsAPI.update(Number(id), student);
             loadStudentData();
             setIsEditModalOpen(false);
-            alert('Profile updated successfully');
+            toast.success('Profile updated successfully');
         } catch (error) {
-            alert('Failed to update profile');
+            toast.error('Failed to update profile');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -199,6 +220,7 @@ const StudentProfile = () => {
 
     const handleActivitySubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSubmitting(true);
         try {
             if (activityId) {
                 await studentsAPI.activities.update(activityId, { ...activityForm, student: Number(id) });
@@ -208,8 +230,9 @@ const StudentProfile = () => {
             loadStudentData();
             setIsActivityModalOpen(false);
             setActivityId(null);
-            alert(activityId ? 'Activity updated' : 'Activity added');
-        } catch (err) { alert('Failed to save activity'); }
+            toast.success(activityId ? 'Activity updated' : 'Activity added');
+        } catch (err) { toast.error('Failed to save activity'); }
+        finally { setIsSubmitting(false); }
     };
 
     const handleEditActivity = (act: any) => {
@@ -224,30 +247,36 @@ const StudentProfile = () => {
     };
 
     const handleDeleteActivity = async (actId: number) => {
-        if (!confirm('Remove this activity record?')) return;
-        try {
-            await studentsAPI.activities.delete(actId);
-            loadStudentData();
-        } catch (err) { alert('Failed to remove activity'); }
+        if (await confirm('Remove this activity record?')) {
+            try {
+                await studentsAPI.activities.delete(actId);
+                toast.success('Activity record removed');
+                loadStudentData();
+            } catch (err) { toast.error('Failed to remove activity'); }
+        }
     };
 
     const handleDocumentSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!documentForm.file) return alert('Please select a file');
+        if (!documentForm.file) return toast.warning('Please select a file');
+        setIsSubmitting(true);
         try {
             await studentsAPI.documents.create({ ...documentForm, student: Number(id) });
             loadStudentData();
             setIsDocumentModalOpen(false);
-            alert('Document uploaded successfully');
-        } catch (err) { alert('Failed to upload document'); }
+            toast.success('Document uploaded successfully');
+        } catch (err) { toast.error('Failed to upload document'); }
+        finally { setIsSubmitting(false); }
     };
 
     const handleDeleteDocument = async (docId: number) => {
-        if (!confirm('Delete this document? This cannot be undone.')) return;
-        try {
-            await studentsAPI.documents.delete(docId);
-            loadStudentData();
-        } catch (err) { alert('Failed to delete document'); }
+        if (await confirm('Delete this document? This cannot be undone.')) {
+            try {
+                await studentsAPI.documents.delete(docId);
+                toast.success('Document deleted');
+                loadStudentData();
+            } catch (err) { toast.error('Failed to delete document'); }
+        }
     };
 
     if (loading) return <div className="spinner-container flex items-center justify-center p-20"><div className="spinner"></div></div>;
@@ -266,54 +295,54 @@ const StudentProfile = () => {
     // --- Actions ---
     const handleTransfer = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSubmitting(true);
         try {
-            await studentsAPI.update(Number(id), { current_class: Number(transferClassId) });
-            alert('Student transferred successfully.');
+            await studentsAPI.patch(Number(id), { current_class: Number(transferClassId) });
+            toast.success('Student transferred successfully.');
             setIsTransferModalOpen(false);
             loadStudentData();
-        } catch (error) { alert('Transfer failed.'); }
+            loadStudentData();
+        } catch (error: any) {
+            toast.error(error.message || 'Transfer failed.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleSuspend = async () => {
-        if (!confirm('Are you sure you want to SUSPEND this student? access will be restricted.')) return;
-        try {
-            await studentsAPI.update(Number(id), { status: 'SUSPENDED' });
-            loadStudentData();
-            alert('Student Suspended.');
-            await studentsAPI.update(Number(id), { status: 'SUSPENDED' });
-            loadStudentData();
-            alert('Student Suspended.');
-        } catch (error) { alert('Action failed.'); }
+        if (await confirm('Are you sure you want to SUSPEND this student? access will be restricted.')) {
+            try {
+                await studentsAPI.patch(Number(id), { status: 'SUSPENDED' });
+                toast.success('Student Suspended.');
+                loadStudentData();
+            } catch (error) { toast.error('Action failed.'); }
+        }
     };
 
     const handleForceDelete = async () => {
-        if (!confirm('DANGER: This will PERMANENTLY DELETE the student and ALL linked records (Results, Hostels, Invoices). This action cannot be undone. Are you sure?')) return;
-        const confirmName = prompt(`Type "${student.full_name}" to confirm deletion:`);
-        if (confirmName !== student.full_name) return alert('Deletion cancelled: Name mismatch.');
-
-        try {
-            await studentsAPI.delete(Number(id)); // Try normal delete first
-            alert('Student deleted successfully.');
-            navigate('/students');
-        } catch (error: any) {
-            console.error(error);
-            // If normal delete fails, try force delete (custom endpoint)
-            if (confirm('Standard delete failed due to linked records. Attempt FORCE DELETE?')) {
-                try {
-                    await studentsAPI.forceDelete(Number(id));
-                    alert('Student FORCE DELETED successfully.');
-                    navigate('/students');
-                } catch (forceErr) {
-                    alert('Force delete also failed. Please contact admin.');
+        if (await confirm('DANGER: This will PERMANENTLY DELETE the student and ALL linked records (Results, Hostels, Invoices). This action cannot be undone. Are you sure?')) {
+            try {
+                await studentsAPI.delete(Number(id)); // Try normal delete first
+                toast.success('Student deleted successfully.');
+                navigate('/students');
+            } catch (error: any) {
+                console.error(error);
+                // If normal delete fails, try force delete (custom endpoint)
+                if (await confirm('Standard delete failed due to linked records. Attempt FORCE DELETE?')) {
+                    try {
+                        await studentsAPI.forceDelete(Number(id));
+                        toast.success('Student FORCE DELETED successfully.');
+                        navigate('/students');
+                    } catch (forceErr) {
+                        toast.error('Force delete also failed. Please contact admin.');
+                    }
                 }
             }
         }
     };
 
-    const handleMessage = () => {
-        const primaryParent = parents.find(p => p.is_primary) || { phone_number: student.guardian_phone };
-        const msg = prompt('Enter SMS Message for Guardian:');
-        if (msg) alert(`Message Queued: "${msg}" sent to ${primaryParent.phone_number || 'No Contact Found'}`);
+    const handleMessage = async () => {
+        toast.info('Direct SMS messaging feature is being integrated with the gateway. Please use the Messenger tab for now.');
     };
 
     const handleTranscriptPrint = () => {
@@ -336,12 +365,16 @@ const StudentProfile = () => {
         <div className="fade-in pb-12">
             {/* Header ... (keep existing) */}
             <div className="flex justify-between items-center mb-6 no-print">
-                <button className="btn btn-sm btn-outline px-4" onClick={() => navigate('/students')}>
-                    <ArrowLeft size={16} /> BACK TO REGISTRY
-                </button>
+                <Button variant="outline" size="sm" onClick={() => navigate('/students')} icon={<ArrowLeft size={16} />}>
+                    BACK TO REGISTRY
+                </Button>
                 <div className="flex gap-2">
-                    <button className="btn btn-sm btn-outline" onClick={() => setIsClearanceModalOpen(true)}><Printer size={16} /> CLEARANCE FORM</button>
-                    <button className="btn btn-sm btn-primary font-black" onClick={() => setIsEditModalOpen(true)}><Edit size={14} /> EDIT PROFILE</button>
+                    <Button variant="outline" size="sm" onClick={() => setIsClearanceModalOpen(true)} icon={<Printer size={16} />}>
+                        CLEARANCE FORM
+                    </Button>
+                    <Button variant="primary" size="sm" className="font-black" onClick={() => setIsEditModalOpen(true)} icon={<Edit size={14} />}>
+                        EDIT PROFILE
+                    </Button>
                 </div>
             </div>
 
@@ -415,7 +448,9 @@ const StudentProfile = () => {
                             <div className="card p-0 overflow-hidden shadow-lg border">
                                 <div className="p-4 bg-primary text-white flex justify-between items-center">
                                     <h3 className="mb-0 text-xs font-black uppercase tracking-widest">Institutional Timeline</h3>
-                                    <button className="btn btn-xs btn-outline border-white text-white font-black">EXPORT HISTORY</button>
+                                    <Button variant="outline" size="sm" className="border-white text-white hover:bg-white hover:text-primary">
+                                        EXPORT HISTORY
+                                    </Button>
                                 </div>
                                 <div className="p-6">
                                     <div className="space-y-6">
@@ -449,13 +484,13 @@ const StudentProfile = () => {
                             {/* ... (Keep Discipline Logic, it was fine) ... */}
                             <div className="flex justify-between items-center px-2">
                                 <h3 className="mb-0 text-xs font-black uppercase tracking-widest text-secondary">Behavioral Log</h3>
-                                <button className="btn btn-sm btn-danger font-black shadow-lg" onClick={() => {
+                                <Button variant="danger" size="sm" className="font-black shadow-lg" onClick={() => {
                                     setDisciplineId(null);
                                     setDisciplineForm({ incident_date: new Date().toISOString().split('T')[0], offence_category: '', description: '', action_taken: '', student: Number(id) });
                                     setIsDisciplineModalOpen(true);
-                                }}>
-                                    <Plus size={14} /> REPORT INCIDENT
-                                </button>
+                                }} icon={<Plus size={14} />}>
+                                    REPORT INCIDENT
+                                </Button>
                             </div>
                             {discipline.length === 0 ? (
                                 <div className="card p-12 text-center bg-success/5 border-dashed border-2 border-success/20">
@@ -468,8 +503,8 @@ const StudentProfile = () => {
                                     {discipline.map((d, i) => (
                                         <div key={i} className="card p-5 border-left-4 border-error relative shadow-sm">
                                             <div className="absolute top-2 right-2 flex gap-2 z-50">
-                                                <button type="button" className="text-secondary hover:text-primary cursor-pointer" onClick={(e) => { e.stopPropagation(); handleEditDiscipline(d); }}><Edit size={14} /></button>
-                                                <button type="button" className="text-error cursor-pointer" onClick={(e) => { e.stopPropagation(); handleDeleteDiscipline(d.id); }}><Trash2 size={14} /></button>
+                                                <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); handleEditDiscipline(d); }} icon={<Edit size={14} />} title="Edit" />
+                                                <Button variant="ghost" size="sm" className="text-error" onClick={(e) => { e.stopPropagation(); handleDeleteDiscipline(d.id); }} icon={<Trash2 size={14} />} title="Delete" />
                                             </div>
                                             <div className="absolute top-4 right-12 text-[10px] font-black text-secondary uppercase">{new Date(d.incident_date).toLocaleDateString()}</div>
                                             <h4 className="font-black text-[11px] text-error uppercase mb-1">{d.offence_category}</h4>
@@ -492,13 +527,13 @@ const StudentProfile = () => {
                                 <h3 className="mb-0 text-xs font-black uppercase tracking-widest text-secondary">Medical & Welfare Profile</h3>
                                 <div className="flex gap-2">
                                     {healthId && (
-                                        <button className="btn btn-sm btn-outline text-error font-black shadow-lg" onClick={handleDeleteHealth}>
-                                            <Trash2 size={14} /> CLEAR DATA
-                                        </button>
+                                        <Button variant="outline" size="sm" className="text-error font-black shadow-lg" onClick={handleDeleteHealth} icon={<Trash2 size={14} />}>
+                                            CLEAR DATA
+                                        </Button>
                                     )}
-                                    <button className="btn btn-sm btn-info font-black shadow-lg" onClick={() => setIsHealthModalOpen(true)}>
-                                        <Edit size={14} /> UPDATE MEDICAL INFO
-                                    </button>
+                                    <Button variant="secondary" size="sm" className="font-black shadow-lg" onClick={() => setIsHealthModalOpen(true)} icon={<Edit size={14} />}>
+                                        UPDATE MEDICAL INFO
+                                    </Button>
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 gap-8">
@@ -541,7 +576,7 @@ const StudentProfile = () => {
                         <div className="card p-0 overflow-hidden shadow-lg border">
                             <div className="p-4 border-bottom bg-secondary-light flex justify-between items-center">
                                 <h3 className="mb-0 text-xs font-black uppercase tracking-widest">Examination Ledger</h3>
-                                <button className="btn btn-xs btn-primary font-black uppercase" onClick={handleTranscriptPrint}>Download Full Transcript</button>
+                                <Button variant="primary" size="sm" onClick={handleTranscriptPrint}>Download Full Transcript</Button>
                             </div>
 
                             {/* Hidden Transcript Template inside ACADEMIC Tab */}
@@ -612,7 +647,7 @@ const StudentProfile = () => {
                             {/* ... (Keep Finance Logic) ... */}
                             <div className="p-4 border-bottom bg-secondary-light flex justify-between items-center">
                                 <h3 className="mb-0 text-xs font-black uppercase tracking-widest">Accounting Statement</h3>
-                                <button className="btn btn-xs btn-outline font-black py-1">GENERATE REPORT</button>
+                                <Button variant="outline" size="sm" className="font-black py-1">GENERATE REPORT</Button>
                             </div>
                             <table className="table">
                                 <thead>
@@ -644,19 +679,21 @@ const StudentProfile = () => {
                         <div className="space-y-6">
                             <div className="flex justify-between items-center px-2">
                                 <h3 className="mb-0 text-xs font-black uppercase tracking-widest text-secondary">Extra-Curricular Participation</h3>
-                                <button className="btn btn-sm btn-primary font-black shadow-lg" onClick={() => {
+                                <Button variant="primary" size="sm" className="font-black shadow-lg" onClick={() => {
                                     setActivityId(null);
                                     setActivityForm({ name: '', role: '', year: new Date().getFullYear(), activity_type: 'Club' });
                                     setIsActivityModalOpen(true);
-                                }}><Plus size={14} /> JOIN CLUB/SPORT</button>
+                                }} icon={<Plus size={14} />}>
+                                    JOIN CLUB/SPORT
+                                </Button>
                             </div>
                             <div className="grid grid-cols-2 gap-6">
                                 {activities.length === 0 ? <p className="text-secondary italic text-xs uppercase font-bold text-center py-8 col-span-2">No extra-curricular activities recorded</p> :
                                     activities.map((act, i) => (
                                         <div key={i} className={`card p-6 border-left-4 border-primary shadow-md relative`}>
                                             <div className="absolute top-2 right-2 flex gap-2 z-50">
-                                                <button type="button" className="text-secondary hover:text-primary cursor-pointer" onClick={(e) => { e.stopPropagation(); handleEditActivity(act); }}><Edit size={14} /></button>
-                                                <button type="button" className="text-error cursor-pointer" onClick={(e) => { e.stopPropagation(); handleDeleteActivity(act.id); }}><Trash2 size={14} /></button>
+                                                <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); handleEditActivity(act); }} icon={<Edit size={14} />} title="Edit" />
+                                                <Button variant="ghost" size="sm" className="text-error" onClick={(e) => { e.stopPropagation(); handleDeleteActivity(act.id); }} icon={<Trash2 size={14} />} title="Delete" />
                                             </div>
                                             <div className="flex justify-between items-start mb-3">
                                                 <h4 className="font-black text-xs uppercase text-primary mb-0">{act.name}</h4>
@@ -676,15 +713,15 @@ const StudentProfile = () => {
                         <div className="space-y-6">
                             <div className="flex justify-between items-center px-2">
                                 <h3 className="mb-0 text-xs font-black uppercase tracking-widest text-secondary">Institutional Repository</h3>
-                                <button className="btn btn-sm btn-primary font-black shadow-lg" onClick={() => setIsDocumentModalOpen(true)}>
-                                    <FilePlus size={14} /> ATTACH FILE
-                                </button>
+                                <Button variant="primary" size="sm" className="font-black shadow-lg" onClick={() => setIsDocumentModalOpen(true)} icon={<FilePlus size={14} />}>
+                                    ATTACH FILE
+                                </Button>
                             </div>
                             <div className="grid grid-cols-3 gap-6">
                                 {documents.length === 0 ? <p className="text-secondary italic text-xs uppercase font-bold text-center py-8 col-span-3">No documents archived</p> :
                                     documents.map((doc, i) => (
                                         <div key={i} className="card p-5 text-center hover-bg-secondary cursor-pointer border-dashed border-2 flex flex-col items-center gap-3 relative">
-                                            <button type="button" className="absolute top-2 right-2 text-error z-50 cursor-pointer" onClick={(e) => { e.stopPropagation(); handleDeleteDocument(doc.id); }}><Trash2 size={14} /></button>
+                                            <Button variant="ghost" size="sm" className="absolute top-2 right-2 text-error z-50" onClick={(e) => { e.stopPropagation(); handleDeleteDocument(doc.id); }} icon={<Trash2 size={14} />} title="Delete" />
                                             <div className="w-10 h-10 rounded-full bg-secondary-light flex items-center justify-center"><FileText className="text-primary" /></div>
                                             <h4 className="text-[10px] font-black uppercase text-primary mb-0">{doc.doc_type || 'DOCUMENT'}</h4>
                                             <p className="text-[9px] text-secondary font-bold mb-0 truncate w-full">{doc.file.split('/').pop()}</p>
@@ -715,9 +752,9 @@ const StudentProfile = () => {
                             <div className="flex justify-between items-center text-[10px] font-black uppercase text-secondary"><span>Transport</span> <span className="text-primary">{student.transport_details || 'NONE'}</span></div>
                         </div>
                         <div className="mt-8 space-y-2">
-                            <button className="btn btn-xs btn-outline w-full uppercase font-black py-2 tracking-widest" onClick={() => setIsTransferModalOpen(true)}>Transfer Unit</button>
-                            <button className="btn btn-xs btn-ghost text-error w-full uppercase font-black py-2 tracking-widest" onClick={handleSuspend}>Restrict / Suspend</button>
-                            <button className="btn btn-xs btn-danger w-full uppercase font-black py-2 tracking-widest mt-2" onClick={handleForceDelete}>PERMANENTLY DELETE</button>
+                            <Button variant="outline" size="sm" className="w-full uppercase font-black py-2 tracking-widest" onClick={() => setIsTransferModalOpen(true)}>Transfer Unit</Button>
+                            <Button variant="ghost" size="sm" className="text-error w-full uppercase font-black py-2 tracking-widest" onClick={handleSuspend}>Restrict / Suspend</Button>
+                            <Button variant="danger" size="sm" className="w-full uppercase font-black py-2 tracking-widest mt-2" onClick={handleForceDelete}>PERMANENTLY DELETE</Button>
                         </div>
                     </div>
 
@@ -739,7 +776,11 @@ const StudentProfile = () => {
                     </div>
                     <div className="form-group"><label className="label text-[10px] font-black uppercase">Detailed Description</label><textarea className="input" rows={3} value={disciplineForm.description} onChange={e => setDisciplineForm({ ...disciplineForm, description: e.target.value })} required></textarea></div>
                     <div className="form-group"><label className="label text-[10px] font-black uppercase">Action Taken</label><input type="text" className="input" placeholder="e.g. Suspension, Warning" value={disciplineForm.action_taken} onChange={e => setDisciplineForm({ ...disciplineForm, action_taken: e.target.value })} required /></div>
-                    <div className="modal-footer pt-4"><button type="submit" className="btn btn-sm btn-danger w-full font-black uppercase shadow-lg">Submit Institutional Record</button></div>
+                    <div className="modal-footer pt-4">
+                        <Button type="submit" variant="danger" className="w-full font-black uppercase shadow-lg" loading={isSubmitting} loadingText="Saving...">
+                            Submit Institutional Record
+                        </Button>
+                    </div>
                 </form>
             </Modal>
 
@@ -752,8 +793,10 @@ const StudentProfile = () => {
                         {classes.map(c => <option key={c.id} value={c.id}>{c.name} {c.stream}</option>)}
                     </select>
                     <div className="modal-footer pt-4">
-                        <button type="button" className="btn btn-outline" onClick={() => setIsTransferModalOpen(false)}>Cancel</button>
-                        <button type="submit" className="btn btn-primary">Process Transfer</button>
+                        <Button type="button" variant="outline" onClick={() => setIsTransferModalOpen(false)}>Cancel</Button>
+                        <Button type="submit" variant="primary" loading={isSubmitting} loadingText="Processing...">
+                            Process Transfer
+                        </Button>
                     </div>
                 </form>
             </Modal>
@@ -769,9 +812,11 @@ const StudentProfile = () => {
                         <div className="form-group"><label className="label text-[10px] font-black uppercase">Emergency Contact</label><input type="text" className="input" value={healthForm.emergency_contact_name} onChange={e => setHealthForm({ ...healthForm, emergency_contact_name: e.target.value })} required /></div>
                         <div className="form-group"><label className="label text-[10px] font-black uppercase">Emergency Phone</label><input type="tel" className="input" value={healthForm.emergency_contact_phone} onChange={e => setHealthForm({ ...healthForm, emergency_contact_phone: e.target.value })} required /></div>
                     </div>
-                    <div className="modal-footer pt-4 flex justify-between">
-                        {healthId && <button type="button" className="btn btn-sm btn-outline text-error font-black uppercase" onClick={handleDeleteHealth}>Delete Record</button>}
-                        <button type="submit" className="btn btn-sm btn-info font-black uppercase shadow-lg flex-grow ml-4">Sync Medical Database</button>
+                    <div className="modal-footer pt-4 flex justify-between gap-4">
+                        {healthId && <Button type="button" variant="outline" className="text-error font-black uppercase" onClick={handleDeleteHealth}>Delete Record</Button>}
+                        <Button type="submit" variant="secondary" className="font-black uppercase shadow-lg flex-grow" loading={isSubmitting} loadingText="Syncing...">
+                            Sync Medical Database
+                        </Button>
                     </div>
                 </form>
             </Modal>
@@ -788,7 +833,11 @@ const StudentProfile = () => {
                     </div>
                     <div className="form-group"><label className="label text-[10px] font-black uppercase">Role / Position</label><input type="text" className="input" placeholder="e.g. Member, Captain" value={activityForm.role} onChange={e => setActivityForm({ ...activityForm, role: e.target.value })} /></div>
                     <div className="form-group"><label className="label text-[10px] font-black uppercase">Year</label><input type="number" className="input" value={activityForm.year} onChange={e => setActivityForm({ ...activityForm, year: parseInt(e.target.value) })} /></div>
-                    <div className="modal-footer pt-4"><button type="submit" className="btn btn-primary w-full font-black uppercase">Register Participation</button></div>
+                    <div className="modal-footer pt-4">
+                        <Button type="submit" variant="primary" className="w-full font-black uppercase" loading={isSubmitting} loadingText="Registering...">
+                            Register Participation
+                        </Button>
+                    </div>
                 </form>
             </Modal>
 
@@ -803,7 +852,11 @@ const StudentProfile = () => {
                         </select>
                     </div>
                     <div className="form-group"><label className="label text-[10px] font-black uppercase">Select File</label><input type="file" className="file-input w-full" onChange={e => setDocumentForm({ ...documentForm, file: e.target.files?.[0] || null })} required /></div>
-                    <div className="modal-footer pt-4"><button type="submit" className="btn btn-primary w-full font-black uppercase">Upload to Archive</button></div>
+                    <div className="modal-footer pt-4">
+                        <Button type="submit" variant="primary" className="w-full font-black uppercase" loading={isSubmitting} loadingText="Uploading...">
+                            Upload to Archive
+                        </Button>
+                    </div>
                 </form>
             </Modal>
 
@@ -837,7 +890,11 @@ const StudentProfile = () => {
                             <option value="TRANSFERRED">Transferred</option>
                         </select>
                     </div>
-                    <div className="modal-footer pt-4"><button type="submit" className="btn btn-primary w-full font-black uppercase">Update Profile</button></div>
+                    <div className="modal-footer pt-4">
+                        <Button type="submit" variant="primary" className="w-full font-black uppercase" loading={isSubmitting} loadingText="Updating...">
+                            Update Profile
+                        </Button>
+                    </div>
                 </form>
             </Modal>
 

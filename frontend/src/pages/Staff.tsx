@@ -3,6 +3,9 @@ import { Plus, Search, Edit, Trash2, Users, Briefcase, Printer, Download, List, 
 import { staffAPI } from '../api/api';
 import { exportToCSV } from '../utils/export';
 import Modal from '../components/Modal';
+import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
+import Button from '../components/common/Button';
 
 const Staff = () => {
     const [staff, setStaff] = useState<any[]>([]);
@@ -11,6 +14,9 @@ const Staff = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingStaff, setEditingStaff] = useState<any>(null);
     const [groupBy, setGroupBy] = useState<'NONE' | 'ROLE' | 'DEPARTMENT'>('NONE');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const toast = useToast();
+    const { confirm } = useConfirm();
 
     const [formData, setFormData] = useState({
         employee_id: '',
@@ -38,6 +44,7 @@ const Staff = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSubmitting(true);
         const submissionData = {
             ...formData,
             write_full_name: formData.full_name,
@@ -46,25 +53,29 @@ const Staff = () => {
         try {
             if (editingStaff) {
                 await staffAPI.update(editingStaff.id, submissionData);
+                toast.success('Staff member updated successfully');
             } else {
                 await staffAPI.create(submissionData);
+                toast.success('Staff member registered successfully');
             }
             loadData();
             closeModal();
         } catch (error: any) {
-            alert(error.response?.data?.detail || 'Failed to save staff member');
+            toast.error(error.response?.data?.detail || 'Failed to save staff member');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
     const handleDelete = async (id: number) => {
-        if (!confirm('Are you sure you want to remove this staff member?')) return;
+        if (!await confirm('Are you sure you want to remove this staff member?')) return;
         try {
             await staffAPI.delete(id);
-            alert('Staff member removed successfully.');
+            toast.success('Staff member removed successfully.');
             loadData();
         } catch (error: any) {
             console.error('Delete failed:', error);
-            alert(error.response?.data?.detail || 'Failed to delete staff member. They may be assigned as Class Teacher or Warden.');
+            toast.error(error.response?.data?.detail || 'Failed to delete staff member. They may be assigned as Class Teacher or Warden.');
         }
     };
 
@@ -138,12 +149,8 @@ const Staff = () => {
                         <td>{new Date(member.date_joined).toLocaleDateString()}</td>
                         <td className="no-print">
                             <div className="flex gap-sm">
-                                <button className="btn btn-sm btn-outline" onClick={() => openModal(member)} title="Edit">
-                                    <Edit size={14} />
-                                </button>
-                                <button className="btn btn-sm btn-danger" onClick={() => handleDelete(member.id)} title="Delete">
-                                    <Trash2 size={14} />
-                                </button>
+                                <Button variant="outline" size="sm" onClick={() => openModal(member)} title="Edit" icon={<Edit size={14} />} />
+                                <Button variant="danger" size="sm" onClick={() => handleDelete(member.id)} title="Delete" icon={<Trash2 size={14} />} />
                             </div>
                         </td>
                     </tr>
@@ -177,15 +184,15 @@ const Staff = () => {
                     <p className="text-secondary">Official faculty and support staff directory</p>
                 </div>
                 <div className="flex gap-md">
-                    <button className="btn btn-outline" onClick={handleDownloadCSV}>
-                        <Download size={18} /> Save CSV
-                    </button>
-                    <button className="btn btn-outline" onClick={handlePrint}>
-                        <Printer size={18} /> Print Record
-                    </button>
-                    <button className="btn btn-primary" onClick={() => openModal()}>
-                        <Plus size={18} /> Add Staff Member
-                    </button>
+                    <Button variant="outline" onClick={handleDownloadCSV} icon={<Download size={18} />}>
+                        Save CSV
+                    </Button>
+                    <Button variant="outline" onClick={handlePrint} icon={<Printer size={18} />}>
+                        Print Record
+                    </Button>
+                    <Button variant="primary" onClick={() => openModal()} icon={<Plus size={18} />}>
+                        Add Staff Member
+                    </Button>
                 </div>
             </div>
 
@@ -286,9 +293,11 @@ const Staff = () => {
                         <label className="label">Qualifications</label>
                         <textarea className="textarea" value={formData.qualifications} onChange={(e) => setFormData({ ...formData, qualifications: e.target.value })} rows={3} />
                     </div>
-                    <div className="modal-footer pt-4 border-top mt-4">
-                        <button type="button" className="btn btn-outline" onClick={closeModal}>Cancel</button>
-                        <button type="submit" className="btn btn-primary">{editingStaff ? 'Update Record' : 'Register Staff'}</button>
+                    <div className="modal-footer pt-4 border-top mt-4 flex justify-end gap-2">
+                        <Button type="button" variant="outline" onClick={closeModal}>Cancel</Button>
+                        <Button type="submit" variant="primary" loading={isSubmitting} loadingText={editingStaff ? 'Updating...' : 'Registering...'}>
+                            {editingStaff ? 'Update Record' : 'Register Staff'}
+                        </Button>
                     </div>
                 </form>
             </Modal>

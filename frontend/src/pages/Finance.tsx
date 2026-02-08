@@ -5,10 +5,16 @@ import { CreditCard, FileText, TrendingUp, CheckCircle, AlertCircle, Plus, X, Do
 import SearchableSelect from '../components/SearchableSelect';
 import { exportToCSV } from '../utils/export';
 import Modal from '../components/Modal';
+import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
+import Button from '../components/common/Button';
 
 const Finance = () => {
     const [activeTab, setActiveTab] = useState('dashboard');
     const [loading, setLoading] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const { success, toastError } = useToast();
+    const { confirm } = useConfirm();
     const { user } = useSelector((state: any) => state.auth);
     // Admin is Read Only for Finance
     // Logic: 
@@ -100,8 +106,9 @@ const Finance = () => {
                 const res = await financeAPI.expenses.getAll();
                 setExpenses(res.data);
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error(err);
+            toastError('Failed to load financial data');
         } finally {
             setLoading(false);
         }
@@ -109,19 +116,22 @@ const Finance = () => {
 
     const handleGenerateInvoices = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!confirm('Generate invoices for this class? This action cannot be undone.')) return;
+        if (!await confirm('Generate invoices for this class? This action cannot be undone.', { type: 'warning' })) return;
 
+        setIsSubmitting(true);
         try {
             await financeAPI.invoices.generateBatch({
                 class_id: Number(genForm.class_id),
                 term: Number(genForm.term),
                 year_id: Number(genForm.year_id)
             });
-            alert('Invoices generated successfully!');
+            success('Invoices generated successfully!');
             setShowInvoiceModal(false);
             loadData();
         } catch (err: any) {
-            alert(err.response?.data?.error || 'Generation failed');
+            toastError(err.response?.data?.error || 'Generation failed');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -155,14 +165,13 @@ const Finance = () => {
 
     const handleReceivePayment = async (e: React.FormEvent) => {
         e.preventDefault();
-        try {
-            // Auto-find invoice if not set (simple logic: find unpaid invoice for student)
-            let finalInvoiceId = payForm.invoice_id;
-            if (!payForm.invoice_id) {
-                alert('Please select an invoice to pay.');
-                return;
-            }
+        if (!payForm.invoice_id) {
+            toastError('Please select an invoice to pay.');
+            return;
+        }
 
+        setIsSubmitting(true);
+        try {
             await financeAPI.payments.create({
                 invoice: payForm.invoice_id,
                 amount: payForm.amount,
@@ -171,13 +180,15 @@ const Finance = () => {
                 date_received: new Date().toISOString().split('T')[0]
             });
 
-            alert('Payment received successfully!');
+            success('Payment received successfully!');
             setShowPaymentModal(false);
             setPayForm({ student_id: '', invoice_id: '', amount: '', method: 'CASH', reference: '' });
             loadData();
         } catch (err: any) {
             console.error(err);
-            alert(err.response?.data?.error || err.message || 'Payment failed');
+            toastError(err.response?.data?.error || err.message || 'Payment failed');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -185,6 +196,7 @@ const Finance = () => {
 
     const handleFeeSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSubmitting(true);
         try {
             if (editingFeeId) {
                 await financeAPI.feeStructures.update(editingFeeId, {
@@ -192,33 +204,35 @@ const Finance = () => {
                     academic_year: feeForm.year_id,
                     class_level: feeForm.class_id || null
                 });
-                alert('Fee structure updated!');
+                success('Fee structure updated!');
             } else {
                 await financeAPI.feeStructures.create({
                     ...feeForm,
                     academic_year: feeForm.year_id,
                     class_level: feeForm.class_id || null
                 });
-                alert('Fee structure created!');
+                success('Fee structure created!');
             }
             setShowFeeModal(false);
             setEditingFeeId(null);
             setFeeForm({ name: '', amount: '', term: '1', year_id: '', class_id: '' });
             loadData();
         } catch (err: any) {
-            alert('Failed to save fee structure');
+            toastError(err.message || 'Failed to save fee structure');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
     const handleDeleteFee = async (id: number) => {
-        if (!window.confirm('Are you sure you want to delete this fee structure?')) return;
+        if (!await confirm('Are you sure you want to delete this fee structure?', { type: 'danger' })) return;
         try {
             await financeAPI.feeStructures.delete(id);
-            alert('Fee structure deleted successfully');
+            success('Fee structure deleted successfully');
             loadData();
-        } catch (err) {
+        } catch (err: any) {
             console.error(err);
-            alert('Failed to delete fee');
+            toastError(err.message || 'Failed to delete fee');
         }
     };
 
@@ -236,22 +250,30 @@ const Finance = () => {
 
     const handleExpenseSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!await confirm('Record this expense?', { type: 'warning' })) return;
+
+        setIsSubmitting(true);
         try {
-            window.confirm('Record this expense?') && await financeAPI.expenses.create(expenseForm);
+            await financeAPI.expenses.create(expenseForm);
+            success('Expense recorded successfully');
             setShowExpenseModal(false);
             setExpenseForm({ category: 'SUPPLIES', amount: '', description: '', paid_to: '', date_occurred: '' });
             loadData();
         } catch (err: any) {
-            alert('Failed to record expense');
+            toastError(err.message || 'Failed to record expense');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
     const handleExpenseStatusChange = async (expenseId: number, newStatus: string) => {
+        if (!await confirm(`Change expense status to ${newStatus}?`)) return;
         try {
             await financeAPI.expenses.patch(expenseId, { status: newStatus });
+            success(`Expense status updated to ${newStatus}`);
             loadData();
         } catch (err: any) {
-            alert('Failed to update expense status');
+            toastError(err.message || 'Failed to update expense status');
         }
     };
 
@@ -303,12 +325,12 @@ const Finance = () => {
                     {/* Added Receive Payment to main header for quick access */}
                     {!isReadOnly && (
                         <>
-                            <button className="btn btn-outline gap-2 no-print" onClick={() => setShowPaymentModal(true)}>
-                                <CreditCard size={18} /> Receive Payment
-                            </button>
-                            <button className="btn btn-primary gap-2 no-print" onClick={() => setShowInvoiceModal(true)}>
-                                <FileText size={18} /> Generate Invoices
-                            </button>
+                            <Button variant="outline" icon={<CreditCard size={18} />} className="no-print" onClick={() => setShowPaymentModal(true)}>
+                                Receive Payment
+                            </Button>
+                            <Button variant="primary" icon={<FileText size={18} />} className="no-print" onClick={() => setShowInvoiceModal(true)}>
+                                Generate Invoices
+                            </Button>
                         </>
                     )}
                 </div>
@@ -317,13 +339,13 @@ const Finance = () => {
             {/* Navigation */}
             <div className="flex gap-2 overflow-x-auto pb-2 mb-6 border-b border-border no-print">
                 {['dashboard', 'invoices', 'payments', 'fees', 'expenses'].map(tab => (
-                    <button key={tab}
+                    <Button key={tab}
+                        variant={activeTab === tab ? 'primary' : 'ghost'}
                         onClick={() => setActiveTab(tab)}
-                        className={`px-4 py-2 rounded-lg font-medium transition-all whitespace-nowrap ${activeTab === tab ? 'bg-primary text-white shadow-md' : 'text-secondary hover:bg-base-200'
-                            }`}
+                        className={`font-medium transition-all whitespace-nowrap ${activeTab === tab ? 'shadow-md' : 'text-secondary'}`}
                     >
                         {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                    </button>
+                    </Button>
                 ))}
             </div>
 
@@ -376,7 +398,7 @@ const Finance = () => {
                                                         </span>
                                                     </td>
                                                     <td>
-                                                        <button className="btn btn-xs btn-ghost" onClick={() => handleViewInvoice(inv)}>View</button>
+                                                        <Button variant="ghost" size="sm" onClick={() => handleViewInvoice(inv)}>View</Button>
                                                     </td>
                                                 </tr>
                                             ))}
@@ -392,9 +414,9 @@ const Finance = () => {
                             <div className="flex justify-between mb-4">
                                 <h3 className="text-lg font-bold">Fee Structures</h3>
                                 {!isReadOnly && (
-                                    <button className="btn btn-sm btn-secondary" onClick={() => setShowFeeModal(true)}>
-                                        <Plus size={16} className="mr-1" /> Add New Fee
-                                    </button>
+                                    <Button variant="secondary" size="sm" onClick={() => setShowFeeModal(true)} icon={<Plus size={16} />}>
+                                        Add New Fee
+                                    </Button>
                                 )}
                             </div>
                             <table className="table w-full">
@@ -415,8 +437,8 @@ const Finance = () => {
                                             <td>Term {fee.term}</td>
                                             <td className="font-mono">{Number(fee.amount).toLocaleString()}</td>
                                             <td className="flex gap-2">
-                                                <button className="btn btn-xs btn-outline" onClick={() => openEditFee(fee)}>Edit</button>
-                                                <button className="btn btn-xs btn-error" onClick={() => handleDeleteFee(fee.id)}>Delete</button>
+                                                <Button variant="outline" size="sm" onClick={() => openEditFee(fee)}>Edit</Button>
+                                                <Button variant="danger" size="sm" onClick={() => handleDeleteFee(fee.id)}>Delete</Button>
                                             </td>
                                         </tr>
                                     ))}
@@ -430,13 +452,13 @@ const Finance = () => {
                             <div className="flex justify-between mb-4">
                                 <h3 className="text-lg font-bold">School Expenses</h3>
                                 <div className="flex gap-2">
-                                    <button className="btn btn-sm btn-outline" onClick={() => exportToCSV(expenses, 'expenses_report')}>
-                                        <Download size={16} /> Export CSV
-                                    </button>
+                                    <Button variant="outline" size="sm" onClick={() => exportToCSV(expenses, 'expenses_report')} icon={<Download size={16} />}>
+                                        Export CSV
+                                    </Button>
                                     {!isReadOnly && (
-                                        <button className="btn btn-sm btn-secondary" onClick={() => setShowExpenseModal(true)}>
-                                            <Plus size={16} className="mr-1" /> Add Expense
-                                        </button>
+                                        <Button variant="secondary" size="sm" onClick={() => setShowExpenseModal(true)} icon={<Plus size={16} />}>
+                                            Add Expense
+                                        </Button>
                                     )}
                                 </div>
                             </div>
@@ -516,8 +538,8 @@ const Finance = () => {
                                     </div>
                                 </div>
                                 <div className="flex gap-2 no-print">
-                                    <button className="btn btn-sm btn-outline" onClick={() => window.print()}>Print</button>
-                                    <button className="btn btn-sm btn-secondary" onClick={() => exportToCSV(invoices, 'invoices_report')}>Download CSV</button>
+                                    <Button variant="outline" size="sm" onClick={() => window.print()}>Print</Button>
+                                    <Button variant="secondary" size="sm" onClick={() => exportToCSV(invoices, 'invoices_report')}>Download CSV</Button>
                                 </div>
                             </div>
                             <div className="table-container max-h-[600px] overflow-y-auto">
@@ -554,9 +576,9 @@ const Finance = () => {
                                                     </span>
                                                 </td>
                                                 <td className="flex gap-2">
-                                                    <button className="btn btn-xs btn-ghost" onClick={() => handleViewInvoice(inv)}>View</button>
+                                                    <Button variant="ghost" size="sm" onClick={() => handleViewInvoice(inv)}>View</Button>
                                                     {!isReadOnly && inv.status !== 'PAID' && (
-                                                        <button className="btn btn-xs btn-primary" onClick={() => handlePayInvoice(inv)}>Pay</button>
+                                                        <Button variant="primary" size="sm" onClick={() => handlePayInvoice(inv)}>Pay</Button>
                                                     )}
                                                 </td>
                                             </tr>
@@ -572,13 +594,13 @@ const Finance = () => {
                             <div className="flex justify-between mb-4">
                                 <h3 className="text-lg font-bold">Payment History</h3>
                                 <div className="flex gap-2">
-                                    <button className="btn btn-sm btn-outline" onClick={() => exportToCSV(payments, 'payments_report')}>
-                                        <Download size={16} /> Export CSV
-                                    </button>
+                                    <Button variant="outline" size="sm" onClick={() => exportToCSV(payments, 'payments_report')} icon={<Download size={16} />}>
+                                        Export CSV
+                                    </Button>
                                     {!isReadOnly && (
-                                        <button className="btn btn-sm btn-primary" onClick={() => setShowPaymentModal(true)}>
-                                            <Plus size={16} className="mr-1" /> Receive Payment
-                                        </button>
+                                        <Button variant="primary" size="sm" onClick={() => setShowPaymentModal(true)} icon={<Plus size={16} />}>
+                                            Receive Payment
+                                        </Button>
                                     )}
                                 </div>
                             </div>
@@ -681,12 +703,12 @@ const Finance = () => {
                                 Balance Due: <span className="text-error">{Number(selectedInvoice.balance).toLocaleString()}</span>
                             </div>
                             <div className="flex gap-2">
-                                <button className="btn btn-ghost" onClick={() => setShowViewModal(false)}>Close</button>
+                                <Button variant="ghost" onClick={() => setShowViewModal(false)}>Close</Button>
                                 {selectedInvoice.status !== 'PAID' && (
-                                    <button className="btn btn-primary" onClick={() => {
+                                    <Button variant="primary" onClick={() => {
                                         setShowViewModal(false);
                                         handlePayInvoice(selectedInvoice);
-                                    }}>Make Payment</button>
+                                    }}>Make Payment</Button>
                                 )}
                             </div>
                         </div>
@@ -723,8 +745,8 @@ const Finance = () => {
                         required
                     />
                     <div className="modal-action">
-                        <button type="button" className="btn btn-ghost" onClick={() => setShowInvoiceModal(false)}>Cancel</button>
-                        <button type="submit" className="btn btn-primary">Generate Invoices</button>
+                        <Button type="button" variant="ghost" onClick={() => setShowInvoiceModal(false)}>Cancel</Button>
+                        <Button type="submit" variant="primary" loading={isSubmitting} loadingText="Generating...">Generate Invoices</Button>
                     </div>
                 </form>
             </Modal>
@@ -769,8 +791,8 @@ const Finance = () => {
                         </div>
                     </div>
                     <div className="modal-action">
-                        <button type="button" className="btn btn-ghost" onClick={() => setShowFeeModal(false)}>Cancel</button>
-                        <button type="submit" className="btn btn-primary">Create Fee</button>
+                        <Button type="button" variant="ghost" onClick={() => setShowFeeModal(false)}>Cancel</Button>
+                        <Button type="submit" variant="primary" loading={isSubmitting} loadingText="Saving...">Create Fee</Button>
                     </div>
                 </form>
             </Modal>
@@ -816,8 +838,8 @@ const Finance = () => {
                         />
                     </div>
                     <div className="modal-action">
-                        <button type="button" className="btn btn-ghost" onClick={() => setShowExpenseModal(false)}>Cancel</button>
-                        <button type="submit" className="btn btn-primary">Record Expense</button>
+                        <Button type="button" variant="ghost" onClick={() => setShowExpenseModal(false)}>Cancel</Button>
+                        <Button type="submit" variant="primary" loading={isSubmitting} loadingText="Recording...">Record Expense</Button>
                     </div>
                 </form>
             </Modal>
@@ -881,8 +903,8 @@ const Finance = () => {
                         </div>
                     </div>
                     <div className="modal-action">
-                        <button type="button" className="btn btn-ghost" onClick={() => setShowPaymentModal(false)}>Cancel</button>
-                        <button type="submit" className="btn btn-primary">Process Payment</button>
+                        <Button type="button" variant="ghost" onClick={() => setShowPaymentModal(false)}>Cancel</Button>
+                        <Button type="submit" variant="primary" loading={isSubmitting} loadingText="Processing...">Process Payment</Button>
                     </div>
                 </form>
             </Modal>

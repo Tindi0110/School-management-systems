@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import {
-    Plus, Search, Edit, Trash2, BookOpen, Users, GraduationCap,
+    Plus, Search, Edit, Trash2, Users,
     School, Calendar, ClipboardCheck, BarChart3, FileText,
-    Settings, CheckCircle2, TrendingUp, Book, Layers, ShieldCheck, Trophy, Printer, Square, CheckSquare
+    Settings, CheckCircle2, TrendingUp, Book, Layers, Trophy, Printer, Square, CheckSquare
 } from 'lucide-react';
 import { academicsAPI, staffAPI, studentsAPI } from '../api/api';
 import { exportToCSV } from '../utils/export';
@@ -15,12 +15,11 @@ import { useConfirm } from '../context/ConfirmContext';
 import Button from '../components/common/Button';
 
 const Academics = () => {
-    const [activeTab, setActiveTab] = useState<'SUMMARY' | 'CLASSES' | 'CURRICULUM' | 'EXAMS' | 'GRADING' | 'ATTENDANCE' | 'RESOURCES'>('SUMMARY');
+    const [activeTab, setActiveTab] = useState<'SUMMARY' | 'CLASSES' | 'CURRICULUM' | 'EXAMS' | 'GRADING' | 'ATTENDANCE' | 'RESOURCES' | 'ALLOCATION'>('SUMMARY');
     const [loading, setLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const { success, error: toastError, warning, info } = useToast();
+    const { success, error: toastError, warning } = useToast();
     const { confirm } = useConfirm();
-    const [searchTerm, setSearchTerm] = useState('');
 
 
     // Data States
@@ -47,10 +46,6 @@ const Academics = () => {
     const uniqueClassNames = Array.from(new Set(classes.map(c => c.name))).sort();
 
     // Helper: Get streams for a selected class name
-    const getStreamsForClass = (className: string) => classes.filter(c => c.name === className);
-
-    // Filtered Students for Attendance/Exams based on cascading selection
-    const getStudentsForClassId = (classId: string) => students.filter(s => s.current_class === parseInt(classId));
 
 
 
@@ -95,8 +90,6 @@ const Academics = () => {
     const [isBoundaryModalOpen, setIsBoundaryModalOpen] = useState(false);
     const [boundaryForm, setBoundaryForm] = useState({ system: '', grade: '', min_score: 0, max_score: 100, points: 0, remarks: '' });
     const [selectedSystem, setSelectedSystem] = useState<any>(null);
-    const [editingBoundaryId, setEditingBoundaryId] = useState<number | null>(null);
-    const [editingSystemId, setEditingSystemId] = useState<number | null>(null);
     const [editingGroupId, setEditingGroupId] = useState<number | null>(null);
 
     // Results & Views State
@@ -124,7 +117,8 @@ const Academics = () => {
         setIsSubmitting(true);
         try {
             if (editingSystemId) {
-                toastError('Update not implemented yet');
+                await academicsAPI.gradeSystems.update(editingSystemId, gradeForm);
+                success('Grade System Updated');
             } else {
                 await academicsAPI.gradeSystems.create(gradeForm);
                 success('Grade System Created');
@@ -703,9 +697,6 @@ const Academics = () => {
         }
     };
 
-    const handlePrintAcademics = () => {
-        window.print();
-    };
 
     if (loading) return <div className="flex items-center justify-center p-12 spinner-container"><div className="spinner"></div></div>;
 
@@ -800,7 +791,7 @@ const Academics = () => {
                         <div className="card">
                             <div className="card-header flex justify-between items-center py-2">
                                 <h3 className="mb-0 text-xs font-black uppercase">Exams Overview</h3>
-                                <button className="btn btn-xs btn-ghost" onClick={() => setActiveTab('EXAMS')}>View All</button>
+                                <Button variant="ghost" size="sm" onClick={() => setActiveTab('EXAMS')}>View All</Button>
                             </div>
                             <div className="p-4 space-y-3">
                                 {exams.slice(0, 3).map(e => (
@@ -822,7 +813,7 @@ const Academics = () => {
                             <div className="card-header flex justify-between items-center py-2">
                                 <h3 className="mb-0 text-xs font-black uppercase">Syllabus Completion</h3>
                                 <div className="flex gap-2">
-                                    <button className="btn btn-xs btn-outline" onClick={() => setIsSyllabusModalOpen(true)}><Edit size={12} /></button>
+                                    <Button variant="outline" size="sm" onClick={() => setIsSyllabusModalOpen(true)} icon={<Edit size={12} />} />
                                     <BarChart3 size={14} className="text-secondary" />
                                 </div>
                             </div>
@@ -859,8 +850,8 @@ const Academics = () => {
                             <div className="flex justify-between items-center pt-2 border-top">
                                 <span className="text-[10px] font-black text-secondary uppercase">{cls.class_teacher_name || 'Unassigned TR'}</span>
                                 <div className="flex gap-1">
-                                    <button className="btn btn-xs btn-outline" onClick={() => openEditClass(cls)} title="Edit Class Details"><Edit size={10} /></button>
-                                    <button className="btn btn-xs btn-ghost text-primary" onClick={() => openViewClass(cls)} title="View Students in Class"><Users size={10} /></button>
+                                    <Button variant="outline" size="sm" onClick={() => openEditClass(cls)} title="Edit Class Details" icon={<Edit size={10} />} />
+                                    <Button variant="ghost" size="sm" className="text-primary" onClick={() => openViewClass(cls)} title="View Students in Class" icon={<Users size={10} />} />
                                 </div>
                             </div>
                         </div>
@@ -878,7 +869,7 @@ const Academics = () => {
                         <div className="card p-4">
                             <div className="flex justify-between items-center mb-4">
                                 <h4 className="text-[10px] font-black uppercase text-secondary mb-0">Subject Groups</h4>
-                                <button className="btn btn-xs btn-outline" onClick={() => { setEditingGroupId(null); setGroupForm({ name: '' }); setIsGroupModalOpen(true); }}><Plus size={10} /></button>
+                                <Button variant="outline" size="sm" onClick={() => { setEditingGroupId(null); setGroupForm({ name: '' }); setIsGroupModalOpen(true); }} icon={<Plus size={10} />} />
                             </div>
                             <div className="space-y-1.5">
                                 {subjectGroups.map(g => (
@@ -913,7 +904,7 @@ const Academics = () => {
                                         <td className="font-bold text-[11px]">{s.name}</td>
                                         <td><code>{s.code}</code></td>
                                         <td className="text-[10px] uppercase font-bold text-secondary">{s.group_name || 'Unassigned'}</td>
-                                        <td className="no-print"><button className="btn btn-xs btn-ghost" onClick={() => openEditSubject(s)} title="Edit Subject"><Edit size={12} /></button></td>
+                                        <td className="no-print"><Button variant="ghost" size="sm" onClick={() => openEditSubject(s)} title="Edit Subject" icon={<Edit size={12} />} /></td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -948,9 +939,9 @@ const Academics = () => {
                                         <h3 className="mb-0 text-sm font-black uppercase">Class Subjects</h3>
                                         <p className="text-[10px] text-secondary">Manage subjects taught in this class</p>
                                     </div>
-                                    <button className="btn btn-sm btn-primary" onClick={syncClassSubjects} disabled={isSyncing}>
-                                        {isSyncing ? 'Syncing...' : 'Sync to Students'}
-                                    </button>
+                                    <Button variant="primary" size="sm" onClick={syncClassSubjects} loading={isSyncing} loadingText="Syncing...">
+                                        Sync to Students
+                                    </Button>
                                 </div>
                                 <div className="p-0 overflow-y-auto flex-1">
                                     <table className="table table-striped">
@@ -1011,7 +1002,7 @@ const Academics = () => {
                         <div className="card md:col-span-1 flex flex-col">
                             <div className="card-header flex justify-between items-center py-3 border-bottom">
                                 <h3 className="mb-0 text-sm font-black uppercase">Grading Systems</h3>
-                                <button className="btn btn-xs btn-primary" onClick={() => setIsGradeModalOpen(true)}><Plus size={12} /> New System</button>
+                                <Button variant="primary" size="sm" onClick={() => setIsGradeModalOpen(true)} icon={<Plus size={12} />}>New System</Button>
                             </div>
                             <div className="flex-1 overflow-y-auto p-2 space-y-2">
                                 {gradeSystems.map(sys => (
@@ -1039,9 +1030,9 @@ const Academics = () => {
                                             <h3 className="mb-0 text-sm font-black uppercase">{selectedSystem.name}</h3>
                                             <p className="text-[10px] text-secondary mb-0">Define grade ranges (High to Low)</p>
                                         </div>
-                                        <button className="btn btn-xs btn-outline" onClick={() => { setBoundaryForm({ system: selectedSystem.id, grade: '', min_score: 0, max_score: 100, points: 0, remarks: '' }); setEditingBoundaryId(null); setIsBoundaryModalOpen(true); }}>
-                                            <Plus size={12} /> Add Boundary
-                                        </button>
+                                        <Button variant="outline" size="sm" onClick={() => { setBoundaryForm({ system: selectedSystem.id, grade: '', min_score: 0, max_score: 100, points: 0, remarks: '' }); setEditingBoundaryId(null); setIsBoundaryModalOpen(true); }} icon={<Plus size={12} />}>
+                                            Add Boundary
+                                        </Button>
                                     </div>
                                     <div className="flex-1 overflow-y-auto p-0">
                                         <table className="table table-sm w-full">
@@ -1062,8 +1053,8 @@ const Academics = () => {
                                                         <td>{b.points}</td>
                                                         <td className="text-secondary">{b.remarks}</td>
                                                         <td className="text-right flex justify-end gap-1">
-                                                            <button className="btn btn-xs btn-ghost p-1" onClick={() => { setBoundaryForm({ ...b, system: selectedSystem.id }); setEditingBoundaryId(b.id); setIsBoundaryModalOpen(true); }}><Edit size={12} /></button>
-                                                            <button className="btn btn-xs btn-ghost p-1 text-error" onClick={() => handleDeleteBoundary(b.id)}><Trash2 size={12} /></button>
+                                                            <Button variant="ghost" size="sm" className="p-1" onClick={() => { setBoundaryForm({ ...b, system: selectedSystem.id }); setEditingBoundaryId(b.id); setIsBoundaryModalOpen(true); }} icon={<Edit size={12} />} />
+                                                            <Button variant="ghost" size="sm" className="p-1 text-error" onClick={() => handleDeleteBoundary(b.id)} icon={<Trash2 size={12} />} />
                                                         </td>
                                                     </tr>
                                                 ))}
@@ -1098,10 +1089,10 @@ const Academics = () => {
                                     <h3 className="mb-1 text-sm font-black">{exam.name}</h3>
                                     <p className="text-[10px] font-bold text-secondary mb-3 uppercase">Wt: {exam.weighting}% | {exam.term_name || 'Term 1'}</p>
                                     <div className="flex gap-1.5">
-                                        <button className="btn btn-xs btn-primary w-full shadow-sm" onClick={() => openEnterResults(exam)} title="Enter student marks">ENTER RESULTS</button>
-                                        <button className="btn btn-xs btn-outline" onClick={() => openViewResults(exam)} title="View Ranking"><Trophy size={12} /></button>
-                                        <button className="btn btn-xs btn-outline" onClick={() => openEditExam(exam)} title="Exam Settings"><Settings size={12} /></button>
-                                        <button className="btn btn-xs btn-outline text-error" onClick={(e) => { e.stopPropagation(); handleDeleteExam(exam.id); }} title="Delete Exam" style={{ zIndex: 10, position: 'relative' }}><Trash2 size={14} /></button>
+                                        <Button variant="primary" size="sm" className="w-full shadow-sm" onClick={() => openEnterResults(exam)} title="Enter student marks">ENTER RESULTS</Button>
+                                        <Button variant="outline" size="sm" onClick={() => openViewResults(exam)} title="View Ranking" icon={<Trophy size={12} />} />
+                                        <Button variant="outline" size="sm" onClick={() => openEditExam(exam)} title="Exam Settings" icon={<Settings size={12} />} />
+                                        <Button variant="outline" size="sm" className="text-error" onClick={(e) => { e.stopPropagation(); handleDeleteExam(exam.id); }} title="Delete Exam" icon={<Trash2 size={14} />} />
                                     </div>
                                 </div>
                             ))}
@@ -1173,7 +1164,7 @@ const Academics = () => {
                         <div className="table-container shadow-lg">
                             <div className="p-3 bg-secondary-light flex justify-between items-center border-bottom">
                                 <h3 className="mb-0 text-xs font-black uppercase">Grading Policies</h3>
-                                <button className="btn btn-primary btn-xs" onClick={() => setIsGradeModalOpen(true)}><Plus size={12} /> New System</button>
+                                <Button variant="primary" size="sm" onClick={() => setIsGradeModalOpen(true)} icon={<Plus size={12} />}>New System</Button>
                             </div>
                             <div className="p-4 space-y-4">
                                 {gradeSystems.map(gs => (
@@ -1188,7 +1179,7 @@ const Academics = () => {
                                                     setBoundaryForm(prev => ({ ...prev, system: gs.id }));
                                                     setIsBoundaryModalOpen(true);
                                                 }} title="Add Boundary"><Plus size={14} /></button>
-                                                <button className="text-secondary hover:text-error transition-colors p-1" onClick={(e) => { e.stopPropagation(); handleDeleteGradeSystem(gs.id); }} title="Delete Policy"><Trash2 size={14} /></button>
+                                                <Button variant="ghost" size="sm" className="text-secondary hover:text-error p-1" onClick={(e) => { e.stopPropagation(); handleDeleteGradeSystem(gs.id); }} title="Delete Policy" icon={<Trash2 size={14} />} />
                                             </div>
                                         </div>
                                         <div className="flex flex-wrap gap-1.5">
@@ -1205,7 +1196,7 @@ const Academics = () => {
                         <div className="card">
                             <div className="card-header py-2 flex justify-between items-center">
                                 <h3 className="mb-0 text-xs font-black uppercase">Academic timeline</h3>
-                                <button className="btn btn-xs btn-primary" onClick={() => setIsYearModalOpen(true)}><Plus size={12} /></button>
+                                <Button variant="primary" size="sm" onClick={() => setIsYearModalOpen(true)} icon={<Plus size={12} />} />
                             </div>
                             <div className="p-2 space-y-2">
                                 {academicYears.map(y => (
@@ -1217,8 +1208,8 @@ const Academics = () => {
                                             </div>
                                             {!isReadOnly && (
                                                 <div className="flex gap-1">
-                                                    <button className="btn btn-xs btn-ghost text-info" onClick={() => setIsTermModalOpen(true)} title="Add Term"><Plus size={10} /></button>
-                                                    <button className="btn btn-xs btn-ghost" onClick={() => openEditYear(y)} title="Edit Year"><Edit size={10} /></button>
+                                                    <Button variant="ghost" size="sm" className="text-info" onClick={() => setIsTermModalOpen(true)} title="Add Term" icon={<Plus size={10} />} />
+                                                    <Button variant="ghost" size="sm" onClick={() => openEditYear(y)} title="Edit Year" icon={<Edit size={10} />} />
                                                 </div>
                                             )}
                                         </div>
@@ -1240,7 +1231,7 @@ const Academics = () => {
                                                         </button>
                                                     </span>
                                                     {!isReadOnly && (
-                                                        <button className="text-secondary hover:text-error p-1" onClick={(e) => { e.stopPropagation(); handleDeleteTerm(t.id); }} title="Delete Term"><Trash2 size={12} /></button>
+                                                        <Button variant="ghost" size="sm" className="text-secondary hover:text-error p-1" onClick={(e) => { e.stopPropagation(); handleDeleteTerm(t.id); }} title="Delete Term" icon={<Trash2 size={12} />} />
                                                     )}
                                                 </div>
                                             ))}
@@ -1287,13 +1278,12 @@ const Academics = () => {
                                             <td><code>{s.code}</code></td>
                                             <td className="text-[10px] uppercase font-bold text-secondary">{s.group_name || 'Unassigned'}</td>
                                             <td className="no-print text-right flex justify-end gap-1">
-                                                <button className="btn btn-xs btn-ghost text-primary" onClick={() => openEditSubject(s)} title="Edit Subject"><Edit size={12} /></button>
-                                                <button className="btn btn-xs btn-ghost text-error" onClick={async () => {
-                                                    if (confirm('Delete this subject? This might affect existing results/allocations.')) {
-                                                        try { await academicsAPI.subjects.delete(s.id); loadAllAcademicData(); }
-                                                        catch (e) { alert('Failed to delete subject'); }
-                                                    }
-                                                }} title="Delete Subject"><Trash2 size={12} /></button>
+                                                <Button variant="ghost" size="sm" className="text-primary" onClick={() => openEditSubject(s)} title="Edit Subject" icon={<Edit size={12} />} />
+                                                <Button variant="ghost" size="sm" className="text-error" onClick={async () => {
+                                                    if (!await confirm('Delete this subject? This might affect existing results/allocations.', { type: 'danger' })) return;
+                                                    try { await academicsAPI.subjects.delete(s.id); loadAllAcademicData(); success('Subject deleted'); }
+                                                    catch (err: any) { toastError(err.message || 'Failed to delete subject'); }
+                                                }} title="Delete Subject" icon={<Trash2 size={12} />} />
                                             </td>
                                         </tr>
                                     ))}
@@ -1356,12 +1346,8 @@ const Academics = () => {
                                 </div>
                             </div>
                             <div className="flex gap-2">
-                                <button className="btn btn-outline btn-xs" onClick={handleExportAcademics} disabled={isExporting}>
-                                    {isExporting ? 'Exporting...' : 'Export CSV'}
-                                </button>
-                                <button className="btn btn-primary btn-xs" onClick={() => { setEditingAttendanceId(null); setAttendanceForm({ student: '', status: 'PRESENT', remark: '' }); setIsAttendanceModalOpen(true); }}>
-                                    <Plus size={12} /> Log Status
-                                </button>
+                                <Button variant="outline" size="sm" onClick={handleExportAcademics} loading={isExporting} loadingText="Exporting...">Export CSV</Button>
+                                <Button variant="primary" size="sm" onClick={() => { setEditingAttendanceId(null); setAttendanceForm({ student: '', status: 'PRESENT', remark: '' }); setIsAttendanceModalOpen(true); }} icon={<Plus size={12} />}>Log Status</Button>
                             </div>
                         </div>
                         <div className="card p-0 overflow-hidden bg-white">
@@ -1420,25 +1406,28 @@ const Academics = () => {
                                                     <td className="text-right flex justify-end gap-1">
                                                         {!isReadOnly && (
                                                             <>
-                                                                <button
-                                                                    className="btn btn-ghost btn-xs text-primary"
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    className="text-primary"
                                                                     onClick={() => openEditAttendance(att)}
-                                                                >
-                                                                    <Edit size={12} />
-                                                                </button>
-                                                                <button
-                                                                    className="btn btn-ghost btn-xs text-error"
+                                                                    icon={<Edit size={12} />}
+                                                                />
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    className="text-error"
                                                                     onClick={async () => {
-                                                                        if (window.confirm('Delete this attendance record?')) {
+                                                                        if (await confirm('Delete this attendance record?', { type: 'danger' })) {
                                                                             try {
                                                                                 await academicsAPI.attendance.delete(att.id);
                                                                                 loadAllAcademicData();
-                                                                            } catch (e) { alert('Failed to delete record'); }
+                                                                                success('Attendance record deleted');
+                                                                            } catch (err: any) { toastError(err.message || 'Failed to delete record'); }
                                                                         }
                                                                     }}
-                                                                >
-                                                                    <Trash2 size={12} />
-                                                                </button>
+                                                                    icon={<Trash2 size={12} />}
+                                                                />
                                                             </>
                                                         )}
                                                     </td>
@@ -1458,7 +1447,7 @@ const Academics = () => {
                 <form onSubmit={handleYearSubmit}>
                     <div className="form-group"><label className="label text-[10px] font-black uppercase">Year Name (e.g. 2026) *</label><input type="text" className="input" value={yearForm.name} onChange={(e) => setYearForm({ ...yearForm, name: e.target.value })} required /></div>
                     <div className="form-group checkbox-group"><input type="checkbox" checked={yearForm.is_active} onChange={(e) => setYearForm({ ...yearForm, is_active: e.target.checked })} /><label className="text-xs font-bold">Set as Active Year</label></div>
-                    <button type="submit" className="btn btn-sm btn-primary w-full mt-2 font-black uppercase">Initialize Year Cycle</button>
+                    <Button type="submit" variant="primary" size="sm" className="w-full mt-2 font-black uppercase" loading={isSubmitting} loadingText="Initializing...">Initialize Year Cycle</Button>
                 </form>
             </Modal>
 
@@ -1475,7 +1464,7 @@ const Academics = () => {
                         <div className="form-group"><label className="label text-[10px] font-black uppercase">Start Date</label><input type="date" className="input" value={termForm.start_date} onChange={(e) => setTermForm({ ...termForm, start_date: e.target.value })} required /></div>
                         <div className="form-group"><label className="label text-[10px] font-black uppercase">End Date</label><input type="date" className="input" value={termForm.end_date} onChange={(e) => setTermForm({ ...termForm, end_date: e.target.value })} required /></div>
                     </div>
-                    <button type="submit" className="btn btn-sm btn-primary w-full mt-2 font-black uppercase">Save Term Configuration</button>
+                    <Button type="submit" variant="primary" size="sm" className="w-full mt-2 font-black uppercase" loading={isSubmitting} loadingText="Saving...">Save Term Configuration</Button>
                 </form>
             </Modal>
 
@@ -1498,7 +1487,7 @@ const Academics = () => {
                         <div className="form-group"><label className="label text-[10px] font-black uppercase">Active Year</label><input type="number" className="input" value={classForm.year} readOnly /></div>
                         <div className="form-group"><label className="label text-[10px] font-black uppercase">Max Capacity</label><input type="number" className="input" value={classForm.capacity || ''} onChange={(e) => setClassForm({ ...classForm, capacity: parseInt(e.target.value) || 0 })} /></div>
                     </div>
-                    <button type="button" onClick={(e) => { e.preventDefault(); handleClassSubmit(e); }} className="btn btn-sm btn-primary w-full mt-2 font-black uppercase">Confirm Unit Creation</button>
+                    <Button type="button" onClick={(e) => { e.preventDefault(); handleClassSubmit(e); }} variant="primary" size="sm" className="w-full mt-2 font-black uppercase" loading={isSubmitting} loadingText={editingClassId ? "Updating..." : "Creating..."}>Confirm Unit Creation</Button>
                 </div>
             </Modal>
 
@@ -1515,10 +1504,10 @@ const Academics = () => {
                         setIsGroupModalOpen(false);
                         setEditingGroupId(null);
                         setGroupForm({ name: '' });
-                    } catch (err) { alert('Failed to save group'); }
+                    } catch (err: any) { toastError(err.message || 'Failed to save group'); }
                 }}>
                     <div className="form-group"><label className="label text-[10px] font-black uppercase">Group Name *</label><input type="text" className="input" value={groupForm.name} onChange={(e) => setGroupForm({ ...groupForm, name: e.target.value })} placeholder="e.g. Sciences" required /></div>
-                    <button type="submit" className="btn btn-sm btn-primary w-full mt-2 font-black uppercase">Save Group</button>
+                    <Button type="submit" variant="primary" size="sm" className="w-full mt-2 font-black uppercase" loading={isSubmitting} loadingText="Saving...">Save Group</Button>
                 </form>
             </Modal>
 
@@ -1534,7 +1523,7 @@ const Academics = () => {
                             </select>
                         </div>
                     </div>
-                    <button type="submit" className="btn btn-sm btn-primary w-full mt-2 font-black uppercase">Register Subject</button>
+                    <Button type="submit" variant="primary" size="sm" className="w-full mt-2 font-black uppercase" loading={isSubmitting} loadingText="Registering...">Register Subject</Button>
                 </form>
             </Modal>
 
@@ -1650,9 +1639,9 @@ const Academics = () => {
                         </div>
                     )}
 
-                    <button type="submit" className="btn btn-sm btn-success w-full mt-4 font-black uppercase text-white shadow-md">
+                    <Button type="submit" variant="primary" size="sm" className="bg-success border-success w-full mt-4 font-black uppercase text-white shadow-md" loading={isSubmitting} loadingText="Posting...">
                         {attendanceFilter.isBulk ? `Submit Register (${bulkAttendanceList.length})` : 'Post Attendance Record'}
-                    </button>
+                    </Button>
                 </form>
             </Modal>
 
@@ -1677,18 +1666,18 @@ const Academics = () => {
                         <div className="form-group"><label className="label text-[10px] font-black uppercase">Weighting (%)</label><input type="number" className="input" value={examForm.weighting} onChange={(e) => setExamForm({ ...examForm, weighting: parseInt(e.target.value) })} required /></div>
                         <div className="form-group"><label className="label text-[10px] font-black uppercase">Start Date</label><input type="date" className="input" value={examForm.date_started} onChange={(e) => setExamForm({ ...examForm, date_started: e.target.value })} required /></div>
                     </div>
-                    <button type="submit" className="btn btn-sm btn-primary w-full mt-2 font-black uppercase">Confirm Exam Schedule</button>
+                    <Button type="submit" variant="primary" size="sm" className="w-full mt-2 font-black uppercase" loading={isSubmitting} loadingText="Confirming...">Confirm Exam Schedule</Button>
                 </form>
             </Modal>
 
             <Modal isOpen={isGradeModalOpen} onClose={() => setIsGradeModalOpen(false)} title="Configure Grading System">
                 <form onSubmit={async (e) => {
                     e.preventDefault();
-                    try { await academicsAPI.gradeSystems.create(gradeForm); loadAllAcademicData(); setIsGradeModalOpen(false); } catch (err) { alert('Failed to save grading system'); }
+                    try { await academicsAPI.gradeSystems.create(gradeForm); loadAllAcademicData(); setIsGradeModalOpen(false); success('Grading system created'); } catch (err: any) { toastError(err.message || 'Failed to save grading system'); }
                 }}>
                     <div className="form-group"><label className="label text-[10px] font-black uppercase">System Name *</label><input type="text" className="input" value={gradeForm.name} onChange={(e) => setGradeForm({ ...gradeForm, name: e.target.value })} placeholder="e.g. KNEC Revised 2026" required /></div>
                     <div className="form-group checkbox-group"><input type="checkbox" checked={gradeForm.is_default} onChange={(e) => setGradeForm({ ...gradeForm, is_default: e.target.checked })} /><label className="text-xs font-bold">Set as Default System</label></div>
-                    <button type="submit" className="btn btn-sm btn-primary w-full mt-2 font-black uppercase">Save Grading Logic</button>
+                    <Button type="submit" variant="primary" size="sm" className="w-full mt-2 font-black uppercase" loading={isSubmitting} loadingText="Saving...">Save Grading Logic</Button>
                 </form>
             </Modal>
 
@@ -1707,7 +1696,7 @@ const Academics = () => {
                             {uniqueClassNames.map(name => <option key={name} value={name}>{name}</option>)}
                         </select>
                     </div>
-                    <button className="btn btn-sm btn-outline" onClick={() => window.print()}><Printer size={14} /> Print Broadsheet</button>
+                    <Button variant="outline" size="sm" onClick={() => window.print()} icon={<Printer size={14} />}>Print Broadsheet</Button>
                 </div>
 
                 <div className="max-h-[70vh] overflow-auto border rounded bg-white relative">
@@ -1919,8 +1908,8 @@ const Academics = () => {
                             <span className="font-bold text-primary">Tip:</span> Existing marks are shown in <span className="font-bold text-primary">blue</span>. Enter new marks and click Save.
                         </p>
                         <div className="flex gap-2">
-                            <button type="button" className="btn btn-sm btn-ghost" onClick={() => setIsResultModalOpen(false)}>Cancel</button>
-                            <button type="submit" className="btn btn-sm btn-primary font-black uppercase shadow-md px-6">Save Matrix Payload</button>
+                            <Button variant="ghost" size="sm" onClick={() => setIsResultModalOpen(false)}>Cancel</Button>
+                            <Button type="submit" variant="primary" size="sm" className="font-black uppercase shadow-md px-6" loading={isSubmitting} loadingText="Saving Matrix...">Save Matrix Payload</Button>
                         </div>
                     </div>
                 </form>
@@ -1933,8 +1922,8 @@ const Academics = () => {
                         Are you sure you want to delete this item? This action cannot be undone.
                     </p>
                     <div className="flex justify-end gap-2">
-                        <button className="btn btn-secondary" onClick={() => setDeleteConfirm({ ...deleteConfirm, isOpen: false })}>Cancel</button>
-                        <button className="btn btn-primary bg-error border-error text-white" onClick={executeDelete}>Confirm Delete</button>
+                        <Button variant="secondary" onClick={() => setDeleteConfirm({ ...deleteConfirm, isOpen: false })}>Cancel</Button>
+                        <Button variant="primary" className="bg-error border-error text-white" onClick={executeDelete} loading={isSubmitting} loadingText="Deleting...">Confirm Delete</Button>
                     </div>
                 </div>
             </Modal >
@@ -1984,7 +1973,7 @@ const Academics = () => {
                             <span className="font-bold text-xs w-12 text-right">{syllabusForm.coverage_percentage}%</span>
                         </div>
                     </div>
-                    <button type="submit" className="btn btn-sm btn-primary w-full mt-2 font-black uppercase">Save Coverage</button>
+                    <Button type="submit" variant="primary" size="sm" className="w-full mt-2 font-black uppercase" loading={isSubmitting} loadingText="Saving...">Save Coverage</Button>
                 </form>
             </Modal>
 
@@ -1999,7 +1988,7 @@ const Academics = () => {
                         <input type="checkbox" className="checkbox checkbox-sm checkbox-primary" checked={gradeForm.is_default} onChange={(e) => setGradeForm({ ...gradeForm, is_default: e.target.checked })} />
                         <label className="label text-[10px] font-black uppercase mb-0">Set as Default System</label>
                     </div>
-                    <button type="submit" className="btn btn-primary w-full font-black uppercase">Save System</button>
+                    <Button type="submit" variant="primary" className="w-full font-black uppercase" loading={isSubmitting} loadingText="Saving...">Save System</Button>
                 </form>
             </Modal>
 
@@ -2030,7 +2019,7 @@ const Academics = () => {
                         <label className="label text-[10px] font-black uppercase">Remarks</label>
                         <input type="text" className="input" placeholder="Excellent" value={boundaryForm.remarks} onChange={(e) => setBoundaryForm({ ...boundaryForm, remarks: e.target.value })} />
                     </div>
-                    <button type="submit" className="btn btn-primary w-full font-black uppercase">Save Boundary</button>
+                    <Button type="submit" variant="primary" className="w-full font-black uppercase" loading={isSubmitting} loadingText="Saving...">Save Boundary</Button>
                 </form>
             </Modal>
 

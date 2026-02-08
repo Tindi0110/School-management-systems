@@ -1,18 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import {
     Plus, Search, Edit, Phone, Mail, User as UserIcon,
-    ArrowRight, MapPin, Briefcase, Users, Link as LinkIcon, Download
+    MapPin, Briefcase, Download, Printer, Trash2
 } from 'lucide-react';
 import { studentsAPI } from '../api/api';
 import { exportToCSV } from '../utils/export';
 import Modal from '../components/Modal';
+import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
+import Button from '../components/common/Button';
 
 const Parents = () => {
     const [parents, setParents] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [editingParent, setEditingParent] = useState<any>(null);
+    const toast = useToast();
+    const { confirm } = useConfirm();
     const [formData, setFormData] = useState({
         full_name: '',
         relationship: 'FATHER',
@@ -40,17 +46,34 @@ const Parents = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSubmitting(true);
         try {
             if (editingParent) {
-                // Update logic would go here
-                alert('Update not implemented yet');
+                await studentsAPI.parents.update(editingParent.id, formData);
+                toast.success('Guardian updated successfully');
             } else {
                 await studentsAPI.parents.create(formData);
+                toast.success('Guardian enrolled successfully');
             }
             loadParents();
             setIsModalOpen(false);
-        } catch (err) {
-            alert('Operation failed');
+        } catch (err: any) {
+            console.error(err);
+            toast.error(err.response?.data?.detail || 'Operation failed');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleDelete = async (id: number) => {
+        if (await confirm('Are you sure you want to delete this guardian record? This may affect linked student records.')) {
+            try {
+                await studentsAPI.parents.delete(id);
+                toast.success('Guardian record deleted');
+                loadParents();
+            } catch (err: any) {
+                toast.error('Failed to delete guardian');
+            }
         }
     };
 
@@ -69,15 +92,15 @@ const Parents = () => {
                     <p className="text-secondary font-bold uppercase text-[10px] tracking-widest">Institutional Parent & Guardian Database</p>
                 </div>
                 <div className="flex gap-2">
-                    <button className="btn btn-sm btn-outline flex items-center gap-2" onClick={() => window.print()}>
-                        <Printer size={16} /> Reports
-                    </button>
-                    <button className="btn btn-sm btn-outline" onClick={() => exportToCSV(parents, 'guardians_registry')}>
-                        <Download size={16} /> Export CSV
-                    </button>
-                    <button className="btn btn-sm btn-primary font-black px-6" onClick={() => { setEditingParent(null); setIsModalOpen(true); }}>
-                        <Plus size={16} /> NEW GUARDIAN
-                    </button>
+                    <Button variant="outline" size="sm" onClick={() => window.print()} icon={<Printer size={16} />}>
+                        Reports
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => exportToCSV(parents, 'guardians_registry')} icon={<Download size={16} />}>
+                        Export CSV
+                    </Button>
+                    <Button variant="primary" size="sm" className="font-black px-6" onClick={() => { setEditingParent(null); setIsModalOpen(true); }} icon={<Plus size={16} />}>
+                        NEW GUARDIAN
+                    </Button>
                 </div>
             </div>
 
@@ -160,13 +183,22 @@ const Parents = () => {
                                         </div>
                                     </td>
                                     <td className="p-4 text-right">
-                                        <button
-                                            className="btn btn-sm btn-ghost hover:bg-primary/10 text-primary"
-                                            onClick={() => { setEditingParent(p); setFormData(p); setIsModalOpen(true); }}
-                                            title="Edit Details"
-                                        >
-                                            <Edit size={16} />
-                                        </button>
+                                        <div className="flex gap-2 justify-end">
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => { setEditingParent(p); setFormData(p); setIsModalOpen(true); }}
+                                                icon={<Edit size={16} />}
+                                                title="Edit Details"
+                                            />
+                                            <Button
+                                                variant="danger"
+                                                size="sm"
+                                                onClick={() => handleDelete(p.id)}
+                                                icon={<Trash2 size={16} />}
+                                                title="Delete Guardian"
+                                            />
+                                        </div>
                                     </td>
                                 </tr>
                             ))
@@ -210,8 +242,10 @@ const Parents = () => {
                         <textarea className="input" value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} rows={2}></textarea>
                     </div>
                     <div className="modal-footer pt-4">
-                        <button type="button" className="btn btn-sm btn-ghost" onClick={() => setIsModalOpen(false)}>CANCEL</button>
-                        <button type="submit" className="btn btn-sm btn-primary px-8 font-black">ENROLL GUARDIAN</button>
+                        <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>CANCEL</Button>
+                        <Button type="submit" variant="primary" className="px-8 font-black" loading={isSubmitting} loadingText={editingParent ? 'UPDATING...' : 'ENROLLING...'}>
+                            {editingParent ? 'UPDATE GUARDIAN' : 'ENROLL GUARDIAN'}
+                        </Button>
                     </div>
                 </form>
             </Modal>
