@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Mail, Lock, Shield, ArrowRight, School, CheckCircle } from 'lucide-react';
+import { User, Mail, Lock as LockIcon, Shield, ArrowRight, School, CheckCircle } from 'lucide-react';
 import { authAPI } from '../api/api';
 import { useToast } from '../context/ToastContext';
 
 const Register = () => {
     const navigate = useNavigate();
-    const { success, error: errorToast } = useToast();
+    const { success } = useToast();
     const [formData, setFormData] = useState({
         full_name: '',
         username: '',
@@ -176,7 +176,7 @@ const Register = () => {
                         <div className="auth-input-group" style={{ marginBottom: 0 }}>
                             <label className="auth-label">Password</label>
                             <div className="auth-input-wrapper">
-                                <Lock size={18} color="#94a3b8" style={{ marginRight: '0.5rem' }} />
+                                <LockIcon size={18} color="#94a3b8" style={{ marginRight: '0.5rem' }} />
                                 <input type="password" className="auth-input"
                                     placeholder="••••••"
                                     autoComplete="new-password"
@@ -186,7 +186,7 @@ const Register = () => {
                         <div className="auth-input-group" style={{ marginBottom: 0 }}>
                             <label className="auth-label">Confirm</label>
                             <div className="auth-input-wrapper">
-                                <Lock size={18} color="#94a3b8" style={{ marginRight: '0.5rem' }} />
+                                <LockIcon size={18} color="#94a3b8" style={{ marginRight: '0.5rem' }} />
                                 <input type="password" className="auth-input"
                                     placeholder="••••••"
                                     autoComplete="new-password"

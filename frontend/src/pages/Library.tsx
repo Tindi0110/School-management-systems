@@ -646,8 +646,8 @@ const Library = () => {
 
             <Modal isOpen={isLendModalOpen} onClose={() => setIsLendModalOpen(false)} title={lendingId ? "Edit Lending Record" : "New Resource Circulation"}>
                 <form onSubmit={handleLendSubmit} className="space-y-4">
-                    <SearchableSelect label="Select Copy *" options={copyOptions} value={String(lendingForm.copy)} onChange={(val) => setLendingForm({ ...lendingForm, copy: val })} required />
-                    <SearchableSelect label="Assign to Student *" options={studentOptions} value={String(lendingForm.student)} onChange={(val) => setLendingForm({ ...lendingForm, student: val })} required />
+                    <SearchableSelect label="Select Copy *" options={copyOptions} value={String(lendingForm.copy)} onChange={(val) => setLendingForm({ ...lendingForm, copy: val.toString() })} required />
+                    <SearchableSelect label="Assign to Student *" options={studentOptions} value={String(lendingForm.student)} onChange={(val) => setLendingForm({ ...lendingForm, student: val.toString() })} required />
                     <div className="form-group"><label className="label">Return Deadline *</label><input type="date" className="input" value={lendingForm.due_date} onChange={e => setLendingForm({ ...lendingForm, due_date: e.target.value })} required /></div>
                     <div className="modal-footer">
                         <Button type="submit" variant="primary" className="w-full" loading={isSubmitting} loadingText="Processing Issue...">
@@ -659,7 +659,7 @@ const Library = () => {
 
             <Modal isOpen={isFineModalOpen} onClose={() => setIsFineModalOpen(false)} title={fineId ? "Edit Fine Record" : "Record Library Fine"}>
                 <form onSubmit={handleFineSubmit} className="space-y-4">
-                    <SearchableSelect label="Student *" options={studentOptions} value={String(fineForm.student)} onChange={(val) => setFineForm({ ...fineForm, student: val })} required />
+                    <SearchableSelect label="Student *" options={studentOptions} value={String(fineForm.student)} onChange={(val) => setFineForm({ ...fineForm, student: val.toString() })} required />
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group"><label className="label">Fine Type</label>
                             <select className="select" value={(fineForm as any).fine_type || 'LATE'} onChange={e => setFineForm({ ...fineForm, fine_type: e.target.value } as any)}>

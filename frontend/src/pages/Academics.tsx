@@ -18,7 +18,7 @@ const Academics = () => {
     const [activeTab, setActiveTab] = useState<'SUMMARY' | 'CLASSES' | 'CURRICULUM' | 'EXAMS' | 'GRADING' | 'ATTENDANCE' | 'RESOURCES' | 'ALLOCATION'>('SUMMARY');
     const [loading, setLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const { success, error: toastError } = useToast();
+    const { success, error: toastError, warning } = useToast();
     const { confirm } = useConfirm();
 
 
@@ -94,7 +94,9 @@ const Academics = () => {
 
     // Results & Views State
     const [viewResultsGroupBy, setViewResultsGroupBy] = useState<'STREAM' | 'ENTIRE_CLASS'>('STREAM');
-    const [resultContext, setResultContext] = useState({ level: '', classId: '' });
+    const [resultContext, setResultContext] = useState({ level: '', classId: '', subjectId: '' });
+    const [editingBoundaryId, setEditingBoundaryId] = useState<number | null>(null);
+    const [editingSystemId, setEditingSystemId] = useState<number | null>(null);
     const [examResults, setExamResults] = useState<any[]>([]);
     const [studentScores, setStudentScores] = useState<any>({});
     const [selectedClass, setSelectedClass] = useState<any>(null);
@@ -167,16 +169,6 @@ const Academics = () => {
         } catch (err: any) { toastError(err.message || 'Error deleting boundary'); }
     };
 
-    const handleDeleteSubject = async (id: number) => {
-        if (await confirm('Delete this subject? This might affect existing results/allocations.', { type: 'danger' })) {
-            try {
-                await academicsAPI.subjects.delete(id);
-                success('Subject deleted');
-                loadAllAcademicData();
-            }
-            catch (e: any) { toastError(e.message || 'Failed to delete subject'); }
-        }
-    };
 
     const openEditGroup = (group: any) => {
         setGroupForm({ name: group.name });
@@ -700,10 +692,10 @@ const Academics = () => {
 
     if (loading) return <div className="flex items-center justify-center p-12 spinner-container"><div className="spinner"></div></div>;
 
-    const activeYear = academicYears.find(y => y.is_active)?.name || 'NO ACTIVE YEAR';
-    const activeTerm = terms.find(t => t.is_active)?.name || 'NO ACTIVE TERM';
+    const activeYear = academicYears.find((y: any) => y.is_active)?.name || 'NO ACTIVE YEAR';
+    const activeTerm = terms.find((t: any) => t.is_active)?.name || 'NO ACTIVE TERM';
 
-    const staffOptions = staff.map(s => ({ id: s.user || s.id, label: s.full_name || s.username, subLabel: `ID: ${s.employee_id}` }));
+    staff.map(s => ({ id: s.user || s.id, label: s.full_name || s.username, subLabel: `ID: ${s.employee_id}` }));
     const studentOptions = students.map(s => ({ id: s.id, label: s.full_name, subLabel: `ADM: ${s.admission_number}` }));
 
     return (

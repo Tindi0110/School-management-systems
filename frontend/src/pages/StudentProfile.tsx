@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
     User, BookOpen, CreditCard, ShieldAlert, Heart, FileText,
     ArrowLeft, Printer, Edit, Phone, TrendingUp, AlertTriangle,
-    Plus, MessageSquare, FilePlus, Users, Trash2
+    Plus, MessageSquare, FilePlus, Users, Trash2, History as HistoryIcon, ShieldCheck
 } from 'lucide-react';
 import { studentsAPI, academicsAPI, financeAPI } from '../api/api';
 import Modal from '../components/Modal';
@@ -33,7 +33,6 @@ const StudentProfile = () => {
     const [isDisciplineModalOpen, setIsDisciplineModalOpen] = useState(false);
     const [isHealthModalOpen, setIsHealthModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [isClearanceModalOpen, setIsClearanceModalOpen] = useState(false);
     const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
     const [transferClassId, setTransferClassId] = useState('');
     const [classes, setClasses] = useState<any[]>([]);
@@ -435,7 +434,7 @@ const StudentProfile = () => {
                                     <h2 className="mb-0 font-black text-primary">{student.average_grade || 'N/A'}</h2>
                                 </div>
                                 <div className="card p-6 bg-white flex flex-col items-center text-center shadow-md border-top-4 border-info">
-                                    <div className="w-12 h-12 rounded-full bg-info/10 text-info flex items-center justify-center mb-3"><History size={24} /></div>
+                                    <div className="w-12 h-12 rounded-full bg-info/10 text-info flex items-center justify-center mb-3"><HistoryIcon size={24} /></div>
                                     <h4 className="font-black text-xs uppercase text-secondary mb-1">Attendance</h4>
                                     <h2 className="mb-0 font-black text-primary">{student.attendance_percentage}%</h2>
                                 </div>

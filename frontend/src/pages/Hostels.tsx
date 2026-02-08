@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import {
     Plus, Building, Edit, Trash2,
-    Building as BuildingIcon, Users as UsersIcon, Printer,
-    Package, Wrench, Bed as BedIcon,
-    Layout
+    Users, Printer, Package, Wrench, Bed as BedIcon,
+    Layout, Clock, ShieldAlert
 } from 'lucide-react';
 import { hostelAPI, studentsAPI, staffAPI } from '../api/api';
 import { exportToCSV } from '../utils/export';
@@ -955,7 +954,7 @@ const Hostels = () => {
                             <select className="select" value={allocationFormData.bed} onChange={e => setAllocationFormData({ ...allocationFormData, bed: e.target.value })} required disabled={!allocationFormData.room}>
                                 <option value="">Select Bed...</option>
                                 {beds
-                                    .filter(b => String(b.room) === allocationFormData.room && (b.status === 'AVAILABLE' || String(b.id) === String(allocationFormData.bed))) // Show available OR currently selected (if editing)
+                                    .filter(b => String(b.room) === allocationFormData.room && (b.status === 'AVAILABLE' || String(b.id) === String(allocationFormData.bed)))
                                     .map(b => <option key={b.id} value={b.id}>{b.bed_number} {b.status !== 'AVAILABLE' ? '(Current)' : ''}</option>)
                                 }
                             </select>

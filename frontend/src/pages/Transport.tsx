@@ -506,7 +506,6 @@ const Transport = () => {
 
     const handleEditPoint = (p: any) => {
         setPointId(p.id);
-        const parentRoute = routes.find(r => r.id === p.route);
         // Estimate distance from cost if not stored? Or set to 0. Backend doesn't store distance on point currently explicitly in form above?
         // Wait, pointForm has distance_from_school. Backend model might not have it if I didn't add it to serializer.
         // Assuming backend has it if specific field exists. If not, 0.
@@ -604,7 +603,7 @@ const Transport = () => {
                     <Button variant="outline" size="sm" onClick={() => exportToCSV(vehicles, 'Fleet_Registry')} icon={<Download size={14} />}>Export Fleet</Button>
                     <Button variant="outline" size="sm" onClick={() => window.print()} icon={<Printer size={14} />}>Reports</Button>
                     <Button variant="primary" size="sm" onClick={() => { setEnrollmentId(null); setIsAllocationModalOpen(true); }} icon={<Plus size={14} />}>Enroll Student</Button>
-                    <Button variant="success" size="sm" onClick={() => { setVehicleId(null); setIsVehicleModalOpen(true); }} icon={<Bus size={14} />}>Add Vehicle</Button>
+                    <Button variant="outline" size="sm" onClick={() => { setVehicleId(null); setIsVehicleModalOpen(true); }} icon={<Bus size={14} />}>Add Vehicle</Button>
                 </div>
             </div>
 
@@ -902,8 +901,8 @@ const Transport = () => {
             {/* Modal Templates */}
             <Modal isOpen={isAllocationModalOpen} onClose={() => setIsAllocationModalOpen(false)} title={enrollmentId ? "Edit Enrollment" : "New Transport Enrollment"}>
                 <form onSubmit={handleEnrollmentSubmit} className="space-y-4">
-                    <SearchableSelect label="Select Student *" options={studentOptions} value={enrollmentForm.student} onChange={(val) => setEnrollmentForm({ ...enrollmentForm, student: val })} required />
-                    <SearchableSelect label="Assign Route *" options={routeOptions} value={enrollmentForm.route} onChange={(val) => setEnrollmentForm({ ...enrollmentForm, route: val })} required />
+                    <SearchableSelect label="Select Student *" options={studentOptions} value={enrollmentForm.student} onChange={(val) => setEnrollmentForm({ ...enrollmentForm, student: val.toString() })} required />
+                    <SearchableSelect label="Assign Route *" options={routeOptions} value={enrollmentForm.route} onChange={(val) => setEnrollmentForm({ ...enrollmentForm, route: val.toString() })} required />
                     <div className="form-group">
                         <label className="label">Pickup Point *</label>
                         <select className="select" value={enrollmentForm.pickup_point} onChange={(e) => setEnrollmentForm({ ...enrollmentForm, pickup_point: e.target.value })} required>
@@ -985,7 +984,7 @@ const Transport = () => {
                         <div className="form-group"><label className="label">Driver Name</label><input type="text" className="input" value={tripForm.driver_name} onChange={e => setTripForm({ ...tripForm, driver_name: e.target.value })} required /></div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
-                        <SearchableSelect label="Route" options={routeOptions} value={String(tripForm.route)} onChange={(val) => setTripForm({ ...tripForm, route: val })} required />
+                        <SearchableSelect label="Route" options={routeOptions} value={String(tripForm.route)} onChange={(val) => setTripForm({ ...tripForm, route: val.toString() })} required />
                         <div className="form-group"><label className="label">Vehicle</label>
                             <select className="select" value={tripForm.vehicle} onChange={e => setTripForm({ ...tripForm, vehicle: e.target.value })} required>
                                 <option value="">Select Vehicle...</option>

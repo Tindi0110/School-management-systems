@@ -83,7 +83,7 @@ const Dashboard = () => {
             // Merge Events and Exams for Calendar
             const apiEvents = eventsRes?.data?.results || eventsRes?.data || [];
             const apiExams = (examsRes?.data?.results || examsRes?.data || []).map((ex: any) => ({
-                id: `exam-${ex.id}`,
+                id: `exam - ${ex.id} `,
                 title: `${ex.name} (${ex.exam_type})`,
                 date: ex.date_started,
                 start_time: '08:00', // Default start time for exams
@@ -111,10 +111,6 @@ const Dashboard = () => {
                     academicsAPI.terms.getAll()
                 ]);
                 const yearsData = yearsRes.data.results || yearsRes.data || [];
-                const termsData = termsRes.data.results || termsRes.data || [];
-
-                const termsData = termsRes.data.results || termsRes.data || [];
-
                 // 1. Try to find explicitly active year
                 let activeY = yearsData.find((y: any) => y.is_active === true)?.name;
 
@@ -311,7 +307,7 @@ const Dashboard = () => {
                                     <p className="text-[9px] text-secondary mt-1">No active alerts</p>
                                 </>
                             ) : alerts.slice(0, 2).map((alert: any) => (
-                                <div key={alert.id} className={`p-2 rounded border ${alert.severity === 'CRITICAL' ? 'bg-error/10 border-error text-error' : 'bg-warning/10 border-warning text-warning'}`}>
+                                <div key={alert.id} className={`p - 2 rounded border ${alert.severity === 'CRITICAL' ? 'bg-error/10 border-error text-error' : 'bg-warning/10 border-warning text-warning'} `}>
                                     <p className="text-[10px] font-black uppercase mb-1">{alert.title}</p>
                                     <p className="text-[9px]">{alert.message}</p>
                                 </div>
