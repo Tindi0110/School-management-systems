@@ -1,10 +1,9 @@
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from rest_framework.routers import DefaultRouter
 from accounts.views import RegisterView, CustomAuthToken
 from .views import (
-    UserViewSet, StaffViewSet, 
+    health_check, UserViewSet, StaffViewSet, 
     ClassViewSet, SubjectViewSet, ExamViewSet, StudentResultViewSet
 )
 from finance.views import (
@@ -120,6 +119,7 @@ router.register(r'alerts', SystemAlertViewSet, basename='alerts')
 router.register(r'school-events', SchoolEventViewSet, basename='school-events')
 
 urlpatterns = [
+    path('', health_check, name='health_check'),
     path('admin/', admin.site.urls),
     path('api-token-auth/', CustomAuthToken.as_view(), name='api_token_auth'),
     path('register/', RegisterView.as_view(), name='register'),

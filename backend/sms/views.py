@@ -1,4 +1,17 @@
 from rest_framework import viewsets
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
+from rest_framework.response import Response
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def health_check(request):
+    return Response({
+        "status": "online",
+        "message": "School Management System API is running",
+        "version": "1.0.0"
+    })
+
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from accounts.models import User
 from students.models import Student
