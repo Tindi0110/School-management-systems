@@ -18,6 +18,11 @@ class User(AbstractUser):
     )
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='STUDENT')
     
+    def save(self, *args, **kwargs):
+        if self.is_superuser and not self.role == 'ADMIN':
+            self.role = 'ADMIN'
+        super().save(*args, **kwargs)
+    
     # Department could be a foreign key, but keeping it simple for now or referencing 'Staff' profile
     
     def __str__(self):

@@ -174,22 +174,26 @@ const Dashboard = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-                <div className="transform hover:-translate-y-1 transition-all">
-                    <StatCard
-                        title="Total Registry"
-                        value={stats.totalStudents}
-                        icon={<Users size={18} />}
-                        gradient="linear-gradient(135deg, #1e3c72, #2a5298)"
-                    />
-                </div>
-                <div className="transform hover:-translate-y-1 transition-all">
-                    <StatCard
-                        title="Faculty Units"
-                        value={stats.totalStaff}
-                        icon={<Award size={18} />}
-                        gradient="linear-gradient(135deg, #f093fb, #f5576c)"
-                    />
-                </div>
+                {(user?.role === 'ADMIN' || user?.role === 'DOS' || user?.role === 'REGISTRAR' || user?.role === 'TEACHER') && (
+                    <div className="transform hover:-translate-y-1 transition-all">
+                        <StatCard
+                            title="Total Registry"
+                            value={stats.totalStudents}
+                            icon={<Users size={18} />}
+                            gradient="linear-gradient(135deg, #1e3c72, #2a5298)"
+                        />
+                    </div>
+                )}
+                {(user?.role === 'ADMIN' || user?.role === 'DOS') && (
+                    <div className="transform hover:-translate-y-1 transition-all">
+                        <StatCard
+                            title="Faculty Units"
+                            value={stats.totalStaff}
+                            icon={<Award size={18} />}
+                            gradient="linear-gradient(135deg, #f093fb, #f5576c)"
+                        />
+                    </div>
+                )}
                 <div className="transform hover:-translate-y-1 transition-all">
                     <StatCard
                         title="Active Sessions"
@@ -198,14 +202,16 @@ const Dashboard = () => {
                         gradient="linear-gradient(135deg, #5ee7df, #b490ca)"
                     />
                 </div>
-                <div className="transform hover:-translate-y-1 transition-all">
-                    <StatCard
-                        title="Pending Dues"
-                        value={stats.pendingPayments}
-                        icon={<DollarSign size={18} />}
-                        gradient="linear-gradient(135deg, #f093fb, #f5576c)"
-                    />
-                </div>
+                {(user?.role === 'ADMIN' || user?.role === 'ACCOUNTANT') && (
+                    <div className="transform hover:-translate-y-1 transition-all">
+                        <StatCard
+                            title="Pending Dues"
+                            value={stats.pendingPayments}
+                            icon={<DollarSign size={18} />}
+                            gradient="linear-gradient(135deg, #f093fb, #f5576c)"
+                        />
+                    </div>
+                )}
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -218,18 +224,24 @@ const Dashboard = () => {
                             </h3>
                         </div>
                         <div className="space-y-3">
-                            <button className="btn btn-outline w-full justify-between group py-3" onClick={() => navigate('/students')}>
-                                <span className="flex items-center gap-2"><Users size={16} /> Enroll New Student</span>
-                                <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                            </button>
-                            <button className="btn btn-outline w-full justify-between group py-3" onClick={() => setIsStaffModalOpen(true)}>
-                                <span className="flex items-center gap-2"><Star size={16} /> Register Faculty</span>
-                                <Plus size={16} />
-                            </button>
-                            <button className="btn btn-outline w-full justify-between group py-3" onClick={() => navigate('/finance')}>
-                                <span className="flex items-center gap-2"><DollarSign size={16} /> Generate Invoices</span>
-                                <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                            </button>
+                            {(user?.role === 'ADMIN' || user?.role === 'REGISTRAR' || user?.role === 'DOS') && (
+                                <button className="btn btn-outline w-full justify-between group py-3" onClick={() => navigate('/students')}>
+                                    <span className="flex items-center gap-2"><Users size={16} /> Enroll New Student</span>
+                                    <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                                </button>
+                            )}
+                            {(user?.role === 'ADMIN' || user?.role === 'PRINCIPAL') && (
+                                <button className="btn btn-outline w-full justify-between group py-3" onClick={() => setIsStaffModalOpen(true)}>
+                                    <span className="flex items-center gap-2"><Star size={16} /> Register Faculty</span>
+                                    <Plus size={16} />
+                                </button>
+                            )}
+                            {(user?.role === 'ADMIN' || user?.role === 'ACCOUNTANT') && (
+                                <button className="btn btn-outline w-full justify-between group py-3" onClick={() => navigate('/finance')}>
+                                    <span className="flex items-center gap-2"><DollarSign size={16} /> Generate Invoices</span>
+                                    <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
