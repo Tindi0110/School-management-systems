@@ -5,10 +5,14 @@ from django.db import connection
 from django.utils import timezone
 import os
 
+from rest_framework.permissions import IsAdminUser
+
 class HealthCheckView(APIView):
     """
     API endpoint that returns the health status of the system.
     """
+    permission_classes = [IsAdminUser]
+    
     def get(self, request):
         health_data = {
             "status": "healthy",
