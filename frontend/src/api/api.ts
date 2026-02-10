@@ -410,4 +410,10 @@ export const transportAPI = {
   }
 };
 
+export const auditAPI = {
+  health: {
+    get: () => api.get('audit/health/'),
+  }
+};
+
 export default api;

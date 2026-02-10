@@ -26,6 +26,7 @@ const Staff = React.lazy(() => import('./pages/Staff'))
 const Parents = React.lazy(() => import('./pages/Parents'))
 const Academics = React.lazy(() => import('./pages/Academics'))
 const Timetable = React.lazy(() => import('./pages/Timetable'))
+const SystemHealth = React.lazy(() => import('./pages/SystemHealth'))
 
 // Loading Fallback
 const PageLoader = () => (
@@ -111,6 +112,11 @@ function App() {
                       {/* Medical Module */}
                       <Route path="medical" element={
                         <ProtectedRoute requiredPermission="view_medical"><Medical /></ProtectedRoute>
+                      } />
+
+                      {/* Health & Infrastructure Module */}
+                      <Route path="health" element={
+                        <ProtectedRoute requiredRole="ADMIN"><SystemHealth /></ProtectedRoute>
                       } />
                     </Route>
                   </Routes>
