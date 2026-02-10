@@ -480,8 +480,10 @@
     "is_staff": true,
     "is_active": true,
     "date_joined": "2026-02-05T19:27:45.598Z",
-    "role": "STUDENT",
-    "groups": [],
+    "role": "ADMIN",
+    "groups": [
+      1
+    ],
     "user_permissions": []
   }
 },
@@ -6038,9 +6040,9 @@
     "student": 2,
     "academic_year": 1,
     "term": 1,
-    "total_amount": "23000.00",
+    "total_amount": "22800.00",
     "paid_amount": "0.00",
-    "balance": "23000.00",
+    "balance": "22800.00",
     "status": "UNPAID",
     "date_generated": "2026-02-07",
     "due_date": null,
@@ -6698,7 +6700,7 @@
     "invoice": 1,
     "fee_structure": null,
     "description": "Transport: NYS HQ (Route: Alssops-Muthaiga)",
-    "amount": "3000.00"
+    "amount": "2800.00"
   }
 },
 {
