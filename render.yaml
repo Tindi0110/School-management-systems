@@ -17,7 +17,7 @@ services:
       - key: ALLOWED_HOSTS
         value: "*"
       - key: CORS_ALLOWED_ORIGINS
-        value: "http://localhost:5173" # Update after frontend deploy
+        value: "https://school-management-systems-4n8d.onrender.com,http://localhost:5173" # Updated to match live frontend
 
   # Frontend Static Site
   - type: web
