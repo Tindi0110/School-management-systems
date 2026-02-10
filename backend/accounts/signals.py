@@ -11,6 +11,9 @@ def create_staff_profile(sender, instance, created, **kwargs):
     """
     Automatically create a Staff profile when a new User with a staff role is created.
     """
+    if kwargs.get('raw'):
+        return
+
     if created:
         # Define roles that are considered staff
         STAFF_ROLES = [

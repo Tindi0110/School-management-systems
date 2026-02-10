@@ -7,6 +7,8 @@ from django.utils import timezone
 
 @receiver(post_save, sender=HostelDiscipline)
 def sync_discipline_to_student_profile(sender, instance, created, **kwargs):
+    if kwargs.get('raw'):
+        return
     if created:
         DisciplineRecord.objects.create(
             student=instance.student,
@@ -19,6 +21,8 @@ def sync_discipline_to_student_profile(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=HostelAsset)
 def sync_asset_to_finance(sender, instance, created, **kwargs):
+    if kwargs.get('raw'):
+        return
     if created and instance.value > 0:
         # Map to 'SUPPLIES' or 'OTHER'
         Expense.objects.create(
@@ -32,6 +36,8 @@ def sync_asset_to_finance(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=HostelMaintenance)
 def sync_maintenance_to_finance(sender, instance, created, **kwargs):
+    if kwargs.get('raw'):
+        return
     # Only create expense if cost > 0
     if instance.repair_cost > 0:
         Expense.objects.create(
@@ -45,6 +51,8 @@ def sync_maintenance_to_finance(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=HostelAllocation)
 def sync_hostel_allocation(sender, instance, created, **kwargs):
+    if kwargs.get('raw'):
+        return
     student = instance.student
     if instance.status == 'ACTIVE':
         student.residence_details = f"{instance.room.hostel.name} - {instance.room.room_number}"

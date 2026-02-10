@@ -8,12 +8,16 @@ logger = logging.getLogger(__name__)
 
 @receiver(post_save, sender=TransportAllocation)
 def sync_transport_allocation(sender, instance, created, **kwargs):
+    if kwargs.get('raw'):
+        return
     student = instance.student
     student.transport_details = f"{instance.route.route_code} - {instance.pickup_point.point_name if instance.pickup_point else 'No Point'}"
     student.save()
 
 @receiver(post_delete, sender=TransportAllocation)
 def clear_transport_allocation(sender, instance, **kwargs):
+    if kwargs.get('raw'):
+        return
     try:
         student = instance.student
         student.transport_details = ""
@@ -23,6 +27,8 @@ def clear_transport_allocation(sender, instance, **kwargs):
 
 @receiver(post_save, sender=FuelRecord)
 def sync_fuel_to_expense(sender, instance, created, **kwargs):
+    if kwargs.get('raw'):
+        return
     """
     Auto-create or update an Expense record when Fuel is recorded.
     """
@@ -46,4 +52,6 @@ def sync_fuel_to_expense(sender, instance, created, **kwargs):
 
 @receiver(post_delete, sender=FuelRecord)
 def delete_fuel_expense(sender, instance, **kwargs):
+    if kwargs.get('raw'):
+        return
     Expense.objects.filter(description__startswith=f"Fuel Record #{instance.id}:").delete()

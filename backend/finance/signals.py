@@ -86,6 +86,8 @@ def get_or_create_invoice(student, year_name=None, term_name=None):
 
 @receiver(post_save, sender=HostelAllocation)
 def sync_hostel_fee(sender, instance, created, **kwargs):
+    if kwargs.get('raw'):
+        return
     """
     When a student is allocated a room (ACTIVE), add Hostel Fee to invoice.
     """
@@ -124,6 +126,8 @@ def sync_hostel_fee(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=TransportAllocation)
 def sync_transport_fee(sender, instance, created, **kwargs):
+    if kwargs.get('raw'):
+        return
     """
     When allocated transport, add Transport Fee.
     """
@@ -158,6 +162,8 @@ def sync_transport_fee(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=HostelMaintenance)
 def sync_hostel_maintenance_expense(sender, instance, created, **kwargs):
+    if kwargs.get('raw'):
+        return
     """
     When maintenance is completed or has cost, create Expense.
     """
@@ -178,6 +184,8 @@ def sync_hostel_maintenance_expense(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=VehicleMaintenance)
 def sync_vehicle_maintenance_expense(sender, instance, created, **kwargs):
+    if kwargs.get('raw'):
+        return
     if (instance.status == 'COMPLETED' or instance.cost > 0) and instance.cost > 0:
         description = f"Vehicle Service: {instance.vehicle.registration_number} - {instance.description}"
         
@@ -193,6 +201,8 @@ def sync_vehicle_maintenance_expense(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=HostelAsset)
 def sync_asset_purchase_expense(sender, instance, created, **kwargs):
+    if kwargs.get('raw'):
+        return
     if created and instance.value > 0:
         total_value = instance.value * instance.quantity
         description = f"Asset Purchase: {instance.asset_type} x{instance.quantity} for {instance.hostel.name if instance.hostel else 'Storage'}"
@@ -209,6 +219,8 @@ def sync_asset_purchase_expense(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=Student)
 def auto_create_tuition_invoice(sender, instance, created, **kwargs):
+    if kwargs.get('raw'):
+        return
     """
     Ensure every new student has a base invoice with tuition fees, 
     regardless of whether they have a hostel/transport allocated yet.

@@ -9,6 +9,9 @@ def auto_manage_hostel_on_category_change(sender, instance, created, **kwargs):
     """
     Automatically manage hostel allocation based on student category (DAY vs BOARDING).
     """
+    if kwargs.get('raw'):
+        return
+    
     from hostel.models import HostelAllocation, Bed, Room, Hostel
     
     if instance.category == 'DAY':
@@ -87,6 +90,9 @@ def auto_deallocate_hostel(sender, instance, created, **kwargs):
     """
     Automatically release hostel bed if student is Withdrawn, Alumni, or Suspended.
     """
+    if kwargs.get('raw'):
+        return
+
     if created:
         return
 
@@ -119,6 +125,9 @@ def manage_student_user(sender, instance, created, **kwargs):
     """
     Auto-create User for new students and manage active status.
     """
+    if kwargs.get('raw'):
+        return
+
     from django.contrib.auth import get_user_model
     User = get_user_model()
     

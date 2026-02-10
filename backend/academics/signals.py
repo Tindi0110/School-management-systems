@@ -11,6 +11,9 @@ def sync_term_invoices(sender, instance, created, **kwargs):
     When a Term is created or marked active, ensure all active students 
     have an invoice for this term (which triggers tuition fee addition).
     """
+    if kwargs.get('raw'):
+        return
+        
     if created or instance.is_active:
         try:
             print(f"Syncing invoices for Term: {instance.name}")
