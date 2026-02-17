@@ -17,6 +17,7 @@ class User(AbstractUser):
         ('PARENT', 'Parent'),
     )
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='STUDENT')
+    supabase_id = models.UUIDField(null=True, blank=True, unique=True)
     
     def save(self, *args, **kwargs):
         if self.is_superuser and not self.role == 'ADMIN':
