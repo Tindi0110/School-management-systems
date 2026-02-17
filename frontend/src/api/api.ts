@@ -46,7 +46,9 @@ export const authAPI = {
   register: (data: any) =>
     axios.post(`${API_BASE_URL.replace('/api', '')}/register/`, data),
   resetPassword: (email: string) =>
-    axios.post(`${API_BASE_URL.replace('/api', '')}/password-reset/`, { email }),
+    axios.post(`${API_BASE_URL.replace('/api', '')}/api/auth/password-reset/`, { email }),
+  resetPasswordConfirm: (uidb64: string, token: string, data: any) =>
+    axios.post(`${API_BASE_URL.replace('/api', '')}/api/auth/password-reset-confirm/${uidb64}/${token}/`, data),
 };
 
 export const studentsAPI = {

@@ -121,8 +121,7 @@ router.register(r'school-events', SchoolEventViewSet, basename='school-events')
 urlpatterns = [
     path('', health_check, name='health_check'),
     path('admin/', admin.site.urls),
-    path('api-token-auth/', CustomAuthToken.as_view(), name='api_token_auth'),
-    path('register/', RegisterView.as_view(), name='register'),
+    path('api/auth/', include('accounts.urls')),
     path('api/', include(router.urls)),
     path('api/audit/', include('audit.urls')),
 ]
