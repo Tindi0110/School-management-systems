@@ -13,7 +13,18 @@ const Finance = () => {
     const { success, error: toastError } = useToast();
     const { user } = useSelector((state: any) => state.auth);
     // Admin is Read Only for Finance
-    const isReadOnly = user?.role === 'ADMIN' ? true : (user?.role === 'ACCOUNTANT' ? false : !user?.permissions?.includes('finance.add_invoice'));
+    const isReadOnly = ['ACCOUNTANT', 'ADMIN', 'PRINCIPAL', 'DIRECTOR'].includes(user?.role) ? false : !user?.permissions?.includes('finance.add_invoice');
+
+    const formatDate = (dateString: string) => {
+        if (!dateString) return 'N/A';
+        try {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return 'N/A';
+            return date.toLocaleDateString();
+        } catch (e) {
+            return 'N/A';
+        }
+    };
 
     // Data State
     const [stats, setStats] = useState({
@@ -132,11 +143,10 @@ const Finance = () => {
 
         try {
             await financeAPI.payments.create({
-                student: Number(payForm.student_id),
                 invoice: Number(payForm.invoice_id),
                 amount: parseFloat(payForm.amount),
                 method: payForm.method,
-                reference_number: payForm.reference,
+                reference_number: payForm.reference || null,
                 date_received: new Date().toISOString().split('T')[0]
             });
 
@@ -145,7 +155,8 @@ const Finance = () => {
             setPayForm({ student_id: '', invoice_id: '', amount: '', method: 'CASH', reference: '' });
             loadData();
         } catch (err: any) {
-            toastError(err.message || 'Failed to process payment');
+            const errorMsg = err.response?.data?.error || err.message || 'Failed to process payment';
+            toastError(errorMsg);
         } finally {
             setIsSubmitting(false);
         }
@@ -342,7 +353,7 @@ const Finance = () => {
                                                             {inv.status}
                                                         </span>
                                                     </td>
-                                                    <td className="text-xs text-gray-500">{inv.date_generated ? new Date(inv.date_generated).toLocaleDateString() : 'N/A'}</td>
+                                                    <td className="text-xs text-gray-500">{formatDate(inv.date_generated)}</td>
                                                 </tr>
                                             ))}
                                         </tbody>
@@ -379,7 +390,7 @@ const Finance = () => {
                                                         {inv.status}
                                                     </span>
                                                 </td>
-                                                <td className="text-xs text-gray-500">{inv.date_generated ? new Date(inv.date_generated).toLocaleDateString() : inv.created_at ? new Date(inv.created_at).toLocaleDateString() : 'N/A'}</td>
+                                                <td className="text-xs text-gray-500">{formatDate(inv.date_generated || inv.created_at)}</td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -409,7 +420,7 @@ const Finance = () => {
                                     <tbody>
                                         {payments.map((p: any) => (
                                             <tr key={p.id}>
-                                                <td>{p.date_received ? new Date(p.date_received).toLocaleDateString() : 'N/A'}</td>
+                                                <td>{formatDate(p.date_received)}</td>
                                                 <td className="font-bold">#{p.reference_number || p.id}</td>
                                                 <td>{p.student_name}</td>
                                                 <td className="font-bold text-success">KES {Number(p.amount).toLocaleString()}</td>
@@ -447,7 +458,7 @@ const Finance = () => {
                                     <tbody>
                                         {expenses.map((exp: any) => (
                                             <tr key={exp.id}>
-                                                <td>{new Date(exp.date_occurred).toLocaleDateString()}</td>
+                                                <td>{formatDate(exp.date_occurred)}</td>
                                                 <td><span className="badge badge-outline">{exp.category}</span></td>
                                                 <td>{exp.description}</td>
                                                 <td>{exp.paid_to}</td>
@@ -465,7 +476,7 @@ const Finance = () => {
                             <div className="flex justify-between mb-4">
                                 <h3 className="text-lg font-bold">Fee Structures</h3>
                                 {!isReadOnly && (
-                                    <Button variant="secondary" size="sm" onClick={() => setShowExpenseModal(true)} icon={<Plus size={16} />}>
+                                    <Button variant="secondary" size="sm" onClick={() => setShowFeeModal(true)} icon={<Plus size={16} />}>
                                         Add New Fee
                                     </Button>
                                 )}

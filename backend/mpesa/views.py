@@ -21,7 +21,7 @@ class InitiateSTKPushView(APIView):
         amount = request.data.get('amount')
         admission_number = request.data.get('admission_number')
 
-        if not all([phone_number, amount, admission_number]):
+        if phone_number is None or amount is None or admission_number is None:
             return Response({"error": "Missing required fields"}, status=status.HTTP_400_BAD_REQUEST)
 
         # Standardize phone number (must start with 254)

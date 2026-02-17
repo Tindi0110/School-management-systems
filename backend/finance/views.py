@@ -100,6 +100,25 @@ class PaymentViewSet(viewsets.ModelViewSet):
     serializer_class = PaymentSerializer
     permission_classes = [IsAuthenticated]
 
+    def create(self, request, *args, **kwargs):
+        method = request.data.get('method')
+        reference = request.data.get('reference_number')
+        
+        # 1. Handle empty strings as None
+        if reference == "":
+            reference = None
+            request.data['reference_number'] = None
+
+        # 2. Enforce uniqueness for MPESA and BANK only
+        if method in ['MPESA', 'BANK'] and reference:
+            if Payment.objects.filter(method=method, reference_number=reference).exists():
+                return Response(
+                    {'error': f'A payment with this {method} reference already exists.'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        
+        return super().create(request, *args, **kwargs)
+
     def perform_create(self, serializer):
         # Auto-set User
         serializer.save(received_by=self.request.user)
