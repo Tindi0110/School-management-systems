@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import {
   LayoutDashboard, Users, BookOpen, Building,
-  DollarSign, Bus, Pill, GraduationCap, School, Calendar, Activity, X
+  DollarSign, Bus, Pill, GraduationCap, School, Calendar, Activity
 } from 'lucide-react'
 
 interface SidebarProps {
@@ -49,10 +49,6 @@ const Sidebar = ({ onClose }: SidebarProps) => {
     <aside className="sidebar">
       <div className="sidebar-header flex justify-between items-center">
         <h3 className="text-lg font-bold">School Management System</h3>
-        {/* Mobile Close Button */}
-        <button className="md:hidden text-white/70 hover:text-white transition-colors" onClick={onClose}>
-          <X size={24} />
-        </button>
       </div>
       <nav className="sidebar-nav">
         {filteredLinks.map((link) => (
