@@ -181,7 +181,7 @@ const Finance = () => {
                 amount: parseFloat(feeForm.amount),
                 term: Number(feeForm.term),
                 academic_year: Number(feeForm.year_id),
-                class_level: Number(feeForm.class_id)
+                class_level: feeForm.class_id ? Number(feeForm.class_id) : null
             };
 
             if (editingFeeId) {
@@ -250,7 +250,7 @@ const Finance = () => {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            const res = await (financeAPI as any).mpesa.push(mpesaForm); // I'll fix the type later or use cast
+            await (financeAPI as any).mpesa.push(mpesaForm); // Fixed: Removed unused 'res' to fix build error
             success('STK Push sent to phone!');
             setShowMpesaModal(false);
             setMpesaForm({ admission_number: '', phone_number: '', amount: '' });
@@ -342,7 +342,7 @@ const Finance = () => {
                                                             {inv.status}
                                                         </span>
                                                     </td>
-                                                    <td className="text-xs text-gray-500">{new Date(inv.date_generated).toLocaleDateString()}</td>
+                                                    <td className="text-xs text-gray-500">{inv.date_generated ? new Date(inv.date_generated).toLocaleDateString() : 'N/A'}</td>
                                                 </tr>
                                             ))}
                                         </tbody>
@@ -379,7 +379,7 @@ const Finance = () => {
                                                         {inv.status}
                                                     </span>
                                                 </td>
-                                                <td className="text-xs text-gray-500">{new Date(inv.created_at).toLocaleDateString()}</td>
+                                                <td className="text-xs text-gray-500">{inv.date_generated ? new Date(inv.date_generated).toLocaleDateString() : inv.created_at ? new Date(inv.created_at).toLocaleDateString() : 'N/A'}</td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -409,7 +409,7 @@ const Finance = () => {
                                     <tbody>
                                         {payments.map((p: any) => (
                                             <tr key={p.id}>
-                                                <td>{new Date(p.date_received).toLocaleDateString()}</td>
+                                                <td>{p.date_received ? new Date(p.date_received).toLocaleDateString() : 'N/A'}</td>
                                                 <td className="font-bold">#{p.reference_number || p.id}</td>
                                                 <td>{p.student_name}</td>
                                                 <td className="font-bold text-success">KES {Number(p.amount).toLocaleString()}</td>
@@ -485,7 +485,7 @@ const Finance = () => {
                                         {feeStructures.map((fee: any) => (
                                             <tr key={fee.id}>
                                                 <td className="font-bold">{fee.name}</td>
-                                                <td>{fee.class_level_name}</td>
+                                                <td>{fee.class_level_name || 'All Levels'}</td>
                                                 <td>Term {fee.term} ({fee.academic_year_name})</td>
                                                 <td className="font-bold">KES {Number(fee.amount).toLocaleString()}</td>
                                                 <td>
@@ -620,7 +620,7 @@ const Finance = () => {
                         </div>
                         <div className="form-control">
                             <label className="label">Class Level</label>
-                            <select className="select select-bordered" value={feeForm.class_id} onChange={e => setFeeForm({ ...feeForm, class_id: e.target.value })} required>
+                            <select className="select select-bordered" value={feeForm.class_id} onChange={e => setFeeForm({ ...feeForm, class_id: e.target.value })}>
                                 <option value="">-- All Levels --</option>
                                 {classes.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
                             </select>
