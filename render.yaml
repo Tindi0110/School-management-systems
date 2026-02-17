@@ -32,7 +32,8 @@ services:
           type: web
           property: url
     routes:
-      - src: /*
+      - type: rewrite
+        src: /*
         dest: /index.html
 
 databases:
