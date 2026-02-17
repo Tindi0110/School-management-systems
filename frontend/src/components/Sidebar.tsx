@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import {
   LayoutDashboard, Users, BookOpen, Building,
-  DollarSign, Bus, Pill, GraduationCap, School, Calendar
+  DollarSign, Bus, Pill, GraduationCap, School, Calendar, Activity
 } from 'lucide-react'
 
 const Sidebar = () => {
@@ -21,6 +21,7 @@ const Sidebar = () => {
     { name: 'Medical', path: '/medical', icon: <Pill size={20} />, permission: 'view_medical', roles: ['ADMIN', 'NURSE', 'PRINCIPAL'] },
     { name: 'Transport', path: '/transport', icon: <Bus size={20} />, permission: 'view_transportallocation', roles: ['ADMIN', 'PRINCIPAL', 'REGISTRAR', 'WARDEN'] },
     { name: 'Timetable', path: '/timetable', icon: <Calendar size={20} />, permission: 'view_academics', roles: ['ADMIN', 'PRINCIPAL', 'TEACHER', 'STUDENT', 'DOS'] },
+    { name: 'System Health', path: '/health', icon: <Activity size={20} />, permission: 'view_audit', roles: ['ADMIN'] },
   ]
 
   const filteredLinks = links.filter(link => {
