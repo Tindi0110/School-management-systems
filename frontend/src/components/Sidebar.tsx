@@ -2,18 +2,22 @@ import { NavLink } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import {
   LayoutDashboard, Users, BookOpen, Building,
-  DollarSign, Bus, Pill, GraduationCap, School, Calendar, Activity
+  DollarSign, Bus, Pill, GraduationCap, School, Calendar, Activity, X
 } from 'lucide-react'
 
-const Sidebar = () => {
+interface SidebarProps {
+  onClose?: () => void;
+}
+
+const Sidebar = ({ onClose }: SidebarProps) => {
   const { user } = useSelector((state: any) => state.auth)
   const role = user?.role || 'STUDENT'
 
   const links = [
     { name: 'Dashboard', path: '/', icon: <LayoutDashboard size={20} />, permission: 'view_dashboard', roles: ['ALL'] },
     { name: 'Academics', path: '/academics', icon: <School size={20} />, permission: 'view_academics', roles: ['ADMIN', 'PRINCIPAL', 'DOS', 'TEACHER'] },
-    { name: 'Students', path: '/students', icon: <Users size={20} />, permission: 'view_student', roles: ['ADMIN', 'PRINCIPAL', 'DEPUTY', 'REGISTRAR', 'DOS'] },
-    { name: 'Parents', path: '/parents', icon: <Users size={20} />, permission: 'view_parent', roles: ['ADMIN', 'PRINCIPAL', 'DEPUTY', 'REGISTRAR', 'DOS'] },
+    { name: 'Students', path: '/students', icon: <Users size={20} />, permission: 'view_student', roles: ['ADMIN', 'PRINCIPAL', 'DEPUTY', 'REGISTRAR'] },
+    { name: 'Parents', path: '/parents', icon: <Users size={20} />, permission: 'view_parent', roles: ['ADMIN', 'PRINCIPAL', 'DEPUTY', 'REGISTRAR'] },
     { name: 'Staff', path: '/staff', icon: <GraduationCap size={20} />, permission: 'view_staff', roles: ['ADMIN', 'PRINCIPAL', 'REGISTRAR', 'DOS'] },
     { name: 'Finance', path: '/finance', icon: <DollarSign size={20} />, permission: 'view_finance', roles: ['ADMIN', 'ACCOUNTANT', 'PRINCIPAL'] },
     { name: 'Hostels', path: '/hostels', icon: <Building size={20} />, permission: 'view_hostel', roles: ['ADMIN', 'WARDEN', 'PRINCIPAL', 'REGISTRAR'] },
@@ -43,8 +47,12 @@ const Sidebar = () => {
 
   return (
     <aside className="sidebar">
-      <div className="sidebar-header">
+      <div className="sidebar-header flex justify-between items-center">
         <h3 className="text-lg font-bold">School Management System</h3>
+        {/* Mobile Close Button */}
+        <button className="md:hidden text-white/70 hover:text-white transition-colors" onClick={onClose}>
+          <X size={24} />
+        </button>
       </div>
       <nav className="sidebar-nav">
         {filteredLinks.map((link) => (
@@ -52,6 +60,7 @@ const Sidebar = () => {
             key={link.name}
             to={link.path}
             className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}
+            onClick={onClose}
           >
             {link.icon}
             <span>{link.name}</span>
@@ -79,12 +88,12 @@ const Sidebar = () => {
 
       <style>{`
         .sidebar {
-          width: 250px;
+          width: 100%;
+          height: 100%;
           background: #1e3c72;
           color: white;
           display: flex;
           flex-direction: column;
-          height: 100vh;
         }
         .sidebar-header {
           padding: 1.5rem;

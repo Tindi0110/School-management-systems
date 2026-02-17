@@ -34,8 +34,12 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         if not all([class_id, term, year_id]):
             return Response({'error': 'Missing required fields (class_id, term, year_id)'}, status=400)
 
-        # 1. Get Active Fee Structures for this Class/Term
-        fees = FeeStructure.objects.filter(class_level_id=class_id, term=term, academic_year_id=year_id)
+        # 1. Get Active Fee Structures for this Class/Term (including 'All Levels')
+        from django.db.models import Q
+        fees = FeeStructure.objects.filter(
+            term=term, 
+            academic_year_id=year_id
+        ).filter(Q(class_level_id=class_id) | Q(class_level__isnull=True))
         if not fees.exists():
             return Response({'error': 'No Fee Structures defined for this Class/Term'}, status=404)
 
@@ -73,6 +77,23 @@ class InvoiceViewSet(viewsets.ModelViewSet):
                 created_count += 1
 
         return Response({'message': f'Generated {created_count} invoices successfully.'})
+
+    @action(detail=False, methods=['post'])
+    def sync_all(self, request):
+        """
+        Recalculates totals and balances for ALL invoices.
+        Ensures student balances are accurately reflected.
+        """
+        invoices = Invoice.objects.all()
+        updated_count = 0
+        
+        with transaction.atomic():
+            for inv in invoices:
+                inv.recalculate_totals()
+                inv.recalculate_pricing()
+                updated_count += 1
+                
+        return Response({'message': f'Synchronized {updated_count} invoices successfully.'})
 
 class PaymentViewSet(viewsets.ModelViewSet):
     queryset = Payment.objects.all()

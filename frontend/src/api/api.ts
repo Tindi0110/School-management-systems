@@ -42,11 +42,13 @@ api.interceptors.response.use(
 // API endpoints
 export const authAPI = {
   login: (credentials: { username: string; password: string }) =>
-    axios.post(`${API_BASE_URL.replace('/api', '')}/api-token-auth/`, credentials),
+    axios.post(`${API_BASE_URL.replace('/api', '')}/api/auth/login/`, credentials),
   register: (data: any) =>
-    axios.post(`${API_BASE_URL.replace('/api', '')}/register/`, data),
+    axios.post(`${API_BASE_URL.replace('/api', '')}/api/auth/register/`, data),
   resetPassword: (email: string) =>
-    axios.post(`${API_BASE_URL.replace('/api', '')}/password-reset/`, { email }),
+    axios.post(`${API_BASE_URL.replace('/api', '')}/api/auth/password-reset/`, { email }),
+  resetPasswordConfirm: (uidb64: string, token: string, data: any) =>
+    axios.post(`${API_BASE_URL.replace('/api', '')}/api/auth/password-reset-confirm/${uidb64}/${token}/`, data),
 };
 
 export const studentsAPI = {
@@ -227,6 +229,7 @@ export const financeAPI = {
     getAll: (params?: any) => api.get('invoices/', { params }),
     getOne: (id: number) => api.get(`invoices/${id}/`),
     generateBatch: (data: { class_id: number, term: number, year_id: number }) => api.post('invoices/generate_batch/', data),
+    syncAll: () => api.post('invoices/sync_all/'),
   },
   payments: {
     getAll: () => api.get('payments/'),
@@ -414,6 +417,10 @@ export const auditAPI = {
   health: {
     get: () => api.get('audit/health/'),
   }
+};
+
+export const mpesaAPI = {
+  push: (data: { phone_number: string, amount: number, admission_number: string }) => api.post('mpesa/push/', data),
 };
 
 export default api;

@@ -224,9 +224,15 @@ const Dashboard = () => {
                             </h3>
                         </div>
                         <div className="space-y-3">
-                            {(user?.role === 'ADMIN' || user?.role === 'REGISTRAR' || user?.role === 'DOS') && (
+                            {(user?.role === 'ADMIN' || user?.role === 'REGISTRAR') && (
                                 <button className="btn btn-outline w-full justify-between group py-3" onClick={() => navigate('/students')}>
                                     <span className="flex items-center gap-2"><Users size={16} /> Enroll New Student</span>
+                                    <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                                </button>
+                            )}
+                            {user?.role === 'DOS' && (
+                                <button className="btn btn-outline w-full justify-between group py-3" onClick={() => navigate('/academics')}>
+                                    <span className="flex items-center gap-2"><BookOpen size={16} /> Manage Academic Years</span>
                                     <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                                 </button>
                             )}

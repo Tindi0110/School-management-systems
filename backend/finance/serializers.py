@@ -2,6 +2,9 @@ from rest_framework import serializers
 from .models import FeeStructure, Invoice, InvoiceItem, Payment, Adjustment, Expense
 
 class FeeStructureSerializer(serializers.ModelSerializer):
+    class_level_name = serializers.CharField(source='class_level.name', read_only=True, default='All Levels')
+    academic_year_name = serializers.CharField(source='academic_year.name', read_only=True)
+
     class Meta:
         model = FeeStructure
         fields = '__all__'
