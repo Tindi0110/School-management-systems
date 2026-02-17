@@ -14,12 +14,12 @@ class UserSerializer(serializers.ModelSerializer):
         perms = obj.get_all_permissions()
         # Define Role-Based Permissions (Frontend Modules)
         role_permissions = {
-            'ADMIN': ['view_dashboard', 'view_academics', 'view_student', 'view_parent', 'view_staff', 'view_finance', 'view_hostel', 'view_library', 'view_medical', 'view_transport', 'view_audit', 'view_school_events', 'view_notifications'],
-            'PRINCIPAL': ['view_dashboard', 'view_academics', 'view_student', 'view_parent', 'view_staff', 'view_finance', 'view_hostel', 'view_library', 'view_medical', 'view_transport'],
+            'ADMIN': ['view_dashboard', 'view_academics', 'view_student', 'view_parent', 'view_staff', 'view_finance', 'view_hostel', 'view_library', 'view_medical', 'view_transport', 'view_audit', 'view_school_events', 'view_notifications', 'add_student', 'change_student', 'delete_student', 'add_parent', 'change_parent', 'delete_parent', 'add_timetable', 'change_timetable', 'delete_timetable'],
+            'PRINCIPAL': ['view_dashboard', 'view_academics', 'view_student', 'view_parent', 'view_staff', 'view_finance', 'view_hostel', 'view_library', 'view_medical', 'view_transport', 'add_timetable', 'change_timetable', 'delete_timetable'],
             'DEPUTY': ['view_dashboard', 'view_academics', 'view_student', 'view_parent', 'view_staff'],
-            'DOS': ['view_dashboard', 'view_academics', 'view_student', 'view_parent', 'view_staff', 'view_library', 'view_timetable'],
-            'REGISTRAR': ['view_dashboard', 'view_student', 'view_parent', 'view_staff', 'view_hostel', 'view_transport'],
-            'TEACHER': ['view_dashboard', 'view_academics', 'view_timetable'],
+            'DOS': ['view_dashboard', 'view_academics', 'view_staff', 'view_library', 'view_timetable', 'add_timetable', 'change_timetable', 'delete_timetable'], # Removed student/parent, Added Timetable R/W
+            'REGISTRAR': ['view_dashboard', 'view_student', 'add_student', 'change_student', 'view_parent', 'add_parent', 'change_parent', 'view_staff', 'view_hostel', 'view_transport'], # Added R/W for Student/Parent
+            'TEACHER': ['view_dashboard', 'view_academics', 'view_timetable'], # Timetable is R/W by default if not restricted in frontend, but permission is just 'view'
             'ACCOUNTANT': ['view_dashboard', 'view_finance'],
             'WARDEN': ['view_dashboard', 'view_hostel', 'view_transport'],
             'NURSE': ['view_dashboard', 'view_medical'],

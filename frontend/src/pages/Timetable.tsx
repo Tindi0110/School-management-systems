@@ -5,8 +5,10 @@ import { useConfirm } from '../context/ConfirmContext';
 import { timetableAPI, classesAPI, subjectsAPI, staffAPI } from '../api/api';
 import Modal from '../components/Modal';
 import Button from '../components/common/Button';
+import { useSelector } from 'react-redux';
 
 const Timetable = () => {
+    const { user } = useSelector((state: any) => state.auth);
     const [slots, setSlots] = useState<any[]>([]);
     const [classes, setClasses] = useState<any[]>([]);
     const [subjects, setSubjects] = useState<any[]>([]);
@@ -27,6 +29,10 @@ const Timetable = () => {
         subject: '',
         teacher: ''
     });
+
+    const canEdit = user?.role === 'ADMIN' || user?.permissions?.includes('change_timetable');
+    const canDelete = user?.role === 'ADMIN' || user?.permissions?.includes('delete_timetable');
+    const canAdd = user?.role === 'ADMIN' || user?.permissions?.includes('add_timetable');
 
     const days = [
         { id: 'MON', label: 'Monday' },
@@ -160,9 +166,11 @@ const Timetable = () => {
                         <option value="">Select Class...</option>
                         {classes.map(c => <option key={c.id} value={c.id}>{c.name} {c.stream}</option>)}
                     </select>
-                    <Button variant="primary" onClick={() => openModal()} disabled={!selectedClass} icon={<Plus size={18} />}>
-                        Add Slot
-                    </Button>
+                    {canAdd && (
+                        <Button variant="primary" onClick={() => openModal()} disabled={!selectedClass} icon={<Plus size={18} />}>
+                            Add Slot
+                        </Button>
+                    )}
                 </div>
             </div>
 
@@ -182,10 +190,12 @@ const Timetable = () => {
                                                 <span className="font-mono text-[10px] font-bold bg-primary-light text-primary px-1.5 rounded">
                                                     {slot.start_time.slice(0, 5)} - {slot.end_time.slice(0, 5)}
                                                 </span>
-                                                <div className="hidden group-hover:flex gap-1 absolute top-2 right-2 bg-white pl-2">
-                                                    <Button variant="ghost" size="sm" className="p-1 h-auto text-primary" onClick={() => openModal(slot)} icon={<Edit size={12} />} />
-                                                    <Button variant="ghost" size="sm" className="p-1 h-auto text-error" onClick={() => handleDelete(slot.id)} icon={<Trash2 size={12} />} />
-                                                </div>
+                                                {(canEdit || canDelete) && (
+                                                    <div className="hidden group-hover:flex gap-1 absolute top-2 right-2 bg-white pl-2">
+                                                        {canEdit && <Button variant="ghost" size="sm" className="p-1 h-auto text-primary" onClick={() => openModal(slot)} icon={<Edit size={12} />} />}
+                                                        {canDelete && <Button variant="ghost" size="sm" className="p-1 h-auto text-error" onClick={() => handleDelete(slot.id)} icon={<Trash2 size={12} />} />}
+                                                    </div>
+                                                )}
                                             </div>
                                             <p className="font-black text-sm mb-0.5">{slot.subject_name}</p>
                                             <p className="text-[10px] text-secondary uppercase flex items-center gap-1">

@@ -16,8 +16,8 @@ const Sidebar = ({ onClose }: SidebarProps) => {
   const links = [
     { name: 'Dashboard', path: '/', icon: <LayoutDashboard size={20} />, permission: 'view_dashboard', roles: ['ALL'] },
     { name: 'Academics', path: '/academics', icon: <School size={20} />, permission: 'view_academics', roles: ['ADMIN', 'PRINCIPAL', 'DOS', 'TEACHER'] },
-    { name: 'Students', path: '/students', icon: <Users size={20} />, permission: 'view_student', roles: ['ADMIN', 'PRINCIPAL', 'DEPUTY', 'REGISTRAR', 'DOS'] },
-    { name: 'Parents', path: '/parents', icon: <Users size={20} />, permission: 'view_parent', roles: ['ADMIN', 'PRINCIPAL', 'DEPUTY', 'REGISTRAR', 'DOS'] },
+    { name: 'Students', path: '/students', icon: <Users size={20} />, permission: 'view_student', roles: ['ADMIN', 'PRINCIPAL', 'DEPUTY', 'REGISTRAR'] },
+    { name: 'Parents', path: '/parents', icon: <Users size={20} />, permission: 'view_parent', roles: ['ADMIN', 'PRINCIPAL', 'DEPUTY', 'REGISTRAR'] },
     { name: 'Staff', path: '/staff', icon: <GraduationCap size={20} />, permission: 'view_staff', roles: ['ADMIN', 'PRINCIPAL', 'REGISTRAR', 'DOS'] },
     { name: 'Finance', path: '/finance', icon: <DollarSign size={20} />, permission: 'view_finance', roles: ['ADMIN', 'ACCOUNTANT', 'PRINCIPAL'] },
     { name: 'Hostels', path: '/hostels', icon: <Building size={20} />, permission: 'view_hostel', roles: ['ADMIN', 'WARDEN', 'PRINCIPAL', 'REGISTRAR'] },
