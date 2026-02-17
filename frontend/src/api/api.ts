@@ -229,6 +229,7 @@ export const financeAPI = {
     getAll: (params?: any) => api.get('invoices/', { params }),
     getOne: (id: number) => api.get(`invoices/${id}/`),
     generateBatch: (data: { class_id: number, term: number, year_id: number }) => api.post('invoices/generate_batch/', data),
+    syncAll: () => api.post('invoices/sync_all/'),
   },
   payments: {
     getAll: () => api.get('payments/'),
@@ -416,6 +417,10 @@ export const auditAPI = {
   health: {
     get: () => api.get('audit/health/'),
   }
+};
+
+export const mpesaAPI = {
+  push: (data: { phone_number: string, amount: number, admission_number: string }) => api.post('mpesa/push/', data),
 };
 
 export default api;

@@ -122,6 +122,7 @@ urlpatterns = [
     path('', health_check, name='health_check'),
     path('admin/', admin.site.urls),
     path('api/auth/', include('accounts.urls')),
+    path('api/mpesa/', include('mpesa.urls')),
     path('api/', include(router.urls)),
     path('api/audit/', include('audit.urls')),
 ]

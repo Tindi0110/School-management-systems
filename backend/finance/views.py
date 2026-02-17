@@ -74,6 +74,23 @@ class InvoiceViewSet(viewsets.ModelViewSet):
 
         return Response({'message': f'Generated {created_count} invoices successfully.'})
 
+    @action(detail=False, methods=['post'])
+    def sync_all(self, request):
+        """
+        Recalculates totals and balances for ALL invoices.
+        Ensures student balances are accurately reflected.
+        """
+        invoices = Invoice.objects.all()
+        updated_count = 0
+        
+        with transaction.atomic():
+            for inv in invoices:
+                inv.recalculate_totals()
+                inv.recalculate_pricing()
+                updated_count += 1
+                
+        return Response({'message': f'Synchronized {updated_count} invoices successfully.'})
+
 class PaymentViewSet(viewsets.ModelViewSet):
     queryset = Payment.objects.all()
     serializer_class = PaymentSerializer

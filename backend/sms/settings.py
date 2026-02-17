@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'audit',
     'reports', 
     'communication',
+    'mpesa',
 ]
 
 MIDDLEWARE = [

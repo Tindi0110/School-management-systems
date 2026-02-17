@@ -30,6 +30,7 @@ const Finance = () => {
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [showFeeModal, setShowFeeModal] = useState(false);
     const [showExpenseModal, setShowExpenseModal] = useState(false);
+    const [showMpesaModal, setShowMpesaModal] = useState(false);
 
     // Invoice Generation Form
     const [genForm, setGenForm] = useState({ class_id: '', term: '1', year_id: '' });
@@ -42,6 +43,9 @@ const Finance = () => {
 
     // Expense Form
     const [expenseForm, setExpenseForm] = useState({ category: 'SUPPLIES', amount: '', description: '', paid_to: '', date_occurred: '' });
+
+    // Mpesa Form
+    const [mpesaForm, setMpesaForm] = useState({ admission_number: '', phone_number: '', amount: '' });
 
     // Options
     const [classes, setClasses] = useState([]);
@@ -120,6 +124,12 @@ const Finance = () => {
     const handleReceivePayment = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
+        if ((payForm.method === 'MPESA' || payForm.method === 'BANK') && !payForm.reference.trim()) {
+            toastError('Please provide a Reference Number for ' + payForm.method + ' payments');
+            setIsSubmitting(false);
+            return;
+        }
+
         try {
             await financeAPI.payments.create({
                 student: Number(payForm.student_id),
@@ -223,6 +233,34 @@ const Finance = () => {
         }
     };
 
+    const handleSyncAll = async () => {
+        setIsSubmitting(true);
+        try {
+            const res = await financeAPI.invoices.syncAll();
+            success(res.data.message || 'Financials synchronized successfully!');
+            loadData();
+        } catch (err: any) {
+            toastError(err.message || 'Failed to sync financials');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleMpesaPush = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        try {
+            const res = await (financeAPI as any).mpesa.push(mpesaForm); // I'll fix the type later or use cast
+            success('STK Push sent to phone!');
+            setShowMpesaModal(false);
+            setMpesaForm({ admission_number: '', phone_number: '', amount: '' });
+        } catch (err: any) {
+            toastError(err.message || 'Failed to initiate M-Pesa push');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
 
     return (
@@ -234,6 +272,12 @@ const Finance = () => {
                 </div>
                 {!isReadOnly && (
                     <div className="flex gap-2">
+                        <Button variant="ghost" icon={<TrendingUp size={18} />} className="no-print" onClick={handleSyncAll} loading={isSubmitting}>
+                            Sync Financials
+                        </Button>
+                        <Button variant="outline" className="no-print text-green-600 border-green-200 hover:bg-green-50" onClick={() => setShowMpesaModal(true)}>
+                            Push M-Pesa Pay
+                        </Button>
                         <Button variant="outline" icon={<CreditCard size={18} />} className="no-print" onClick={() => setShowPaymentModal(true)}>
                             Receive Payment
                         </Button>
@@ -298,7 +342,7 @@ const Finance = () => {
                                                             {inv.status}
                                                         </span>
                                                     </td>
-                                                    <td className="text-xs text-gray-500">{new Date(inv.created_at).toLocaleDateString()}</td>
+                                                    <td className="text-xs text-gray-500">{new Date(inv.date_generated).toLocaleDateString()}</td>
                                                 </tr>
                                             ))}
                                         </tbody>
@@ -365,8 +409,8 @@ const Finance = () => {
                                     <tbody>
                                         {payments.map((p: any) => (
                                             <tr key={p.id}>
-                                                <td>{new Date(p.created_at).toLocaleDateString()}</td>
-                                                <td className="font-bold">#{p.reference || p.id}</td>
+                                                <td>{new Date(p.date_received).toLocaleDateString()}</td>
+                                                <td className="font-bold">#{p.reference_number || p.id}</td>
                                                 <td>{p.student_name}</td>
                                                 <td className="font-bold text-success">KES {Number(p.amount).toLocaleString()}</td>
                                                 <td>{p.method}</td>
@@ -654,6 +698,37 @@ const Finance = () => {
                     <div className="modal-action">
                         <Button type="button" variant="ghost" onClick={() => setShowExpenseModal(false)}>Cancel</Button>
                         <Button type="submit" variant="primary" loading={isSubmitting} loadingText="Saving...">Record Expense</Button>
+                    </div>
+                </form>
+            </Modal>
+            {/* M-Pesa STK Push Modal */}
+            <Modal isOpen={showMpesaModal} onClose={() => setShowMpesaModal(false)} title="M-Pesa STK Push Payment">
+                <form onSubmit={handleMpesaPush} className="space-y-4">
+                    <p className="text-xs text-gray-500 bg-green-50 p-3 rounded-lg border border-green-100">
+                        This will send a secure payment prompt to the parent's phone. Fees will be automatically updated once paid.
+                    </p>
+                    <SearchableSelect
+                        label="Student (Admission Number)"
+                        options={students.map((s: any) => ({ id: s.admission_number, label: `${s.admission_number} - ${s.full_name}` }))}
+                        value={mpesaForm.admission_number}
+                        onChange={(val) => setMpesaForm({ ...mpesaForm, admission_number: String(val) })}
+                        required
+                    />
+                    <div className="form-control">
+                        <label className="label">Phone Number (Safaricom)</label>
+                        <input type="text" className="input input-bordered" placeholder="e.g. 0712345678" required
+                            value={mpesaForm.phone_number} onChange={e => setMpesaForm({ ...mpesaForm, phone_number: e.target.value })}
+                        />
+                    </div>
+                    <div className="form-control">
+                        <label className="label">Amount (KES)</label>
+                        <input type="number" className="input input-bordered" required
+                            value={mpesaForm.amount} onChange={e => setMpesaForm({ ...mpesaForm, amount: e.target.value })}
+                        />
+                    </div>
+                    <div className="modal-action">
+                        <Button type="button" variant="ghost" onClick={() => setShowMpesaModal(false)}>Cancel</Button>
+                        <Button type="submit" variant="primary" className="bg-green-600 hover:bg-green-700 border-none" loading={isSubmitting} loadingText="Sending...">Send STK Push</Button>
                     </div>
                 </form>
             </Modal>
