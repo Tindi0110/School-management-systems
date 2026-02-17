@@ -3,7 +3,7 @@ import { Outlet, useNavigate } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { logout } from '../store/authSlice'
 import Sidebar from '../components/Sidebar'
-import { LogOut, Bell, Menu, X } from 'lucide-react'
+import { LogOut, Bell, Menu } from 'lucide-react'
 
 const DashboardLayout = () => {
   const dispatch = useDispatch()
