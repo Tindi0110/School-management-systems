@@ -107,12 +107,12 @@ class MpesaCallbackView(APIView):
                     status='UNPAID'
                 )
                 
-                # Auto-add fee structures for their class
+                # Auto-add fee structures for their class (including 'All Levels')
+                from django.db.models import Q
                 fees = FeeStructure.objects.filter(
                     academic_year=active_year,
-                    term=term_val,
-                    class_level=student.current_class
-                )
+                    term=term_val
+                ).filter(Q(class_level=student.current_class) | Q(class_level__isnull=True))
                 
                 from finance.models import InvoiceItem
                 for fee in fees:

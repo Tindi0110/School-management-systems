@@ -34,8 +34,12 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         if not all([class_id, term, year_id]):
             return Response({'error': 'Missing required fields (class_id, term, year_id)'}, status=400)
 
-        # 1. Get Active Fee Structures for this Class/Term
-        fees = FeeStructure.objects.filter(class_level_id=class_id, term=term, academic_year_id=year_id)
+        # 1. Get Active Fee Structures for this Class/Term (including 'All Levels')
+        from django.db.models import Q
+        fees = FeeStructure.objects.filter(
+            term=term, 
+            academic_year_id=year_id
+        ).filter(Q(class_level_id=class_id) | Q(class_level__isnull=True))
         if not fees.exists():
             return Response({'error': 'No Fee Structures defined for this Class/Term'}, status=404)
 
