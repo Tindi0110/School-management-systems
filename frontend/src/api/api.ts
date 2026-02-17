@@ -42,9 +42,9 @@ api.interceptors.response.use(
 // API endpoints
 export const authAPI = {
   login: (credentials: { username: string; password: string }) =>
-    axios.post(`${API_BASE_URL.replace('/api', '')}/api-token-auth/`, credentials),
+    axios.post(`${API_BASE_URL.replace('/api', '')}/api/auth/login/`, credentials),
   register: (data: any) =>
-    axios.post(`${API_BASE_URL.replace('/api', '')}/register/`, data),
+    axios.post(`${API_BASE_URL.replace('/api', '')}/api/auth/register/`, data),
   resetPassword: (email: string) =>
     axios.post(`${API_BASE_URL.replace('/api', '')}/api/auth/password-reset/`, { email }),
   resetPasswordConfirm: (uidb64: string, token: string, data: any) =>
