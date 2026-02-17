@@ -5,7 +5,11 @@ import {
   DollarSign, Bus, Pill, GraduationCap, School, Calendar, Activity
 } from 'lucide-react'
 
-const Sidebar = () => {
+interface SidebarProps {
+  onClose?: () => void;
+}
+
+const Sidebar = ({ onClose }: SidebarProps) => {
   const { user } = useSelector((state: any) => state.auth)
   const role = user?.role || 'STUDENT'
 
@@ -52,6 +56,7 @@ const Sidebar = () => {
             key={link.name}
             to={link.path}
             className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}
+            onClick={onClose}
           >
             {link.icon}
             <span>{link.name}</span>
@@ -79,12 +84,12 @@ const Sidebar = () => {
 
       <style>{`
         .sidebar {
-          width: 250px;
+          width: 100%;
+          height: 100%;
           background: #1e3c72;
           color: white;
           display: flex;
           flex-direction: column;
-          height: 100vh;
         }
         .sidebar-header {
           padding: 1.5rem;

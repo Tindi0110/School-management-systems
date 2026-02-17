@@ -16,8 +16,8 @@ const ProtectedRoute = ({ children, requiredPermission, requiredRole }: Protecte
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
-    if (requiredRole && user?.role && user.role !== requiredRole && user.role !== 'ADMIN') {
-         return (
+    if (requiredRole && user?.role && user.role !== requiredRole) {
+        return (
             <div className="flex flex-col items-center justify-center h-screen bg-gray-100 text-center p-4">
                 <div className="bg-white p-8 rounded-xl shadow-lg max-w-md">
                     <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
