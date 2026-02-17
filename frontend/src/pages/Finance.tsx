@@ -143,11 +143,10 @@ const Finance = () => {
 
         try {
             await financeAPI.payments.create({
-                student: Number(payForm.student_id),
                 invoice: Number(payForm.invoice_id),
                 amount: parseFloat(payForm.amount),
                 method: payForm.method,
-                reference_number: payForm.reference,
+                reference_number: payForm.reference || null,
                 date_received: new Date().toISOString().split('T')[0]
             });
 
@@ -156,7 +155,8 @@ const Finance = () => {
             setPayForm({ student_id: '', invoice_id: '', amount: '', method: 'CASH', reference: '' });
             loadData();
         } catch (err: any) {
-            toastError(err.message || 'Failed to process payment');
+            const errorMsg = err.response?.data?.error || err.message || 'Failed to process payment';
+            toastError(errorMsg);
         } finally {
             setIsSubmitting(false);
         }
