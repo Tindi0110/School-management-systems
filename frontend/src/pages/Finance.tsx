@@ -114,8 +114,9 @@ const Finance = () => {
                 const res = await financeAPI.expenses.getAll();
                 setExpenses(d(res));
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error loading finance data:', error);
+            toastError(error?.message || 'Failed to load finance data. Check console for details.');
         } finally {
             setLoading(false);
         }

@@ -98,7 +98,9 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         return Response({'message': f'Synchronized {updated_count} invoices successfully.'})
 
 class PaymentViewSet(viewsets.ModelViewSet):
-    queryset = Payment.objects.all()
+    queryset = Payment.objects.select_related(
+        'invoice', 'invoice__student', 'received_by'
+    ).all()
     serializer_class = PaymentSerializer
     permission_classes = [IsAuthenticated]
 
