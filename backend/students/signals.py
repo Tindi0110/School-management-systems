@@ -92,8 +92,8 @@ def auto_manage_hostel_on_category_change(sender, instance, created, **kwargs):
                                 room.status = 'FULL'
                             room.save()
 
-                except Exception as e:
-
+                except Exception:
+                    pass
             else:
 
 
@@ -204,8 +204,8 @@ def manage_student_user(sender, instance, created, **kwargs):
             instance.user = user
 
             
-        except Exception as e:
-
+        except Exception:
+            pass
 
     # 2. Sync Status (Active/Inactive)
     if instance.user:

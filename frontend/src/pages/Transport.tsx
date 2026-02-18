@@ -98,7 +98,7 @@ const Transport = () => {
 
     const loadData = async () => {
         setLoading(true);
-        const fetchData = async (apiCall: any, setter: any, name: string) => {
+        const fetchData = async (apiCall: any, setter: any) => {
             try {
                 const res = await apiCall;
                 setter(res.data?.results ?? res.data ?? []);
@@ -109,18 +109,18 @@ const Transport = () => {
 
         try {
             await Promise.all([
-                fetchData(transportAPI.vehicles.getAll(), setVehicles, 'vehicles'),
-                fetchData(transportAPI.routes.getAll(), setRoutes, 'routes'),
-                fetchData(transportAPI.pickupPoints.getAll(), setPickupPoints, 'pickupPoints'),
-                fetchData(transportAPI.allocations.getAll(), setAllocations, 'allocations'),
-                fetchData(studentsAPI.getAll(), setStudents, 'students')
+                fetchData(transportAPI.vehicles.getAll(), setVehicles),
+                fetchData(transportAPI.routes.getAll(), setRoutes),
+                fetchData(transportAPI.pickupPoints.getAll(), setPickupPoints),
+                fetchData(transportAPI.allocations.getAll(), setAllocations),
+                fetchData(studentsAPI.getAll(), setStudents)
             ]);
 
             await Promise.all([
-                fetchData(transportAPI.fuel.getAll(), setFuelRecords, 'fuel'),
-                fetchData(transportAPI.tripLogs.getAll(), setTrips, 'trips'),
-                fetchData(transportAPI.maintenance.getAll(), setMaintenanceRecords, 'maintenance'),
-                fetchData(transportAPI.incidents.getAll(), setIncidents, 'incidents')
+                fetchData(transportAPI.fuel.getAll(), setFuelRecords),
+                fetchData(transportAPI.tripLogs.getAll(), setTrips),
+                fetchData(transportAPI.maintenance.getAll(), setMaintenanceRecords),
+                fetchData(transportAPI.incidents.getAll(), setIncidents)
             ]);
 
         } catch (error) {

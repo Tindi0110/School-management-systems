@@ -71,12 +71,8 @@ class StudentViewSet(viewsets.ModelViewSet):
                     }
                 )
                 student.parents.add(parent)
-            except Exception as e:
-                # Log error but don't fail admission? 
-                # Better to fail integrity if critical, but user experience favors success.
-                # However, "Integrity Error" is what we want to fix.
-
-                # We'll continue, user can add parent later.
+            except Exception:
+                pass
         
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=201, headers=headers)
