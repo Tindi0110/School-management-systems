@@ -1954,7 +1954,7 @@ const Academics = () => {
 
                     {resultContext.classId && (
                         <div className="max-h-[80vh] overflow-auto bg-white relative shadow-sm">
-                            <table className="table w-full border-collapse text-xs">
+                            <table className="results-entry-table table w-full border-collapse text-xs">
                                 <thead className="sticky top-0 z-20 shadow-sm bg-gray-100 text-gray-700">
                                     <tr className="border-none">
                                         <th className="sticky left-0 z-30 bg-gray-100 min-w-[140px] p-2 text-left">
@@ -2118,6 +2118,9 @@ const Academics = () => {
             </Modal>
 
             <style>{`
+                .results-entry-table td, .results-entry-table th, .results-entry-table tr { border: none !important; }
+                .results-entry-table thead th { border-bottom: none !important; }
+                .results-entry-table { border: none !important; }
                 .dropdown:hover .dropdown-content { display: block; }
                 .scrollbar-hide::-webkit-scrollbar { display: none; }
                 .checkbox-group { display: flex; align-items: center; gap: 0.5rem; }
