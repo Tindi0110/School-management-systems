@@ -390,7 +390,14 @@ const Academics = () => {
                 await academicsAPI.attendance.create(attendanceForm);
                 success('Attendance logged.');
             }
-            loadAllAcademicData();
+
+            // Only refresh attendance data to prevent full page reload (which hides the tab)
+            try {
+                const attRes = await academicsAPI.attendance.getAll();
+                const newRecords = attRes.data?.results ?? attRes.data ?? [];
+                setAttendanceRecords(newRecords);
+            } catch (e) { console.error("Error refreshing attendance:", e); }
+
             setIsAttendanceModalOpen(false);
             setEditingAttendanceId(null);
             setAttendanceForm({ student: '', status: 'PRESENT', remark: '' });
@@ -883,26 +890,10 @@ const Academics = () => {
                             <h3 className="mb-0 text-xs font-black uppercase">Institutional Curriculum</h3>
                             <button className="btn btn-primary btn-xs" onClick={() => setIsSubjectModalOpen(true)}><Plus size={12} /> New Subject</button>
                         </div>
-                        <table className="table">
-                            <thead>
-                                <tr>
-                                    <th>Subject</th>
-                                    <th>Code</th>
-                                    <th>Group</th>
-                                    <th className="no-print">Edit</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {subjects.map(s => (
-                                    <tr key={s.id}>
-                                        <td className="font-bold text-[11px]">{s.name}</td>
-                                        <td><code>{s.code}</code></td>
-                                        <td className="text-[10px] uppercase font-bold text-secondary">{s.group_name || 'Unassigned'}</td>
-                                        <td className="no-print"><Button variant="ghost" size="sm" onClick={() => openEditSubject(s)} title="Edit Subject" icon={<Edit size={12} />} /></td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                        {/* Table Removed as per request */}
+                        <div className="p-8 text-center text-sm text-secondary italic border bg-white">
+                            Select "New Subject" to manage the curriculum.
+                        </div>
                     </div>
                 </div>
             )}
@@ -1472,7 +1463,7 @@ const Academics = () => {
                         <label className="label text-[10px] font-black uppercase">Class Teacher</label>
                         <select className="select" value={classForm.class_teacher} onChange={(e) => setClassForm({ ...classForm, class_teacher: e.target.value })}>
                             <option value="">Select Teacher...</option>
-                            {staff.filter(s => s.role === 'TEACHER' || s.role === 'DOS').map(s => (
+                            {staff.filter(s => s.role === 'TEACHER').map(s => (
                                 <option key={s.id} value={s.id}>{s.user.first_name} {s.user.last_name} ({s.employee_id})</option>
                             ))}
                         </select>
