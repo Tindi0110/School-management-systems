@@ -1885,14 +1885,13 @@ const Academics = () => {
                             <table className="table w-full border-collapse text-xs">
                                 <thead className="sticky top-0 z-20 shadow-sm bg-gray-100 text-gray-700">
                                     <tr>
-                                        <th className="sticky left-0 z-30 border border-gray-300 bg-gray-100 min-w-[200px] p-2 text-left">
+                                        <th className="sticky left-0 z-30 border border-gray-300 bg-gray-100 min-w-[140px] p-2 text-left">
                                             Student Name <br />
                                             <span className="text-[9px] font-normal text-gray-500">ADM | Stream</span>
                                         </th>
                                         {subjects.map(sub => (
-                                            <th key={sub.id} className="text-center min-w-[60px] border border-gray-300 p-1 bg-gray-100" title={sub.name}>
-                                                <div className="font-bold text-gray-800 text-[10px]">{sub.code}</div>
-                                                <div className="text-[9px] uppercase text-gray-500">{sub.name.substring(0, 3)}</div>
+                                            <th key={sub.id} className="text-center min-w-[42px] border border-gray-300 p-1 bg-gray-100" title={`${sub.name} (${sub.code})`}>
+                                                <div className="text-[10px] font-bold uppercase text-gray-700">{sub.name.substring(0, 3)}</div>
                                             </th>
                                         ))}
                                     </tr>
