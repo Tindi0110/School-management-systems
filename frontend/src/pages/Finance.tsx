@@ -109,6 +109,24 @@ const Finance = () => {
         }
     };
 
+    // Ensure data is loaded when modals open (in case user hasn't visited the tab)
+    useEffect(() => {
+        const d = (r: any) => r?.data?.results ?? r?.data ?? [];
+        const loadModalData = async () => {
+            if (showInvoiceModal || showFeeModal) {
+                if (classes.length === 0 || years.length === 0) {
+                    const [cls, yrs] = await Promise.all([classesAPI.getAll(), academicsAPI.years.getAll()]);
+                    setClasses(d(cls)); setYears(d(yrs));
+                }
+            }
+            if (showPaymentModal) {
+                if (students.length === 0) setStudents(d(await studentsAPI.getAll()));
+                if (invoices.length === 0) setInvoices(d(await financeAPI.invoices.getAll()));
+            }
+        };
+        loadModalData();
+    }, [showInvoiceModal, showPaymentModal, showFeeModal]);
+
     const StatsCard = ({ title, value, icon, color }: any) => (
         <div className="card shadow-md flex flex-row items-center gap-4 p-6 border border-gray-100 transition-all hover:shadow-lg">
             <div className={`p-3 rounded-xl bg-opacity-10 ${color.replace('text-', 'bg-')} ${color}`}>
