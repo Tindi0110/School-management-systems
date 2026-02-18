@@ -230,7 +230,8 @@ const Library = () => {
             setLendingForm({ copy: '', student: '', due_date: '' });
 
             // Refresh in background
-            Promise.all([loadLendings(), loadCatalog()]);
+            loadLendings().catch(console.error);
+            loadCatalog().catch(console.error);
 
         } catch (err: any) {
             console.error(err);
