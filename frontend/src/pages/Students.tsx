@@ -82,14 +82,14 @@ const Students = () => {
                 admission_number: formData.admission_number || `ADM-${Math.floor(10000 + Math.random() * 90000)}`
             };
 
-            console.log("Submitting Student Payload:", payload);
+
 
             let response;
             if (editingStudent) {
                 response = await studentsAPI.update(editingStudent.id, payload);
             } else {
                 // Atomic Creation (Backend handles Parent & Hostel via Signal)
-                console.log("Submitting Student Payload (Atomic):", payload);
+
                 response = await studentsAPI.create(payload);
                 // const newStudentId = response.data.id;
 
@@ -99,7 +99,7 @@ const Students = () => {
                 // 2. Parent creation & linking (if guardian info provided)
                 // 3. Hostel allocation (via signal if category=BOARDING)
 
-                console.log('Atomic admission successful.');
+
             }
 
             await loadData();

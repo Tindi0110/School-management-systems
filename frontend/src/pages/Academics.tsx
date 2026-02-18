@@ -1893,7 +1893,6 @@ const Academics = () => {
 
             {/* Enter Results Modal */}
             <Modal isOpen={isResultModalOpen} onClose={() => setIsResultModalOpen(false)} title={`Enter Results: ${selectedExam?.name || ''}`} size="full">
-                <div className="bg-blue-600 text-white p-2 text-center font-black text-xl mb-4 rounded blink">🚀 SEAMLESS MODE ACTIVE 🚀</div>
                 <form onSubmit={handleBulkResultSubmit}>
                     {/* Cascading Class Selector */}
                     <div className="form-group p-3 mb-4 bg-gray-50">
