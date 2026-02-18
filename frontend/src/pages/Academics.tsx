@@ -1844,15 +1844,15 @@ const Academics = () => {
                                     <tr>
                                         <th className="bg-secondary-light sticky left-0 z-30 border-r min-w-[150px]">Student Name</th>
                                         {subjects.map(sub => (
-                                            <th key={sub.id} className="text-center min-w-[80px] text-[10px] uppercase border-r" title={sub.name}>
-                                                {sub.code}
+                                            <th key={sub.id} className="text-center min-w-[120px] text-[10px] uppercase border-r px-2" title={sub.name}>
+                                                {sub.name} <br /> <span className="text-[9px] text-secondary">({sub.code})</span>
                                             </th>
                                         ))}
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {students.filter(s => s.current_class === parseInt(resultContext.classId)).map(student => (
-                                        <tr key={student.id} className="hover:bg-blue-50 transition-colors">
+                                        <tr key={student.id} className="hover:bg-blue-50 transition-colors h-12">
                                             <td className="sticky left-0 bg-white z-10 border-r font-bold text-xs py-1 px-2 shadow-sm">
                                                 {student.full_name}
                                                 <div className="text-[9px] text-secondary font-mono">{student.admission_number}</div>
@@ -1864,7 +1864,7 @@ const Academics = () => {
                                                     <td key={sub.id} className="p-0 border-r">
                                                         <input
                                                             type="text" // Text to allow empty string
-                                                            className={`w-full h-full text-center text-xs font-mono p-2 focus:bg-yellow-50 focus:outline-none ${entry.id ? 'font-bold text-primary' : 'text-gray-900'}`}
+                                                            className={`w-full h-full text-center text-sm font-mono p-2 bg-transparent focus:bg-yellow-50 focus:outline-none focus:ring-2 focus:ring-primary/50 ${entry.id ? 'font-bold text-primary' : 'text-gray-900'}`}
                                                             value={entry.score}
                                                             placeholder="-"
                                                             onChange={(e) => {
