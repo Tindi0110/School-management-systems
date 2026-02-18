@@ -33,7 +33,7 @@ const DashboardLayout = () => {
 
         if (dueToday.length > 0) {
           dueToday.forEach((e: any) => {
-            info(`📅 Event Due Today: ${e.title}`, 8000);
+            info(`📅 Event Due Today: ${e.title}`, { duration: 8000 });
           });
         }
       } catch (error) {
