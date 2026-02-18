@@ -1864,7 +1864,7 @@ const Academics = () => {
                                                     <td key={sub.id} className="p-0 border-r">
                                                         <input
                                                             type="text" // Text to allow empty string
-                                                            className={`w-full h-full text-center text-xs font-mono p-2 focus:bg-yellow-50 focus:outline-none ${entry.id ? 'font-bold text-primary' : ''}`}
+                                                            className={`w-full h-full text-center text-xs font-mono p-2 focus:bg-yellow-50 focus:outline-none ${entry.id ? 'font-bold text-primary' : 'text-gray-900'}`}
                                                             value={entry.score}
                                                             placeholder="-"
                                                             onChange={(e) => {
