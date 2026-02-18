@@ -61,6 +61,14 @@ class HostelAllocationViewSet(viewsets.ModelViewSet):
             if room.current_occupancy >= room.capacity:
                 room.status = 'FULL'
             room.save()
+            
+            # Fix: Cleanup Zombie Allocations (Bed is AVAILABLE but still linked)
+            if hasattr(bed, 'allocation'):
+                 old_alloc = bed.allocation
+                 # If we are here, serializer validated bed.status == 'AVAILABLE'
+                 # So this link is stale.
+                 old_alloc.bed = None
+                 old_alloc.save()
         try:
             serializer.save()
         except Exception as e:
@@ -85,6 +93,12 @@ class HostelAllocationViewSet(viewsets.ModelViewSet):
                 # 1. Validation
                 if new_bed.status != 'AVAILABLE':
                     return Response({'error': f'Bed {new_bed.bed_number} is not available (Status: {new_bed.status})'}, status=status.HTTP_400_BAD_REQUEST)
+                
+                # Fix: Cleanup Zombie Allocations on New Bed
+                if hasattr(new_bed, 'allocation'):
+                     old_alloc = new_bed.allocation
+                     old_alloc.bed = None
+                     old_alloc.save()
                 
                 hostel = new_bed.room.hostel
                 student = allocation.student

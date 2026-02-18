@@ -55,8 +55,12 @@ def sync_hostel_allocation(sender, instance, created, **kwargs):
         return
     student = instance.student
     if instance.status == 'ACTIVE':
-        student.residence_details = f"{instance.room.hostel.name} - {instance.room.room_number}"
+        # Use update to avoid triggering post_save signal loop on Student
+        student.__class__.objects.filter(pk=student.pk).update(
+            residence_details=f"{instance.room.hostel.name} - {instance.room.room_number}"
+        )
     else:
-        student.residence_details = "Not Assigned" # Or clear it
-    student.save()
+        student.__class__.objects.filter(pk=student.pk).update(
+            residence_details="Not Assigned"
+        )
 

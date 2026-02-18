@@ -32,6 +32,7 @@ def auto_manage_hostel_on_category_change(sender, instance, created, **kwargs):
                 room.save()
             
             allocation.status = 'COMPLETED'
+            allocation.bed = None # RELEASE THE BED REFERENCE
             allocation.end_date = timezone.now().date()
             allocation.save()
             print(f"Hostel Sync: De-allocated student {instance.admission_number} (Switched to DAY)")
@@ -49,39 +50,50 @@ def auto_manage_hostel_on_category_change(sender, instance, created, **kwargs):
 
             if available_bed:
                 # Create or Update allocation
-                with transaction.atomic():
-                    # Re-verify bed availability under lock
-                    bed = Bed.objects.select_for_update().get(id=available_bed.id)
-                    if bed.status == 'AVAILABLE':
-                        # Check for ANY existing allocation (Active or otherwise) due to OneToOne
-                        existing_allocation = HostelAllocation.objects.filter(student=instance).first()
+                try:
+                    with transaction.atomic():
+                        # Re-verify bed availability under lock
+                        bed = Bed.objects.select_for_update().get(id=available_bed.id)
                         
-                        if existing_allocation:
-                            # Update existing record
-                            existing_allocation.bed = bed
-                            existing_allocation.room = bed.room
-                            existing_allocation.status = 'ACTIVE'
-                            existing_allocation.start_date = timezone.now().date()
-                            existing_allocation.end_date = None
-                            existing_allocation.save()
-                        else:
-                            HostelAllocation.objects.create(
-                                student=instance,
-                                bed=bed,
-                                room=bed.room,
-                                status='ACTIVE',
-                                start_date=timezone.now().date()
-                            )
-                        
-                        bed.status = 'OCCUPIED'
-                        bed.save()
-                        
-                        room = bed.room
-                        room.current_occupancy += 1
-                        if room.current_occupancy >= room.capacity:
-                            room.status = 'FULL'
-                        room.save()
-                        print(f"Hostel Sync: Auto-allocated student {instance.admission_number} to {room.hostel.name} Rm {room.room_number}")
+                        # 1. Clean up "Zombie" allocations for this bed (if any)
+                        if hasattr(bed, 'allocation') and bed.allocation.student != instance:
+                            old_alloc = bed.allocation
+                            old_alloc.bed = None
+                            old_alloc.save()
+                            print(f"Hostel Sync: Detached bed {bed.bed_number} from previous allocation {old_alloc.id}")
+
+                        if bed.status == 'AVAILABLE':
+                            # Check for ANY existing allocation (Active or otherwise) due to OneToOne
+                            existing_allocation = HostelAllocation.objects.filter(student=instance).first()
+                            
+                            if existing_allocation:
+                                # Update existing record
+                                existing_allocation.bed = bed
+                                existing_allocation.room = bed.room
+                                existing_allocation.status = 'ACTIVE'
+                                existing_allocation.start_date = timezone.now().date()
+                                existing_allocation.end_date = None
+                                existing_allocation.save()
+                            else:
+                                HostelAllocation.objects.create(
+                                    student=instance,
+                                    bed=bed,
+                                    room=bed.room,
+                                    status='ACTIVE',
+                                    start_date=timezone.now().date()
+                                )
+                            
+                            bed.status = 'OCCUPIED'
+                            bed.save()
+                            
+                            room = bed.room
+                            room.current_occupancy += 1
+                            if room.current_occupancy >= room.capacity:
+                                room.status = 'FULL'
+                            room.save()
+                            print(f"Hostel Sync: Auto-allocated student {instance.admission_number} to {room.hostel.name} Rm {room.room_number}")
+                except Exception as e:
+                    print(f"Hostel Sync Error: Failed to allocate bed for {instance.admission_number}: {e}")
             else:
                 print(f"Hostel Sync: No available {instance.gender} beds for student {instance.admission_number}")
 
@@ -117,6 +129,7 @@ def auto_deallocate_hostel(sender, instance, created, **kwargs):
             
             # Close Allocation
             allocation.status = 'COMPLETED'
+            allocation.bed = None # RELEASE THE BED REFERENCE
             allocation.end_date = timezone.now().date()
             allocation.save()
             
