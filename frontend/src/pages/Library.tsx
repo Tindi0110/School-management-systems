@@ -239,7 +239,11 @@ const Library = () => {
         } catch (err: any) {
             console.error(err);
             const errorDetail = err.response?.data?.detail; const errorMsg = errorDetail || err.message || 'Failed to issue book.';
-            toast.error(`Error: ${msg}`);
+            if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
+                 toast.warning('Request timed out, but book might be issued. Please check the list.');
+            } else {
+                 toast.error(Error: );
+            }
         } finally {
             setIsSubmitting(false);
         }
