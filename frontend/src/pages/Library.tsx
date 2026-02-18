@@ -242,7 +242,7 @@ const Library = () => {
             if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
                  toast.warning('Request timed out, but book might be issued. Please check the list.');
             } else {
-                 toast.error(Error: );
+                 toast.error(`Error: ${errorMsg}`);
             }
         } finally {
             setIsSubmitting(false);
