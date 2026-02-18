@@ -1962,7 +1962,7 @@ const Academics = () => {
                                             <span className="text-[9px] font-normal text-gray-500">ADM | Stream</span>
                                         </th>
                                         {subjects.map(sub => (
-                                            <th key={sub.id} className="text-center min-w-[42px] p-1 bg-gray-100" title={`${sub.name} (${sub.code})`}>
+                                            <th key={sub.id} className="text-center min-w-[52px] p-1 bg-gray-100" title={`${sub.name} (${sub.code})`}>
                                                 <div className="text-[10px] font-bold uppercase text-gray-700">{sub.name.substring(0, 3)}</div>
                                             </th>
                                         ))}
