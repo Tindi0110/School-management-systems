@@ -1433,7 +1433,7 @@ const Academics = () => {
                             </div>
                             <div className="flex gap-2">
                                 <Button variant="outline" size="sm" onClick={handleExportAcademics} loading={isExporting} loadingText="Exporting...">Export CSV</Button>
-                                <Button variant="primary" size="sm" onClick={() => { setEditingAttendanceId(null); setAttendanceForm({ student: '', status: 'PRESENT', remark: '' }); setIsAttendanceModalOpen(true); }} icon={<Plus size={12} />}>Log Status</Button>
+                                <Button variant="primary" size="sm" onClick={() => { setEditingAttendanceId(null); setAttendanceForm({ student: '', status: 'PRESENT', remark: '', date: new Date().toISOString().split('T')[0] }); setIsAttendanceModalOpen(true); }} icon={<Plus size={12} />}>Log Status</Button>
                             </div>
                         </div>
                         <div className="card p-0 overflow-hidden bg-white">
