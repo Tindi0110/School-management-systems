@@ -344,6 +344,7 @@ export const libraryAPI = {
     create: (data: any) => api.post('library-fines/', data),
     update: (id: number, data: any) => api.put(`library-fines/${id}/`, data),
     delete: (id: number) => api.delete(`library-fines/${id}/`),
+    syncToFinance: () => api.post('library-fines/sync_to_finance/'),
   },
   reservations: {
     getAll: () => api.get('book-reservations/', ALL),

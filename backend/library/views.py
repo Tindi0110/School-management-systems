@@ -150,9 +150,87 @@ class BookLendingViewSet(viewsets.ModelViewSet):
         return Response({'status': f'Book returned successfully.{fine_msg}'})
 
 class LibraryFineViewSet(viewsets.ModelViewSet):
-    queryset = LibraryFine.objects.all()
+    queryset = LibraryFine.objects.select_related('lending', 'lending__copy__book', 'user', 'adjustment').all()
     serializer_class = LibraryFineSerializer
     permission_classes = [IsAuthenticated]
+
+    @action(detail=False, methods=['post'])
+    def sync_to_finance(self, request):
+        """
+        Bulk-syncs all PENDING library fines that have no finance adjustment yet.
+        Creates a DEBIT Adjustment on the student's latest UNPAID/PARTIAL invoice.
+        """
+        from django.db import transaction
+
+        pending_fines = LibraryFine.objects.filter(
+            status='PENDING',
+            adjustment__isnull=True
+        ).select_related('lending__copy__book', 'user')
+
+        synced = 0
+        skipped_no_student = 0
+        skipped_no_invoice = 0
+        already_synced = 0
+
+        for fine in pending_fines:
+            # Resolve student from user profile
+            student = None
+            try:
+                if hasattr(fine.user, 'student_profile'):
+                    student = fine.user.student_profile
+            except Exception:
+                pass
+
+            if not student:
+                skipped_no_student += 1
+                continue
+
+            # Find latest unpaid or partial invoice
+            invoice = Invoice.objects.filter(
+                student=student,
+                status__in=['UNPAID', 'PARTIAL']
+            ).order_by('-date_generated').first()
+
+            if not invoice:
+                # Fall back to any latest invoice
+                invoice = Invoice.objects.filter(
+                    student=student
+                ).order_by('-date_generated').first()
+
+            if not invoice:
+                skipped_no_invoice += 1
+                continue
+
+            # Build reason string
+            if fine.lending and fine.lending.copy:
+                book_title = fine.lending.copy.book.title
+                reason = f"Library Fine ({fine.get_fine_type_display()}): {book_title}"
+            else:
+                reason = f"Library Fine ({fine.get_fine_type_display()}): {fine.reason or 'No details'}"
+
+            try:
+                with transaction.atomic():
+                    adjustment = Adjustment.objects.create(
+                        invoice=invoice,
+                        adjustment_type='DEBIT',
+                        amount=fine.amount,
+                        reason=reason,
+                        date=fine.date_issued,
+                        approved_by=request.user,
+                    )
+                    fine.adjustment = adjustment
+                    fine.save(update_fields=['adjustment'])
+                    synced += 1
+            except Exception as e:
+                skipped_no_invoice += 1
+                continue
+
+        return Response({
+            'message': f'Sync complete. {synced} fine(s) synced to finance.',
+            'synced': synced,
+            'skipped_no_student': skipped_no_student,
+            'skipped_no_invoice': skipped_no_invoice,
+        })
 
 class BookReservationViewSet(viewsets.ModelViewSet):
     queryset = BookReservation.objects.all()

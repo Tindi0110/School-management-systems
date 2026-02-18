@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
     Plus, Edit, Trash2, BookOpen,
     Book, Layers, ShieldAlert,
-    Printer, Download, ArrowRight, Bookmark, Archive, Receipt
+    Printer, Download, ArrowRight, Bookmark, Archive, Receipt, RefreshCw
 } from 'lucide-react';
 import { libraryAPI, studentsAPI } from '../api/api';
 import { exportToCSV } from '../utils/export';
@@ -56,6 +56,25 @@ const Library = () => {
     const [lendingForm, setLendingForm] = useState({ copy: '', student: '', due_date: '' });
     const [fineForm, setFineForm] = useState({ student: '', amount: 0, reason: '', status: 'PENDING', date_issued: getToday(), fine_type: 'LATE' });
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isSyncing, setIsSyncing] = useState(false);
+
+    const handleSyncFinesToFinance = async () => {
+        setIsSyncing(true);
+        try {
+            const res = await libraryAPI.fines.syncToFinance();
+            const { synced, skipped_no_student, skipped_no_invoice } = res.data;
+            toast.success(
+                `Sync complete: ${synced} fine(s) added to fee balances.` +
+                (skipped_no_student ? ` ${skipped_no_student} skipped (no student link).` : '') +
+                (skipped_no_invoice ? ` ${skipped_no_invoice} skipped (no invoice found).` : '')
+            );
+            await loadFines();
+        } catch (err: any) {
+            toast.error(err?.message || 'Sync failed. Please try again.');
+        } finally {
+            setIsSyncing(false);
+        }
+    };
 
     useEffect(() => {
         fetchAllData();
@@ -539,9 +558,24 @@ const Library = () => {
                 <div className="table-container fade-in">
                     <div className="flex justify-between items-center mb-4">
                         <h3>Library Fines & Discipline</h3>
-                        {!isReadOnly && (
-                            <Button variant="primary" size="sm" onClick={() => { setFineId(null); setIsFineModalOpen(true); }} icon={<Plus size={14} />}>Record Fine</Button>
-                        )}
+                        <div className="flex gap-2">
+                            {!isReadOnly && (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={handleSyncFinesToFinance}
+                                    loading={isSyncing}
+                                    loadingText="Syncing..."
+                                    icon={<RefreshCw size={14} />}
+                                    className="text-green-600 border-green-200 hover:bg-green-50"
+                                >
+                                    Sync to Finance
+                                </Button>
+                            )}
+                            {!isReadOnly && (
+                                <Button variant="primary" size="sm" onClick={() => { setFineId(null); setIsFineModalOpen(true); }} icon={<Plus size={14} />}>Record Fine</Button>
+                            )}
+                        </div>
                     </div>
                     <table className="table">
                         <thead><tr><th>Student</th><th>Amount (KES)</th><th>Reason</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
