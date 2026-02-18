@@ -1885,12 +1885,12 @@ const Academics = () => {
                             <table className="table w-full border-collapse text-xs">
                                 <thead className="sticky top-0 z-20 shadow-sm bg-gray-100 text-gray-700">
                                     <tr>
-                                        <th className="sticky left-0 z-30 border border-gray-300 bg-gray-100 min-w-[140px] p-2 text-left">
+                                        <th className="sticky left-0 z-30 bg-gray-100 min-w-[140px] p-2 text-left border-b border-gray-200">
                                             Student Name <br />
                                             <span className="text-[9px] font-normal text-gray-500">ADM | Stream</span>
                                         </th>
                                         {subjects.map(sub => (
-                                            <th key={sub.id} className="text-center min-w-[42px] border border-gray-300 p-1 bg-gray-100" title={`${sub.name} (${sub.code})`}>
+                                            <th key={sub.id} className="text-center min-w-[42px] p-1 bg-gray-100 border-b border-gray-200" title={`${sub.name} (${sub.code})`}>
                                                 <div className="text-[10px] font-bold uppercase text-gray-700">{sub.name.substring(0, 3)}</div>
                                             </th>
                                         ))}
@@ -1907,7 +1907,7 @@ const Academics = () => {
                                         const sClass = classes.find(c => c.id === student.current_class);
                                         return (
                                             <tr key={student.id} className={`h-8 hover:bg-blue-50 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
-                                                <td className="sticky left-0 z-10 border border-gray-300 bg-inherit font-medium py-1 px-2 text-gray-800">
+                                                <td className="sticky left-0 z-10 bg-inherit font-medium py-1 px-2 text-gray-800 border-b border-gray-100">
                                                     {student.full_name}
                                                     <div className="text-[9px] text-gray-500 font-mono">
                                                         {student.admission_number} | <span className="text-blue-600">{sClass?.stream}</span>
@@ -1918,7 +1918,7 @@ const Academics = () => {
                                                     const entry = (studentScores as any)[key] || { score: '' };
                                                     const grade = getGrade(parseFloat(entry.score));
                                                     return (
-                                                        <td key={sub.id} className="p-0 border border-gray-300 relative group">
+                                                        <td key={sub.id} className="p-0 relative group border-b border-gray-100">
                                                             <div className="flex items-center h-full w-full">
                                                                 <input
                                                                     type="text"
