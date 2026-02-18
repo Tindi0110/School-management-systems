@@ -6,7 +6,7 @@ interface ModalProps {
     onClose: () => void;
     title: string;
     children: React.ReactNode;
-    size?: 'sm' | 'md' | 'lg';
+    size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
 }
 
 const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, size = 'md' }) => {
@@ -16,6 +16,8 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, size = 
         sm: 'max-w-md',
         md: 'max-w-2xl',
         lg: 'max-w-4xl',
+        xl: 'max-w-7xl',
+        full: 'w-[98vw] h-[95vh] m-2'
     };
 
     return (
@@ -43,7 +45,8 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, size = 
                     backgroundColor: 'white', // var(--bg-primary)
                     boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)', // var(--shadow-xl)
                     borderRadius: '0.5rem', // var(--radius-lg)
-                    maxHeight: '90vh',
+                    maxHeight: size === 'full' ? '98vh' : '90vh',
+                    height: size === 'full' ? '95vh' : 'auto',
                     display: 'flex',
                     flexDirection: 'column',
                     position: 'relative',

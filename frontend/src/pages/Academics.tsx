@@ -512,10 +512,29 @@ const Academics = () => {
         setIsViewClassModalOpen(true);
     };
 
+    const getGrade = (score: number) => {
+        if (!score && score !== 0) return '-';
+        if (score >= 80) return 'A';
+        if (score >= 75) return 'A-';
+        if (score >= 70) return 'B+';
+        if (score >= 65) return 'B';
+        if (score >= 60) return 'B-';
+        if (score >= 55) return 'C+';
+        if (score >= 50) return 'C';
+        if (score >= 45) return 'C-';
+        if (score >= 40) return 'D+';
+        if (score >= 35) return 'D';
+        if (score >= 30) return 'D-';
+        return 'E';
+    };
+
     const openEnterResults = (exam: any) => {
+        // Only clear if opening a DIFFERENT exam
+        if (selectedExam?.id !== exam.id) {
+            setResultContext({ classId: '', subjectId: '', level: '' });
+            setStudentScores({});
+        }
         setSelectedExam(exam);
-        setResultContext({ classId: '', subjectId: '', level: '' });
-        setStudentScores({});
         setIsResultModalOpen(true);
     };
 
@@ -639,14 +658,29 @@ const Academics = () => {
                     recorded_by: 1
                 };
 
-                if (resultId) return academicsAPI.results.update(resultId, payload);
-                else return academicsAPI.results.create(payload);
+                let res;
+                if (resultId) res = await academicsAPI.results.update(resultId, payload);
+                else res = await academicsAPI.results.create(payload);
+                return { key, id: res.data?.id || res.data?.results?.id };
             });
 
-            await Promise.all(promises);
-            success('Results matrix saved successfully!');
-            setIsResultModalOpen(false);
-            loadAllAcademicData();
+            const saved = await Promise.all(promises);
+            // Update IDs in local state so next save is an update
+            setStudentScores((prev: any) => {
+                const next = { ...prev };
+                saved.forEach((item: any) => {
+                    if (item && item.key && item.id) {
+                        if (next[item.key]) next[item.key].id = item.id;
+                    }
+                });
+                return next;
+            });
+
+            success('Results saved successfully. You can continue editing.');
+            // Do NOT close modal
+            // setIsResultModalOpen(false); 
+            // Do NOT reload all data blindly
+            // loadAllAcademicData(); 
         } catch (err: any) {
             toastError(err.message || 'Failed to save some results');
         } finally {
@@ -1789,7 +1823,7 @@ const Academics = () => {
             </Modal>
 
             {/* Enter Results Modal */}
-            <Modal isOpen={isResultModalOpen} onClose={() => setIsResultModalOpen(false)} title={`Enter Results: ${selectedExam?.name || ''}`}>
+            <Modal isOpen={isResultModalOpen} onClose={() => setIsResultModalOpen(false)} title={`Enter Results: ${selectedExam?.name || ''}`} size="full">
                 <form onSubmit={handleBulkResultSubmit}>
                     {/* Cascading Class Selector */}
                     <div className="form-group border p-3 rounded bg-secondary-light/20 mb-4">
@@ -1838,7 +1872,7 @@ const Academics = () => {
                     </div>
 
                     {resultContext.classId && (
-                        <div className="max-h-[60vh] overflow-auto border rounded bg-white relative shadow-inner">
+                        <div className="max-h-[75vh] overflow-auto border rounded bg-white relative shadow-inner">
                             <table className="table table-xs w-full border-collapse">
                                 <thead className="sticky top-0 bg-secondary-light z-20 shadow-sm">
                                     <tr>
@@ -1860,21 +1894,27 @@ const Academics = () => {
                                             {subjects.map(sub => {
                                                 const key = `${student.id}-${sub.id}`;
                                                 const entry = (studentScores as any)[key] || { score: '' }; // Cast to any to bypass type check for now
+                                                const grade = getGrade(parseFloat(entry.score));
                                                 return (
-                                                    <td key={sub.id} className="p-0 border-r">
-                                                        <input
-                                                            type="text" // Text to allow empty string
-                                                            className={`w-full h-full text-center text-sm font-mono p-2 bg-transparent focus:bg-yellow-50 focus:outline-none focus:ring-2 focus:ring-primary/50 ${entry.id ? 'font-bold text-primary' : 'text-gray-900'}`}
-                                                            value={entry.score}
-                                                            placeholder="-"
-                                                            onChange={(e) => {
-                                                                const val = e.target.value;
-                                                                setStudentScores((prev: any) => ({
-                                                                    ...prev,
-                                                                    [key]: { ...prev[key as any], score: val } // Preserve ID if exists
-                                                                }));
-                                                            }}
-                                                        />
+                                                    <td key={sub.id} className="p-0 border-r relative group">
+                                                        <div className="flex items-center h-full">
+                                                            <input
+                                                                type="text" // Text to allow empty string
+                                                                className={`w-2/3 h-full text-center text-sm font-mono p-2 bg-transparent focus:bg-yellow-50 focus:outline-none focus:ring-2 focus:ring-primary/50 ${entry.id ? 'font-bold text-primary' : 'text-gray-900'} border-r border-transparent group-hover:border-gray-200`}
+                                                                value={entry.score}
+                                                                placeholder="-"
+                                                                onChange={(e) => {
+                                                                    const val = e.target.value;
+                                                                    setStudentScores((prev: any) => ({
+                                                                        ...prev,
+                                                                        [key]: { ...prev[key as any], score: val } // Preserve ID if exists
+                                                                    }));
+                                                                }}
+                                                            />
+                                                            <div className="w-1/3 text-center text-[10px] font-black text-secondary bg-gray-50 h-full flex items-center justify-center">
+                                                                {grade}
+                                                            </div>
+                                                        </div>
                                                     </td>
                                                 );
                                             })}
