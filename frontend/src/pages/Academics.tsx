@@ -1890,9 +1890,9 @@ const Academics = () => {
                                             <span className="text-[9px] font-normal text-gray-500">ADM | Stream</span>
                                         </th>
                                         {subjects.map(sub => (
-                                            <th key={sub.id} className="text-center min-w-[100px] border border-gray-300 p-1 bg-gray-100" title={sub.name}>
-                                                <div className="font-bold text-gray-800">{sub.code}</div>
-                                                <div className="text-[9px] truncate max-w-[90px] mx-auto text-gray-500">{sub.name}</div>
+                                            <th key={sub.id} className="text-center min-w-[60px] border border-gray-300 p-1 bg-gray-100" title={sub.name}>
+                                                <div className="font-bold text-gray-800 text-[10px]">{sub.code}</div>
+                                                <div className="text-[9px] uppercase text-gray-500">{sub.name.substring(0, 3)}</div>
                                             </th>
                                         ))}
                                     </tr>
