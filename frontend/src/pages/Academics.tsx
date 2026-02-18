@@ -1844,19 +1844,27 @@ const Academics = () => {
                                     const cid = e.target.value;
                                     setResultContext({ ...resultContext, classId: cid });
 
-                                    // Load existing results for this exam + class to pre-fill matrix
+                                    // Load existing results for this exam + class/level
                                     if (cid) {
                                         setLoading(true);
                                         try {
                                             const res = await academicsAPI.results.getAll({ exam_id: selectedExam.id });
-                                            const classResults = res.data.filter((r: any) => {
+                                            // Filter results based on selection (Specific Stream or ALL in Level)
+                                            const relevantResults = res.data.filter((r: any) => {
                                                 const s = students.find(st => st.id === r.student);
-                                                return s && s.current_class === parseInt(cid);
+                                                if (!s) return false;
+                                                // If 'all', match by Level name. If specific ID, match by current_class ID.
+                                                if (cid === 'all') {
+                                                    // Find class object for student
+                                                    const sClass = classes.find(c => c.id === s.current_class);
+                                                    return sClass && sClass.name === resultContext.level;
+                                                }
+                                                return s.current_class === parseInt(cid);
                                             });
 
-                                            // Map to matrix state: key = `${studentId}-${subjectId}`
+                                            // Map to matrix state
                                             const matrix: any = {};
-                                            classResults.forEach((r: any) => {
+                                            relevantResults.forEach((r: any) => {
                                                 matrix[`${r.student}-${r.subject}`] = { score: r.score.toString(), id: r.id };
                                             });
                                             setStudentScores(matrix);
@@ -1865,6 +1873,7 @@ const Academics = () => {
                                     }
                                 }} disabled={!resultContext.level}>
                                     <option value="">Select Stream...</option>
+                                    <option value="all" className="font-bold">ALL STREAMS (Combined)</option>
                                     {classes.filter(c => c.name === resultContext.level).map(c => <option key={c.id} value={c.id}>{c.stream}</option>)}
                                 </select>
                             </div>
@@ -1872,59 +1881,82 @@ const Academics = () => {
                     </div>
 
                     {resultContext.classId && (
-                        <div className="max-h-[75vh] overflow-auto border rounded bg-white relative shadow-inner">
-                            <table className="table table-xs w-full border-collapse">
-                                <thead className="sticky top-0 bg-secondary-light z-20 shadow-sm">
+                        <div className="max-h-[80vh] overflow-auto border border-gray-300 bg-white relative shadow-sm">
+                            <table className="table w-full border-collapse text-xs">
+                                <thead className="sticky top-0 z-20 shadow-sm bg-gray-100 text-gray-700">
                                     <tr>
-                                        <th className="bg-secondary-light sticky left-0 z-30 border-r min-w-[150px]">Student Name</th>
+                                        <th className="sticky left-0 z-30 border border-gray-300 bg-gray-100 min-w-[200px] p-2 text-left">
+                                            Student Name <br />
+                                            <span className="text-[9px] font-normal text-gray-500">ADM | Stream</span>
+                                        </th>
                                         {subjects.map(sub => (
-                                            <th key={sub.id} className="text-center min-w-[120px] text-[10px] uppercase border-r px-2" title={sub.name}>
-                                                {sub.name} <br /> <span className="text-[9px] text-secondary">({sub.code})</span>
+                                            <th key={sub.id} className="text-center min-w-[100px] border border-gray-300 p-1 bg-gray-100" title={sub.name}>
+                                                <div className="font-bold text-gray-800">{sub.code}</div>
+                                                <div className="text-[9px] truncate max-w-[90px] mx-auto text-gray-500">{sub.name}</div>
                                             </th>
                                         ))}
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {students.filter(s => s.current_class === parseInt(resultContext.classId)).map(student => (
-                                        <tr key={student.id} className="hover:bg-blue-50 transition-colors h-12">
-                                            <td className="sticky left-0 bg-white z-10 border-r font-bold text-xs py-1 px-2 shadow-sm">
-                                                {student.full_name}
-                                                <div className="text-[9px] text-secondary font-mono">{student.admission_number}</div>
-                                            </td>
-                                            {subjects.map(sub => {
-                                                const key = `${student.id}-${sub.id}`;
-                                                const entry = (studentScores as any)[key] || { score: '' }; // Cast to any to bypass type check for now
-                                                const grade = getGrade(parseFloat(entry.score));
-                                                return (
-                                                    <td key={sub.id} className="p-0 border-r relative group">
-                                                        <div className="flex items-center h-full">
-                                                            <input
-                                                                type="text" // Text to allow empty string
-                                                                className={`w-2/3 h-full text-center text-sm font-mono p-2 bg-transparent focus:bg-yellow-50 focus:outline-none focus:ring-2 focus:ring-primary/50 ${entry.id ? 'font-bold text-primary' : 'text-gray-900'} border-r border-transparent group-hover:border-gray-200`}
-                                                                value={entry.score}
-                                                                placeholder="-"
-                                                                onChange={(e) => {
-                                                                    const val = e.target.value;
-                                                                    setStudentScores((prev: any) => ({
-                                                                        ...prev,
-                                                                        [key]: { ...prev[key as any], score: val } // Preserve ID if exists
-                                                                    }));
-                                                                }}
-                                                            />
-                                                            <div className="w-1/3 text-center text-[10px] font-black text-secondary bg-gray-50 h-full flex items-center justify-center">
-                                                                {grade}
+                                    {students.filter(s => {
+                                        if (resultContext.classId === 'all') {
+                                            const sClass = classes.find(c => c.id === s.current_class);
+                                            return sClass && sClass.name === resultContext.level;
+                                        }
+                                        return s.current_class === parseInt(resultContext.classId);
+                                    }).sort((a, b) => a.full_name.localeCompare(b.full_name)).map((student, idx) => {
+                                        const sClass = classes.find(c => c.id === student.current_class);
+                                        return (
+                                            <tr key={student.id} className={`h-8 hover:bg-blue-50 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
+                                                <td className="sticky left-0 z-10 border border-gray-300 bg-inherit font-medium py-1 px-2 text-gray-800">
+                                                    {student.full_name}
+                                                    <div className="text-[9px] text-gray-500 font-mono">
+                                                        {student.admission_number} | <span className="text-blue-600">{sClass?.stream}</span>
+                                                    </div>
+                                                </td>
+                                                {subjects.map(sub => {
+                                                    const key = `${student.id}-${sub.id}`;
+                                                    const entry = (studentScores as any)[key] || { score: '' };
+                                                    const grade = getGrade(parseFloat(entry.score));
+                                                    return (
+                                                        <td key={sub.id} className="p-0 border border-gray-300 relative group">
+                                                            <div className="flex items-center h-full w-full">
+                                                                <input
+                                                                    type="text"
+                                                                    className={`w-full h-full text-center text-sm font-mono bg-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:z-10 absolute inset-0 ${entry.id ? 'font-bold text-gray-900' : 'text-gray-600'}`}
+                                                                    value={entry.score}
+                                                                    style={{ paddingRight: '2rem' }} // Space for grade
+                                                                    onChange={(e) => {
+                                                                        const val = e.target.value;
+                                                                        setStudentScores((prev: any) => ({
+                                                                            ...prev,
+                                                                            [key]: { ...prev[key as any], score: val }
+                                                                        }));
+                                                                    }}
+                                                                />
+                                                                <div className="absolute right-0 top-0 bottom-0 w-8 flex items-center justify-center pointer-events-none">
+                                                                    <span className={`text-[10px] font-bold ${grade === 'A' || grade === 'A-' ? 'text-green-600' : grade === 'E' ? 'text-red-500' : 'text-gray-400'}`}>
+                                                                        {grade !== '-' ? grade : ''}
+                                                                    </span>
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                    </td>
-                                                );
-                                            })}
-                                        </tr>
-                                    ))}
+                                                        </td>
+                                                    );
+                                                })}
+                                            </tr>
+                                        )
+                                    })}
                                 </tbody>
                             </table>
-                            {students.filter(s => s.current_class === parseInt(resultContext.classId)).length === 0 && (
-                                <p className="text-center text-xs p-8 text-secondary italic">No students found in this class unit.</p>
-                            )}
+                            {students.filter(s => {
+                                if (resultContext.classId === 'all') {
+                                    const sClass = classes.find(c => c.id === s.current_class);
+                                    return sClass && sClass.name === resultContext.level;
+                                }
+                                return s.current_class === parseInt(resultContext.classId);
+                            }).length === 0 && (
+                                    <div className="p-12 text-center text-gray-400 italic">No students found for {resultContext.level} {resultContext.classId === 'all' ? '(All Streams)' : ''}</div>
+                                )}
                         </div>
                     )}
 
