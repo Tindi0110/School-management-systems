@@ -67,7 +67,7 @@ class StudentResultViewSet(viewsets.ModelViewSet):
         return queryset
 
 class AttendanceViewSet(viewsets.ModelViewSet):
-    queryset = Attendance.objects.select_related('student', 'class_group', 'recorded_by').all()
+    queryset = Attendance.objects.select_related('student').all()
     serializer_class = AttendanceSerializer
 
 class LearningResourceViewSet(viewsets.ModelViewSet):

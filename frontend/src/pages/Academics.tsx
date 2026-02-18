@@ -33,7 +33,7 @@ const calculateGrade = (score: number) => {
 const StudentResultRow = React.memo(({ student, sClass, idx, subjects, studentScores, onScoreChange }: any) => {
     // studentScores here is actually studentScores[student.id] 
     return (
-        <tr className={`h-8 hover:bg-blue-50 transition-colors border-b border-gray-100 ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
+        <tr className={`h-8 hover:bg-blue-50 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
             <td className="sticky left-0 z-10 bg-inherit font-medium py-1 px-2 text-gray-800 border-b border-gray-100">
                 <div className="truncate w-[140px]" title={student.full_name}>{student.full_name}</div>
                 <div className="text-[9px] text-gray-500 font-mono">
@@ -44,11 +44,11 @@ const StudentResultRow = React.memo(({ student, sClass, idx, subjects, studentSc
                 const entry = (studentScores || {})[sub.id] || { score: '' };
                 const grade = calculateGrade(parseFloat(entry.score));
                 return (
-                    <td key={sub.id} className="p-0 relative group border-b border-gray-100">
+                    <td key={sub.id} className="p-0 relative group">
                         <div className="flex items-center h-full w-full relative">
                             <input
                                 type="text"
-                                className={`w-full h-full text-center text-sm font-mono bg-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:z-10 absolute inset-0 ${entry.id ? 'font-bold text-gray-900' : 'text-gray-600'}`}
+                                className={`w-full h-full text-center text-sm font-mono bg-transparent border-none outline-none focus:bg-white focus:outline-none focus:z-10 absolute inset-0 ${entry.id ? 'font-bold text-gray-900' : 'text-gray-600'}`}
                                 value={entry.score}
                                 onChange={(e) => onScoreChange(student.id, sub.id, e.target.value)}
                             />
@@ -118,7 +118,7 @@ const Academics = () => {
     const [groupForm, setGroupForm] = useState({ name: '' });
     const [subjectForm, setSubjectForm] = useState({ name: '', code: '', group: '', is_optional: false });
     const [gradeForm, setGradeForm] = useState({ name: '', is_default: false });
-    const [attendanceForm, setAttendanceForm] = useState({ student: '', status: 'PRESENT', remark: '' });
+    const [attendanceForm, setAttendanceForm] = useState({ student: '', status: 'PRESENT', remark: '', date: new Date().toISOString().split('T')[0] });
     const [attendanceFilter, setAttendanceFilter] = useState({ level: '', classId: '', isBulk: false });
     const [classForm, setClassForm] = useState({ name: '', stream: '', year: new Date().getFullYear().toString(), class_teacher: '', capacity: 40 });
     const [examForm, setExamForm] = useState({ name: '', exam_type: 'END_TERM', term: '', weighting: 100, date_started: '', is_active: true });
@@ -295,8 +295,8 @@ const Academics = () => {
                 academicsAPI.gradeSystems.getAll(),
                 staffAPI.getAll(),
                 studentsAPI.getAll(),
-                academicsAPI.results.getAll({ page_size: 100 }),
-                academicsAPI.attendance.getAll({ page_size: 100 }),
+                academicsAPI.results.getAll({ page_size: 500 }),
+                academicsAPI.attendance.getAll(),
                 academicsAPI.syllabus.getAll()
             ]);
 
@@ -435,7 +435,8 @@ const Academics = () => {
         setAttendanceForm({
             student: att.student.toString(),
             status: att.status,
-            remark: att.remark || ''
+            remark: att.remark || '',
+            date: att.date || new Date().toISOString().split('T')[0]
         });
         setEditingAttendanceId(att.id);
         setAttendanceFilter({ ...attendanceFilter, isBulk: false });
@@ -451,7 +452,8 @@ const Academics = () => {
                     academicsAPI.attendance.create({
                         student: record.student_id,
                         status: record.status,
-                        remark: record.remark
+                        remark: record.remark,
+                        date: attendanceForm.date
                     })
                 );
                 await Promise.all(promises);
@@ -473,7 +475,7 @@ const Academics = () => {
 
             setIsAttendanceModalOpen(false);
             setEditingAttendanceId(null);
-            setAttendanceForm({ student: '', status: 'PRESENT', remark: '' });
+            setAttendanceForm({ student: '', status: 'PRESENT', remark: '', date: new Date().toISOString().split('T')[0] });
         } catch (err: any) { toastError(err.message || 'Failed to log attendance'); }
         finally { setIsSubmitting(false); }
     };
@@ -1618,6 +1620,10 @@ const Academics = () => {
                         <div className="flex bg-secondary-light p-1 rounded-lg">
                             <button type="button" className={`px-3 py-1 text-[10px] font-black rounded ${!attendanceFilter.isBulk ? 'bg-primary text-white' : 'text-secondary'}`} onClick={() => setAttendanceFilter({ ...attendanceFilter, isBulk: false })}>SINGLE STUDENT</button>
                             <button type="button" className={`px-3 py-1 text-[10px] font-black rounded ${attendanceFilter.isBulk ? 'bg-primary text-white' : 'text-secondary'}`} onClick={() => setAttendanceFilter({ ...attendanceFilter, isBulk: true })}>CLASS REGISTER (BULK)</button>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <label className="text-[9px] font-bold uppercase text-secondary">Date:</label>
+                            <input type="date" className="input input-xs w-32" value={attendanceForm.date} onChange={(e) => setAttendanceForm({ ...attendanceForm, date: e.target.value })} />
                         </div>
                     </div>
 

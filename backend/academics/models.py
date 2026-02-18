@@ -130,10 +130,12 @@ class StudentResult(models.Model):
             self.grade = 'E'
 
 # 5. Attendance & Resources
+from django.utils import timezone
+
 class Attendance(models.Model):
     STATUS = (('PRESENT', 'Present'), ('ABSENT', 'Absent'), ('LATE', 'Late'))
     student = models.ForeignKey('students.Student', on_delete=models.CASCADE)
-    date = models.DateField(auto_now_add=True)
+    date = models.DateField(default=timezone.now)
     status = models.CharField(max_length=10, choices=STATUS, default='PRESENT')
     remark = models.CharField(max_length=255, blank=True)
 
