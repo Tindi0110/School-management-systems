@@ -1932,8 +1932,8 @@ const Academics = () => {
                                                                         }));
                                                                     }}
                                                                 />
-                                                                <div className="absolute right-0 top-0 bottom-0 w-8 flex items-center justify-center pointer-events-none">
-                                                                    <span className={`text-[10px] font-bold ${grade === 'A' || grade === 'A-' ? 'text-green-600' : grade === 'E' ? 'text-red-500' : 'text-gray-400'}`}>
+                                                                <div className="absolute bottom-[1px] right-[1px] pointer-events-none opacity-80">
+                                                                    <span className={`text-[9px] font-black ${grade === 'A' || grade === 'A-' ? 'text-green-600' : grade === 'E' ? 'text-red-500' : 'text-gray-500'}`}>
                                                                         {grade !== '-' ? grade : ''}
                                                                     </span>
                                                                 </div>
