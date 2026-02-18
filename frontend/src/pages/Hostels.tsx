@@ -96,16 +96,17 @@ const Hostels = () => {
                 studentsAPI.getAll(),
                 staffAPI.getAll(),
             ]);
-            setHostels(hostelsRes.data);
-            setRooms(roomsRes.data);
-            setBeds(bedsRes.data);
-            setAllocations(allocationsRes.data);
-            setAttendance(attendanceRes.data);
-            setDiscipline(disciplineRes.data);
-            setAssets(assetsRes.data);
-            setMaintenance(maintenanceRes.data);
-            setStudents(studentsRes.data);
-            setStaff(staffRes.data);
+            const d = (r: any) => r?.data?.results ?? r?.data ?? [];
+            setHostels(d(hostelsRes));
+            setRooms(d(roomsRes));
+            setBeds(d(bedsRes));
+            setAllocations(d(allocationsRes));
+            setAttendance(d(attendanceRes));
+            setDiscipline(d(disciplineRes));
+            setAssets(d(assetsRes));
+            setMaintenance(d(maintenanceRes));
+            setStudents(d(studentsRes));
+            setStaff(d(staffRes));
         } catch (error) {
             console.error('Error loading hostel data:', error);
         } finally {

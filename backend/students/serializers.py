@@ -63,7 +63,7 @@ class StudentSerializer(serializers.ModelSerializer):
     admission_details = StudentAdmissionSerializer(read_only=True)
     health_record = HealthRecordSerializer(read_only=True)
 
-    # Calculated Fields
+    # Calculated Fields — read from queryset annotations when available
     attendance_percentage = serializers.SerializerMethodField()
     average_grade = serializers.SerializerMethodField()
     fee_balance = serializers.SerializerMethodField()
@@ -85,6 +85,14 @@ class StudentSerializer(serializers.ModelSerializer):
             return None
 
     def get_attendance_percentage(self, obj):
+        # Use pre-annotated value if available (avoids per-row DB query)
+        if hasattr(obj, 'attendance_pct'):
+            total = getattr(obj, 'attendance_total', 0) or 0
+            if total == 0:
+                return 0
+            present = getattr(obj, 'attendance_present', 0) or 0
+            return round((present / total) * 100, 1)
+        # Fallback for single-object retrieval (detail view)
         try:
             total_days = Attendance.objects.filter(student=obj).count()
             if total_days == 0:
@@ -95,15 +103,11 @@ class StudentSerializer(serializers.ModelSerializer):
             return 0
 
     def get_average_grade(self, obj):
-        try:
-            results = StudentResult.objects.filter(student=obj)
-            if not results.exists():
-                return "N/A"
-            avg_score = results.aggregate(Avg('score'))['score__avg']
+        # Use pre-annotated value if available (avoids per-row DB query)
+        if hasattr(obj, 'avg_score'):
+            avg_score = obj.avg_score
             if avg_score is None:
                 return "N/A"
-            
-            # Simple grading logic (can be replaced with GradeSystem model lookup)
             score = float(avg_score)
             grade = 'E'
             if score >= 80: grade = 'A'
@@ -117,12 +121,31 @@ class StudentSerializer(serializers.ModelSerializer):
             elif score >= 40: grade = 'D+'
             elif score >= 35: grade = 'D'
             elif score >= 30: grade = 'D-'
-            
+            return f"{grade} ({round(score)}%)"
+        # Fallback for single-object retrieval (detail view)
+        try:
+            results = StudentResult.objects.filter(student=obj)
+            if not results.exists():
+                return "N/A"
+            avg_score = results.aggregate(Avg('score'))['score__avg']
+            if avg_score is None:
+                return "N/A"
+            score = float(avg_score)
+            grade = 'E'
+            if score >= 80: grade = 'A'
+            elif score >= 75: grade = 'A-'
+            elif score >= 70: grade = 'B+'
+            elif score >= 65: grade = 'B'
+            elif score >= 60: grade = 'B-'
+            elif score >= 55: grade = 'C+'
+            elif score >= 50: grade = 'C'
+            elif score >= 45: grade = 'C-'
+            elif score >= 40: grade = 'D+'
+            elif score >= 35: grade = 'D'
+            elif score >= 30: grade = 'D-'
             return f"{grade} ({round(score)}%)"
         except Exception:
             return "N/A"
 
     def get_fee_balance(self, obj):
-        # Placeholder until Finance module is fully linked
-        # Try to find a Payment/Invoice logic if implementing fully
         return getattr(obj, 'fee_balance', 0.00)

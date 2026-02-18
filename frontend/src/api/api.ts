@@ -52,11 +52,12 @@ export const authAPI = {
 };
 
 export const statsAPI = {
-  getDashboard: () => api.get('../stats/'),
+  getDashboard: () => api.get('/stats/'),
 };
 
 export const studentsAPI = {
-  getAll: () => api.get('students/'),
+  getAll: (params?: Record<string, any>) => api.get('students/', { params: { page_size: 1000, ...params } }),
+  getPage: (page = 1) => api.get('students/', { params: { page } }),
   getOne: (id: number) => api.get(`students/${id}/`),
   create: (data: any) => api.post('students/', data),
   update: (id: number, data: any) => api.put(`students/${id}/`, data),

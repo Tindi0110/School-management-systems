@@ -5,8 +5,9 @@ from .models import (
     Student, Parent, StudentAdmission, StudentDocument,
     DisciplineRecord, HealthRecord, ActivityRecord
 )
-from django.db.models import Sum, Value, DecimalField
+from django.db.models import Sum, Value, DecimalField, Count, Q, Avg
 from django.db.models.functions import Coalesce
+from academics.models import Attendance, StudentResult
 from .serializers import (
     StudentSerializer, ParentSerializer, StudentAdmissionSerializer,
     StudentDocumentSerializer, DisciplineRecordSerializer,
@@ -25,10 +26,16 @@ class StudentViewSet(viewsets.ModelViewSet):
         'parents__students',
         'invoices',
     ).annotate(
-        fee_balance=Coalesce(Sum('invoices__balance'), Value(0, output_field=DecimalField()))
+        fee_balance=Coalesce(Sum('invoices__balance'), Value(0, output_field=DecimalField())),
+        # Attendance annotations — replaces 2 per-row queries in serializer
+        attendance_total=Count('attendance', distinct=True),
+        attendance_present=Count('attendance', filter=Q(attendance__status='PRESENT'), distinct=True),
+        # Grade annotation — replaces 1 per-row query in serializer
+        avg_score=Avg('results__score'),
     ).order_by('admission_number')
     serializer_class = StudentSerializer
     permission_classes = [permissions.IsAuthenticated]
+    search_fields = ['full_name', 'admission_number', 'current_class__name']
 
     @action(detail=True, methods=['post', 'delete'])
     def link_user(self, request, pk=None):

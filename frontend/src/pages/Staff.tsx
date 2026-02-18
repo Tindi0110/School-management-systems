@@ -34,7 +34,7 @@ const Staff = () => {
     const loadData = async () => {
         try {
             const res = await staffAPI.getAll();
-            setStaff(res.data);
+            setStaff(res.data?.results ?? res.data ?? []);
         } catch (error) {
             console.error('Error loading staff:', error);
         } finally {

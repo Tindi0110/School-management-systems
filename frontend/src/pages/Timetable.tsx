@@ -62,11 +62,13 @@ const Timetable = () => {
                 subjectsAPI.getAll(),
                 staffAPI.getAll()
             ]);
-            setClasses(clsRes.data);
-            setSubjects(subRes.data);
-            setStaff(stfRes.data);
+            const d = (r: any) => r?.data?.results ?? r?.data ?? [];
+            const cls = d(clsRes);
+            setClasses(cls);
+            setSubjects(d(subRes));
+            setStaff(d(stfRes));
             // Default to first class if available
-            if (clsRes.data.length > 0) setSelectedClass(clsRes.data[0].id.toString());
+            if (cls.length > 0) setSelectedClass(cls[0].id.toString());
         } catch (error) {
             console.error('Failed to load metadata', error);
         } finally {
@@ -77,9 +79,9 @@ const Timetable = () => {
     const loadTimetable = async (classId: string) => {
         setLoading(true);
         try {
-            const res = await timetableAPI.getAll({ class_assigned: classId }); // Backend needs filter logic
-            // If backend doesn't filter, we filter client side for now:
-            const filtered = res.data.filter((s: any) => s.class_assigned.toString() === classId);
+            const res = await timetableAPI.getAll({ class_assigned: classId });
+            const allSlots = res.data?.results ?? res.data ?? [];
+            const filtered = allSlots.filter((s: any) => s.class_assigned.toString() === classId);
             setSlots(filtered);
         } catch (error) {
             console.error(error);

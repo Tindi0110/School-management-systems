@@ -71,17 +71,18 @@ const Finance = () => {
     const loadData = async () => {
         setLoading(true);
         try {
+            const d = (r: any) => r?.data?.results ?? r?.data ?? [];
             if (activeTab === 'dashboard') {
                 const [invoicesRes, paymentsRes] = await Promise.all([
                     financeAPI.invoices.getAll(),
                     financeAPI.payments.getAll()
                 ]);
-
-                const totalInv = invoicesRes.data.reduce((acc: number, i: any) => acc + parseFloat(i.total_amount), 0);
-                const totalCol = invoicesRes.data.reduce((acc: number, i: any) => acc + parseFloat(i.paid_amount), 0);
+                const invoices = d(invoicesRes);
+                const payments = d(paymentsRes);
+                const totalInv = invoices.reduce((acc: number, i: any) => acc + parseFloat(i.total_amount || 0), 0);
+                const totalCol = invoices.reduce((acc: number, i: any) => acc + parseFloat(i.paid_amount || 0), 0);
                 const today = new Date().toISOString().split('T')[0];
-                const daily = paymentsRes.data.filter((p: any) => p.date_received === today).reduce((acc: number, p: any) => acc + parseFloat(p.amount), 0);
-
+                const daily = payments.filter((p: any) => p.date_received === today).reduce((acc: number, p: any) => acc + parseFloat(p.amount || 0), 0);
                 setStats({
                     totalInvoiced: totalInv,
                     totalCollected: totalCol,
@@ -89,29 +90,29 @@ const Finance = () => {
                     collectionRate: totalInv ? Math.round((totalCol / totalInv) * 100) : 0,
                     dailyCollection: daily
                 });
-                setInvoices(invoicesRes.data);
+                setInvoices(invoices);
             } else if (activeTab === 'invoices') {
                 const [cls, yrRes, studs] = await Promise.all([
                     classesAPI.getAll(),
                     academicsAPI.years.getAll(),
                     studentsAPI.getAll()
                 ]);
-                setClasses(cls.data); setYears(yrRes.data.results || yrRes.data || []); setStudents(studs.data);
+                setClasses(d(cls)); setYears(d(yrRes)); setStudents(d(studs));
                 const res = await financeAPI.invoices.getAll();
-                setInvoices(res.data);
+                setInvoices(d(res));
             } else if (activeTab === 'payments') {
                 const [studs, invs] = await Promise.all([studentsAPI.getAll(), financeAPI.invoices.getAll()]);
-                setStudents(studs.data); setInvoices(invs.data);
+                setStudents(d(studs)); setInvoices(d(invs));
                 const res = await financeAPI.payments.getAll();
-                setPayments(res.data);
+                setPayments(d(res));
             } else if (activeTab === 'fees') {
                 const [cls, yrs] = await Promise.all([classesAPI.getAll(), academicsAPI.years.getAll()]);
-                setClasses(cls.data); setYears(yrs.data.results || yrs.data || []);
+                setClasses(d(cls)); setYears(d(yrs));
                 const res = await financeAPI.feeStructures.getAll();
-                setFeeStructures(res.data);
+                setFeeStructures(d(res));
             } else if (activeTab === 'expenses') {
                 const res = await financeAPI.expenses.getAll();
-                setExpenses(res.data);
+                setExpenses(d(res));
             }
         } catch (error) {
             console.error('Error loading finance data:', error);

@@ -42,7 +42,7 @@ const StudentProfile = () => {
         const fetchClasses = async () => {
             try {
                 const res = await academicsAPI.classes.getAll();
-                setClasses(res.data);
+                setClasses(res.data?.results ?? res.data ?? []);
             } catch (e) {
                 // Silent
             }
@@ -89,12 +89,13 @@ const StudentProfile = () => {
                 studentsAPI.documents.getAll(Number(id)),
                 studentsAPI.parents.getForStudent(Number(id)),
             ]);
+            const d = (r: any) => r?.data?.results ?? r?.data ?? [];
             setStudent(studentRes.data);
-            setResults(resultsRes.data);
-            setDiscipline(disciplineRes.data);
-            setActivities(activitiesRes.data);
-            setDocuments(documentsRes.data);
-            setParents(parentsRes.data.results || parentsRes.data || []);
+            setResults(d(resultsRes));
+            setDiscipline(d(disciplineRes));
+            setActivities(d(activitiesRes));
+            setDocuments(d(documentsRes));
+            setParents(d(parentsRes));
 
             setHealthForm({
                 blood_group: studentRes.data.health_record?.blood_group || '',
@@ -107,7 +108,8 @@ const StudentProfile = () => {
             setHealthId(studentRes.data.health_record?.id || null);
 
             const paymentsRes = await financeAPI.payments.getAll();
-            setPayments(paymentsRes.data.filter((p: any) => p.student === Number(id)));
+            const allPayments = paymentsRes.data?.results ?? paymentsRes.data ?? [];
+            setPayments(allPayments.filter((p: any) => p.student === Number(id)));
 
         } catch (error) {
             // Error

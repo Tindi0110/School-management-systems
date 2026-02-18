@@ -49,15 +49,17 @@ const Students = () => {
     }, []);
 
     const loadData = async () => {
-        // ... (existing loadData)
         setLoading(true);
         try {
             const [studentsRes, classesRes] = await Promise.all([
                 studentsAPI.getAll(),
                 academicsAPI.classes.getAll(),
             ]);
-            setStudents(studentsRes.data);
-            setClasses(classesRes.data);
+            // Handle both paginated { results: [] } and plain array responses
+            const studentsData = studentsRes.data?.results ?? studentsRes.data ?? [];
+            const classesData = classesRes.data?.results ?? classesRes.data ?? [];
+            setStudents(studentsData);
+            setClasses(classesData);
         } catch (error) {
             // Error handled by Toast in some cases or just silent
         } finally {

@@ -35,8 +35,8 @@ const Medical = () => {
                 medicalAPI.getAll(),
                 studentsAPI.getAll(),
             ]);
-            setRecords(recordsRes.data);
-            setStudents(studentsRes.data);
+            setRecords(recordsRes.data?.results ?? recordsRes.data ?? []);
+            setStudents(studentsRes.data?.results ?? studentsRes.data ?? []);
         } catch (error) {
             console.error('Error loading medical records:', error);
         } finally {

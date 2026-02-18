@@ -36,7 +36,8 @@ const Parents = () => {
     const loadParents = async () => {
         try {
             const res = await studentsAPI.parents.getAll();
-            setParents(Array.isArray(res.data) ? res.data : []); // Ensure array
+            const data = res.data?.results ?? res.data ?? [];
+            setParents(Array.isArray(data) ? data : []);
         } catch (err) {
             console.error(err);
         } finally {
