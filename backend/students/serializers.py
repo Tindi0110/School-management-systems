@@ -5,10 +5,12 @@ from .models import (
 )
 from academics.models import Attendance, StudentResult
 
+from django.db.models import Sum, Value, DecimalField, Avg
+from django.db.models.functions import Coalesce
+
 class SimpleStudentSerializer(serializers.ModelSerializer):
     class_name = serializers.CharField(source='current_class.name', read_only=True)
     stream = serializers.CharField(source='current_class.stream', read_only=True)
-    
     class Meta:
         model = Student
         fields = ['id', 'full_name', 'admission_number', 'class_name', 'stream']

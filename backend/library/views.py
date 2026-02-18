@@ -36,32 +36,38 @@ class BookLendingViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         from rest_framework.exceptions import ValidationError
+        from django.db import transaction
+        
         user = serializer.validated_data['user']
-        copy = serializer.validated_data['copy']
+        copy_instance = serializer.validated_data['copy']
         
-        # 1. CORE PRINCIPLE: Block if Overdue Exists
-        # Check if user has any UNRETURNED books that are OVERDUE
-        overdue_exists = BookLending.objects.filter(
-            user=user, 
-            date_returned__isnull=True, 
-            due_date__lt=timezone.now().date()
-        ).exists()
-        
-        if overdue_exists:
-             raise ValidationError({"detail": "User has overdue books. Cannot issue new resources."})
-
-        # 2. CORE PRINCIPLE: Max Limit (Default 2)
-        active_count = BookLending.objects.filter(user=user, date_returned__isnull=True).count()
-        if active_count >= 2:
-            raise ValidationError({"detail": "User has reached the maximum borrowing limit (2 books)."})
-
-        # 3. Check Copy Status
-        if copy.status != 'AVAILABLE':
-            raise ValidationError({"detail": f"This copy is currently {copy.status}"})
+        with transaction.atomic():
+            # Lock the copy to prevent race conditions
+            copy = BookCopy.objects.select_for_update().get(pk=copy_instance.pk)
             
-        lending = serializer.save()
-        copy.status = 'ISSUED'
-        copy.save()
+            # 1. Check Copy Status match
+            if copy.status != 'AVAILABLE':
+                raise ValidationError({"detail": f"This copy is currently {copy.status}"})
+
+            # 2. CORE PRINCIPLE: Block if Overdue Exists
+            overdue_exists = BookLending.objects.filter(
+                user=user, 
+                date_returned__isnull=True, 
+                due_date__lt=timezone.now().date()
+            ).exists()
+            
+            if overdue_exists:
+                 raise ValidationError({"detail": "User has overdue books. Cannot issue new resources."})
+
+            # 3. CORE PRINCIPLE: Max Limit (Default 2)
+            active_count = BookLending.objects.filter(user=user, date_returned__isnull=True).count()
+            if active_count >= 2:
+                raise ValidationError({"detail": "User has reached the maximum borrowing limit (2 books)."})
+
+            # Save Lending and Update Copy
+            lending = serializer.save()
+            copy.status = 'ISSUED'
+            copy.save()
 
     @action(detail=True, methods=['post'])
     def return_book(self, request, pk=None):

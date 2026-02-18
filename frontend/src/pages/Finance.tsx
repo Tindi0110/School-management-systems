@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { financeAPI, academicsAPI, studentsAPI, classesAPI } from '../api/api';
+import { financeAPI, academicsAPI, studentsAPI, classesAPI, mpesaAPI } from '../api/api';
 import { CreditCard, FileText, TrendingUp, CheckCircle, Plus, Printer } from 'lucide-react';
 import SearchableSelect from '../components/SearchableSelect';
 import Modal from '../components/Modal';
@@ -349,7 +349,7 @@ const Finance = () => {
                                                     <td>KES {Number(inv.total_amount).toLocaleString()}</td>
                                                     <td className="text-error font-bold">KES {Number(inv.balance).toLocaleString()}</td>
                                                     <td>
-                                                        <span className={`badge ${inv.status === 'PAID' ? 'badge-success' : inv.status === 'PARTIAL' ? 'badge-warning' : 'badge-error'}`}>
+                                                        <span className={`badge ${inv.status === 'PAID' ? 'badge-success' : inv.status === 'OVERPAID' ? 'badge-info text-white' : inv.status === 'PARTIAL' ? 'badge-warning' : 'badge-error'}`}>
                                                             {inv.status}
                                                         </span>
                                                     </td>
@@ -386,7 +386,7 @@ const Finance = () => {
                                                 <td>KES {Number(inv.total_amount).toLocaleString()}</td>
                                                 <td className="text-error font-bold">KES {Number(inv.balance).toLocaleString()}</td>
                                                 <td>
-                                                    <span className={`badge ${inv.status === 'PAID' ? 'badge-success' : inv.status === 'PARTIAL' ? 'badge-warning' : 'badge-error'}`}>
+                                                    <span className={`badge ${inv.status === 'PAID' ? 'badge-success' : inv.status === 'OVERPAID' ? 'badge-info text-white' : inv.status === 'PARTIAL' ? 'badge-warning' : 'badge-error'}`}>
                                                         {inv.status}
                                                     </span>
                                                 </td>

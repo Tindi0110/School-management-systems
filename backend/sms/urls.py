@@ -1,5 +1,6 @@
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
+from django.views.generic import TemplateView
 from rest_framework.routers import DefaultRouter
 from accounts.views import RegisterView, CustomAuthToken
 from .views import (
@@ -125,4 +126,6 @@ urlpatterns = [
     path('api/mpesa/', include('mpesa.urls')),
     path('api/', include(router.urls)),
     path('api/audit/', include('audit.urls')),
+    # Catch-all for SPA handling (Must be last)
+    re_path(r'^.*$', TemplateView.as_view(template_name='index.html')),
 ]

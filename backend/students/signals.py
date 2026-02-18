@@ -132,6 +132,43 @@ def auto_deallocate_hostel(sender, instance, created, **kwargs):
             allocation.bed = None # RELEASE THE BED REFERENCE
             allocation.end_date = timezone.now().date()
             allocation.save()
+
+from django.db.models.signals import pre_save
+@receiver(pre_save, sender=Student)
+def sync_hostel_on_gender_change(sender, instance, **kwargs):
+    """
+    If gender changes, check if current hostel allocation is valid. 
+    If not, de-allocate.
+    """
+    if instance.pk:
+        try:
+            original = Student.objects.get(pk=instance.pk)
+            if original.gender != instance.gender:
+                # Gender changed
+                if hasattr(instance, 'hostel_allocation') and instance.hostel_allocation.status == 'ACTIVE':
+                    allocation = instance.hostel_allocation
+                    room = allocation.room
+                    hostel = room.hostel
+                    
+                    # Check compatibility
+                    if hostel.gender_allowed != instance.gender and hostel.gender_allowed != 'MIXED':
+                         # Invalid! De-allocate
+                         print(f"Gender Sync: Student {instance.admission_number} changed gender. Revoking allocation in {hostel.name}.")
+                         
+                         bed = allocation.bed
+                         if bed:
+                             bed.status = 'AVAILABLE'
+                             bed.save()
+                             
+                             room.current_occupancy = max(0, room.current_occupancy - 1)
+                             room.save()
+                         
+                         allocation.status = 'REVOKED'
+                         allocation.end_date = timezone.now().date()
+                         allocation.bed = None
+                         allocation.save()
+        except Student.DoesNotExist:
+            pass
             
 @receiver(post_save, sender=Student)
 def manage_student_user(sender, instance, created, **kwargs):
