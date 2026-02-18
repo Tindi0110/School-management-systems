@@ -95,8 +95,7 @@ def auto_manage_hostel_on_category_change(sender, instance, created, **kwargs):
                 except Exception:
                     pass
             else:
-
-
+                pass
 @receiver(post_save, sender=Student)
 def auto_deallocate_hostel(sender, instance, created, **kwargs):
     """
