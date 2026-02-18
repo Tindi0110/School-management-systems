@@ -4,7 +4,7 @@ import {
     Plus, Search, Edit, Trash2, User as UserIcon,
     UserCheck, MapPin, Printer, TrendingUp, Download
 } from 'lucide-react';
-import { studentsAPI, academicsAPI, hostelAPI } from '../api/api';
+import { studentsAPI, academicsAPI } from '../api/api';
 import { useSelector } from 'react-redux';
 import Modal from '../components/Modal';
 import { StatCard } from '../components/Card';
@@ -16,7 +16,7 @@ import Button from '../components/common/Button';
 const Students = () => {
     const navigate = useNavigate();
     const { user } = useSelector((state: any) => state.auth);
-    const { success, error: errorToast, warning, info } = useToast();
+    const { success, error: errorToast, info } = useToast();
     const { confirm } = useConfirm();
     const [students, setStudents] = useState<any[]>([]);
     const [classes, setClasses] = useState<any[]>([]);
@@ -91,7 +91,7 @@ const Students = () => {
                 // Atomic Creation (Backend handles Parent & Hostel via Signal)
                 console.log("Submitting Student Payload (Atomic):", payload);
                 response = await studentsAPI.create(payload);
-                const newStudentId = response.data.id;
+                // const newStudentId = response.data.id;
 
                 // No need for separate Parent/Hostel API calls anymore!
                 // Backend handles:
