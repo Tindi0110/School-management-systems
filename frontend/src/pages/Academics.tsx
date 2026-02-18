@@ -30,7 +30,7 @@ const calculateGrade = (score: number) => {
     return 'E';
 };
 
-const StudentResultRow = React.memo(({ student, sClass, idx, subjects, studentScores, onScoreChange }: any) => {
+const StudentResultRow = React.memo(({ student, sClass, subjects, studentScores, onScoreChange }: any) => {
     // studentScores here is actually studentScores[student.id] 
     return (
         <tr className={`h-11 hover:bg-blue-50 transition-colors`}>
@@ -1970,14 +1970,13 @@ const Academics = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filteredResultStudents.map((student, idx) => {
+                                    {filteredResultStudents.map((student) => {
                                         const sClass = classes.find(c => c.id === student.current_class);
                                         return (
                                             <StudentResultRow
                                                 key={student.id}
                                                 student={student}
                                                 sClass={sClass}
-                                                idx={idx}
                                                 subjects={subjects}
                                                 studentScores={studentScores[student.id]}
                                                 onScoreChange={handleScoreChange}
