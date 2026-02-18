@@ -31,32 +31,30 @@ const calculateGrade = (score: number) => {
 };
 
 const StudentResultRow = React.memo(({ student, sClass, subjects, studentScores, onScoreChange }: any) => {
-    // studentScores here is actually studentScores[student.id] 
     return (
-        <tr className={`h-11 hover:bg-blue-50 transition-colors`}>
-            <td className="sticky left-0 z-10 bg-white font-medium py-1 px-2 text-gray-800">
-                <div className="truncate w-[140px]" title={student.full_name}>{student.full_name}</div>
-                <div className="text-[9px] text-gray-500 font-mono">
-                    {student.admission_number} | <span className="text-blue-600">{sClass?.stream}</span>
+        <tr className="h-12 hover:bg-slate-50 transition-colors">
+            <td className="sticky left-0 z-10 bg-white font-medium py-1 px-3">
+                <div className="truncate w-[160px] text-slate-950 font-bold text-sm" title={student.full_name}>{student.full_name}</div>
+                <div className="text-[10px] text-slate-500 font-mono">
+                    {student.admission_number} | {sClass?.stream}
                 </div>
             </td>
             {subjects.map((sub: any) => {
                 const entry = (studentScores || {})[sub.id] || { score: '' };
                 const grade = calculateGrade(parseFloat(entry.score));
                 return (
-                    <td key={sub.id} className="p-0 relative group">
-                        <div className="flex items-center h-full w-full relative">
-                            <input
-                                type="text"
-                                className={`w-full h-full text-center text-sm font-mono bg-transparent border-none outline-none focus:bg-white focus:outline-none focus:z-10 absolute inset-0 ${entry.id ? 'font-bold text-gray-900' : 'text-gray-600'}`}
-                                value={entry.score}
-                                onChange={(e) => onScoreChange(student.id, sub.id, e.target.value)}
-                            />
-                            <div className="absolute bottom-[1px] right-[1px] pointer-events-none opacity-80">
-                                <span className={`text-[9px] font-black ${grade === 'A' || grade === 'A-' ? 'text-green-600' : grade === 'E' ? 'text-red-500' : 'text-gray-500'}`}>
-                                    {grade !== '-' ? grade : ''}
-                                </span>
-                            </div>
+                    <td key={sub.id} className="p-0 relative">
+                        <input
+                            type="text"
+                            className={`w-full h-full text-center text-lg font-black bg-transparent border-none outline-none p-0 m-0 ${entry.id ? 'text-slate-950' : 'text-slate-400'}`}
+                            value={entry.score}
+                            placeholder="-"
+                            onChange={(e) => onScoreChange(student.id, sub.id, e.target.value)}
+                        />
+                        <div className="absolute top-1 right-1 pointer-events-none">
+                            <span className={`text-[9px] font-black ${grade === 'A' || grade === 'A-' ? 'text-green-600' : grade === 'E' ? 'text-red-600' : 'text-slate-400'}`}>
+                                {grade !== '-' ? grade : ''}
+                            </span>
                         </div>
                     </td>
                 );
@@ -1956,15 +1954,14 @@ const Academics = () => {
                     {resultContext.classId && (
                         <div className="max-h-[80vh] overflow-auto bg-white relative">
                             <table className="results-entry-table table w-full border-collapse text-xs">
-                                <thead className="sticky top-0 z-20 bg-gray-50 text-gray-700">
+                                <thead className="sticky top-0 z-20 bg-white">
                                     <tr className="border-none">
-                                        <th className="sticky left-0 z-30 bg-gray-100 min-w-[140px] p-2 text-left">
-                                            Student Name <br />
-                                            <span className="text-[9px] font-normal text-gray-500">ADM | Stream</span>
+                                        <th className="sticky left-0 z-30 bg-white min-w-[160px] p-3 text-left">
+                                            <span className="text-[10px] font-black uppercase text-slate-800">Student Name</span>
                                         </th>
                                         {subjects.map(sub => (
-                                            <th key={sub.id} className="text-center min-w-[52px] p-1 bg-gray-100" title={`${sub.name} (${sub.code})`}>
-                                                <div className="text-[10px] font-bold uppercase text-gray-700">{sub.name.substring(0, 3)}</div>
+                                            <th key={sub.id} className="text-center min-w-[70px] p-2 bg-white" title={`${sub.name} (${sub.code})`}>
+                                                <div className="text-[11px] font-black uppercase text-slate-800">{sub.name.substring(0, 3)}</div>
                                             </th>
                                         ))}
                                     </tr>
@@ -2125,13 +2122,21 @@ const Academics = () => {
                     box-shadow: none !important; 
                     outline: none !important; 
                     border-radius: 0 !important;
+                    background-image: none !important;
                 }
-                .results-entry-table thead th { background: #f8fafc !important; }
-                .results-entry-table tbody tr:hover { background-color: #f0f7ff !important; }
+                .results-entry-table input {
+                    appearance: none !important;
+                    -webkit-appearance: none !important;
+                    background: transparent !important;
+                }
+                .results-entry-table thead th { background: #ffffff !important; }
+                .results-entry-table tbody tr:hover { background-color: #f8fafc !important; }
+                .results-entry-table tbody td { background: transparent !important; }
                 
                 /* Remove Modal Borders for Results */
-                .modal-header, .modal-footer { border: none !important; }
-                .modal { border: none !important; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important; }
+                .modal-header, .modal-footer { border: none !important; background: white !important; }
+                .modal { border: none !important; box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.3) !important; background: white !important; }
+                .results-entry-table tr { background: white !important; }
 
                 .dropdown:hover .dropdown-content { display: block; }
                 .scrollbar-hide::-webkit-scrollbar { display: none; }
