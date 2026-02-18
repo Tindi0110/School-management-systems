@@ -33,8 +33,8 @@ const calculateGrade = (score: number) => {
 const StudentResultRow = React.memo(({ student, sClass, idx, subjects, studentScores, onScoreChange }: any) => {
     // studentScores here is actually studentScores[student.id] 
     return (
-        <tr className={`h-11 hover:bg-blue-50 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
-            <td className="sticky left-0 z-10 bg-inherit font-medium py-1 px-2 text-gray-800">
+        <tr className={`h-11 hover:bg-blue-50 transition-colors`}>
+            <td className="sticky left-0 z-10 bg-white font-medium py-1 px-2 text-gray-800">
                 <div className="truncate w-[140px]" title={student.full_name}>{student.full_name}</div>
                 <div className="text-[9px] text-gray-500 font-mono">
                     {student.admission_number} | <span className="text-blue-600">{sClass?.stream}</span>
@@ -1954,9 +1954,9 @@ const Academics = () => {
                     </div>
 
                     {resultContext.classId && (
-                        <div className="max-h-[80vh] overflow-auto bg-transparent relative">
+                        <div className="max-h-[80vh] overflow-auto bg-white relative">
                             <table className="results-entry-table table w-full border-collapse text-xs">
-                                <thead className="sticky top-0 z-20 shadow-sm bg-gray-100 text-gray-700">
+                                <thead className="sticky top-0 z-20 bg-gray-50 text-gray-700">
                                     <tr className="border-none">
                                         <th className="sticky left-0 z-30 bg-gray-100 min-w-[140px] p-2 text-left">
                                             Student Name <br />
@@ -2119,13 +2119,21 @@ const Academics = () => {
             </Modal>
 
             <style>{`
-                .results-entry-table, .results-entry-table td, .results-entry-table th, .results-entry-table tr { border: none !important; border-width: 0 !important; outline: none !important; box-shadow: none !important; }
-                .results-entry-table thead th { border-bottom: none !important; background: #f8fafc !important; }
-                .results-entry-table tbody tr { border-bottom: none !important; }
-                /* Neutralize zebra striping if it feels like boxes */
-                .results-entry-table tbody tr:nth-child(even) { background-color: #f8fafc !important; }
-                .results-entry-table tbody tr:nth-child(odd) { background-color: #ffffff !important; }
+                .results-entry-table, 
+                .results-entry-table * { 
+                    border: none !important; 
+                    border-width: 0 !important; 
+                    box-shadow: none !important; 
+                    outline: none !important; 
+                    border-radius: 0 !important;
+                }
+                .results-entry-table thead th { background: #f8fafc !important; }
+                .results-entry-table tbody tr:hover { background-color: #f0f7ff !important; }
                 
+                /* Remove Modal Borders for Results */
+                .modal-header, .modal-footer { border: none !important; }
+                .modal { border: none !important; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important; }
+
                 .dropdown:hover .dropdown-content { display: block; }
                 .scrollbar-hide::-webkit-scrollbar { display: none; }
                 .checkbox-group { display: flex; align-items: center; gap: 0.5rem; }
