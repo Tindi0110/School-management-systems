@@ -33,8 +33,8 @@ const calculateGrade = (score: number) => {
 const StudentResultRow = React.memo(({ student, sClass, idx, subjects, studentScores, onScoreChange }: any) => {
     // studentScores here is actually studentScores[student.id] 
     return (
-        <tr className={`h-8 hover:bg-blue-50 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
-            <td className="sticky left-0 z-10 bg-inherit font-medium py-1 px-2 text-gray-800 border-b border-gray-100">
+        <tr className={`h-11 hover:bg-blue-50 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
+            <td className="sticky left-0 z-10 bg-inherit font-medium py-1 px-2 text-gray-800">
                 <div className="truncate w-[140px]" title={student.full_name}>{student.full_name}</div>
                 <div className="text-[9px] text-gray-500 font-mono">
                     {student.admission_number} | <span className="text-blue-600">{sClass?.stream}</span>
@@ -1956,13 +1956,13 @@ const Academics = () => {
                         <div className="max-h-[80vh] overflow-auto bg-white relative shadow-sm">
                             <table className="table w-full border-collapse text-xs">
                                 <thead className="sticky top-0 z-20 shadow-sm bg-gray-100 text-gray-700">
-                                    <tr>
-                                        <th className="sticky left-0 z-30 bg-gray-100 min-w-[140px] p-2 text-left border-b border-gray-200">
+                                    <tr className="border-none">
+                                        <th className="sticky left-0 z-30 bg-gray-100 min-w-[140px] p-2 text-left">
                                             Student Name <br />
                                             <span className="text-[9px] font-normal text-gray-500">ADM | Stream</span>
                                         </th>
                                         {subjects.map(sub => (
-                                            <th key={sub.id} className="text-center min-w-[42px] p-1 bg-gray-100 border-b border-gray-200" title={`${sub.name} (${sub.code})`}>
+                                            <th key={sub.id} className="text-center min-w-[42px] p-1 bg-gray-100" title={`${sub.name} (${sub.code})`}>
                                                 <div className="text-[10px] font-bold uppercase text-gray-700">{sub.name.substring(0, 3)}</div>
                                             </th>
                                         ))}
