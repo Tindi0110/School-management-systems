@@ -222,8 +222,8 @@ const Academics = () => {
                 academicsAPI.gradeSystems.getAll(),
                 staffAPI.getAll(),
                 studentsAPI.getAll(),
-                academicsAPI.results.getAll(),
-                academicsAPI.attendance.getAll(),
+                academicsAPI.results.getAll({ page_size: 100 }),
+                academicsAPI.attendance.getAll({ page_size: 100 }),
                 academicsAPI.syllabus.getAll()
             ]);
 

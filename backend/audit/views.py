@@ -11,7 +11,7 @@ class HealthCheckView(APIView):
     """
     API endpoint that returns the health status of the system.
     """
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser]
     
     def get(self, request):
         from accounts.models import User

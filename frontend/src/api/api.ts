@@ -171,13 +171,13 @@ export const academicsAPI = {
     delete: (id: number) => api.delete(`exams/${id}/`),
   },
   results: {
-    getAll: (params?: { student_id?: number; exam_id?: number }) => api.get('student-results/', allWith(params)),
+    getAll: (params?: any) => api.get('student-results/', allWith(params)),
     create: (data: any) => api.post('student-results/', data),
     update: (id: number, data: any) => api.put(`student-results/${id}/`, data),
     delete: (id: number) => api.delete(`student-results/${id}/`),
   },
   attendance: {
-    getAll: () => api.get('attendance/', ALL),
+    getAll: (params?: any) => api.get('attendance/', allWith(params)),
     create: (data: any) => api.post('attendance/', data),
     update: (id: number, data: any) => api.put(`attendance/${id}/`, data),
     delete: (id: number) => api.delete(`attendance/${id}/`),
