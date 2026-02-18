@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     Plus, Edit, Trash2, Users,
     School, Calendar, ClipboardCheck, BarChart3, FileText,
@@ -13,6 +13,68 @@ import { StatCard } from '../components/Card';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 import Button from '../components/common/Button';
+
+const calculateGrade = (score: number) => {
+    if (!score && score !== 0) return '-';
+    if (score >= 80) return 'A';
+    if (score >= 75) return 'A-';
+    if (score >= 70) return 'B+';
+    if (score >= 65) return 'B';
+    if (score >= 60) return 'B-';
+    if (score >= 55) return 'C+';
+    if (score >= 50) return 'C';
+    if (score >= 45) return 'C-';
+    if (score >= 40) return 'D+';
+    if (score >= 35) return 'D';
+    if (score >= 30) return 'D-';
+    return 'E';
+};
+
+const StudentResultRow = React.memo(({ student, sClass, idx, subjects, studentScores, onScoreChange }: any) => {
+    return (
+        <tr className={`h-8 hover:bg-blue-50 transition-colors border-b border-gray-100 ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
+            <td className="sticky left-0 z-10 bg-inherit font-medium py-1 px-2 text-gray-800 border-b border-gray-100">
+                <div className="truncate w-[140px]" title={student.full_name}>{student.full_name}</div>
+                <div className="text-[9px] text-gray-500 font-mono">
+                    {student.admission_number} | <span className="text-blue-600">{sClass?.stream}</span>
+                </div>
+            </td>
+            {subjects.map((sub: any) => {
+                const key = `${student.id}-${sub.id}`;
+                const entry = studentScores[key] || { score: '' };
+                const grade = calculateGrade(parseFloat(entry.score));
+                return (
+                    <td key={sub.id} className="p-0 relative group border-b border-gray-100">
+                        <div className="flex items-center h-full w-full relative">
+                            <input
+                                type="text"
+                                className={`w-full h-full text-center text-sm font-mono bg-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:z-10 absolute inset-0 ${entry.id ? 'font-bold text-gray-900' : 'text-gray-600'}`}
+                                value={entry.score}
+                                onChange={(e) => onScoreChange(key, e.target.value)}
+                            />
+                            <div className="absolute bottom-[1px] right-[1px] pointer-events-none opacity-80">
+                                <span className={`text-[9px] font-black ${grade === 'A' || grade === 'A-' ? 'text-green-600' : grade === 'E' ? 'text-red-500' : 'text-gray-500'}`}>
+                                    {grade !== '-' ? grade : ''}
+                                </span>
+                            </div>
+                        </div>
+                    </td>
+                );
+            })}
+        </tr>
+    );
+}, (prev, next) => {
+    if (prev.student.id !== next.student.id) return false;
+    if (prev.idx !== next.idx) return false;
+    // Check scores for this student only. If they are same, return true (skip render)
+    for (const sub of next.subjects) {
+        const key = `${next.student.id}-${sub.id}`;
+        const prevScore = prev.studentScores[key]?.score;
+        const nextScore = next.studentScores[key]?.score;
+        if (prevScore !== nextScore) return false;
+    }
+    return true;
+});
 
 const Academics = () => {
     const [activeTab, setActiveTab] = useState<'SUMMARY' | 'CLASSES' | 'CURRICULUM' | 'EXAMS' | 'GRADING' | 'ATTENDANCE' | 'RESOURCES' | 'ALLOCATION'>('SUMMARY');
@@ -110,8 +172,16 @@ const Academics = () => {
     const [isResultModalOpen, setIsResultModalOpen] = useState(false);
     const [isViewResultsModalOpen, setIsViewResultsModalOpen] = useState(false);
 
+
     useEffect(() => {
         loadAllAcademicData();
+    }, []);
+
+    const handleScoreChange = useCallback((key: string, val: string) => {
+        setStudentScores((prev: any) => ({
+            ...prev,
+            [key]: { ...prev[key as any], score: val, id: prev[key as any]?.id }
+        }));
     }, []);
 
     const handleGradeSystemSubmit = async (e: React.FormEvent) => {
@@ -1906,43 +1976,16 @@ const Academics = () => {
                                     }).sort((a, b) => a.full_name.localeCompare(b.full_name)).map((student, idx) => {
                                         const sClass = classes.find(c => c.id === student.current_class);
                                         return (
-                                            <tr key={student.id} className={`h-8 hover:bg-blue-50 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
-                                                <td className="sticky left-0 z-10 bg-inherit font-medium py-1 px-2 text-gray-800 border-b border-gray-100">
-                                                    {student.full_name}
-                                                    <div className="text-[9px] text-gray-500 font-mono">
-                                                        {student.admission_number} | <span className="text-blue-600">{sClass?.stream}</span>
-                                                    </div>
-                                                </td>
-                                                {subjects.map(sub => {
-                                                    const key = `${student.id}-${sub.id}`;
-                                                    const entry = (studentScores as any)[key] || { score: '' };
-                                                    const grade = getGrade(parseFloat(entry.score));
-                                                    return (
-                                                        <td key={sub.id} className="p-0 relative group border-b border-gray-100">
-                                                            <div className="flex items-center h-full w-full">
-                                                                <input
-                                                                    type="text"
-                                                                    className={`w-full h-full text-center text-sm font-mono bg-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:z-10 absolute inset-0 ${entry.id ? 'font-bold text-gray-900' : 'text-gray-600'}`}
-                                                                    value={entry.score}
-                                                                    onChange={(e) => {
-                                                                        const val = e.target.value;
-                                                                        setStudentScores((prev: any) => ({
-                                                                            ...prev,
-                                                                            [key]: { ...prev[key as any], score: val }
-                                                                        }));
-                                                                    }}
-                                                                />
-                                                                <div className="absolute bottom-[1px] right-[1px] pointer-events-none opacity-80">
-                                                                    <span className={`text-[9px] font-black ${grade === 'A' || grade === 'A-' ? 'text-green-600' : grade === 'E' ? 'text-red-500' : 'text-gray-500'}`}>
-                                                                        {grade !== '-' ? grade : ''}
-                                                                    </span>
-                                                                </div>
-                                                            </div>
-                                                        </td>
-                                                    );
-                                                })}
-                                            </tr>
-                                        )
+                                            <StudentResultRow
+                                                key={student.id}
+                                                student={student}
+                                                sClass={sClass}
+                                                idx={idx}
+                                                subjects={subjects}
+                                                studentScores={studentScores}
+                                                onScoreChange={handleScoreChange}
+                                            />
+                                        );
                                     })}
                                 </tbody>
                             </table>
