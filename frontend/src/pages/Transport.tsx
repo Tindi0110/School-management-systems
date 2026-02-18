@@ -101,7 +101,7 @@ const Transport = () => {
         const fetchData = async (apiCall: any, setter: any, name: string) => {
             try {
                 const res = await apiCall;
-                setter(res.data);
+                setter(res.data?.results ?? res.data ?? []);
             } catch (err) {
                 console.error(`Failed to load ${name}:`, err);
             }

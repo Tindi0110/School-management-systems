@@ -227,23 +227,24 @@ const Academics = () => {
                 academicsAPI.syllabus.getAll()
             ]);
 
-            if (yearsRes.status === 'fulfilled') setAcademicYears(yearsRes.value.data);
-            if (termsRes.status === 'fulfilled') {
-                setTerms(termsRes.value.data);
-            }
-            if (classesRes.status === 'fulfilled') setClasses(classesRes.value.data);
-            if (subjectsRes.status === 'fulfilled') setSubjects(subjectsRes.value.data);
-            if (groupsRes.status === 'fulfilled') setSubjectGroups(groupsRes.value.data);
-            if (examsRes.status === 'fulfilled') setExams(examsRes.value.data);
-            if (gradesRes.status === 'fulfilled') setGradeSystems(gradesRes.value.data);
-            if (staffRes.status === 'fulfilled') setStaff(staffRes.value.data);
-            if (studentRes.status === 'fulfilled') setStudents(studentRes.value.data);
-            if (syllabusRes.status === 'fulfilled') setSyllabusData(syllabusRes.value.data);
+            const d = (r: PromiseSettledResult<any>) => r.status === 'fulfilled' ? (r.value.data?.results ?? r.value.data ?? []) : [];
+
+            setAcademicYears(d(yearsRes));
+            setTerms(d(termsRes));
+            setClasses(d(classesRes));
+            setSubjects(d(subjectsRes));
+            setSubjectGroups(d(groupsRes));
+            setExams(d(examsRes));
+            setGradeSystems(d(gradesRes));
+            setStaff(d(staffRes));
+            setStudents(d(studentRes));
+            setSyllabusData(d(syllabusRes));
+            setAttendanceRecords(d(attRes));
 
             if (resultsRes.status === 'fulfilled') {
-                setMeanGrade(calculateMeanGrade(resultsRes.value.data));
+                const results = resultsRes.value.data?.results ?? resultsRes.value.data ?? [];
+                setMeanGrade(calculateMeanGrade(results));
             }
-            if (attRes.status === 'fulfilled') setAttendanceRecords(attRes.value.data);
 
         } catch (err) {
             console.error('Error loading academic data:', err);
@@ -257,7 +258,7 @@ const Academics = () => {
         if (!classId) return;
         try {
             const res = await academicsAPI.classSubjects.list({ class_id: classId });
-            setClassAllocations(res.data);
+            setClassAllocations(res.data?.results ?? res.data ?? []);
         } catch (err) { console.error("Error fetching allocations:", err); }
     };
 
@@ -519,9 +520,10 @@ const Academics = () => {
         setLoading(true);
         try {
             const res = await academicsAPI.results.getAll({ exam_id: exam.id });
-            const enriched = res.data.map((r: any) => {
-                const s = students.find(st => st.id === r.student);
-                const cls = classes.find(c => c.id === s?.current_class);
+            const rawResults = res.data?.results ?? res.data ?? [];
+            const enriched = rawResults.map((r: any) => {
+                const s = students.find((st: any) => st.id === r.student);
+                const cls = classes.find((c: any) => c.id === s?.current_class);
                 return {
                     ...r,
                     student_name: s?.full_name || 'Unknown',

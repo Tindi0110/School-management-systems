@@ -71,22 +71,23 @@ const Library = () => {
 
     const loadCatalog = async () => {
         const [b, c] = await Promise.all([libraryAPI.books.getAll(), libraryAPI.copies.getAll()]);
-        setBooks(b.data); setCopies(c.data);
+        setBooks(b.data?.results ?? b.data ?? []);
+        setCopies(c.data?.results ?? c.data ?? []);
     };
 
     const loadLendings = async () => {
         const res = await libraryAPI.lendings.getAll();
-        setLendings(res.data);
+        setLendings(res.data?.results ?? res.data ?? []);
     };
 
     const loadFines = async () => {
         const res = await libraryAPI.fines.getAll();
-        setFines(res.data);
+        setFines(res.data?.results ?? res.data ?? []);
     };
 
     const loadStudents = async () => {
         const res = await studentsAPI.getAll();
-        setStudents(res.data);
+        setStudents(res.data?.results ?? res.data ?? []);
     };
 
     // --- Handlers ---
