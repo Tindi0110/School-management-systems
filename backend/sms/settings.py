@@ -146,15 +146,15 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ),
 }
-150: 
-151: from datetime import timedelta
-152: SIMPLE_JWT = {
-153:     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
-154:     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
-155:     'ROTATE_REFRESH_TOKENS': True,
-156:     'BLACKLIST_AFTER_ROTATION': True,
-157:     'UPDATE_LAST_LOGIN': True,
-158: }
+
+from datetime import timedelta
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'UPDATE_LAST_LOGIN': True,
+}
 
 # CORS
 CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:5173').split(',')
