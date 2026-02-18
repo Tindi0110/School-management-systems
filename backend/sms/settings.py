@@ -151,8 +151,8 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ),
     'EXCEPTION_HANDLER': 'sms.utils.custom_exception_handler',
-    # Pagination — prevents loading ALL records at once
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    # Pagination — allows clients to request up to 20000 records
+    'DEFAULT_PAGINATION_CLASS': 'sms.pagination.LargeResultsSetPagination',
     'PAGE_SIZE': 50,
     # Filtering
     'DEFAULT_FILTER_BACKENDS': [

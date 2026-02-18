@@ -40,8 +40,8 @@ api.interceptors.response.use(
 );
 
 // Helper: always fetch full dataset for list endpoints
-const ALL = { params: { page_size: 1000 } };
-const allWith = (extra?: Record<string, any>) => ({ params: { page_size: 1000, ...extra } });
+const ALL = { params: { page_size: 20000 } };
+const allWith = (extra?: Record<string, any>) => ({ params: { page_size: 20000, ...extra } });
 
 // API endpoints
 export const authAPI = {
