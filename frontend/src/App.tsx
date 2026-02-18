@@ -65,17 +65,17 @@ function App() {
 
                       {/* Students Module */}
                       <Route path="students/*" element={
-                        <ProtectedRoute requiredPermission="view_students">
+                        <ProtectedRoute requiredPermission="view_student">
                           <ErrorBoundary name="Student Module"><Students /></ErrorBoundary>
                         </ProtectedRoute>
                       } />
                       <Route path="students/:id" element={
-                        <ProtectedRoute requiredPermission="view_students"><StudentProfile /></ProtectedRoute>
+                        <ProtectedRoute requiredPermission="view_student"><StudentProfile /></ProtectedRoute>
                       } />
 
                       {/* Parents Module */}
                       <Route path="parents" element={
-                        <ProtectedRoute requiredPermission="view_parents"><Parents /></ProtectedRoute>
+                        <ProtectedRoute requiredPermission="view_parent"><Parents /></ProtectedRoute>
                       } />
 
                       {/* Academics Module */}
