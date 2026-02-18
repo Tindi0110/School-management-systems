@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
     Plus, Edit, Trash2, Users,
     School, Calendar, ClipboardCheck, BarChart3, FileText,
@@ -31,6 +31,7 @@ const calculateGrade = (score: number) => {
 };
 
 const StudentResultRow = React.memo(({ student, sClass, idx, subjects, studentScores, onScoreChange }: any) => {
+    // studentScores here is actually studentScores[student.id] 
     return (
         <tr className={`h-8 hover:bg-blue-50 transition-colors border-b border-gray-100 ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
             <td className="sticky left-0 z-10 bg-inherit font-medium py-1 px-2 text-gray-800 border-b border-gray-100">
@@ -40,8 +41,7 @@ const StudentResultRow = React.memo(({ student, sClass, idx, subjects, studentSc
                 </div>
             </td>
             {subjects.map((sub: any) => {
-                const key = `${student.id}-${sub.id}`;
-                const entry = studentScores[key] || { score: '' };
+                const entry = (studentScores || {})[sub.id] || { score: '' };
                 const grade = calculateGrade(parseFloat(entry.score));
                 return (
                     <td key={sub.id} className="p-0 relative group border-b border-gray-100">
@@ -50,7 +50,7 @@ const StudentResultRow = React.memo(({ student, sClass, idx, subjects, studentSc
                                 type="text"
                                 className={`w-full h-full text-center text-sm font-mono bg-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:z-10 absolute inset-0 ${entry.id ? 'font-bold text-gray-900' : 'text-gray-600'}`}
                                 value={entry.score}
-                                onChange={(e) => onScoreChange(key, e.target.value)}
+                                onChange={(e) => onScoreChange(student.id, sub.id, e.target.value)}
                             />
                             <div className="absolute bottom-[1px] right-[1px] pointer-events-none opacity-80">
                                 <span className={`text-[9px] font-black ${grade === 'A' || grade === 'A-' ? 'text-green-600' : grade === 'E' ? 'text-red-500' : 'text-gray-500'}`}>
@@ -63,17 +63,6 @@ const StudentResultRow = React.memo(({ student, sClass, idx, subjects, studentSc
             })}
         </tr>
     );
-}, (prev, next) => {
-    if (prev.student.id !== next.student.id) return false;
-    if (prev.idx !== next.idx) return false;
-    // Check scores for this student only. If they are same, return true (skip render)
-    for (const sub of next.subjects) {
-        const key = `${next.student.id}-${sub.id}`;
-        const prevScore = prev.studentScores[key]?.score;
-        const nextScore = next.studentScores[key]?.score;
-        if (prevScore !== nextScore) return false;
-    }
-    return true;
 });
 
 const Academics = () => {
@@ -177,12 +166,26 @@ const Academics = () => {
         loadAllAcademicData();
     }, []);
 
-    const handleScoreChange = useCallback((key: string, val: string) => {
+    const handleScoreChange = useCallback((studentId: any, subjectId: any, val: string) => {
         setStudentScores((prev: any) => ({
             ...prev,
-            [key]: { ...prev[key as any], score: val, id: prev[key as any]?.id }
+            [studentId]: {
+                ...(prev[studentId] || {}),
+                [subjectId]: { ...(prev[studentId]?.[subjectId] || {}), score: val }
+            }
         }));
     }, []);
+
+    const filteredResultStudents = useMemo(() => {
+        if (!resultContext.classId) return [];
+        return students.filter(s => {
+            if (resultContext.classId === 'all') {
+                const sClass = classes.find(c => c.id === s.current_class);
+                return sClass && sClass.name === resultContext.level;
+            }
+            return s.current_class === parseInt(resultContext.classId);
+        }).sort((a, b) => a.full_name.localeCompare(b.full_name));
+    }, [students, resultContext.classId, resultContext.level, classes]);
 
     const handleGradeSystemSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -695,29 +698,33 @@ const Academics = () => {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            const promises = Object.entries(studentScores).map(async ([key, data]: any) => {
-                const [studentId, subjectId] = key.split('-');
-                const score = data.score;
-                const resultId = data.id;
+            const promises: any[] = [];
+            Object.entries(studentScores).forEach(([studentId, subs]: any) => {
+                Object.entries(subs).forEach(([subjectId, data]: any) => {
+                    const score = data.score;
+                    const resultId = data.id;
 
-                if (!score || score.trim() === '') {
-                    if (resultId) return academicsAPI.results.delete(resultId);
-                    return;
-                }
+                    if (!score || score.trim() === '') {
+                        if (resultId) promises.push(academicsAPI.results.delete(resultId));
+                        return;
+                    }
 
-                const payload = {
-                    student: parseInt(studentId),
-                    exam: selectedExam.id,
-                    subject: parseInt(subjectId),
-                    score: parseFloat(score),
-                    grade: 'A',
-                    recorded_by: 1
-                };
+                    const payload = {
+                        student: parseInt(studentId),
+                        exam: selectedExam.id,
+                        subject: parseInt(subjectId),
+                        score: parseFloat(score),
+                        grade: calculateGrade(parseFloat(score)), // Use the helper
+                        recorded_by: user?.id || 1
+                    };
 
-                let res;
-                if (resultId) res = await academicsAPI.results.update(resultId, payload);
-                else res = await academicsAPI.results.create(payload);
-                return { key, id: res.data?.id || res.data?.results?.id };
+                    promises.push((async () => {
+                        let res;
+                        if (resultId) res = await academicsAPI.results.update(resultId, payload);
+                        else res = await academicsAPI.results.create(payload);
+                        return { studentId, subjectId, id: res.data?.id || res.data?.results?.id };
+                    })());
+                });
             });
 
             const saved = await Promise.all(promises);
@@ -725,8 +732,10 @@ const Academics = () => {
             setStudentScores((prev: any) => {
                 const next = { ...prev };
                 saved.forEach((item: any) => {
-                    if (item && item.key && item.id) {
-                        if (next[item.key]) next[item.key].id = item.id;
+                    if (item && item.studentId && item.subjectId && item.id) {
+                        if (next[item.studentId]?.[item.subjectId]) {
+                            next[item.studentId][item.subjectId].id = item.id;
+                        }
                     }
                 });
                 return next;
@@ -1918,10 +1927,11 @@ const Academics = () => {
                                                 return s.current_class === parseInt(cid);
                                             });
 
-                                            // Map to matrix state
+                                            // Map to nested matrix state
                                             const matrix: any = {};
                                             relevantResults.forEach((r: any) => {
-                                                matrix[`${r.student}-${r.subject}`] = { score: r.score.toString(), id: r.id };
+                                                if (!matrix[r.student]) matrix[r.student] = {};
+                                                matrix[r.student][r.subject] = { score: r.score.toString(), id: r.id };
                                             });
                                             setStudentScores(matrix);
                                         } catch (err) { console.error(err); }
@@ -1937,7 +1947,7 @@ const Academics = () => {
                     </div>
 
                     {resultContext.classId && (
-                        <div className="max-h-[80vh] overflow-auto border border-gray-300 bg-white relative shadow-sm">
+                        <div className="max-h-[80vh] overflow-auto bg-white relative shadow-sm">
                             <table className="table w-full border-collapse text-xs">
                                 <thead className="sticky top-0 z-20 shadow-sm bg-gray-100 text-gray-700">
                                     <tr>
@@ -1953,13 +1963,7 @@ const Academics = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {students.filter(s => {
-                                        if (resultContext.classId === 'all') {
-                                            const sClass = classes.find(c => c.id === s.current_class);
-                                            return sClass && sClass.name === resultContext.level;
-                                        }
-                                        return s.current_class === parseInt(resultContext.classId);
-                                    }).sort((a, b) => a.full_name.localeCompare(b.full_name)).map((student, idx) => {
+                                    {filteredResultStudents.map((student, idx) => {
                                         const sClass = classes.find(c => c.id === student.current_class);
                                         return (
                                             <StudentResultRow
@@ -1968,7 +1972,7 @@ const Academics = () => {
                                                 sClass={sClass}
                                                 idx={idx}
                                                 subjects={subjects}
-                                                studentScores={studentScores}
+                                                studentScores={studentScores[student.id]}
                                                 onScoreChange={handleScoreChange}
                                             />
                                         );
