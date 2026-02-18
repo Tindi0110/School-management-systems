@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { logout } from '../store/authSlice'
 import Sidebar from '../components/Sidebar'
 import { LogOut, Bell, Menu } from 'lucide-react'
 
 const DashboardLayout = () => {
+  const { user } = useSelector((state: any) => state.auth) // Get user from Redux
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
@@ -36,7 +37,9 @@ const DashboardLayout = () => {
               <Menu size={24} />
             </button>
             <div className="school-logo hidden md:block">
-              <h2 className="text-lg font-bold m-0">SMS Admin</h2>
+              <h2 className="text-lg font-bold m-0">
+                {user?.username || 'User'} <span className="text-xs font-normal text-gray-500">({user?.role || 'Guest'})</span>
+              </h2>
             </div>
           </div>
           <div className="actions">
