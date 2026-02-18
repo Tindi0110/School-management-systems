@@ -261,7 +261,7 @@ const Finance = () => {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            await (financeAPI as any).mpesa.push(mpesaForm); // Fixed: Removed unused 'res' to fix build error
+            await mpesaAPI.push({ ...mpesaForm, amount: parseFloat(mpesaForm.amount) });
             success('STK Push sent to phone!');
             setShowMpesaModal(false);
             setMpesaForm({ admission_number: '', phone_number: '', amount: '' });
