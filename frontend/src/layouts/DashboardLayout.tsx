@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { logout } from '../store/authSlice'
 import Sidebar from '../components/Sidebar'
 import { LogOut, Bell, Menu } from 'lucide-react'
+import { useToast } from '../context/ToastContext'
 
 const DashboardLayout = () => {
   const { user } = useSelector((state: any) => state.auth) // Get user from Redux
@@ -17,6 +18,30 @@ const DashboardLayout = () => {
   }
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen)
+
+  // System Notifications for Due Events
+  const { info } = useToast();
+  useEffect(() => {
+    const checkDueEvents = async () => {
+      try {
+        const { academicsAPI } = await import('../api/api');
+        const res = await academicsAPI.events.getAll();
+        const events = res.data?.results || res.data || [];
+        const today = new Date().toISOString().split('T')[0];
+
+        const dueToday = events.filter((e: any) => e.start_date === today);
+
+        if (dueToday.length > 0) {
+          dueToday.forEach((e: any) => {
+            info(`📅 Event Due Today: ${e.title}`, 8000);
+          });
+        }
+      } catch (error) {
+        console.error("Failed to check calendar events", error);
+      }
+    };
+    checkDueEvents();
+  }, []);
 
   return (
     <div className="dashboard-layout">

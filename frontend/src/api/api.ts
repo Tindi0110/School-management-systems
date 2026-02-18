@@ -193,7 +193,7 @@ export const academicsAPI = {
     create: (data: any) => api.post('alerts/', data),
   },
   events: {
-    getAll: () => api.get('school-events/', ALL),
+    getAll: (params?: any) => api.get('school-events/', allWith(params)),
     create: (data: any) => api.post('school-events/', data),
   },
   syllabus: {
