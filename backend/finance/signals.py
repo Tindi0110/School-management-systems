@@ -239,3 +239,26 @@ def update_invoice_totals(invoice):
     total = sum(item.amount for item in invoice.items.all())
     invoice.total_amount = total
     invoice.update_balance() # Saves the model
+
+@receiver(post_save, sender=Invoice)
+def sync_fine_payment(sender, instance, created, **kwargs):
+    if kwargs.get('raw'):
+        return
+    """
+    When Invoice is PAID or OVERPAID, mark linked Library Fines as PAID.
+    """
+    if instance.status in ['PAID', 'OVERPAID'] or instance.balance <= 0:
+        # distinct() is good practice if multiple adjustments link to same fine (unlikely OneToOne but safe)
+        # We need to find Adjustments on this invoice that have a library_fine
+        # library_fine is the related_name on Adjustment from LibraryFine model
+        
+        # We need to import LibraryFine but avoid circular import. 
+        # Best to use string relationship or check hasattr
+        
+        for adjustment in instance.adjustments.all():
+            if hasattr(adjustment, 'library_fine'):
+                fine = adjustment.library_fine
+                if fine.status != 'PAID':
+                    fine.status = 'PAID'
+                    fine.save()
+                    print(f"Finance Sync: Marked Library Fine {fine.id} as PAID (Invoice {instance.id} cleared)")

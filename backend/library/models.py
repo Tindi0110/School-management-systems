@@ -8,6 +8,7 @@ class LibraryConfig(models.Model):
     opening_hours = models.CharField(max_length=255)
     rules = models.TextField(blank=True)
     librarian = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='library_managed')
+    fine_amount_per_day = models.DecimalField(max_digits=10, decimal_places=2, default=20.00)
     is_active = models.BooleanField(default=True)
 
 class Book(models.Model):
@@ -60,6 +61,7 @@ class LibraryFine(models.Model):
     STATUS_CHOICES = (('PENDING', 'Pending'), ('PAID', 'Paid'), ('WAIVED', 'Waived'))
     
     lending = models.OneToOneField(BookLending, on_delete=models.CASCADE, related_name='fine', null=True, blank=True)
+    adjustment = models.OneToOneField('finance.Adjustment', on_delete=models.SET_NULL, null=True, blank=True, related_name='library_fine')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     fine_type = models.CharField(max_length=10, choices=TYPE_CHOICES)

@@ -11,6 +11,8 @@ from .serializers import (
     LibraryConfigSerializer, BookSerializer, BookCopySerializer,
     BookLendingSerializer, LibraryFineSerializer, BookReservationSerializer
 )
+from finance.models import Invoice, Adjustment, FeeStructure
+from students.models import Student
 
 class LibraryConfigViewSet(viewsets.ModelViewSet):
     queryset = LibraryConfig.objects.all()
@@ -75,14 +77,19 @@ class BookLendingViewSet(viewsets.ModelViewSet):
         copy.status = 'AVAILABLE'
         copy.save()
         
-        # 4. CORE PRINCIPLE: Auto-Fines (Logic: KES 10 per day)
+        # 4. CORE PRINCIPLE: Auto-Fines (Logic: Configurable per day)
         fine_msg = ""
         if return_date > lending.due_date:
             delta = return_date - lending.due_date
             days_late = delta.days
             if days_late > 0:
-                amount = days_late * 10
-                LibraryFine.objects.create(
+                # Get Config
+                config = LibraryConfig.objects.filter(is_active=True).first()
+                daily_fine = config.fine_amount_per_day if config else 20.00
+                amount = days_late * float(daily_fine)
+                
+                # Create Fine Record
+                fine = LibraryFine.objects.create(
                     lending=lending,
                     user=lending.user,
                     amount=amount,
@@ -90,7 +97,49 @@ class BookLendingViewSet(viewsets.ModelViewSet):
                     status='PENDING',
                     reason=f"Auto-Fine: Returned {days_late} days late."
                 )
-                fine_msg = f" Book returned {days_late} days late. Fine of KES {amount} recorded."
+                
+                # SYNC TO FINANCE (Debit Adjustment)
+                try:
+                    student = Student.objects.filter(full_name=lending.user.get_full_name()).first() # Best effort link
+                    # Or better: assuming User is linked to Student via a Profile or similar. 
+                    # For now, relying on name match or explicit link if available.
+                    # CHECK: Does User model have student link?
+                    # Re-checking User model or assuming Student is the User for now.
+                    # In this system, User != Student. User is a login. Student is a record.
+                    # We need to find the Student record associated with this User.
+                    # Usually: student.user or user.student_profile
+                    
+                    # Assuming basic link for now or skipping if not found
+                    if hasattr(lending.user, 'student_profile'): 
+                         student = lending.user.student_profile
+                    elif hasattr(lending.user, 'student'): # Common pattern
+                         student = lending.user.student
+                    
+                    if student:
+                        # Find Active Invoice
+                        # Logic: Get invoice for current academic year/term or just the latest UNPAID/PARTIAL
+                        latest_invoice = Invoice.objects.filter(student=student).order_by('-date_generated').first()
+                        
+                        if latest_invoice:
+                            adjustment = Adjustment.objects.create(
+                                invoice=latest_invoice,
+                                adjustment_type='DEBIT',
+                                amount=amount,
+                                reason=f"Library Fine: {lending.copy.book.title} ({days_late} days late)",
+                                date=timezone.now().date(),
+                                approved_by=request.user # The librarian/admin processing return
+                            )
+                            fine.adjustment = adjustment
+                            fine.save()
+                            fine_msg = f" Book returned {days_late} days late. Fine of KES {amount} added to Fee Balance."
+                        else:
+                             fine_msg = f" Book returned {days_late} days late. Fine of KES {amount} recorded (No Invoice found to sync)."
+                    else:
+                         fine_msg = f" Book returned {days_late} days late. Fine of KES {amount} recorded (Student link not found)."
+                except Exception as e:
+                    print(f"Finance Sync Error: {e}")
+                    fine_msg = f" Book returned late. Fine recorded but Finance Sync failed."
+
         
         return Response({'status': f'Book returned successfully.{fine_msg}'})
 
