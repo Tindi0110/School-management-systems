@@ -35,7 +35,7 @@ def auto_manage_hostel_on_category_change(sender, instance, created, **kwargs):
             allocation.bed = None # RELEASE THE BED REFERENCE
             allocation.end_date = timezone.now().date()
             allocation.save()
-            print(f"Hostel Sync: De-allocated student {instance.admission_number} (Switched to DAY)")
+
 
     elif instance.category == 'BOARDING':
         # 2. Auto-allocate if they are new or newly Boarding AND don't have an active allocation
@@ -60,7 +60,7 @@ def auto_manage_hostel_on_category_change(sender, instance, created, **kwargs):
                             old_alloc = bed.allocation
                             old_alloc.bed = None
                             old_alloc.save()
-                            print(f"Hostel Sync: Detached bed {bed.bed_number} from previous allocation {old_alloc.id}")
+
 
                         if bed.status == 'AVAILABLE':
                             # Check for ANY existing allocation (Active or otherwise) due to OneToOne
@@ -91,11 +91,11 @@ def auto_manage_hostel_on_category_change(sender, instance, created, **kwargs):
                             if room.current_occupancy >= room.capacity:
                                 room.status = 'FULL'
                             room.save()
-                            print(f"Hostel Sync: Auto-allocated student {instance.admission_number} to {room.hostel.name} Rm {room.room_number}")
+
                 except Exception as e:
-                    print(f"Hostel Sync Error: Failed to allocate bed for {instance.admission_number}: {e}")
+
             else:
-                print(f"Hostel Sync: No available {instance.gender} beds for student {instance.admission_number}")
+
 
 @receiver(post_save, sender=Student)
 def auto_deallocate_hostel(sender, instance, created, **kwargs):
@@ -153,7 +153,7 @@ def sync_hostel_on_gender_change(sender, instance, **kwargs):
                     # Check compatibility
                     if hostel.gender_allowed != instance.gender and hostel.gender_allowed != 'MIXED':
                          # Invalid! De-allocate
-                         print(f"Gender Sync: Student {instance.admission_number} changed gender. Revoking allocation in {hostel.name}.")
+
                          
                          bed = allocation.bed
                          if bed:
@@ -202,10 +202,10 @@ def manage_student_user(sender, instance, created, **kwargs):
             Student.objects.filter(pk=instance.pk).update(user=user)
             # Update the current instance to avoid downstream issues
             instance.user = user
-            print(f"Auto-Link: Linked User {username} to Student {instance.admission_number}")
+
             
         except Exception as e:
-            print(f"Auto-Link Error for {instance.admission_number}: {e}")
+
 
     # 2. Sync Status (Active/Inactive)
     if instance.user:
@@ -215,5 +215,5 @@ def manage_student_user(sender, instance, created, **kwargs):
         if instance.user.is_active != should_be_active:
             instance.user.is_active = should_be_active
             instance.user.save()
-            print(f"Auto-Link: Updated User {instance.user.username} status to {should_be_active}")
+
 

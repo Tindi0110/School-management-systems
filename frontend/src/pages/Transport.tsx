@@ -103,7 +103,7 @@ const Transport = () => {
                 const res = await apiCall;
                 setter(res.data?.results ?? res.data ?? []);
             } catch (err) {
-                console.error(`Failed to load ${name}:`, err);
+
             }
         };
 
@@ -124,7 +124,7 @@ const Transport = () => {
             ]);
 
         } catch (error) {
-            console.error("Critical Error loading Transport Data", error);
+
             toast.error("Failed to load some transport data. Please try again later.");
         } finally {
             setLoading(false);
@@ -147,7 +147,7 @@ const Transport = () => {
             setEnrollmentId(null);
             setEnrollmentForm({ student: '', route: '', pickup_point: '', start_date: new Date().toISOString().split('T')[0] });
         } catch (error: any) {
-            console.error(error);
+
             toast.error(error.response?.data?.detail || 'Failed to save enrollment.');
         } finally {
             setIsSaving(false);
@@ -172,7 +172,7 @@ const Transport = () => {
             toast.success('Enrollment removed successfully');
             loadData();
         } catch (error: any) {
-            console.error(error);
+
             toast.error(error.response?.data?.detail || 'Failed to remove enrollment');
         }
     };
@@ -201,7 +201,7 @@ const Transport = () => {
                 seating_capacity: 14, status: 'ACTIVE', insurance_expiry: ''
             });
         } catch (error: any) {
-            console.error(error);
+
             toast.error(error.response?.data?.detail || 'Failed to save vehicle');
         } finally {
             setIsSaving(false);
@@ -238,7 +238,7 @@ const Transport = () => {
             setRouteId(null);
             setRouteForm({ name: '', route_code: '', distance_km: 0, base_cost: 0 });
         } catch (error: any) {
-            console.error(error);
+
             toast.error(error.response?.data?.detail || 'Failed to save route.');
         } finally {
             setIsSaving(false);
@@ -252,7 +252,7 @@ const Transport = () => {
             toast.success('Vehicle deleted successfully');
             loadData();
         } catch (error: any) {
-            console.error(error);
+
             toast.error(error.response?.data?.detail || 'Failed to delete vehicle. It may be assigned to trips or maintenance records.');
         }
     };
@@ -265,7 +265,7 @@ const Transport = () => {
             toast.success('Route deleted successfully');
             loadData();
         } catch (error: any) {
-            console.error(error);
+
             toast.error(error.response?.data?.detail || 'Failed to delete route. Check for linked pickups or allocations.');
         }
     };
@@ -314,7 +314,7 @@ const Transport = () => {
             setPointId(null);
             setPointForm({ route_id: 0, point_name: '', pickup_time: '', dropoff_time: '', distance_from_school: 0, additional_cost: 0 });
         } catch (error: any) {
-            console.error(error);
+
             const msg = error.response?.data?.detail || error.message;
             toast.error(`Failed to save pickup point: ${msg}`);
         } finally {
@@ -354,7 +354,7 @@ const Transport = () => {
             setTripId(null);
             setTripForm({ route: '', vehicle: '', date: new Date().toISOString().split('T')[0], start_time: '', end_time: '', driver_name: '' });
         } catch (error: any) {
-            console.error(error);
+
             const msg = error.response?.data?.detail || error.message;
             toast.error(`Failed to save trip log: ${msg}`);
         } finally {
@@ -382,7 +382,7 @@ const Transport = () => {
             toast.success('Trip log deleted');
             loadData();
         } catch (error: any) {
-            console.error(error);
+
             toast.error(error.response?.data?.detail || 'Failed to delete trip log.');
         }
     };
@@ -417,7 +417,7 @@ const Transport = () => {
             setMaintenanceId(null);
             setMaintenanceForm({ vehicle: '', description: '', cost: 0, date: new Date().toISOString().split('T')[0], status: 'PENDING' });
         } catch (error: any) {
-            console.error(error);
+
             const msg = error.response?.data?.detail || error.message;
             toast.error(`Failed to save maintenance record: ${msg}`);
         } finally {
@@ -444,7 +444,7 @@ const Transport = () => {
             toast.success('Maintenance record deleted');
             loadData();
         } catch (error: any) {
-            console.error(error);
+
             toast.error(error.response?.data?.detail || 'Failed to delete maintenance record.');
         }
     };
@@ -472,7 +472,7 @@ const Transport = () => {
             setIncidentId(null);
             setSafetyForm({ vehicle: '', date: new Date().toISOString().split('T')[0], type: 'ACCIDENT', description: '', severity: 'MINOR' });
         } catch (error: any) {
-            console.error(error);
+
             const msg = error.response?.data?.detail || error.message;
             toast.error(`Failed to save incident report: ${msg}`);
         } finally {
@@ -499,7 +499,7 @@ const Transport = () => {
             toast.success('Incident report deleted');
             loadData();
         } catch (error: any) {
-            console.error(error);
+
             toast.error(error.response?.data?.detail || 'Failed to delete incident.');
         }
     };
@@ -528,7 +528,7 @@ const Transport = () => {
             toast.success('Pickup point deleted');
             loadData();
         } catch (error: any) {
-            console.error(error);
+
             toast.error(error.response?.data?.detail || 'Failed to delete point.');
         }
     };
@@ -551,7 +551,7 @@ const Transport = () => {
             setFuelForm({ date: new Date().toISOString().split('T')[0], vehicle: '', liters: 0, amount: 0, mileage: 0, receipt_no: '' });
             loadData();
         } catch (error: any) {
-            console.error(error);
+
             toast.error(error.response?.data?.detail || 'Failed to save fuel record.');
         } finally {
             setIsSaving(false);
@@ -565,7 +565,7 @@ const Transport = () => {
             toast.success('Fuel record deleted');
             loadData();
         } catch (error: any) {
-            console.error(error);
+
             toast.error(error.response?.data?.detail || 'Failed to delete fuel record.');
         }
     };

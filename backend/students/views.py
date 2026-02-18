@@ -75,7 +75,7 @@ class StudentViewSet(viewsets.ModelViewSet):
                 # Log error but don't fail admission? 
                 # Better to fail integrity if critical, but user experience favors success.
                 # However, "Integrity Error" is what we want to fix.
-                print(f"Parent Creation Error: {e}")
+
                 # We'll continue, user can add parent later.
         
         headers = self.get_success_headers(serializer.data)
