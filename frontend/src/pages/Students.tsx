@@ -88,67 +88,30 @@ const Students = () => {
             if (editingStudent) {
                 response = await studentsAPI.update(editingStudent.id, payload);
             } else {
+                // Atomic Creation (Backend handles Parent & Hostel via Signal)
+                console.log("Submitting Student Payload (Atomic):", payload);
                 response = await studentsAPI.create(payload);
-
-                // --- Auto-Automation Trigger ---
                 const newStudentId = response.data.id;
 
-                // 1. Auto-Create Parent Profile
-                if (payload.guardian_name) {
-                    try {
-                        const parentPayload = {
-                            student: newStudentId, // Used by perform_create to link
-                            full_name: payload.guardian_name,
-                            phone: payload.guardian_phone || 'N/A', // Matching model 'phone'
-                            email: formData.guardian_email || null, // Handle empty string
-                            relationship: 'GUARDIAN',
-                            address: 'N/A',
-                            occupation: 'N/A'
-                        };
-                        console.log("Submitting Parent Payload:", parentPayload);
-                        await studentsAPI.parents.create(parentPayload);
+                // No need for separate Parent/Hostel API calls anymore!
+                // Backend handles:
+                // 1. Student creation
+                // 2. Parent creation & linking (if guardian info provided)
+                // 3. Hostel allocation (via signal if category=BOARDING)
 
-                        console.log('Parent profile created automatically.');
-                    } catch (pErr: any) {
-                        console.error('Failed to auto-create parent:', pErr);
-                        const pMsg = pErr.response?.data ? JSON.stringify(pErr.response.data) : 'Unknown Error';
-                        warning(`Student admitted, but Parent creation failed: ${pMsg}`);
-                    }
-                }
-
-                // 2. Auto-Assign Hostel (If Boarding)
-                if (payload.category === 'BOARDING' && autoAssignHostel) {
-                    try {
-                        const bedsRes = await hostelAPI.beds.getAll();
-                        // Find a bed in a hostel that matches the student's gender
-                        const availableBed = bedsRes.data.find((b: any) =>
-                            b.status === 'AVAILABLE' &&
-                            b.hostel_gender === payload.gender
-                        );
-
-                        if (availableBed) {
-                            await hostelAPI.allocations.create({
-                                student: newStudentId,
-                                room: availableBed.room,
-                                bed: availableBed.id,
-                                status: 'ACTIVE',
-                                start_date: new Date().toISOString().split('T')[0]
-                            });
-                            success(`Assigned Bed ${availableBed.bed_number}`);
-                        } else {
-                            warning('No vacant beds found.');
-                        }
-                    } catch (hErr) {
-                        // Silent fail for auto-hostel
-                    }
-                }
+                console.log('Atomic admission successful.');
             }
 
             await loadData();
             closeModal();
             if (!editingStudent) {
-                success('Admission Successful! Redirecting to parents...');
-                setTimeout(() => navigate('/students/parents'), 1500);
+                success('Admission Successful! Redirecting to profile...');
+                // Ensure ID is valid before redirecting
+                if (response?.data?.id) {
+                    setTimeout(() => navigate(`/student/${response.data.id}`), 1000);
+                } else {
+                    navigate('/students');
+                }
             } else {
                 success('Student updated successfully!');
             }

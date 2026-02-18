@@ -72,6 +72,13 @@ class StudentSerializer(serializers.ModelSerializer):
         model = Student
         fields = '__all__'
 
+    # Write-only fields for admission optimization (Atomic creation)
+    guardian_name = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    guardian_phone = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    guardian_email = serializers.EmailField(write_only=True, required=False, allow_blank=True)
+    guardian_relation = serializers.CharField(write_only=True, required=False, default='GUARDIAN')
+    guardian_address = serializers.CharField(write_only=True, required=False, allow_blank=True)
+
     def get_hostel_name(self, obj):
         try:
             return obj.hostel_allocation.room.hostel.name

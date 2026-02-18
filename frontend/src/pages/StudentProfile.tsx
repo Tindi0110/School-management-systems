@@ -26,6 +26,7 @@ const StudentProfile = () => {
     const [parents, setParents] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const toast = useToast();
     const { confirm } = useConfirm();
 
@@ -111,8 +112,9 @@ const StudentProfile = () => {
             const allPayments = paymentsRes.data?.results ?? paymentsRes.data ?? [];
             setPayments(allPayments.filter((p: any) => p.student === Number(id)));
 
-        } catch (error) {
-            // Error
+        } catch (error: any) {
+            console.error("Load Student Error:", error);
+            setError(error.response?.data?.detail || error.message || "Failed to load student profile.");
         } finally {
             setLoading(false);
         }
@@ -272,7 +274,22 @@ const StudentProfile = () => {
     };
 
     if (loading) return <div className="spinner-container flex items-center justify-center p-20"><div className="spinner"></div></div>;
-    if (!student) return <div className="p-12 text-center text-error font-black uppercase">Institutional integrity error: Student record not found</div>;
+    // Loading & Error States
+    if (loading) return <div className="p-12 text-center animate-pulse">Loading student profile...</div>;
+
+    if (error) return (
+        <div className="p-12 text-center flex flex-col items-center justify-center gap-4">
+            <div className="bg-red-50 text-red-600 p-4 rounded-full"><ShieldAlert size={48} /></div>
+            <h3 className="text-xl font-bold text-gray-800">Error Loading Profile</h3>
+            <p className="text-gray-500 max-w-md">{error}</p>
+            <div className="flex gap-2">
+                <Button onClick={() => navigate('/students')} variant="outline" icon={<ArrowLeft size={16} />}>Back to List</Button>
+                <Button onClick={() => { setError(null); loadStudentData(); }} variant="primary" icon={<HistoryIcon size={16} />}>Retry</Button>
+            </div>
+        </div>
+    );
+
+    if (!student) return <div className="p-12 text-center text-error font-black uppercase">Student record not found (404)</div>;
 
     const tabs: { id: TabType, label: string, icon: any }[] = [
         { id: 'SUMMARY', label: 'Dashboard', icon: <TrendingUp size={16} /> },
