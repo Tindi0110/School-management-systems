@@ -46,5 +46,12 @@ class MpesaService:
             "TransactionDesc": f"Fees payment for {admission_number}"
         }
 
-        response = requests.post(api_url, json=payload, headers=headers)
-        return response.json()
+        try:
+            response = requests.post(api_url, json=payload, headers=headers)
+            res_data = response.json()
+            if 'ResponseCode' not in res_data and 'errorMessage' in res_data:
+                 print(f"STK Push Error: {res_data['errorMessage']}")
+            return res_data
+        except Exception as e:
+            print(f"STK Push Exception: {str(e)}")
+            return {"ResponseCode": "1", "ResponseDescription": f"Failed to push STK: {str(e)}", "errorMessage": str(e)}
