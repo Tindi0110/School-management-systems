@@ -108,7 +108,7 @@ const Students = () => {
                 success('Admission Successful! Redirecting to profile...');
                 // Ensure ID is valid before redirecting
                 if (response?.data?.id) {
-                    setTimeout(() => navigate(`/student/${response.data.id}`), 1000);
+                    setTimeout(() => navigate(`/students/${response.data.id}`), 1000);
                 } else {
                     navigate('/students');
                 }
