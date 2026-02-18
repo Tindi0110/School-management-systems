@@ -1847,24 +1847,24 @@ const Academics = () => {
                                     const cls = classes.find(c => c.id === row.student.current_class);
                                     return (
                                         <tr key={row.student.id} className="hover:bg-blue-50">
-                                            <td className="text-center font-bold border-r bg-gray-50">{idx + 1}</td>
-                                            <td className="sticky left-0 bg-white z-10 border-r border-b font-bold text-xs py-1 px-2 shadow-sm">
+                                            <td className="text-center font-bold bg-gray-50">{idx + 1}</td>
+                                            <td className="sticky left-0 bg-white z-10 font-bold text-xs py-1 px-2">
                                                 {row.student.full_name}
                                                 <div className="text-[9px] text-secondary font-mono">{row.student.admission_number}</div>
                                             </td>
-                                            {viewResultsGroupBy === 'ENTIRE_CLASS' && <td className="text-[10px] border-r">{cls?.stream}</td>}
+                                            {viewResultsGroupBy === 'ENTIRE_CLASS' && <td className="text-center text-[10px]">{cls?.stream}</td>}
 
                                             {subjects.map(sub => {
                                                 const res = row.results.find(r => r.subject === sub.id);
                                                 return (
-                                                    <td key={sub.id} className="text-center border-r text-xs border-b">
+                                                    <td key={sub.id} className="text-center text-xs">
                                                         {res ? <span className={res.score < 40 ? 'text-error font-bold' : ''}>{res.score}</span> : '-'}
                                                     </td>
                                                 );
                                             })}
 
-                                            <td className="text-center font-bold border-r bg-gray-50">{row.total.toFixed(0)}</td>
-                                            <td className="text-center font-bold border-r bg-gray-50">{row.avg.toFixed(1)}</td>
+                                            <td className="text-center font-bold bg-gray-50">{row.total.toFixed(0)}</td>
+                                            <td className="text-center font-bold bg-gray-50">{row.avg.toFixed(1)}</td>
                                             <td className="text-center font-black bg-gray-50">{row.meanGrade}</td>
                                         </tr>
                                     );
@@ -1895,9 +1895,10 @@ const Academics = () => {
 
             {/* Enter Results Modal */}
             <Modal isOpen={isResultModalOpen} onClose={() => setIsResultModalOpen(false)} title={`Enter Results: ${selectedExam?.name || ''}`} size="full">
+                <div className="bg-blue-600 text-white p-2 text-center font-black text-xl mb-4 rounded blink">🚀 SEAMLESS MODE ACTIVE 🚀</div>
                 <form onSubmit={handleBulkResultSubmit}>
                     {/* Cascading Class Selector */}
-                    <div className="form-group border p-3 rounded bg-secondary-light/20 mb-4">
+                    <div className="form-group p-3 mb-4 bg-gray-50">
                         <label className="label text-[10px] font-black uppercase mb-2">Select Class to Enter Marks</label>
                         <div className="grid grid-cols-2 gap-md">
                             <div>
@@ -1953,7 +1954,7 @@ const Academics = () => {
                     </div>
 
                     {resultContext.classId && (
-                        <div className="max-h-[80vh] overflow-auto bg-white relative shadow-sm">
+                        <div className="max-h-[80vh] overflow-auto bg-transparent relative">
                             <table className="results-entry-table table w-full border-collapse text-xs">
                                 <thead className="sticky top-0 z-20 shadow-sm bg-gray-100 text-gray-700">
                                     <tr className="border-none">
@@ -2118,9 +2119,13 @@ const Academics = () => {
             </Modal>
 
             <style>{`
-                .results-entry-table td, .results-entry-table th, .results-entry-table tr { border: none !important; }
-                .results-entry-table thead th { border-bottom: none !important; }
-                .results-entry-table { border: none !important; }
+                .results-entry-table, .results-entry-table td, .results-entry-table th, .results-entry-table tr { border: none !important; border-width: 0 !important; outline: none !important; box-shadow: none !important; }
+                .results-entry-table thead th { border-bottom: none !important; background: #f8fafc !important; }
+                .results-entry-table tbody tr { border-bottom: none !important; }
+                /* Neutralize zebra striping if it feels like boxes */
+                .results-entry-table tbody tr:nth-child(even) { background-color: #f8fafc !important; }
+                .results-entry-table tbody tr:nth-child(odd) { background-color: #ffffff !important; }
+                
                 .dropdown:hover .dropdown-content { display: block; }
                 .scrollbar-hide::-webkit-scrollbar { display: none; }
                 .checkbox-group { display: flex; align-items: center; gap: 0.5rem; }
