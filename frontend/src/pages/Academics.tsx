@@ -2019,3 +2019,4 @@ const Academics = () => {
 };
 
 export default Academics;
+// Force update: UI refinements applied (Teacher Filter, Curriculum Table, Attendance Refresh)
