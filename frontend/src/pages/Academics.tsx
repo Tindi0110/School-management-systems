@@ -1924,7 +1924,6 @@ const Academics = () => {
                                                                     type="text"
                                                                     className={`w-full h-full text-center text-sm font-mono bg-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:z-10 absolute inset-0 ${entry.id ? 'font-bold text-gray-900' : 'text-gray-600'}`}
                                                                     value={entry.score}
-                                                                    style={{ paddingRight: '2rem' }} // Space for grade
                                                                     onChange={(e) => {
                                                                         const val = e.target.value;
                                                                         setStudentScores((prev: any) => ({
