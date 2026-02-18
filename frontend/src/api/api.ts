@@ -51,6 +51,10 @@ export const authAPI = {
     axios.post(`${API_BASE_URL.replace('/api', '')}/api/auth/password-reset-confirm/${uidb64}/${token}/`, data),
 };
 
+export const statsAPI = {
+  getDashboard: () => api.get('../stats/'),
+};
+
 export const studentsAPI = {
   getAll: () => api.get('students/'),
   getOne: (id: number) => api.get(`students/${id}/`),

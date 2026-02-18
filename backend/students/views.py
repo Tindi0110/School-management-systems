@@ -14,7 +14,17 @@ from .serializers import (
 )
 
 class StudentViewSet(viewsets.ModelViewSet):
-    queryset = Student.objects.all().annotate(
+    queryset = Student.objects.select_related(
+        'current_class', 'user',
+        'hostel_allocation__room__hostel',
+        'hostel_allocation__bed',
+        'admission_details',
+        'health_record',
+    ).prefetch_related(
+        'parents',
+        'parents__students',
+        'invoices',
+    ).annotate(
         fee_balance=Coalesce(Sum('invoices__balance'), Value(0, output_field=DecimalField()))
     ).order_by('admission_number')
     serializer_class = StudentSerializer

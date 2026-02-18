@@ -5,7 +5,8 @@ from rest_framework.routers import DefaultRouter
 from accounts.views import RegisterView, CustomAuthToken
 from .views import (
     health_check, UserViewSet, StaffViewSet, 
-    ClassViewSet, SubjectViewSet, ExamViewSet, StudentResultViewSet
+    ClassViewSet, SubjectViewSet, ExamViewSet, StudentResultViewSet,
+    dashboard_stats
 )
 from finance.views import (
     FeeStructureViewSet, InvoiceViewSet, PaymentViewSet, 
@@ -126,6 +127,7 @@ urlpatterns = [
     path('api/mpesa/', include('mpesa.urls')),
     path('api/', include(router.urls)),
     path('api/audit/', include('audit.urls')),
+    path('api/stats/', dashboard_stats, name='dashboard_stats'),
     # Catch-all for SPA handling (Must be last)
     re_path(r'^.*$', TemplateView.as_view(template_name='index.html')),
 ]

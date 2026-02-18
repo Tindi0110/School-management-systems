@@ -7,7 +7,7 @@ import {
     Star, Award, Zap
 } from 'lucide-react';
 import { StatCard } from '../components/Card';
-import { studentsAPI, staffAPI, academicsAPI, financeAPI } from '../api/api';
+import { statsAPI, staffAPI, academicsAPI } from '../api/api';
 import Modal from '../components/Modal';
 import { useToast } from '../context/ToastContext';
 
@@ -58,68 +58,50 @@ const Dashboard = () => {
 
     const loadDashboardData = async () => {
         try {
-            const [studentsRes, staffRes, classesRes, paymentsRes, alertsRes, eventsRes, examsRes] = await Promise.all([
-                studentsAPI.getAll(),
-                staffAPI.getAll(),
-                academicsAPI.classes.getAll().catch(() => ({ data: [] })),
-                financeAPI.invoices.getAll().catch(() => ({ data: [] })),
+            // Use lightweight stats endpoint + only what's needed for display
+            const [statsRes, alertsRes, eventsRes, examsRes, yearsRes, termsRes] = await Promise.all([
+                statsAPI.getDashboard(),
                 academicsAPI.alerts.getAll().catch(() => ({ data: [] })),
                 academicsAPI.events.getAll().catch(() => ({ data: [] })),
                 academicsAPI.exams.getAll().catch(() => ({ data: [] })),
+                academicsAPI.years.getAll().catch(() => ({ data: [] })),
+                academicsAPI.terms.getAll().catch(() => ({ data: [] })),
             ]);
 
+            const s = statsRes?.data || {};
             setStats({
-                totalStudents: studentsRes?.data?.count || (Array.isArray(studentsRes?.data) ? studentsRes.data.length : 0),
-                totalStaff: staffRes?.data?.count || (Array.isArray(staffRes?.data) ? staffRes.data.length : 0),
-                totalClasses: classesRes?.data?.count || (Array.isArray(classesRes?.data) ? classesRes.data.length : 0),
-                pendingPayments: ((paymentsRes?.data?.results || paymentsRes?.data || []).filter((r: any) => parseFloat(r?.balance) > 0)).length,
+                totalStudents: s.total_students ?? 0,
+                totalStaff: s.total_staff ?? 0,
+                totalClasses: s.total_classes ?? 0,
+                pendingPayments: s.pending_invoices ?? 0,
             });
+
             setAlerts(alertsRes?.data?.results || alertsRes?.data || []);
+
             // Merge Events and Exams for Calendar
             const apiEvents = eventsRes?.data?.results || eventsRes?.data || [];
             const apiExams = (examsRes?.data?.results || examsRes?.data || []).map((ex: any) => ({
                 id: `exam-${ex.id}`,
                 title: `${ex.name} (${ex.exam_type})`,
                 date: ex.date_started,
-                start_time: '08:00', // Default start time for exams
+                start_time: '08:00',
                 location: 'Main Hall',
                 event_type: 'EXAM'
             }));
-
-            // Sort by date (newest first or nearest upcoming?) - Let's do nearest upcoming for dashboard
             const allEvents = [...apiEvents, ...apiExams].sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
-
-            // Filter for today or future events only? Or just show all?
-            // The UI shows "Today", let's filter for today onwards for the list
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             setEvents(allEvents.filter((e: any) => new Date(e.date) >= today).slice(0, 5));
 
-            // Determine active academic meta
-            if (activeAcademic.year === 'NO ACTIVE YEAR') {
-                const [yearsRes, termsRes] = await Promise.all([
-                    academicsAPI.years.getAll(),
-                    academicsAPI.terms.getAll()
-                ]);
-                const yearsData = yearsRes.data.results || yearsRes.data || [];
-                const termsData = termsRes.data.results || termsRes.data || [];
-
-                // 1. Try to find explicitly active year
-                let activeY = yearsData.find((y: any) => y.is_active === true)?.name;
-
-                // 2. Fallback: Try string 'true' just in case
-                if (!activeY) {
-                    activeY = yearsData.find((y: any) => String(y.is_active) === 'true')?.name;
-                }
-
-                // 3. Last fallback: most recent year
-                if (!activeY && yearsData.length > 0) {
-                    activeY = yearsData[yearsData.length - 1].name;
-                }
-
-                const activeT = termsData.find((t: any) => t.is_active === true)?.name || (termsData.length > 0 ? termsData[termsData.length - 1].name : 'Term 1');
-                setActiveAcademic({ year: activeY || '2024', term: activeT });
-            }
+            // Active academic year/term
+            const yearsData = yearsRes?.data?.results || yearsRes?.data || [];
+            const termsData = termsRes?.data?.results || termsRes?.data || [];
+            let activeY = yearsData.find((y: any) => y.is_active === true)?.name
+                || yearsData.find((y: any) => String(y.is_active) === 'true')?.name
+                || (yearsData.length > 0 ? yearsData[yearsData.length - 1].name : '2024');
+            const activeT = termsData.find((t: any) => t.is_active === true)?.name
+                || (termsData.length > 0 ? termsData[termsData.length - 1].name : 'Term 1');
+            setActiveAcademic({ year: activeY, term: activeT });
 
         } catch (error) {
             console.error(error);

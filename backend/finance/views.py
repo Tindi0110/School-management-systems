@@ -16,7 +16,9 @@ class FeeStructureViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
 class InvoiceViewSet(viewsets.ModelViewSet):
-    queryset = Invoice.objects.all()
+    queryset = Invoice.objects.select_related(
+        'student', 'student__current_class', 'student__current_stream', 'academic_year'
+    ).prefetch_related('items', 'payments', 'payments__received_by')
     serializer_class = InvoiceSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [filters.SearchFilter]

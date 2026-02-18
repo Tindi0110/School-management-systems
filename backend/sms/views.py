@@ -66,3 +66,22 @@ class StudentResultViewSet(viewsets.ModelViewSet):
         if exam_id:
             queryset = queryset.filter(exam_id=exam_id)
         return queryset
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def dashboard_stats(request):
+    """
+    Lightweight endpoint that returns dashboard counts using DB aggregations.
+    Avoids loading full datasets just to count records.
+    """
+    from django.db.models import Count, Q
+    from finance.models import Invoice
+
+    stats = {
+        'total_students': Student.objects.filter(is_active=True).count(),
+        'total_staff': Staff.objects.count(),
+        'total_classes': Class.objects.count(),
+        'pending_invoices': Invoice.objects.filter(balance__gt=0).count(),
+    }
+    return Response(stats)
