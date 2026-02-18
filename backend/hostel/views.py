@@ -21,7 +21,7 @@ class HostelViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
 class RoomViewSet(viewsets.ModelViewSet):
-    queryset = Room.objects.all()
+    queryset = Room.objects.select_related('hostel').prefetch_related('beds').all()
     serializer_class = RoomSerializer
     permission_classes = [IsAuthenticated]
 
@@ -36,12 +36,12 @@ class RoomViewSet(viewsets.ModelViewSet):
             )
 
 class BedViewSet(viewsets.ModelViewSet):
-    queryset = Bed.objects.all()
+    queryset = Bed.objects.select_related('room__hostel').all()
     serializer_class = BedSerializer
     permission_classes = [IsAuthenticated]
 
 class HostelAllocationViewSet(viewsets.ModelViewSet):
-    queryset = HostelAllocation.objects.all()
+    queryset = HostelAllocation.objects.select_related('student', 'room__hostel', 'bed').all()
     serializer_class = HostelAllocationSerializer
     permission_classes = [IsAuthenticated]
 

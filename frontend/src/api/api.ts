@@ -238,6 +238,7 @@ export const financeAPI = {
     getOne: (id: number) => api.get(`invoices/${id}/`),
     generateBatch: (data: { class_id: number, term: number, year_id: number }) => api.post('invoices/generate_batch/', data),
     syncAll: () => api.post('invoices/sync_all/'),
+    dashboardStats: () => api.get('invoices/dashboard_stats/'),
   },
   payments: {
     getAll: () => api.get('payments/', ALL),

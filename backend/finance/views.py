@@ -11,7 +11,7 @@ from students.models import Student
 from django.db import transaction
 
 class FeeStructureViewSet(viewsets.ModelViewSet):
-    queryset = FeeStructure.objects.all()
+    queryset = FeeStructure.objects.select_related('academic_year', 'class_level').all()
     serializer_class = FeeStructureSerializer
     permission_classes = [IsAuthenticated]
 
@@ -23,6 +23,39 @@ class InvoiceViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     filter_backends = [filters.SearchFilter]
     search_fields = ['student__first_name', 'student__last_name', 'student__admission_number']
+
+    @action(detail=False, methods=['get'])
+    def dashboard_stats(self, request):
+        """
+        Returns calculated stats and recent invoices for the dashboard.
+        Avoids fetching all records to the frontend.
+        """
+        from django.db.models import Sum
+        from django.utils import timezone
+        
+        # Calculate totals
+        total_invoiced = Invoice.objects.aggregate(sum=Sum('total_amount'))['sum'] or 0
+        total_collected = Invoice.objects.aggregate(sum=Sum('paid_amount'))['sum'] or 0
+        # Use aggregate for balance to be accurate
+        total_outstanding = Invoice.objects.aggregate(sum=Sum('balance'))['sum'] or 0
+        
+        today = timezone.now().date()
+        daily_collection = Payment.objects.filter(date_received=today).aggregate(sum=Sum('amount'))['sum'] or 0
+        
+        # Get 5 recent invoices
+        recent_invoices = Invoice.objects.select_related(
+            'student', 'student__current_class', 'academic_year'
+        ).order_by('-date_generated', '-id')[:5]
+        
+        recent_data = InvoiceSerializer(recent_invoices, many=True).data
+        
+        return Response({
+            'totalInvoiced': total_invoiced,
+            'totalCollected': total_collected,
+            'totalOutstanding': total_outstanding,
+            'dailyCollection': daily_collection,
+            'recentInvoices': recent_data
+        })
 
     @action(detail=False, methods=['post'])
     def generate_batch(self, request):
@@ -128,7 +161,7 @@ class PaymentViewSet(viewsets.ModelViewSet):
         serializer.save(received_by=self.request.user)
 
 class AdjustmentViewSet(viewsets.ModelViewSet):
-    queryset = Adjustment.objects.all()
+    queryset = Adjustment.objects.select_related('invoice__student', 'approved_by').all()
     serializer_class = AdjustmentSerializer
     permission_classes = [IsAuthenticated]
 
@@ -136,7 +169,7 @@ class AdjustmentViewSet(viewsets.ModelViewSet):
         serializer.save(approved_by=self.request.user)
 
 class ExpenseViewSet(viewsets.ModelViewSet):
-    queryset = Expense.objects.all()
+    queryset = Expense.objects.select_related('approved_by').all()
     serializer_class = ExpenseSerializer
     permission_classes = [IsAuthenticated]
 

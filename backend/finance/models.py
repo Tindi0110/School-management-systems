@@ -46,7 +46,7 @@ class Invoice(models.Model):
     paid_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='UNPAID')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='UNPAID', db_index=True)
     date_generated = models.DateField(default=timezone.now)
     due_date = models.DateField(null=True, blank=True)
     
@@ -126,7 +126,7 @@ class Payment(models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     method = models.CharField(max_length=10, choices=METHOD_CHOICES)
     reference_number = models.CharField(max_length=50, blank=True, null=True) # e.g. M-Pesa Code
-    date_received = models.DateField(default=timezone.now)
+    date_received = models.DateField(default=timezone.now, db_index=True)
     received_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     
     notes = models.TextField(blank=True)

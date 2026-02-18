@@ -24,18 +24,7 @@ class TermViewSet(viewsets.ModelViewSet):
     serializer_class = TermSerializer
 
     def update(self, request, *args, **kwargs):
-        print(f"\n[DEBUG] Term Update Triggered")
-        print(f"[DEBUG] ID: {kwargs.get('pk')}")
-        print(f"[DEBUG] Data: {request.data}")
-        try:
-            response = super().update(request, *args, **kwargs)
-            print(f"[DEBUG] Update Success: {response.data}")
-            return response
-        except Exception as e:
-            print(f"[DEBUG] Update FAILED: {str(e)}")
-            import traceback
-            traceback.print_exc()
-            raise e
+        return super().update(request, *args, **kwargs)
 
 
 class SubjectGroupViewSet(viewsets.ModelViewSet):
@@ -65,7 +54,7 @@ class ExamViewSet(viewsets.ModelViewSet):
 from .permissions import IsClassTeacherForSubject
 
 class StudentResultViewSet(viewsets.ModelViewSet):
-    queryset = StudentResult.objects.all()
+    queryset = StudentResult.objects.select_related('student', 'exam', 'subject').all()
     serializer_class = StudentResultSerializer
     permission_classes = [permissions.IsAuthenticated, IsClassTeacherForSubject]
     
@@ -78,7 +67,7 @@ class StudentResultViewSet(viewsets.ModelViewSet):
         return queryset
 
 class AttendanceViewSet(viewsets.ModelViewSet):
-    queryset = Attendance.objects.all()
+    queryset = Attendance.objects.select_related('student', 'class_group', 'recorded_by').all()
     serializer_class = AttendanceSerializer
 
 class LearningResourceViewSet(viewsets.ModelViewSet):
@@ -99,7 +88,7 @@ class SyllabusCoverageViewSet(viewsets.ModelViewSet):
 
 
 class ClassSubjectViewSet(viewsets.ModelViewSet):
-    queryset = ClassSubject.objects.all()
+    queryset = ClassSubject.objects.select_related('class_id', 'subject', 'teacher').all()
     serializer_class = ClassSubjectSerializer
     
     def get_queryset(self):
@@ -136,7 +125,7 @@ class ClassSubjectViewSet(viewsets.ModelViewSet):
         return Response({'status': 'synced', 'added': count, 'total_students': students.count()})
 
 class StudentSubjectViewSet(viewsets.ModelViewSet):
-    queryset = StudentSubject.objects.all()
+    queryset = StudentSubject.objects.select_related('student', 'subject').all()
     serializer_class = StudentSubjectSerializer
 
     def get_queryset(self):

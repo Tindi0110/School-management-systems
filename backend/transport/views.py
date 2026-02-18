@@ -30,7 +30,7 @@ class VehicleViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 class DriverProfileViewSet(viewsets.ModelViewSet):
-    queryset = DriverProfile.objects.all()
+    queryset = DriverProfile.objects.select_related('staff', 'assigned_vehicle').all()
     serializer_class = DriverProfileSerializer
 
 class RouteViewSet(viewsets.ModelViewSet):
@@ -42,7 +42,7 @@ class PickupPointViewSet(viewsets.ModelViewSet):
     serializer_class = PickupPointSerializer
 
 class TransportAllocationViewSet(viewsets.ModelViewSet):
-    queryset = TransportAllocation.objects.all()
+    queryset = TransportAllocation.objects.select_related('student', 'route', 'pickup_point').all()
     serializer_class = TransportAllocationSerializer
 
     def perform_create(self, serializer):
@@ -55,7 +55,7 @@ class TransportAllocationViewSet(viewsets.ModelViewSet):
         serializer.save()
 
 class TripLogViewSet(viewsets.ModelViewSet):
-    queryset = TripLog.objects.all()
+    queryset = TripLog.objects.select_related('vehicle', 'route').prefetch_related('attendance__student').all()
     serializer_class = TripLogSerializer
 
     @action(detail=True, methods=['post'])
@@ -71,7 +71,7 @@ class TripLogViewSet(viewsets.ModelViewSet):
         return Response({'status': 'attendance updated'})
 
 class TransportAttendanceViewSet(viewsets.ModelViewSet):
-    queryset = TransportAttendance.objects.all()
+    queryset = TransportAttendance.objects.select_related('student', 'trip').all()
     serializer_class = TransportAttendanceSerializer
 
 class VehicleMaintenanceViewSet(viewsets.ModelViewSet):

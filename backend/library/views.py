@@ -30,7 +30,7 @@ class BookCopyViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
 class BookLendingViewSet(viewsets.ModelViewSet):
-    queryset = BookLending.objects.all()
+    queryset = BookLending.objects.select_related('copy__book', 'user').all()
     serializer_class = BookLendingSerializer
     permission_classes = [IsAuthenticated]
 
@@ -233,6 +233,6 @@ class LibraryFineViewSet(viewsets.ModelViewSet):
         })
 
 class BookReservationViewSet(viewsets.ModelViewSet):
-    queryset = BookReservation.objects.all()
+    queryset = BookReservation.objects.select_related('book', 'user').all()
     serializer_class = BookReservationSerializer
     permission_classes = [IsAuthenticated]

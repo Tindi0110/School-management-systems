@@ -73,24 +73,11 @@ const Finance = () => {
         try {
             const d = (r: any) => r?.data?.results ?? r?.data ?? [];
             if (activeTab === 'dashboard') {
-                const [invoicesRes, paymentsRes] = await Promise.all([
-                    financeAPI.invoices.getAll(),
-                    financeAPI.payments.getAll()
-                ]);
-                const invoices = d(invoicesRes);
-                const payments = d(paymentsRes);
-                const totalInv = invoices.reduce((acc: number, i: any) => acc + parseFloat(i.total_amount || 0), 0);
-                const totalCol = invoices.reduce((acc: number, i: any) => acc + parseFloat(i.paid_amount || 0), 0);
-                const today = new Date().toISOString().split('T')[0];
-                const daily = payments.filter((p: any) => p.date_received === today).reduce((acc: number, p: any) => acc + parseFloat(p.amount || 0), 0);
-                setStats({
-                    totalInvoiced: totalInv,
-                    totalCollected: totalCol,
-                    totalOutstanding: totalInv - totalCol,
-                    collectionRate: totalInv ? Math.round((totalCol / totalInv) * 100) : 0,
-                    dailyCollection: daily
-                });
-                setInvoices(invoices);
+                // Super-fast dashboard load: stats + 5 recent invoices only
+                const res = await financeAPI.invoices.dashboardStats();
+                setStats(res.data);
+                setInvoices(res.data.recentInvoices);
+                // No need to fetch payments here anymore!
             } else if (activeTab === 'invoices') {
                 const [cls, yrRes, studs] = await Promise.all([
                     classesAPI.getAll(),
@@ -98,7 +85,7 @@ const Finance = () => {
                     studentsAPI.getAll()
                 ]);
                 setClasses(d(cls)); setYears(d(yrRes)); setStudents(d(studs));
-                const res = await financeAPI.invoices.getAll();
+                const res = await financeAPI.invoices.getAll(); // Full load
                 setInvoices(d(res));
             } else if (activeTab === 'payments') {
                 const [studs, invs] = await Promise.all([studentsAPI.getAll(), financeAPI.invoices.getAll()]);
