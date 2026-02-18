@@ -34,10 +34,8 @@ class InvoiceSerializer(serializers.ModelSerializer):
     payments = PaymentSerializer(many=True, read_only=True)
 
     def get_stream_name(self, obj):
-        try:
-            return obj.student.current_stream.name if obj.student.current_stream else None
-        except Exception:
-            return None
+        # Student model has no current_stream field
+        return None
 
     class Meta:
         model = Invoice
