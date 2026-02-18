@@ -34,10 +34,13 @@ class BookLendingViewSet(viewsets.ModelViewSet):
     serializer_class = BookLendingSerializer
     permission_classes = [IsAuthenticated]
 
-    def perform_create(self, serializer):
+    def create(self, request, *args, **kwargs):
         from rest_framework.exceptions import ValidationError
         from django.db import transaction
         
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
         user = serializer.validated_data['user']
         copy_instance = serializer.validated_data['copy']
         
@@ -68,6 +71,16 @@ class BookLendingViewSet(viewsets.ModelViewSet):
             lending = serializer.save()
             copy.status = 'ISSUED'
             copy.save()
+        
+        # Reload to ensure efficient serialization (avoid N+1)
+        # This fixes the "Success but Slow/Timeout" issue by making the response serialization instant
+        lending = BookLending.objects.select_related('copy__book', 'user').get(pk=lending.pk)
+        
+        # Serialize with reloaded instance
+        serializer = self.get_serializer(lending)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
 
     @action(detail=True, methods=['post'])
     def return_book(self, request, pk=None):

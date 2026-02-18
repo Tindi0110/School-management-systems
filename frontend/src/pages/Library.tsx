@@ -222,7 +222,10 @@ const Library = () => {
             else await libraryAPI.lendings.create(payload);
 
             // Optimistic Success: Alert & Close immediately
-            const bookTitle = books.find(b => b.id === Number(copies.find(c => c.id === Number(lendingForm.copy))?.book))?.title;
+            const copyId = Number(lendingForm.copy);
+            const copyObj = copies.find(c => c.id === copyId);
+            const bookObj = copyObj ? books.find(b => b.id === Number(copyObj.book)) : null;
+            const bookTitle = bookObj?.title || 'Book';
             toast.success(`"${bookTitle}" issued to ${selectedStudent.full_name}. Due by ${lendingForm.due_date}`);
 
             setIsLendModalOpen(false);
@@ -235,7 +238,7 @@ const Library = () => {
 
         } catch (err: any) {
             console.error(err);
-            const msg = err.response?.data?.detail || 'Failed to issue book.';
+            const errorDetail = err.response?.data?.detail; const errorMsg = errorDetail || err.message || 'Failed to issue book.';
             toast.error(`Error: ${msg}`);
         } finally {
             setIsSubmitting(false);
