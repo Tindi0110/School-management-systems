@@ -90,7 +90,7 @@ class Exam(models.Model):
     name = models.CharField(max_length=100)
     exam_type = models.CharField(max_length=20, choices=TYPES, default='END_TERM')
     grade_system = models.ForeignKey(GradeSystem, on_delete=models.SET_NULL, null=True, blank=True, help_text="Specific grading system for this exam")
-    term = models.ForeignKey(Term, on_delete=models.CASCADE, related_name='exams')
+    term = models.ForeignKey(Term, on_delete=models.PROTECT, related_name='exams')
     weighting = models.IntegerField(default=100, help_text="Percentage contribution to final term grade")
     date_started = models.DateField()
     is_active = models.BooleanField(default=True)
