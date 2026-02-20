@@ -26,10 +26,14 @@ class SubjectGroupSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class SubjectSerializer(serializers.ModelSerializer):
-    group_name = serializers.CharField(source='group.name', read_only=True)
+    # group is nullable (SET_NULL) - use SerializerMethodField to avoid crash
+    group_name = serializers.SerializerMethodField()
     class Meta:
         model = Subject
         fields = '__all__'
+
+    def get_group_name(self, obj):
+        return obj.group.name if obj.group else None
 
 class GradeBoundarySerializer(serializers.ModelSerializer):
     class Meta:
@@ -44,6 +48,7 @@ class GradeSystemSerializer(serializers.ModelSerializer):
 
 class ExamSerializer(serializers.ModelSerializer):
     term_name = serializers.CharField(source='term.name', read_only=True)
+    # grade_system is nullable - use SerializerMethodField to avoid crash
     grade_system_name = serializers.SerializerMethodField()
     
     class Meta:
@@ -51,7 +56,7 @@ class ExamSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def get_grade_system_name(self, obj):
-        return obj.grade_system.name if obj.grade_system else "Default (KNEC)"
+        return obj.grade_system.name if obj.grade_system else None
 
 class StudentResultSerializer(serializers.ModelSerializer):
     student_name = serializers.CharField(source='student.full_name', read_only=True)
@@ -63,12 +68,16 @@ class StudentResultSerializer(serializers.ModelSerializer):
 
 class ClassSubjectSerializer(serializers.ModelSerializer):
     subject_name = serializers.CharField(source='subject.name', read_only=True)
-    teacher_name = serializers.CharField(source='teacher.get_full_name', read_only=True)
+    # teacher is nullable (SET_NULL) - use SerializerMethodField to avoid crash
+    teacher_name = serializers.SerializerMethodField()
     class_name = serializers.CharField(source='class_id.name', read_only=True)
     
     class Meta:
         model = ClassSubject
         fields = '__all__'
+
+    def get_teacher_name(self, obj):
+        return obj.teacher.get_full_name() if obj.teacher else "Unassigned"
 
 class StudentSubjectSerializer(serializers.ModelSerializer):
     subject_name = serializers.CharField(source='subject.name', read_only=True)
