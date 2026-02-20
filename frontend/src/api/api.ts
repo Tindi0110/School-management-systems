@@ -451,6 +451,16 @@ export const transportAPI = {
   }
 };
 
+export const communicationAPI = {
+  notifications: {
+    getAll: () => api.get('notifications/', ALL),
+    update: (id: number, data: any) => api.patch(`notifications/${id}/`, data),
+  },
+  alerts: {
+    getAll: () => api.get('alerts/', ALL),
+  }
+};
+
 export const auditAPI = {
   health: {
     get: () => api.get('audit/health/'),

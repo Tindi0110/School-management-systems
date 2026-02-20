@@ -15,6 +15,7 @@ class User(AbstractUser):
         ('LIBRARIAN', 'Librarian'),
         ('STUDENT', 'Student'),
         ('PARENT', 'Parent'),
+        ('DRIVER', 'Driver'),
     )
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='STUDENT')
     supabase_id = models.UUIDField(null=True, blank=True, unique=True)

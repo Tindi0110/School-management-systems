@@ -1587,7 +1587,7 @@ const Academics = () => {
                         <select className="select" value={classForm.class_teacher} onChange={(e) => setClassForm({ ...classForm, class_teacher: e.target.value })}>
                             <option value="">Select Teacher...</option>
                             {staff.filter(s => s.role === 'TEACHER').map(s => (
-                                <option key={s.id} value={s.id}>{s.user.first_name} {s.user.last_name} ({s.employee_id})</option>
+                                <option key={s.id} value={s.id}>{s.full_name} ({s.employee_id})</option>
                             ))}
                         </select>
                     </div>

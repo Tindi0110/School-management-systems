@@ -11,6 +11,9 @@ const DashboardLayout = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [notifications, setNotifications] = useState<any[]>([])
+  const [alerts, setAlerts] = useState<any[]>([])
+  const [isNotifOpen, setIsNotifOpen] = useState(false)
 
   const handleLogout = () => {
     dispatch(logout())
@@ -18,6 +21,30 @@ const DashboardLayout = () => {
   }
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen)
+
+  const fetchNotifications = async () => {
+    try {
+      const { communicationAPI } = await import('../api/api');
+      const [notifsRes, alertsRes] = await Promise.all([
+        communicationAPI.notifications.getAll(),
+        communicationAPI.alerts.getAll()
+      ]);
+      setNotifications(notifsRes.data?.results || notifsRes.data || []);
+      setAlerts((alertsRes.data?.results || alertsRes.data || []).filter((a: any) => a.is_active));
+    } catch (error) {
+      console.error("Failed to fetch notifications", error);
+    }
+  };
+
+  const markAsRead = async (id: number) => {
+    try {
+      const { communicationAPI } = await import('../api/api');
+      await communicationAPI.notifications.update(id, { is_read: true });
+      fetchNotifications();
+    } catch (error) {
+      console.error("Failed to mark notification as read", error);
+    }
+  };
 
   // System Notifications for Due Events
   const { info } = useToast();
@@ -41,6 +68,11 @@ const DashboardLayout = () => {
       }
     };
     checkDueEvents();
+    fetchNotifications();
+
+    // Refresh notifications every 2 minutes
+    const interval = setInterval(fetchNotifications, 120000);
+    return () => clearInterval(interval);
   }, []);
 
   return (
@@ -68,9 +100,55 @@ const DashboardLayout = () => {
             </div>
           </div>
           <div className="actions">
-            <button className="icon-btn">
-              <Bell size={20} />
-            </button>
+            <div className="relative">
+              <button className="icon-btn" onClick={() => setIsNotifOpen(!isNotifOpen)}>
+                <Bell size={20} />
+                {(notifications.filter(n => !n.is_read).length + alerts.length) > 0 && (
+                  <span className="absolute top-0 right-0 w-4 h-4 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center font-bold border-2 border-white">
+                    {notifications.filter(n => !n.is_read).length + alerts.length}
+                  </span>
+                )}
+              </button>
+
+              {isNotifOpen && (
+                <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-2xl border border-gray-100 z-[100] max-h-[400px] overflow-hidden flex flex-col">
+                  <div className="p-3 border-b bg-gray-50 flex justify-between items-center">
+                    <span className="font-black text-xs uppercase tracking-wider text-gray-500">Notifications</span>
+                    <button className="text-[10px] font-bold text-primary hover:underline" onClick={() => setIsNotifOpen(false)}>Close</button>
+                  </div>
+                  <div className="overflow-y-auto flex-1">
+                    {alerts.length === 0 && notifications.length === 0 && (
+                      <div className="p-8 text-center text-gray-400 italic text-xs">No active alerts</div>
+                    )}
+
+                    {alerts.map(alert => (
+                      <div key={`alert-${alert.id}`} className={`p-3 border-b bg-red-50`}>
+                        <div className="flex gap-2">
+                          <div className={`mt-1 w-2 h-2 rounded-full bg-red-500`}></div>
+                          <div>
+                            <p className="m-0 font-bold text-xs text-red-900 uppercase tracking-tight">{alert.title}</p>
+                            <p className="m-0 text-xs text-red-700 leading-tight mt-1">{alert.message}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
+                    {notifications.map(notif => (
+                      <div key={`notif-${notif.id}`} className={`p-3 border-b hover:bg-gray-50 transition-colors cursor-pointer ${notif.is_read ? 'opacity-60' : 'bg-blue-50/30'}`} onClick={() => !notif.is_read && markAsRead(notif.id)}>
+                        <div className="flex gap-2">
+                          {!notif.is_read && <div className="mt-1.5 w-2 h-2 rounded-full bg-blue-500"></div>}
+                          <div className={notif.is_read ? 'pl-4' : ''}>
+                            <p className="m-0 font-bold text-xs text-gray-800 tracking-tight">{notif.title}</p>
+                            <p className="m-0 text-xs text-gray-600 leading-tight mt-1">{notif.message}</p>
+                            <p className="m-0 text-[9px] text-gray-400 mt-1 uppercase font-bold">{new Date(notif.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
             <button onClick={handleLogout} className="logout-btn">
               <LogOut size={18} />
               <span className="logout-text">Logout</span>
@@ -104,6 +182,10 @@ const DashboardLayout = () => {
           align-items: center;
           box-shadow: 0 2px 4px rgba(0,0,0,0.05);
           height: 64px;
+          width: 100%;
+          position: sticky;
+          top: 0;
+          z-index: 80;
         }
         .sidebar-wrapper {
           width: 260px;
@@ -209,8 +291,11 @@ const DashboardLayout = () => {
         }
         .content-area {
           flex: 1;
-          padding: 1rem;
+          padding: 1.5rem;
           overflow-y: auto;
+          overflow-x: hidden;
+          width: 100%;
+          max-width: 100vw;
           -webkit-overflow-scrolling: touch;
         }
       `}</style>

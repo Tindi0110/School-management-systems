@@ -840,7 +840,7 @@ const Hostels = () => {
                             <select className="select" value={hostelFormData.warden} onChange={(e) => setHostelFormData({ ...hostelFormData, warden: e.target.value })}>
                                 <option value="">Select Warden...</option>
                                 {staff.filter(s => s.role === 'WARDEN').map(s => (
-                                    <option key={s.id} value={s.id}>{s.user.first_name} {s.user.last_name} ({s.employee_id})</option>
+                                    <option key={s.id} value={s.id}>{s.full_name} ({s.employee_id})</option>
                                 ))}
                             </select>
                         </div>

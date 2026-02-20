@@ -19,6 +19,7 @@ const Transport = () => {
     const [allocations, setAllocations] = useState<any[]>([]);
     const [fuelRecords, setFuelRecords] = useState<any[]>([]);
     const [students, setStudents] = useState<any[]>([]);
+    const [drivers, setDrivers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     // Modals
@@ -32,7 +33,8 @@ const Transport = () => {
         vehicle_type: 'BUS',
         seating_capacity: 14,
         status: 'ACTIVE',
-        insurance_expiry: ''
+        insurance_expiry: '',
+        assigned_driver_id: ''
     });
     const [vehicleId, setVehicleId] = useState<number | null>(null);
 
@@ -70,7 +72,7 @@ const Transport = () => {
     const [incidents, setIncidents] = useState<any[]>([]);
 
     const [isTripModalOpen, setIsTripModalOpen] = useState(false);
-    const [tripForm, setTripForm] = useState({ route: '', vehicle: '', date: new Date().toISOString().split('T')[0], start_time: '', end_time: '', driver_name: '' });
+    const [tripForm, setTripForm] = useState({ route: '', vehicle: '', date: new Date().toISOString().split('T')[0], start_time: '', end_time: '', driver: '' });
 
     const [isMaintenanceModalOpen, setIsMaintenanceModalOpen] = useState(false);
     const [maintenanceForm, setMaintenanceForm] = useState({ vehicle: '', description: '', cost: 0, date: new Date().toISOString().split('T')[0], status: 'PENDING' });
@@ -120,7 +122,8 @@ const Transport = () => {
                 fetchData(transportAPI.fuel.getAll(), setFuelRecords),
                 fetchData(transportAPI.tripLogs.getAll(), setTrips),
                 fetchData(transportAPI.maintenance.getAll(), setMaintenanceRecords),
-                fetchData(transportAPI.incidents.getAll(), setIncidents)
+                fetchData(transportAPI.incidents.getAll(), setIncidents),
+                fetchData(transportAPI.drivers.getAll(), setDrivers)
             ]);
 
         } catch (error) {
@@ -183,6 +186,7 @@ const Transport = () => {
         try {
             const payload = {
                 ...vehicleForm,
+                assigned_driver_id: vehicleForm.assigned_driver_id ? Number(vehicleForm.assigned_driver_id) : null,
                 insurance_expiry: vehicleForm.insurance_expiry || null
             };
 
@@ -198,7 +202,8 @@ const Transport = () => {
             setVehicleId(null);
             setVehicleForm({
                 registration_number: '', make_model: '', vehicle_type: 'BUS',
-                seating_capacity: 14, status: 'ACTIVE', insurance_expiry: ''
+                seating_capacity: 14, status: 'ACTIVE', insurance_expiry: '',
+                assigned_driver_id: ''
             });
         } catch (error: any) {
 
@@ -216,7 +221,8 @@ const Transport = () => {
             vehicle_type: v.vehicle_type,
             seating_capacity: v.seating_capacity,
             status: v.status,
-            insurance_expiry: v.insurance_expiry || ''
+            insurance_expiry: v.insurance_expiry || '',
+            assigned_driver_id: v.assigned_driver_id ? String(v.assigned_driver_id) : ''
         });
 
         setIsVehicleModalOpen(true);
@@ -324,7 +330,7 @@ const Transport = () => {
 
     const handleTripSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!tripForm.route || !tripForm.vehicle || !tripForm.driver_name) {
+        if (!tripForm.route || !tripForm.vehicle || !tripForm.driver) {
             toast.error('Please fill in all required fields (Route, Vehicle, Driver).');
             return;
         }
@@ -337,9 +343,8 @@ const Transport = () => {
                 date: tripForm.date,
                 departure_time: tripForm.start_time,
                 arrival_time: tripForm.end_time,
-                attendant: tripForm.driver_name,
-                trip_type: 'MORNING',
-                driver: null
+                driver: Number(tripForm.driver),
+                trip_type: 'MORNING'
             };
 
             if (tripId) {
@@ -352,7 +357,7 @@ const Transport = () => {
             loadData();
             setIsTripModalOpen(false);
             setTripId(null);
-            setTripForm({ route: '', vehicle: '', date: new Date().toISOString().split('T')[0], start_time: '', end_time: '', driver_name: '' });
+            setTripForm({ route: '', vehicle: '', date: new Date().toISOString().split('T')[0], start_time: '', end_time: '', driver: '' });
         } catch (error: any) {
 
             const msg = error.response?.data?.detail || error.message;
@@ -368,9 +373,9 @@ const Transport = () => {
             route: String(t.route),
             vehicle: String(t.vehicle),
             date: t.date,
-            start_time: t.start_time,
-            end_time: t.end_time,
-            driver_name: t.driver_name
+            start_time: t.departure_time || '',
+            end_time: t.arrival_time || '',
+            driver: t.driver ? String(t.driver) : ''
         });
         setIsTripModalOpen(true);
     };
@@ -941,6 +946,15 @@ const Transport = () => {
                         </div>
                         <div className="form-group"><label className="label">Insurance Expiry</label><input type="date" className="input" value={vehicleForm.insurance_expiry} onChange={e => setVehicleForm({ ...vehicleForm, insurance_expiry: e.target.value })} /></div>
                     </div>
+                    <div className="form-group">
+                        <label className="label">Assigned Driver</label>
+                        <select className="select" value={vehicleForm.assigned_driver_id} onChange={e => setVehicleForm({ ...vehicleForm, assigned_driver_id: e.target.value })}>
+                            <option value="">Select Primary Driver...</option>
+                            {drivers.map(d => (
+                                <option key={d.id} value={d.id}>{d.staff_name} ({d.staff_employee_id})</option>
+                            ))}
+                        </select>
+                    </div>
                     <div className="modal-footer pt-4"><Button type="submit" variant="primary" className="w-full uppercase font-black" loading={isSaving} loadingText={vehicleId ? "Updating..." : "Registering..."}>{vehicleId ? 'Update Vehicle' : 'Register Vehicle'}</Button></div>
                 </form>
             </Modal>
@@ -981,7 +995,15 @@ const Transport = () => {
                 <form onSubmit={handleTripSubmit} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group"><label className="label">Date</label><input type="date" className="input" value={tripForm.date} onChange={e => setTripForm({ ...tripForm, date: e.target.value })} required /></div>
-                        <div className="form-group"><label className="label">Driver Name</label><input type="text" className="input" value={tripForm.driver_name} onChange={e => setTripForm({ ...tripForm, driver_name: e.target.value })} required /></div>
+                        <div className="form-group">
+                            <label className="label">Driver</label>
+                            <select className="select" value={tripForm.driver} onChange={e => setTripForm({ ...tripForm, driver: e.target.value })} required>
+                                <option value="">Select Driver...</option>
+                                {drivers.map(d => (
+                                    <option key={d.id} value={d.id}>{d.staff_name} ({d.staff_employee_id})</option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <SearchableSelect label="Route" options={routeOptions} value={String(tripForm.route)} onChange={(val) => setTripForm({ ...tripForm, route: val.toString() })} required />
