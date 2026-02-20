@@ -873,7 +873,7 @@ const Academics = () => {
                         </>
                     )}
                     {isReadOnly && (
-                        <Button variant="success" size="sm" className="flex-1 sm:flex-none" onClick={() => { setIsAttendanceModalOpen(true); setActiveDropdown(false); }} icon={<CheckCircle2 size={14} />}>
+                        <Button variant="primary" size="sm" className="flex-1 sm:flex-none" onClick={() => { setIsAttendanceModalOpen(true); setActiveDropdown(false); }} icon={<CheckCircle2 size={14} />}>
                             Log Attendance
                         </Button>
                     )}
