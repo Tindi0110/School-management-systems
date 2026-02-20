@@ -57,6 +57,17 @@ class StudentResultViewSet(viewsets.ModelViewSet):
     queryset = StudentResult.objects.select_related('student', 'exam', 'subject').all()
     serializer_class = StudentResultSerializer
     permission_classes = [permissions.IsAuthenticated, IsClassTeacherForSubject]
+
+    def get_permissions(self):
+        """
+        Bypass the strict class-teacher check for admin/bulk actions.
+        These actions require only authentication:
+        - list, create, sync_grades, bulk operations
+        Object-level teacher check only applies on update/destroy.
+        """
+        if self.action in ['list', 'create', 'sync_grades']:
+            return [permissions.IsAuthenticated()]
+        return super().get_permissions()
     
     def get_queryset(self):
         queryset = StudentResult.objects.all()

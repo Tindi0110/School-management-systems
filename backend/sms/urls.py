@@ -5,7 +5,6 @@ from rest_framework.routers import DefaultRouter
 from accounts.views import RegisterView, CustomAuthToken
 from .views import (
     health_check, UserViewSet, StaffViewSet, 
-    ClassViewSet, SubjectViewSet, ExamViewSet, StudentResultViewSet,
     dashboard_stats
 )
 from finance.views import (
@@ -16,7 +15,8 @@ from academics.views import (
     AcademicYearViewSet, TermViewSet, SubjectGroupViewSet,
     GradeSystemViewSet, GradeBoundaryViewSet, AttendanceViewSet,
     LearningResourceViewSet, SyllabusCoverageViewSet,
-    ClassSubjectViewSet, StudentSubjectViewSet
+    ClassSubjectViewSet, StudentSubjectViewSet,
+    ClassViewSet, SubjectViewSet, ExamViewSet, StudentResultViewSet
 )
 from timetable.views import TimetableSlotViewSet
 from students.views import (

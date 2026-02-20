@@ -73,24 +73,24 @@ const StudentResultRow = React.memo(({ student, sClass, subjects, studentScores,
                 const grade = isNaN(scoreVal) ? '' : calculateGrade(scoreVal, gradeSystems, examGradeSystemId);
                 const hasSavedResult = !!entry.id;
                 return (
-                    <td key={sub.id} className="p-0 relative border-r group">
-                        <div className="flex flex-col items-center">
+                    <td key={sub.id} className="p-0 relative border-r group min-w-[110px]">
+                        <div className="flex flex-col items-center min-h-[65px] justify-center">
                             {/* Score input */}
                             <input
                                 type="number"
                                 min="0"
                                 max="100"
                                 step="0.5"
-                                className={`w-full text-center text-sm font-black bg-transparent border-none outline-none px-2 pt-2 pb-0 m-0 appearance-none
+                                className={`w-full text-center text-lg font-black bg-transparent border-none outline-none px-4 py-3 m-0
                                     ${hasSavedResult ? 'text-blue-700' : 'text-slate-700'}
-                                    focus:bg-blue-50 focus:ring-1 focus:ring-blue-300 transition-colors`}
+                                    focus:bg-blue-50 focus:ring-2 focus:ring-blue-400 transition-all rounded-md`}
                                 value={entry.score}
                                 placeholder="—"
                                 onChange={(e) => onScoreChange(student.id, sub.id, e.target.value)}
                                 title={`${sub.name}: ${entry.score || 'not entered'}`}
                             />
                             {/* Grade badge */}
-                            <span className={`text-[9px] font-black pb-1 ${grade === 'A' || grade === 'A-' ? 'text-green-600' :
+                            <span className={`text-[10px] font-black pb-1.5 ${grade === 'A' || grade === 'A-' ? 'text-green-600' :
                                 grade === 'E' || grade === 'D-' ? 'text-red-600' :
                                     grade ? 'text-slate-500' : 'text-slate-300'
                                 }`}>{grade || '•'}</span>
@@ -205,6 +205,7 @@ const Academics = () => {
     const [selectedClass, setSelectedClass] = useState<any>(null);
     const [viewClassStudents, setViewClassStudents] = useState<any[]>([]);
     const [selectedExam, setSelectedExam] = useState<any>(null);
+    const [editingExamId, setEditingExamId] = useState<number | null>(null);
     const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; type: string | null; id: number | null }>({ isOpen: false, type: null, id: null });
 
     // Additional Modals
@@ -620,12 +621,27 @@ const Academics = () => {
         finally { setIsSubmitting(false); }
     };
 
+    const openCreateExam = () => {
+        const defaultSystem = gradeSystems.find(s => s.is_default);
+        setExamForm({
+            name: '',
+            exam_type: 'END_TERM',
+            term: terms.find(t => t.is_active)?.id?.toString() || '',
+            grade_system: defaultSystem ? defaultSystem.id.toString() : '',
+            weighting: 100,
+            date_started: new Date().toISOString().split('T')[0],
+            is_active: true
+        });
+        setEditingExamId(null);
+        setIsExamModalOpen(true);
+    };
+
     const openEditExam = (e: any) => {
         setExamForm({
             name: e.name,
             exam_type: e.exam_type,
-            term: e.term,
-            grade_system: e.grade_system || '',
+            term: e.term?.toString() || e.term_id?.toString() || '',
+            grade_system: e.grade_system?.toString() || '',
             weighting: e.weighting,
             date_started: e.date_started,
             is_active: e.is_active
@@ -1313,7 +1329,7 @@ const Academics = () => {
                             ))}
                             {/* Schedule Exam card */}
                             {!isReadOnly && (
-                                <div className="card border-dashed flex flex-col items-center justify-center p-8 cursor-pointer hover:border-warning group" onClick={() => setIsExamModalOpen(true)}>
+                                <div className="card border-dashed flex flex-col items-center justify-center p-8 cursor-pointer hover:border-warning group" onClick={openCreateExam}>
                                     <Calendar size={28} className="text-secondary group-hover:text-warning transition-all mb-2" />
                                     <span className="text-xs font-black uppercase text-secondary">Schedule Exam</span>
                                 </div>
