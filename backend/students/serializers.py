@@ -52,14 +52,18 @@ class ActivityRecordSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class StudentSerializer(serializers.ModelSerializer):
+    class_name = serializers.CharField(source='current_class.name', read_only=True, default=None)
+    class_stream = serializers.CharField(source='current_class.stream', read_only=True, default=None)
+    # MethodFields only for fields requiring logic (not mere dot traversal)
+    hostel_name = serializers.SerializerMethodField()
+    room_number = serializers.SerializerMethodField()
+
     # Nested Data for SIS Profile
     parents_detail = ParentSerializer(source='parents', many=True, read_only=True)
     admission_details = StudentAdmissionSerializer(read_only=True)
     health_record = HealthRecordSerializer(read_only=True)
 
     # Calculated Fields — read from queryset annotations when available
-    class_name = serializers.SerializerMethodField()
-    class_stream = serializers.SerializerMethodField()
     attendance_percentage = serializers.SerializerMethodField()
     average_grade = serializers.SerializerMethodField()
     fee_balance = serializers.SerializerMethodField()
@@ -74,12 +78,6 @@ class StudentSerializer(serializers.ModelSerializer):
     guardian_email = serializers.EmailField(write_only=True, required=False, allow_blank=True)
     guardian_relation = serializers.CharField(write_only=True, required=False, default='GUARDIAN')
     guardian_address = serializers.CharField(write_only=True, required=False, allow_blank=True)
-
-    def get_class_name(self, obj):
-        return obj.current_class.name if obj.current_class else "Unassigned"
-
-    def get_class_stream(self, obj):
-        return obj.current_class.stream if obj.current_class else "N/A"
 
     def get_hostel_name(self, obj):
         try:

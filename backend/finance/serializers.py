@@ -42,8 +42,8 @@ class InvoiceSerializer(serializers.ModelSerializer):
     student_name = serializers.CharField(source='student.full_name', read_only=True)
     academic_year_name = serializers.CharField(source='academic_year.name', read_only=True)
     admission_number = serializers.CharField(source='student.admission_number', read_only=True)
-    class_name = serializers.SerializerMethodField()
-    stream_name = serializers.SerializerMethodField()
+    class_name = serializers.CharField(source='student.current_class.name', read_only=True, default=None)
+    stream_name = serializers.CharField(source='student.current_class.stream', read_only=True, default=None)
     items = InvoiceItemSerializer(many=True, read_only=True)
     payments = PaymentSerializer(many=True, read_only=True)
     adjustments = AdjustmentSerializer(many=True, read_only=True)
@@ -52,12 +52,6 @@ class InvoiceSerializer(serializers.ModelSerializer):
         model = Invoice
         fields = '__all__'
         read_only_fields = ['total_amount', 'paid_amount', 'balance', 'status', 'items', 'is_finalized', 'adjustments']
-
-    def get_class_name(self, obj):
-        return obj.student.current_class.name if obj.student.current_class else "Unassigned"
-
-    def get_stream_name(self, obj):
-        return obj.student.current_class.stream if obj.student.current_class else "N/A"
 
 class ExpenseSerializer(serializers.ModelSerializer):
     approved_by_name = serializers.SerializerMethodField()
