@@ -882,13 +882,13 @@ const Academics = () => {
 
             {/* Navigation Tabs */}
             <div className="card mb-6 no-print p-1 bg-secondary-light">
-                <div className="flex overflow-x-auto gap-xs scrollbar-hide">
+                <div className="flex flex-wrap gap-2 md:gap-xs scrollbar-hide p-1">
                     {(['SUMMARY', 'CLASSES', 'CURRICULUM', 'ALLOCATION', 'EXAMS', 'ATTENDANCE', 'RESOURCES', 'GRADING'] as const)
                         .filter(tab => !isReadOnly || ['SUMMARY', 'CURRICULUM', 'EXAMS', 'ATTENDANCE'].includes(tab))
                         .map(tab => (
                             <button
                                 key={tab}
-                                className={`px-5 py-2 rounded-md text-[11px] font-black transition-all whitespace-nowrap ${activeTab === tab ? 'bg-primary text-white shadow-md' : 'text-secondary hover:bg-white'}`}
+                                className={`px-4 py-2 rounded-md text-[10px] md:text-[11px] font-black transition-all whitespace-nowrap shadow-sm ${activeTab === tab ? 'bg-primary text-white shadow-md' : 'bg-white text-secondary hover:bg-gray-50'}`}
                                 onClick={() => setActiveTab(tab)}
                             >
                                 {tab}

@@ -163,7 +163,7 @@ const DashboardLayout = () => {
       <style>{`
         .dashboard-layout {
           display: flex;
-          height: 100vh;
+          height: 100dvh;
           background: #f4f6f9;
           position: relative;
         }
@@ -182,6 +182,7 @@ const DashboardLayout = () => {
           align-items: center;
           box-shadow: 0 2px 4px rgba(0,0,0,0.05);
           height: 64px;
+          min-height: 64px;
           width: 100%;
           position: sticky;
           top: 0;
@@ -189,7 +190,7 @@ const DashboardLayout = () => {
         }
         .sidebar-wrapper {
           width: 260px;
-          height: 100vh;
+          height: 100dvh;
           background: #1e3c72;
           transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
           z-index: 100; /* Ensure it's above everything */
@@ -293,9 +294,8 @@ const DashboardLayout = () => {
           flex: 1;
           padding: 1.5rem;
           overflow-y: auto;
-          overflow-x: hidden;
+          overflow-x: auto;
           width: 100%;
-          max-width: 100vw;
           -webkit-overflow-scrolling: touch;
         }
       `}</style>

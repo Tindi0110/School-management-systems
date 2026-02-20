@@ -434,10 +434,10 @@ const StudentProfile = () => {
                     </div>
                 </div>
 
-                <div className="flex border-top bg-secondary-light/30 px-4 overflow-x-auto scrollbar-hide no-print">
+                <div className="flex flex-wrap border-top bg-secondary-light/30 px-4 py-1 no-print">
                     {tabs.map(tab => (
                         <button key={tab.id}
-                            className={`flex items-center gap-2 px-6 py-4 text-xs font-black uppercase tracking-widest transition-all border-bottom-2 ${activeTab === tab.id ? 'border-primary text-primary' : 'border-transparent text-secondary hover:text-primary'}`}
+                            className={`flex items-center gap-2 px-6 py-4 text-[10px] md:text-xs font-black uppercase tracking-widest transition-all border-bottom-2 whitespace-nowrap ${activeTab === tab.id ? 'border-primary text-primary' : 'border-transparent text-secondary hover:text-primary'}`}
                             onClick={() => setActiveTab(tab.id)}
                         >
                             {tab.icon} {tab.label}
