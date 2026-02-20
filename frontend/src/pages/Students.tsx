@@ -312,7 +312,7 @@ const Students = () => {
 
             {/* Dashboard Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-md mb-8 no-print">
-                <StatCard title="Active Enrollment" value={students.filter(s => s.status === 'ACTIVE').length.toString()} icon={<UserCheck size={18} />} gradient="var(--primary)" />
+                <StatCard title="Active Enrollment" value={students.filter(s => s.status === 'ACTIVE').length.toString()} icon={<UserCheck size={18} />} gradient="linear-gradient(135deg, #0ba360, #3cba92)" />
                 <StatCard title="Boarders" value={students.filter(s => s.category === 'BOARDING').length.toString()} icon={<MapPin size={18} />} gradient="var(--info)" />
                 <StatCard title="Day Scholars" value={students.filter(s => s.category === 'DAY').length.toString()} icon={<UserIcon size={18} />} gradient="var(--secondary)" />
                 <StatCard title="Total Capacity" value={`${classes.length > 0 ? Math.round((students.filter(s => s.status === 'ACTIVE').length / classes.reduce((sum, c) => sum + (c.capacity || 40), 0)) * 100) : 0}%`} icon={<TrendingUp size={18} />} gradient="var(--success)" />
