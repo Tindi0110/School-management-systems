@@ -85,20 +85,22 @@ const StudentResultRow = React.memo(({ student, sClass, subjects, studentScores,
                 const grade = isNaN(scoreVal) ? '' : calculateGrade(scoreVal, gradeSystems, examGradeSystemId);
                 const hasSavedResult = !!entry.id;
                 return (
-                    <td key={sub.id} className="p-0 relative border-r group min-w-[110px]">
-                        <div className="flex flex-col items-center min-h-[65px] justify-center">
-                            {/* Score input */}
+                    <td key={sub.id} className="p-0 relative border-r group min-w-[120px]">
+                        <div className="flex flex-col items-center min-h-[85px] justify-center">
                             <input
-                                type="number"
-                                min="0"
-                                max="100"
-                                step="0.5"
-                                className={`w-full text-center text-lg font-black bg-transparent border-none outline-none px-4 py-3 m-0
+                                type="text"
+                                inputMode="decimal"
+                                className={`w-full text-center text-xl font-black bg-transparent border-none outline-none px-6 py-4 m-0
                                     ${hasSavedResult ? 'text-blue-700' : 'text-slate-700'}
-                                    focus:bg-blue-50 focus:ring-2 focus:ring-blue-400 transition-all rounded-md`}
+                                    focus:bg-blue-50 focus:ring-2 focus:ring-blue-400 transition-all rounded-lg`}
                                 value={entry.score}
                                 placeholder="—"
-                                onChange={(e) => onScoreChange(student.id, sub.id, e.target.value)}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    if (val === '' || /^\d*\.?\d*$/.test(val)) {
+                                        onScoreChange(student.id, sub.id, val);
+                                    }
+                                }}
                                 title={`${sub.name}: ${entry.score || 'not entered'}`}
                             />
                             {/* Grade badge */}
@@ -1421,9 +1423,9 @@ const Academics = () => {
                                                     <span className={`badge badge-sm ${['A', 'A-'].includes(res.grade) ? 'badge-success' : ['D', 'E'].includes(res.grade) ? 'badge-error' : 'badge-ghost'}`}>{res.grade}</span>
                                                 </td>
                                                 <td className="text-right">
-                                                    <div className="flex justify-end gap-1">
-                                                        <Button variant="ghost" size="sm" className="text-primary p-1" onClick={async () => {
-                                                            const newScore = window.prompt(`Enter new score for ${res.student_name}:`, res.score);
+                                                    <div className="flex justify-end gap-2">
+                                                        <Button variant="outline" size="xs" className="text-primary font-black border-primary px-2" onClick={async () => {
+                                                            const newScore = window.prompt(`Update score for ${res.student_name}:`, res.score);
                                                             if (newScore !== null && !isNaN(parseFloat(newScore))) {
                                                                 try {
                                                                     const scoreVal = parseFloat(newScore);
@@ -1440,8 +1442,8 @@ const Academics = () => {
                                                                     openViewResults(selectedExam); // Refresh rankings
                                                                 } catch (err: any) { toastError(err.message || 'Update failed'); }
                                                             }
-                                                        }} icon={<Edit size={14} />} />
-                                                        <Button variant="ghost" size="sm" className="text-error p-1" onClick={async () => {
+                                                        }} icon={<Edit size={10} />}>EDIT</Button>
+                                                        <Button variant="outline" size="xs" className="text-error font-black border-error px-2" onClick={async () => {
                                                             if (await confirm(`Delete result for ${res.student_name}?`, { type: 'danger' })) {
                                                                 try {
                                                                     await academicsAPI.results.delete(res.id);
@@ -1449,7 +1451,7 @@ const Academics = () => {
                                                                     openViewResults(selectedExam); // Refresh rankings
                                                                 } catch (err: any) { toastError(err.message || 'Delete failed'); }
                                                             }
-                                                        }} icon={<Trash2 size={14} />} />
+                                                        }} icon={<Trash2 size={10} />}>DELETE</Button>
                                                     </div>
                                                 </td>
                                             </tr>
