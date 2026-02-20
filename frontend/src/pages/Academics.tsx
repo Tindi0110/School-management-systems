@@ -14,6 +14,18 @@ import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 import Button from '../components/common/Button';
 
+// CSS to hide number input spinners
+const hideSpinnersStyle = `
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type=number] {
+    -moz-appearance: textfield;
+  }
+`;
+
 const calculateGrade = (score: number, gradeSystems: any[], specificSystemId?: number | string | null) => {
     if (!score && score !== 0) return '-';
 
@@ -116,6 +128,14 @@ const StudentResultRow = React.memo(({ student, sClass, subjects, studentScores,
 });
 
 const Academics = () => {
+    // Add the style to document
+    useEffect(() => {
+        const style = document.createElement('style');
+        style.innerHTML = hideSpinnersStyle;
+        document.head.appendChild(style);
+        return () => { document.head.removeChild(style); };
+    }, []);
+
     const [activeTab, setActiveTab] = useState<'SUMMARY' | 'CLASSES' | 'CURRICULUM' | 'EXAMS' | 'GRADING' | 'ATTENDANCE' | 'RESOURCES' | 'ALLOCATION'>('SUMMARY');
     const [loading, setLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -1388,6 +1408,7 @@ const Academics = () => {
                                             <th>Admission</th>
                                             <th className="text-right">Score</th>
                                             <th className="text-center">Grade</th>
+                                            <th className="text-right">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -1397,7 +1418,41 @@ const Academics = () => {
                                                 <td>{res.student_name}</td>
                                                 <td className="font-mono text-[10px]">{res.admission_number}</td>
                                                 <td className="text-right font-black">{res.score}%</td>
-                                                <td className="text-center"><span className={`badge badge-sm ${['A', 'A-'].includes(res.grade) ? 'badge-success' : ['D', 'E'].includes(res.grade) ? 'badge-error' : 'badge-ghost'}`}>{res.grade}</span></td>
+                                                <td className="text-center">
+                                                    <span className={`badge badge-sm ${['A', 'A-'].includes(res.grade) ? 'badge-success' : ['D', 'E'].includes(res.grade) ? 'badge-error' : 'badge-ghost'}`}>{res.grade}</span>
+                                                </td>
+                                                <td className="text-right">
+                                                    <div className="flex justify-end gap-1">
+                                                        <Button variant="ghost" size="sm" className="text-primary p-1" onClick={async () => {
+                                                            const newScore = window.prompt(`Enter new score for ${res.student_name}:`, res.score);
+                                                            if (newScore !== null && !isNaN(parseFloat(newScore))) {
+                                                                try {
+                                                                    const scoreVal = parseFloat(newScore);
+                                                                    const payload = {
+                                                                        student: res.student,
+                                                                        exam: res.exam,
+                                                                        subject: res.subject,
+                                                                        score: scoreVal,
+                                                                        grade: calculateGrade(scoreVal, gradeSystems, selectedExam.grade_system),
+                                                                        recorded_by: user?.id || 1
+                                                                    };
+                                                                    await academicsAPI.results.update(res.id, payload);
+                                                                    success('Score updated');
+                                                                    openViewResults(selectedExam); // Refresh rankings
+                                                                } catch (err: any) { toastError(err.message || 'Update failed'); }
+                                                            }
+                                                        }} icon={<Edit size={14} />} />
+                                                        <Button variant="ghost" size="sm" className="text-error p-1" onClick={async () => {
+                                                            if (await confirm(`Delete result for ${res.student_name}?`, { type: 'danger' })) {
+                                                                try {
+                                                                    await academicsAPI.results.delete(res.id);
+                                                                    success('Result deleted');
+                                                                    openViewResults(selectedExam); // Refresh rankings
+                                                                } catch (err: any) { toastError(err.message || 'Delete failed'); }
+                                                            }
+                                                        }} icon={<Trash2 size={14} />} />
+                                                    </div>
+                                                </td>
                                             </tr>
                                         ))}
                                     </tbody>
