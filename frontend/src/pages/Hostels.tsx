@@ -651,12 +651,14 @@ const Hostels = () => {
                                         <option value="asset_type">Sort by Type</option>
                                         <option value="condition">Sort by Condition</option>
                                     </select>
-                                    <button
-                                        className="btn btn-xs btn-ghost"
-                                        onClick={() => setAssetSort({ ...assetSort, direction: assetSort.direction === 'asc' ? 'desc' : 'asc' })}
+                                    <select
+                                        className="select select-sm bg-white min-w-[160px]"
+                                        value={assetSort.direction}
+                                        onChange={(e) => setAssetSort({ ...assetSort, direction: e.target.value as 'asc' | 'desc' })}
                                     >
-                                        {assetSort.direction === 'asc' ? '↑' : '↓'}
-                                    </button>
+                                        <option value="desc">Descending (High to Low)</option>
+                                        <option value="asc">Ascending (Low to High)</option>
+                                    </select>
                                 </div>
                             </div>
                             <div className="flex gap-2">
@@ -704,11 +706,16 @@ const Hostels = () => {
                             <h3>Hostel Attendance</h3>
 
                             <div className="flex gap-2 items-center">
-                                <span className="text-xs text-secondary font-bold">Sort By:</span>
-                                <div className="join mr-4">
-                                    <button className={`join-item btn btn-xs ${attendanceSort === 'DATE' ? 'btn-active' : ''}`} onClick={() => setAttendanceSort('DATE')}>Date</button>
-                                    <button className={`join-item btn btn-xs ${attendanceSort === 'HOSTEL' ? 'btn-active' : ''}`} onClick={() => setAttendanceSort('HOSTEL')}>Hostel</button>
-                                    <button className={`join-item btn btn-xs ${attendanceSort === 'SESSION' ? 'btn-active' : ''}`} onClick={() => setAttendanceSort('SESSION')}>Session</button>
+                                <div className="flex gap-2">
+                                    <select
+                                        className="select select-sm bg-white min-w-[140px]"
+                                        value={attendanceSort}
+                                        onChange={(e) => setAttendanceSort(e.target.value as any)}
+                                    >
+                                        <option value="DATE">Sort by Date</option>
+                                        <option value="HOSTEL">Sort by Hostel</option>
+                                        <option value="SESSION">Sort by Session</option>
+                                    </select>
                                 </div>
 
                                 <button className="btn btn-outline btn-sm" onClick={() => exportToCSV(attendance.map(a => ({

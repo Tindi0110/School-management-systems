@@ -117,7 +117,7 @@ const Parents = () => {
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border overflow-x-auto w-full">
-                <table className="table w-full">
+                <table className="table w-full min-w-[1000px]">
                     <thead>
                         <tr className="bg-secondary-light text-left">
                             <th className="p-4 text-xs font-black uppercase text-secondary tracking-wider">Guardian Identity</th>

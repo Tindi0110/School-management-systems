@@ -485,8 +485,8 @@ const Finance = () => {
                                 </div>
                             </div>
 
-                            <div className="overflow-x-auto">
-                                <table className="table w-full">
+                            <div className="overflow-x-auto w-full">
+                                <table className="table w-full min-w-[800px]">
                                     <thead>
                                         <tr>
                                             <th>Reference</th>
@@ -528,8 +528,8 @@ const Finance = () => {
                                 <h3 className="text-lg font-bold">Payment Transactions</h3>
                                 {!isReadOnly && <Button variant="primary" size="sm" onClick={() => setShowPaymentModal(true)} icon={<Plus size={16} />}>Receive Payment</Button>}
                             </div>
-                            <div className="overflow-x-auto">
-                                <table className="table w-full">
+                            <div className="overflow-x-auto w-full">
+                                <table className="table w-full min-w-[800px]">
                                     <thead>
                                         <tr>
                                             <th>Date</th>
@@ -567,8 +567,8 @@ const Finance = () => {
                                     </Button>
                                 )}
                             </div>
-                            <div className="overflow-x-auto">
-                                <table className="table w-full">
+                            <div className="overflow-x-auto w-full">
+                                <table className="table w-full min-w-[800px]">
                                     <thead>
                                         <tr>
                                             <th>Date</th>
@@ -604,8 +604,8 @@ const Finance = () => {
                                     </Button>
                                 )}
                             </div>
-                            <div className="overflow-x-auto">
-                                <table className="table w-full">
+                            <div className="overflow-x-auto w-full">
+                                <table className="table w-full min-w-[700px]">
                                     <thead>
                                         <tr>
                                             <th>Description</th>
