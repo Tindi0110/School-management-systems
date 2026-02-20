@@ -283,28 +283,29 @@ const Students = () => {
 
     return (
         <div className="fade-in">
-            <div className="flex justify-between items-center mb-8 no-print">
-                <div>
-                    <h1>Institutional Registry</h1>
-                    <p className="text-secondary font-bold uppercase text-xs tracking-widest">SIS Management | Enrollment: {students.length}</p>
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8 no-print">
+                <div className="w-full lg:w-auto">
+                    <h1 className="text-3xl font-black tracking-tight">Institutional Registry</h1>
+                    <p className="text-secondary font-bold uppercase text-[10px] tracking-widest opacity-70">SIS Management | Enrollment: {students.length}</p>
                 </div>
-                <div className="flex gap-md">
-                    <Button variant="outline" onClick={() => exportToCSV(students, 'student_registry')} icon={<Download size={16} />}>
-                        Export CSV
+                <div className="flex flex-wrap gap-2 w-full lg:w-auto justify-start lg:justify-end">
+                    <Button variant="outline" className="flex-1 sm:flex-none" onClick={() => exportToCSV(students, 'student_registry')} icon={<Download size={16} />}>
+                        Export
                     </Button>
                     <Button
                         variant="outline"
+                        className="flex-1 sm:flex-none"
                         onClick={() => {
                             document.title = "Student_Registry_Report";
                             window.print();
                         }}
                         icon={<Printer size={16} />}
                     >
-                        PDF Registry
+                        Report
                     </Button>
                     {(user?.role === 'ADMIN' || user?.role === 'REGISTRAR') && (
-                        <Button onClick={() => openModal()} icon={<Plus size={16} />}>
-                            NEW ADMISSION
+                        <Button className="flex-1 sm:flex-none" onClick={() => openModal()} icon={<Plus size={16} />}>
+                            Admission
                         </Button>
                     )}
                 </div>

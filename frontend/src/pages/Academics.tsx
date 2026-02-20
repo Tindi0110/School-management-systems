@@ -836,40 +836,46 @@ const Academics = () => {
 
     return (
         <div className="fade-in">
-            <div className="flex justify-between items-center mb-6 no-print">
-                <div>
-                    <h1>Academics Module</h1>
-                    <p className="text-secondary">Institutional management for {activeYear} | {activeTerm}</p>
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8 no-print">
+                <div className="w-full lg:w-auto">
+                    <h1 className="text-3xl font-black tracking-tight">Academics Module</h1>
+                    <p className="text-secondary text-sm font-bold uppercase text-[10px] tracking-widest opacity-70">Institutional Management | {activeYear} • {activeTerm}</p>
                 </div>
-                <div className="flex gap-md no-print" style={{ position: 'relative', zIndex: 60 }}>
+                <div className="flex flex-wrap gap-2 w-full lg:w-auto justify-start lg:justify-end no-print" style={{ zIndex: 60 }}>
                     {!isReadOnly && (
                         <>
-                            <button className="btn btn-sm btn-outline" onClick={() => setIsReportModalOpen(true)} title="Generate Reports"><FileText size={14} /> Reports</button>
-                            <div className="relative">
-                                <button className="btn btn-sm btn-primary" onClick={() => setActiveDropdown(!activeDropdown)}><Plus size={14} /> New Record</button>
+                            <Button variant="outline" size="sm" className="flex-1 sm:flex-none" onClick={() => setIsReportModalOpen(true)} icon={<FileText size={14} />}>
+                                Reports
+                            </Button>
+                            <div className="relative flex-1 sm:flex-none">
+                                <Button variant="primary" size="sm" className="w-full" onClick={() => setActiveDropdown(!activeDropdown)} icon={<Plus size={14} />}>
+                                    New Record
+                                </Button>
                                 {activeDropdown && (
-                                    <div className="absolute right-0 mt-2 w-48 bg-white shadow-xl rounded-lg border z-50 overflow-hidden">
-                                        <button className="w-full text-left p-2.5 hover:bg-secondary-light text-[11px] font-black flex gap-2" onClick={() => { setIsClassModalOpen(true); setActiveDropdown(false); }}>
-                                            <School size={14} className="text-primary" /> Create Class
-                                        </button>
-                                        <button className="w-full text-left p-2.5 hover:bg-secondary-light text-[11px] font-black flex gap-2" onClick={() => { setIsSubjectModalOpen(true); setActiveDropdown(false); }}>
-                                            <Book size={14} className="text-info" /> Add Subject
-                                        </button>
-                                        <button className="w-full text-left p-2.5 hover:bg-secondary-light text-[11px] font-black flex gap-2 border-top" onClick={() => { setIsAttendanceModalOpen(true); setActiveDropdown(false); }}>
-                                            <CheckCircle2 size={14} className="text-success" /> Attendance Register
-                                        </button>
-                                        <button className="w-full text-left p-2.5 hover:bg-secondary-light text-[11px] font-black flex gap-2" onClick={() => { setIsExamModalOpen(true); setActiveDropdown(false); }}>
-                                            <ClipboardCheck size={14} className="text-warning" /> Schedule Exam
-                                        </button>
+                                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl border border-gray-100 z-[70] p-2 animate-in fade-in slide-in-from-top-2">
+                                        <div className="grid grid-cols-1 gap-1">
+                                            <button className="flex items-center gap-3 w-full px-4 py-3 text-left text-xs font-black uppercase hover:bg-primary-light hover:text-white rounded-lg transition-all" onClick={() => { setIsClassModalOpen(true); setActiveDropdown(false); }}>
+                                                <School size={16} /> New Class Unit
+                                            </button>
+                                            <button className="flex items-center gap-3 w-full px-4 py-3 text-left text-xs font-black uppercase hover:bg-primary-light hover:text-white rounded-lg transition-all" onClick={() => { setIsSubjectModalOpen(true); setActiveDropdown(false); }}>
+                                                <Book size={16} /> New Subject
+                                            </button>
+                                            <button className="flex items-center gap-3 w-full px-4 py-3 text-left text-xs font-black uppercase hover:bg-primary-light hover:text-white rounded-lg transition-all border-t border-gray-50" onClick={() => { setIsAttendanceModalOpen(true); setActiveDropdown(false); }}>
+                                                <CheckCircle2 size={16} className="text-success" /> Attendance
+                                            </button>
+                                            <button className="flex items-center gap-3 w-full px-4 py-3 text-left text-xs font-black uppercase hover:bg-primary-light hover:text-white rounded-lg transition-all" onClick={() => { setIsExamModalOpen(true); setActiveDropdown(false); }}>
+                                                <ClipboardCheck size={16} className="text-warning" /> Schedule Exam
+                                            </button>
+                                        </div>
                                     </div>
                                 )}
                             </div>
                         </>
                     )}
                     {isReadOnly && (
-                        <button className="btn btn-sm btn-success text-white" onClick={() => { setIsAttendanceModalOpen(true); setActiveDropdown(false); }}>
-                            <CheckCircle2 size={14} /> Log Attendance
-                        </button>
+                        <Button variant="success" size="sm" className="flex-1 sm:flex-none" onClick={() => { setIsAttendanceModalOpen(true); setActiveDropdown(false); }} icon={<CheckCircle2 size={14} />}>
+                            Log Attendance
+                        </Button>
                     )}
                 </div>
             </div>

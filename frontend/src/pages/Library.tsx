@@ -365,16 +365,16 @@ const Library = () => {
     return (
         <div className="fade-in">
             {/* Header */}
-            <div className="flex justify-between items-end mb-6">
-                <div>
-                    <h1>Institutional Library</h1>
-                    <p className="text-secondary text-sm">Resource archiving, circulation, and digital tracking</p>
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8">
+                <div className="w-full lg:w-auto">
+                    <h1 className="text-3xl font-black tracking-tight">Institutional Library</h1>
+                    <p className="text-secondary text-sm font-medium">Resource archiving, circulation, and digital tracking</p>
                 </div>
-                <div className="flex gap-md no-print">
-                    <Button variant="outline" onClick={() => exportToCSV(books, 'Library_Catalog')} icon={<Download size={18} />}>Export CSV</Button>
-                    <Button variant="outline" onClick={() => window.print()} icon={<Printer size={18} />}>Catalog Report</Button>
+                <div className="flex flex-wrap gap-2 w-full lg:w-auto justify-start lg:justify-end no-print">
+                    <Button variant="outline" className="flex-1 sm:flex-none" onClick={() => exportToCSV(books, 'Library_Catalog')} icon={<Download size={18} />}>Export</Button>
+                    <Button variant="outline" className="flex-1 sm:flex-none" onClick={() => window.print()} icon={<Printer size={18} />}>Reports</Button>
                     {!isReadOnly && (
-                        <Button variant="primary" onClick={() => setIsLendModalOpen(true)} icon={<BookOpen size={18} />}>Process Lending</Button>
+                        <Button variant="primary" className="flex-1 sm:flex-none" onClick={() => setIsLendModalOpen(true)} icon={<BookOpen size={18} />}>Lend Book</Button>
                     )}
                 </div>
             </div>

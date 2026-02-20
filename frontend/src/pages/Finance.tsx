@@ -44,7 +44,7 @@ const Finance = () => {
     const [showMpesaModal, setShowMpesaModal] = useState(false);
 
     // Invoice Generation Form
-    const [genForm, setGenForm] = useState({ class_id: '', term: '1', year_id: '' });
+    const [genForm, setGenForm] = useState({ class_id: '', level: '', term: '1', year_id: '' });
 
     // Payment Form
     const [payForm, setPayForm] = useState({ student_id: '', invoice_id: '', amount: '', method: 'CASH', reference: '' });
@@ -91,6 +91,7 @@ const Finance = () => {
 
     // Options
     const [classes, setClasses] = useState([]);
+    const uniqueClassNames = Array.from(new Set(classes.map((c: any) => c.name))).sort();
     const [loading, setLoading] = useState(true);
     const [students, setStudents] = useState([]);
     const [years, setYears] = useState([]);
@@ -119,8 +120,6 @@ const Finance = () => {
 
                 // Construct clean params
                 const params: any = {};
-                if (invFilters.class_id) params.student__current_class = invFilters.class_id;
-                if (invFilters.stream) params.student__current_class__stream = invFilters.stream;
                 if (invFilters.year_id) params.academic_year = invFilters.year_id;
                 if (invFilters.term) params.term = invFilters.term;
                 if (invFilters.status) params.status = invFilters.status;
@@ -323,24 +322,24 @@ const Finance = () => {
 
     return (
         <div className="fade-in px-4">
-            <div className="flex justify-between items-center mb-8">
-                <div>
-                    <h1 className="text-3xl font-black">Finance Center</h1>
-                    <p className="text-secondary text-sm">Financial operations and audit center</p>
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8">
+                <div className="w-full lg:w-auto">
+                    <h1 className="text-3xl font-black tracking-tight">Finance Center</h1>
+                    <p className="text-secondary text-sm font-medium">Financial operations and audit center</p>
                 </div>
                 {!isReadOnly && (
-                    <div className="flex gap-2">
-                        <Button variant="ghost" icon={<TrendingUp size={18} />} className="no-print" onClick={handleSyncAll} loading={isSubmitting}>
-                            Sync Financials
+                    <div className="flex flex-wrap gap-2 w-full lg:w-auto justify-start lg:justify-end">
+                        <Button variant="ghost" icon={<TrendingUp size={18} />} className="no-print flex-1 sm:flex-none" onClick={handleSyncAll} loading={isSubmitting}>
+                            Sync
                         </Button>
-                        <Button variant="outline" className="no-print text-green-600 border-green-200 hover:bg-green-50" onClick={() => setShowMpesaModal(true)}>
-                            Push M-Pesa Pay
+                        <Button variant="outline" className="no-print text-green-600 border-green-200 hover:bg-green-50 flex-1 sm:flex-none" onClick={() => setShowMpesaModal(true)}>
+                            M-Pesa
                         </Button>
-                        <Button variant="outline" icon={<CreditCard size={18} />} className="no-print" onClick={() => setShowPaymentModal(true)}>
-                            Receive Payment
+                        <Button variant="outline" icon={<CreditCard size={18} />} className="no-print flex-1 sm:flex-none" onClick={() => setShowPaymentModal(true)}>
+                            Payment
                         </Button>
-                        <Button variant="primary" icon={<FileText size={18} />} className="no-print" onClick={() => setShowInvoiceModal(true)}>
-                            Generate Invoices
+                        <Button variant="primary" icon={<FileText size={18} />} className="no-print flex-1 sm:flex-none" onClick={() => setShowInvoiceModal(true)}>
+                            Invoices
                         </Button>
                     </div>
                 )}
@@ -654,19 +653,28 @@ const Finance = () => {
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-control">
                             <label className="label">Class Level</label>
-                            <select className="select select-bordered" value={genForm.class_id} onChange={e => setGenForm({ ...genForm, class_id: e.target.value })} required>
-                                <option value="">-- All Levels --</option>
-                                {classes.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                            <select className="select select-bordered" value={genForm.level} onChange={e => setGenForm({ ...genForm, level: e.target.value, class_id: '' })} required>
+                                <option value="">-- Select Level --</option>
+                                {uniqueClassNames.map(name => <option key={name} value={name}>{name}</option>)}
                             </select>
                         </div>
                         <div className="form-control">
-                            <label className="label">Term</label>
-                            <select className="select select-bordered" value={genForm.term} onChange={e => setGenForm({ ...genForm, term: e.target.value })}>
-                                <option value="1">Term 1</option>
-                                <option value="2">Term 2</option>
-                                <option value="3">Term 3</option>
+                            <label className="label">Stream</label>
+                            <select className="select select-bordered" value={genForm.class_id} onChange={e => setGenForm({ ...genForm, class_id: e.target.value })} disabled={!genForm.level} required>
+                                <option value="">-- Select Stream --</option>
+                                {classes.filter((c: any) => c.name === genForm.level).map((c: any) => (
+                                    <option key={c.id} value={c.id}>{c.stream}</option>
+                                ))}
                             </select>
                         </div>
+                    </div>
+                    <div className="form-control">
+                        <label className="label">Term</label>
+                        <select className="select select-bordered" value={genForm.term} onChange={e => setGenForm({ ...genForm, term: e.target.value })}>
+                            <option value="1">Term 1</option>
+                            <option value="2">Term 2</option>
+                            <option value="3">Term 3</option>
+                        </select>
                     </div>
                     <div className="modal-action">
                         <Button type="button" variant="ghost" onClick={() => setShowInvoiceModal(false)}>Cancel</Button>

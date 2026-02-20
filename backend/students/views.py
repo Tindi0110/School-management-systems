@@ -6,9 +6,10 @@ from .models import (
     DisciplineRecord, HealthRecord, ActivityRecord
 )
 from django.db import transaction
-from django.db.models import Sum, Value, DecimalField, Count, Q, Avg
+from django.db.models import Sum, Value, DecimalField, Count, Q, Avg, OuterRef, Subquery
 from django.db.models.functions import Coalesce
 from academics.models import Attendance, StudentResult, AcademicYear, Term
+from finance.models import Invoice
 from .serializers import (
     StudentSerializer, ParentSerializer, StudentAdmissionSerializer,
     StudentDocumentSerializer, DisciplineRecordSerializer,
@@ -27,11 +28,32 @@ class StudentViewSet(viewsets.ModelViewSet):
         'parents__students',
         'invoices',
     ).annotate(
-        fee_balance=Coalesce(Sum('invoices__balance'), Value(0, output_field=DecimalField())),
-        # Attendance annotations — replaces 2 per-row queries in serializer
-        attendance_total=Count('attendance', distinct=True),
-        attendance_present=Count('attendance', filter=Q(attendance__status='PRESENT'), distinct=True),
-        # Grade annotation — replaces 1 per-row query in serializer
+        fee_balance=Coalesce(
+            Subquery(
+                Invoice.objects.filter(student=OuterRef('pk')).values('student').annotate(
+                    total_balance=Sum('balance')
+                ).values('total_balance')
+            ),
+            Value(0, output_field=DecimalField())
+        ),
+        # Attendance annotations using subqueries for precise counts
+        attendance_total=Coalesce(
+            Subquery(
+                Attendance.objects.filter(student=OuterRef('pk')).values('student').annotate(
+                    cnt=Count('pk')
+                ).values('cnt')
+            ), 
+            Value(0)
+        ),
+        attendance_present=Coalesce(
+            Subquery(
+                Attendance.objects.filter(student=OuterRef('pk'), status='PRESENT').values('student').annotate(
+                    cnt=Count('pk')
+                ).values('cnt')
+            ),
+            Value(0)
+        ),
+        # Grade annotation
         avg_score=Avg('results__score'),
     ).order_by('admission_number')
     serializer_class = StudentSerializer

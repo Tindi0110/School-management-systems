@@ -119,20 +119,20 @@ const Medical = () => {
 
     return (
         <div className="fade-in">
-            <div className="flex justify-between items-center mb-4">
-                <div>
-                    <h1>Medical Records</h1>
-                    <p className="text-secondary">Official school health and infirmary logs</p>
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8">
+                <div className="w-full lg:w-auto">
+                    <h1 className="text-3xl font-black tracking-tight">Medical Records</h1>
+                    <p className="text-secondary text-sm font-medium">Official school health and infirmary logs</p>
                 </div>
-                <div className="flex gap-2">
-                    <Button variant="outline" onClick={() => window.print()} icon={<Printer size={18} />}>
+                <div className="flex flex-wrap gap-2 w-full lg:w-auto justify-start lg:justify-end no-print">
+                    <Button variant="outline" className="flex-1 sm:flex-none" onClick={() => window.print()} icon={<Printer size={18} />}>
                         Reports
                     </Button>
-                    <Button variant="outline" onClick={() => exportToCSV(records, 'Medical_Records')} icon={<Download size={18} />}>
-                        Export CSV
+                    <Button variant="outline" className="flex-1 sm:flex-none" onClick={() => exportToCSV(records, 'Medical_Records')} icon={<Download size={18} />}>
+                        Export
                     </Button>
-                    <Button variant="primary" onClick={() => openModal()} icon={<Plus size={18} />}>
-                        New Health Record
+                    <Button variant="primary" className="flex-1 sm:flex-none" onClick={() => openModal()} icon={<Plus size={18} />}>
+                        New Record
                     </Button>
                 </div>
             </div>

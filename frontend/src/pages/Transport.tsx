@@ -594,16 +594,16 @@ const Transport = () => {
     return (
         <div className="fade-in">
             {/* Header with Logistics Overview */}
-            <div className="flex justify-between items-end mb-6">
-                <div>
-                    <h1>Institutional Logistics</h1>
-                    <p className="text-secondary text-sm">Fleet management, route optimization, and student safety</p>
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8">
+                <div className="w-full lg:w-auto">
+                    <h1 className="text-3xl font-black tracking-tight">Institutional Logistics</h1>
+                    <p className="text-secondary text-sm font-medium">Fleet management, route optimization, and student safety</p>
                 </div>
-                <div className="flex gap-2 no-print">
-                    <Button variant="outline" size="sm" onClick={() => exportToCSV(vehicles, 'Fleet_Registry')} icon={<Download size={14} />}>Export Fleet</Button>
-                    <Button variant="outline" size="sm" onClick={() => window.print()} icon={<Printer size={14} />}>Reports</Button>
-                    <Button variant="primary" size="sm" onClick={() => { setEnrollmentId(null); setIsAllocationModalOpen(true); }} icon={<Plus size={14} />}>Enroll Student</Button>
-                    <Button variant="outline" size="sm" onClick={() => { setVehicleId(null); setIsVehicleModalOpen(true); }} icon={<Bus size={14} />}>Add Vehicle</Button>
+                <div className="flex flex-wrap gap-2 w-full lg:w-auto justify-start lg:justify-end no-print">
+                    <Button variant="outline" size="sm" className="flex-1 sm:flex-none" onClick={() => exportToCSV(vehicles, 'Fleet_Registry')} icon={<Download size={14} />}>Fleet</Button>
+                    <Button variant="outline" size="sm" className="flex-1 sm:flex-none" onClick={() => window.print()} icon={<Printer size={14} />}>Reports</Button>
+                    <Button variant="primary" size="sm" className="flex-1 sm:flex-none" onClick={() => { setEnrollmentId(null); setIsAllocationModalOpen(true); }} icon={<Plus size={14} />}>Enroll</Button>
+                    <Button variant="outline" size="sm" className="flex-1 sm:flex-none" onClick={() => { setVehicleId(null); setIsVehicleModalOpen(true); }} icon={<Bus size={14} />}>Add Bus</Button>
                 </div>
             </div>
 
