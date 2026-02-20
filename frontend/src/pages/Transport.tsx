@@ -3,7 +3,7 @@ import {
     Plus, Edit, Bus, MapPin, Navigation, ClipboardList, Wrench, ShieldAlert,
     Droplet, Printer, Download, Users, Clock, Trash2
 } from 'lucide-react';
-import { transportAPI, studentsAPI } from '../api/api';
+import { transportAPI, studentsAPI, staffAPI } from '../api/api';
 import { exportToCSV } from '../utils/export';
 import Modal from '../components/Modal';
 import SearchableSelect from '../components/SearchableSelect';
@@ -20,6 +20,7 @@ const Transport = () => {
     const [fuelRecords, setFuelRecords] = useState<any[]>([]);
     const [students, setStudents] = useState<any[]>([]);
     const [drivers, setDrivers] = useState<any[]>([]);
+    const [driverStaff, setDriverStaff] = useState<any[]>([]); // Staff with role=DRIVER
     const [loading, setLoading] = useState(true);
 
     // Modals
@@ -125,6 +126,13 @@ const Transport = () => {
                 fetchData(transportAPI.incidents.getAll(), setIncidents),
                 fetchData(transportAPI.drivers.getAll(), setDrivers)
             ]);
+
+            // Load staff with DRIVER role for assignment
+            try {
+                const staffRes = await staffAPI.getAll();
+                const allStaff = staffRes.data?.results ?? staffRes.data ?? [];
+                setDriverStaff(allStaff.filter((s: any) => s.role === 'DRIVER' || s.role === 'driver' || (s.role || '').toUpperCase() === 'DRIVER'));
+            } catch (err) { /* non-critical */ }
 
         } catch (error) {
 
@@ -950,9 +958,15 @@ const Transport = () => {
                         <label className="label">Assigned Driver</label>
                         <select className="select" value={vehicleForm.assigned_driver_id} onChange={e => setVehicleForm({ ...vehicleForm, assigned_driver_id: e.target.value })}>
                             <option value="">Select Primary Driver...</option>
-                            {drivers.map(d => (
-                                <option key={d.id} value={d.id}>{d.staff_name} ({d.staff_employee_id})</option>
-                            ))}
+                            {/* Show staff with DRIVER role first, fall back to driver profiles */}
+                            {driverStaff.length > 0
+                                ? driverStaff.map(s => (
+                                    <option key={s.id} value={s.id}>{s.full_name} ({s.employee_id || s.user})</option>
+                                ))
+                                : drivers.map(d => (
+                                    <option key={d.id} value={d.id}>{d.staff_name} ({d.staff_employee_id})</option>
+                                ))
+                            }
                         </select>
                     </div>
                     <div className="modal-footer pt-4"><Button type="submit" variant="primary" className="w-full uppercase font-black" loading={isSaving} loadingText={vehicleId ? "Updating..." : "Registering..."}>{vehicleId ? 'Update Vehicle' : 'Register Vehicle'}</Button></div>
@@ -996,12 +1010,18 @@ const Transport = () => {
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group"><label className="label">Date</label><input type="date" className="input" value={tripForm.date} onChange={e => setTripForm({ ...tripForm, date: e.target.value })} required /></div>
                         <div className="form-group">
-                            <label className="label">Driver</label>
+                            <label className="label">Driver *</label>
                             <select className="select" value={tripForm.driver} onChange={e => setTripForm({ ...tripForm, driver: e.target.value })} required>
                                 <option value="">Select Driver...</option>
-                                {drivers.map(d => (
-                                    <option key={d.id} value={d.id}>{d.staff_name} ({d.staff_employee_id})</option>
-                                ))}
+                                {/* Show staff with DRIVER role first, fall back to driver profiles */}
+                                {driverStaff.length > 0
+                                    ? driverStaff.map(s => (
+                                        <option key={s.id} value={s.id}>{s.full_name} ({s.employee_id || s.user})</option>
+                                    ))
+                                    : drivers.map(d => (
+                                        <option key={d.id} value={d.id}>{d.staff_name} ({d.staff_employee_id})</option>
+                                    ))
+                                }
                             </select>
                         </div>
                     </div>

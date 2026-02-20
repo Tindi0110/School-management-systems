@@ -66,6 +66,51 @@ class StudentResultViewSet(viewsets.ModelViewSet):
         if exam_id: queryset = queryset.filter(exam_id=exam_id)
         return queryset
 
+    @action(detail=False, methods=['post'])
+    def sync_grades(self, request):
+        """
+        Recalculate and re-assign grades for all existing results
+        based on the currently active/default grading system boundaries.
+        """
+        from .models import GradeSystem, GradeBoundary
+        # Find the default grading system
+        try:
+            default_system = GradeSystem.objects.filter(is_default=True).first()
+            if not default_system:
+                default_system = GradeSystem.objects.first()
+        except GradeSystem.DoesNotExist:
+            return Response({'error': 'No grading system found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if not default_system:
+            return Response({'error': 'No grading system found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        boundaries = list(default_system.boundaries.order_by('-min_score'))
+        if not boundaries:
+            return Response({'error': 'Grading system has no boundaries defined.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        def get_grade(score):
+            for b in boundaries:
+                if b.min_score <= float(score) <= b.max_score:
+                    return b.grade
+            return 'E'  # Default if out of range
+
+        results = StudentResult.objects.all()
+        updated = 0
+        for r in results:
+            new_grade = get_grade(r.score)
+            if r.grade != new_grade:
+                r.grade = new_grade
+                r.save(update_fields=['grade'])
+                updated += 1
+
+        return Response({
+            'message': f'Re-graded {updated} results using "{default_system.name}" boundaries.',
+            'total_results': results.count(),
+            'updated': updated,
+            'grading_system': default_system.name
+        })
+
+
 class AttendanceViewSet(viewsets.ModelViewSet):
     queryset = Attendance.objects.select_related('student').all()
     serializer_class = AttendanceSerializer

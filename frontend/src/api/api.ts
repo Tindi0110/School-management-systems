@@ -202,6 +202,7 @@ export const academicsAPI = {
     create: (data: any) => api.post('student-results/', data),
     update: (id: number, data: any) => api.put(`student-results/${id}/`, data),
     delete: (id: number) => api.delete(`student-results/${id}/`),
+    syncGrades: () => api.post('student-results/sync_grades/'),
   },
   attendance: {
     getAll: (params?: any) => api.get('attendance/', allWith(params)),

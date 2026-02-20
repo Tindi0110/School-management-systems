@@ -146,7 +146,7 @@ class PaymentViewSet(viewsets.ModelViewSet):
     serializer_class = PaymentSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['invoice__student', 'invoice', 'method', 'status']
+    filterset_fields = ['invoice__student', 'invoice', 'method']
 
     def create(self, request, *args, **kwargs):
         method = request.data.get('method')

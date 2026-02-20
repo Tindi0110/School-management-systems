@@ -1270,17 +1270,34 @@ const Academics = () => {
                                     </div>
                                 </div>
                             ))}
-                            <div className="card border-dashed flex flex-col items-center justify-center p-8 cursor-pointer hover:border-warning group" onClick={() => setIsExamModalOpen(true)}>
-                                <Calendar size={28} className="text-secondary group-hover:text-warning transition-all mb-2" />
-                                <span className="text-xs font-black uppercase text-secondary">Schedule Exam</span>
-                            </div>
+                            {/* Schedule Exam card */}
+                            {!isReadOnly && (
+                                <div className="card border-dashed flex flex-col items-center justify-center p-8 cursor-pointer hover:border-warning group" onClick={() => setIsExamModalOpen(true)}>
+                                    <Calendar size={28} className="text-secondary group-hover:text-warning transition-all mb-2" />
+                                    <span className="text-xs font-black uppercase text-secondary">Schedule Exam</span>
+                                </div>
+                            )}
+                            {/* Sync Grades card */}
+                            {!isReadOnly && (
+                                <div className="card border-dashed flex flex-col items-center justify-center p-8 cursor-pointer hover:border-success group" onClick={async () => {
+                                    if (!window.confirm('Re-calculate ALL exam grades using the default KNEC grading boundaries?\n\nThis will update grades for all results.')) return;
+                                    try {
+                                        const res = await academicsAPI.results.syncGrades();
+                                        success(`✓ ${res.data.message || 'Grades synced successfully!'}`);
+                                        loadAllAcademicData();
+                                    } catch (err: any) { toastError(err.message || 'Sync failed'); }
+                                }}>
+                                    <CheckCircle2 size={28} className="text-secondary group-hover:text-success transition-all mb-2" />
+                                    <span className="text-xs font-black uppercase text-secondary text-center">Sync Grades<br />(KNEC)</span>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )
             }
 
             {/* View Results Modal */}
-            <Modal isOpen={isViewResultsModalOpen} onClose={() => setIsViewResultsModalOpen(false)} title="Examination Results & Ranking" size="lg">
+            <Modal isOpen={isViewResultsModalOpen} onClose={() => setIsViewResultsModalOpen(false)} title="Examination Results &amp; Ranking" size="lg">
                 <div className="space-y-4">
                     <div className="flex justify-between items-center bg-secondary-light p-3 rounded">
                         <div>
@@ -1333,7 +1350,7 @@ const Academics = () => {
                         {Object.keys(groupedResults).length === 0 && <p className="text-center text-sm text-secondary italic py-8">No results recorded for this exam yet.</p>}
                     </div>
                 </div>
-            </Modal>
+            </Modal >
 
             {
                 activeTab === 'RESOURCES' && (
@@ -1624,7 +1641,8 @@ const Academics = () => {
                             </table>
                         </div>
                     </div>
-                )}
+                )
+            }
 
             {/* Modals */}
             <Modal isOpen={isYearModalOpen} onClose={() => setIsYearModalOpen(false)} title="Add Academic Cycle">

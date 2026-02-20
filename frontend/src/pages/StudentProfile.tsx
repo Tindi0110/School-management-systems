@@ -671,6 +671,13 @@ const StudentProfile = () => {
                                         <div><strong>Student:</strong> {student.full_name}</div>
                                         <div><strong>ADM:</strong> {student.admission_number}</div>
                                         <div><strong>Class:</strong> {student.class_name}</div>
+                                        <div><strong>Mean Grade:</strong> {student.average_grade || 'N/A'}</div>
+                                        <div><strong>Attendance:</strong> {student.attendance_percentage}%</div>
+                                        <div><strong>Class Position:</strong> {(() => {
+                                            if (!results.length) return 'N/A';
+                                            const avg = results.reduce((s: number, r: any) => s + parseFloat(r.score || 0), 0) / results.length;
+                                            return `${Math.round(avg)}% overall`;
+                                        })()}</div>
                                     </div>
                                     <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '20px' }}>
                                         <thead>
@@ -716,6 +723,19 @@ const StudentProfile = () => {
                                             </tr>
                                         ))
                                     )}
+                                    {/* Summary Row */}
+                                    {results.length > 0 && (() => {
+                                        const validScores = results.map((r: any) => parseFloat(r.score || r.marks_attained || 0)).filter(s => !isNaN(s));
+                                        const avgScore = validScores.length > 0 ? validScores.reduce((a, b) => a + b, 0) / validScores.length : 0;
+                                        const meanGrade = student.average_grade || 'N/A';
+                                        return (
+                                            <tr className="bg-primary/5 border-top-2 border-primary">
+                                                <td colSpan={2} className="font-black text-[11px] uppercase text-primary px-3 py-3">SUMMARY</td>
+                                                <td className="font-black text-primary text-[11px] px-3">{avgScore.toFixed(1)}%</td>
+                                                <td className="font-black text-primary text-[11px] px-3 uppercase">{meanGrade}</td>
+                                            </tr>
+                                        );
+                                    })()}
                                 </tbody>
                             </table>
                         </div>
