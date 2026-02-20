@@ -15,14 +15,18 @@ class FeeStructureViewSet(viewsets.ModelViewSet):
     serializer_class = FeeStructureSerializer
     permission_classes = [IsAuthenticated]
 
+from django_filters.rest_framework import DjangoFilterBackend
+
 class InvoiceViewSet(viewsets.ModelViewSet):
     queryset = Invoice.objects.select_related(
         'student', 'student__current_class', 'academic_year'
-    ).prefetch_related('items', 'payments', 'payments__received_by')
+    ).prefetch_related('items', 'payments', 'payments__received_by', 'adjustments')
     serializer_class = InvoiceSerializer
     permission_classes = [IsAuthenticated]
-    filter_backends = [filters.SearchFilter]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['student__current_class', 'student__current_class__stream', 'academic_year', 'term', 'status']
     search_fields = ['student__first_name', 'student__last_name', 'student__admission_number']
+    ordering_fields = ['date_generated', 'total_amount', 'balance']
 
     @action(detail=False, methods=['get'])
     def dashboard_stats(self, request):
@@ -33,11 +37,16 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         from django.db.models import Sum
         from django.utils import timezone
         
-        # Calculate totals
-        total_invoiced = Invoice.objects.aggregate(sum=Sum('total_amount'))['sum'] or 0
-        total_collected = Invoice.objects.aggregate(sum=Sum('paid_amount'))['sum'] or 0
-        # Use aggregate for balance to be accurate
-        total_outstanding = Invoice.objects.aggregate(sum=Sum('balance'))['sum'] or 0
+        # Calculate totals efficiently
+        stats = Invoice.objects.aggregate(
+            total_invoiced=Sum('total_amount'),
+            total_collected=Sum('paid_amount'),
+            total_outstanding=Sum('balance')
+        )
+        
+        total_invoiced = stats['total_invoiced'] or 0
+        total_collected = stats['total_collected'] or 0
+        total_outstanding = stats['total_outstanding'] or 0
         
         today = timezone.now().date()
         daily_collection = Payment.objects.filter(date_received=today).aggregate(sum=Sum('amount'))['sum'] or 0

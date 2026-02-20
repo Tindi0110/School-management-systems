@@ -67,6 +67,15 @@ const Students = () => {
         }
     };
 
+    const reloadStudentsOnly = async () => {
+        try {
+            const studentsRes = await studentsAPI.getAll();
+            setStudents(studentsRes.data?.results ?? studentsRes.data ?? []);
+        } catch (error) {
+            // silent
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
@@ -102,7 +111,7 @@ const Students = () => {
 
             }
 
-            await loadData();
+            await reloadStudentsOnly();
             closeModal();
             if (!editingStudent) {
                 success('Admission Successful! Redirecting to profile...');
@@ -131,7 +140,7 @@ const Students = () => {
         try {
             await studentsAPI.delete(id);
             success('Student deleted successfully.');
-            loadData();
+            reloadStudentsOnly();
         } catch (error: any) {
             errorToast('Failed to delete student. They may have linked records (fees, exams).');
         }
@@ -174,15 +183,14 @@ const Students = () => {
 
     const closeModal = () => { setIsModalOpen(false); setEditingStudent(null); };
 
-    const filterStudents = () => {
+    const filteredStudents = React.useMemo(() => {
+        const lowerSearch = searchTerm.toLowerCase();
         return students.filter(s =>
-            (s.full_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (s.admission_number || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (s.class_name || '').toLowerCase().includes(searchTerm.toLowerCase())
+            (s.full_name || '').toLowerCase().includes(lowerSearch) ||
+            (s.admission_number || '').toLowerCase().includes(lowerSearch) ||
+            (s.class_name || '').toLowerCase().includes(lowerSearch)
         );
-    };
-
-    const filteredStudents = filterStudents();
+    }, [students, searchTerm]);
 
     // Reusable Table Render
     const renderTable = (list: any[]) => (

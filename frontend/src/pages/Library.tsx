@@ -22,6 +22,7 @@ const Library = () => {
     const [loading, setLoading] = useState(true);
     const toast = useToast();
     const { confirm } = useConfirm();
+    const [searchTerm, setSearchTerm] = useState('');
 
     const userString = localStorage.getItem('user');
     const user = userString ? JSON.parse(userString) : null;
@@ -240,15 +241,32 @@ const Library = () => {
             console.error(err);
             const errorDetail = err.response?.data?.detail; const errorMsg = errorDetail || err.message || 'Failed to issue book.';
             if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
-                 toast.warning('Request timed out, but book might be issued. Please check the list.');
+                toast.warning('Request timed out, but book might be issued. Please check the list.');
             } else {
-                 toast.error(`Error: ${errorMsg}`);
+                toast.error(`Error: ${errorMsg}`);
             }
         } finally {
             setIsSubmitting(false);
         }
     };
     const handleEditLending = (l: any) => { setLendingId(l.id); setLendingForm({ ...l, copy: String(l.copy), student: String(l.student) }); setIsLendModalOpen(true); };
+
+    const handleExtendDueDate = async (id: number) => {
+        const daysStr = window.prompt("Enter number of days to extend overdue/active borrowing:", "7");
+        if (daysStr) {
+            const days = parseInt(daysStr, 10);
+            if (!isNaN(days) && days > 0) {
+                try {
+                    await libraryAPI.lendings.extendDueDate(id, { days });
+                    toast.success(`Due date extended by ${days} days.`);
+                    loadLendings();
+                    loadCatalog();
+                } catch (err: any) {
+                    toast.error(err.response?.data?.detail || err.response?.data?.error || 'Failed to extend due date.');
+                }
+            }
+        }
+    };
 
     // Fines
     const handleFineSubmit = async (e: React.FormEvent) => {
@@ -302,6 +320,45 @@ const Library = () => {
     const copyOptions = React.useMemo(() =>
         copies.filter(c => c.status === 'AVAILABLE').map(c => ({ id: String(c.id), label: `${c.copy_number} - ${books.find(b => b.id === c.book)?.title}`, value: String(c.id) })),
         [copies, books]);
+
+    const filteredBooks = React.useMemo(() => {
+        const lowerSearch = searchTerm.toLowerCase();
+        return books.filter(b =>
+            !searchTerm ||
+            (b.title || '').toLowerCase().includes(lowerSearch) ||
+            (b.author || '').toLowerCase().includes(lowerSearch) ||
+            (b.isbn && b.isbn.includes(searchTerm)) ||
+            (b.category && b.category.toLowerCase().includes(lowerSearch))
+        );
+    }, [books, searchTerm]);
+
+    const filteredCopies = React.useMemo(() => {
+        const lowerSearch = searchTerm.toLowerCase();
+        return copies.filter(c =>
+            !searchTerm ||
+            (c.copy_number || '').toLowerCase().includes(lowerSearch) ||
+            (c.status || '').toLowerCase().includes(lowerSearch)
+        );
+    }, [copies, searchTerm]);
+
+    const filteredLendings = React.useMemo(() => {
+        const lowerSearch = searchTerm.toLowerCase();
+        return lendings.filter(l =>
+            !searchTerm ||
+            (l.book_title || '').toLowerCase().includes(lowerSearch) ||
+            (l.copy_number || '').toLowerCase().includes(lowerSearch) ||
+            (l.user_name || l.student_name || '').toLowerCase().includes(lowerSearch)
+        );
+    }, [lendings, searchTerm]);
+
+    const filteredFines = React.useMemo(() => {
+        const lowerSearch = searchTerm.toLowerCase();
+        return fines.filter(f =>
+            !searchTerm ||
+            (f.user_name || '').toLowerCase().includes(lowerSearch) ||
+            (f.reason || '').toLowerCase().includes(lowerSearch)
+        );
+    }, [fines, searchTerm]);
 
     if (loading) return <div className="spinner-container"><div className="spinner"></div></div>;
 
@@ -357,6 +414,16 @@ const Library = () => {
 
             </div>
 
+            <div className="mb-4 no-print flex justify-end">
+                <input
+                    type="text"
+                    placeholder={`Search ${activeTab.toLowerCase()}...`}
+                    className="input input-sm w-64 shadow-sm"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+            </div>
+
             {/* Catalog Content */}
             {activeTab === 'catalog' && (
                 <div className="table-container fade-in">
@@ -380,7 +447,7 @@ const Library = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {books.map(b => {
+                            {filteredBooks.map(b => {
                                 const bookCopies = copies.filter(c => c.book === b.id);
                                 const available = bookCopies.filter(c => c.status === 'AVAILABLE').length;
                                 return (
@@ -435,7 +502,7 @@ const Library = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {books.map(b => {
+                                    {filteredBooks.map(b => {
                                         const bookCopies = copies.filter(c => c.book === b.id);
                                         const available = bookCopies.filter(c => c.status === 'AVAILABLE').length;
                                         const issued = bookCopies.filter(c => c.status === 'ISSUED').length;
@@ -481,11 +548,11 @@ const Library = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {copies.filter(c => c.book === viewingInventoryBookId).map(c => (
+                                    {filteredCopies.filter(c => c.book === viewingInventoryBookId).map(c => (
                                         <tr key={c.id}>
                                             <td><span className="font-mono bg-secondary-light px-2 py-1 rounded text-xs">#{c.copy_number}</span></td>
                                             <td><span className={`badge ${c.condition === 'NEW' ? 'badge-success' : 'badge-info'}`}>{c.condition}</span></td>
-                                            <td><span className={`status-badge ${c.status === 'AVAILABLE' ? 'success' : 'secondary'}`}>{c.status}</span></td>
+                                            <td><span className={`status-badge ${c.status === 'AVAILABLE' ? 'success' : c.status === 'OVERDUE' ? 'error' : 'secondary'}`}>{c.status}</span></td>
                                             <td>{c.purchase_date || 'N/A'}</td>
                                             <td>
                                                 <div className="flex gap-2">
@@ -531,20 +598,26 @@ const Library = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {lendings.map(l => (
+                            {filteredLendings.map(l => (
                                 <tr key={l.id}>
                                     <td className="font-bold">{l.book_title}</td>
                                     <td><span className="font-mono text-xs bg-secondary-light px-2 py-1 rounded">{l.copy_number}</span></td>
                                     <td>{l.user_name || l.student_name}</td>
                                     <td>{l.date_issued}</td>
                                     <td><span className={new Date(l.due_date) < new Date() && !l.date_returned ? 'text-error font-bold' : ''}>{l.due_date}</span></td>
-                                    <td><span className={`badge ${l.date_returned ? 'badge-success' : 'badge-info'}`}>{l.date_returned ? 'RETURNED' : 'ISSUED'}</span></td>
+                                    <td><span className={`badge ${l.date_returned ? 'badge-success' : (new Date(l.due_date) < new Date() ? 'badge-error' : 'badge-info')}`}>{l.date_returned ? 'RETURNED' : (new Date(l.due_date) < new Date() ? 'OVERDUE' : 'ISSUED')}</span></td>
                                     <td>
                                         <div className="flex gap-2">
                                             {!isReadOnly && !l.date_returned && (
-                                                <Button size="sm" onClick={() => libraryAPI.lendings.returnBook(l.id).then(() => { loadLendings(); loadCatalog(); })}>
-                                                    Return
-                                                </Button>
+                                                <>
+                                                    <Button size="sm" onClick={() => libraryAPI.lendings.returnBook(l.id).then(() => { loadLendings(); loadCatalog(); })}>
+                                                        Return
+                                                    </Button>
+                                                    <Button variant="outline" size="sm" className="text-warning border-warning hover:bg-warning hover:text-white"
+                                                        onClick={() => handleExtendDueDate(l.id)}>
+                                                        Extend
+                                                    </Button>
+                                                </>
                                             )}
                                             {!isReadOnly && (
                                                 <>
@@ -588,8 +661,8 @@ const Library = () => {
                     <table className="table">
                         <thead><tr><th>Student</th><th>Amount (KES)</th><th>Reason</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
                         <tbody>
-                            {fines.length === 0 && <tr><td colSpan={6} className="text-center italic">No fines recorded.</td></tr>}
-                            {fines.map(f => (
+                            {filteredFines.length === 0 && <tr><td colSpan={6} className="text-center italic">No fines found.</td></tr>}
+                            {filteredFines.map(f => (
                                 <tr key={f.id}>
                                     <td>{f.user_name || 'Unknown Student'}</td>
                                     <td className="font-bold">{parseFloat(f.amount).toLocaleString()}</td>
@@ -765,6 +838,15 @@ const Library = () => {
                 .status-badge.secondary {
                     background: var(--bg-secondary);
                     color: var(--text-secondary);
+                    padding: 2px 8px;
+                    border-radius: 4px;
+                    font-size: 10px;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                }
+                .status-badge.error {
+                    background: var(--error);
+                    color: white;
                     padding: 2px 8px;
                     border-radius: 4px;
                     font-size: 10px;

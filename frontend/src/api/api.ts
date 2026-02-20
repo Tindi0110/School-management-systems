@@ -31,10 +31,37 @@ api.interceptors.response.use(
       localStorage.removeItem('user');
       window.location.href = '/login';
     }
-    const message = error.response?.data?.detail ||
-      error.response?.data?.error ||
-      (typeof error.response?.data === 'string' ? error.response?.data : null) ||
-      error.message;
+
+    let message = 'An unexpected error occurred';
+
+    // Check if Django sent a field-validation object for a 400 error
+    if (error.response?.status === 400 && typeof error.response.data === 'object') {
+      const data = error.response.data;
+      const stringified = JSON.stringify(data).toLowerCase();
+
+      // Check for common unique constraint keywords
+      if (stringified.includes('unique') || stringified.includes('already exists') || stringified.includes('duplicate')) {
+        message = "This record may exist already.";
+      } else {
+        // Fallback to grabbing the first error array if possible
+        const firstKey = Object.keys(data)[0];
+        if (firstKey && Array.isArray(data[firstKey])) {
+          message = `${firstKey}: ${data[firstKey][0]}`;
+        } else {
+          message = data.detail || data.error || data.non_field_errors?.[0] || 'Bad Request: Please check your inputs.';
+        }
+      }
+    } else if (error.response?.status === 404) {
+      message = "The requested resource could not be found or may have been deleted.";
+    } else if (error.response?.status >= 500) {
+      message = "A server error occurred. Please try again later.";
+    } else {
+      message = error.response?.data?.detail ||
+        error.response?.data?.error ||
+        (typeof error.response?.data === 'string' ? error.response?.data : null) ||
+        error.message || 'An unexpected error occurred.';
+    }
+
     return Promise.reject({ ...error, message });
   }
 );
@@ -339,6 +366,7 @@ export const libraryAPI = {
     update: (id: number, data: any) => api.put(`book-lendings/${id}/`, data),
     delete: (id: number) => api.delete(`book-lendings/${id}/`),
     returnBook: (id: number) => api.post(`book-lendings/${id}/return_book/`),
+    extendDueDate: (id: number, data: { days: number }) => api.post(`book-lendings/${id}/extend_due_date/`, data),
   },
   fines: {
     getAll: () => api.get('library-fines/', ALL),

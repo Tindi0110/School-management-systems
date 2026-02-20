@@ -5,7 +5,7 @@ import {
     ArrowLeft, Printer, Edit, Phone, TrendingUp, AlertTriangle,
     Plus, MessageSquare, FilePlus, Users, Trash2, History as HistoryIcon, ShieldCheck
 } from 'lucide-react';
-import { studentsAPI, academicsAPI, financeAPI } from '../api/api';
+import { studentsAPI, academicsAPI, financeAPI, libraryAPI } from '../api/api';
 import Modal from '../components/Modal';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
@@ -24,6 +24,7 @@ const StudentProfile = () => {
     const [documents, setDocuments] = useState<any[]>([]);
     const [activities, setActivities] = useState<any[]>([]);
     const [parents, setParents] = useState<any[]>([]);
+    const [unreturnedBooks, setUnreturnedBooks] = useState<number>(0);
     const [loading, setLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -111,6 +112,18 @@ const StudentProfile = () => {
             const paymentsRes = await financeAPI.payments.getAll();
             const allPayments = paymentsRes.data?.results ?? paymentsRes.data ?? [];
             setPayments(allPayments.filter((p: any) => p.student === Number(id)));
+
+            try {
+                const lendingsRes = await libraryAPI.lendings.getAll();
+                const allLendings = lendingsRes.data?.results ?? lendingsRes.data ?? [];
+                const studentUser = studentRes.data.user;
+                if (studentUser) {
+                    const activeLendings = allLendings.filter((l: any) => l.user === studentUser && !l.date_returned);
+                    setUnreturnedBooks(activeLendings.length);
+                }
+            } catch (e) {
+                console.error("Could not load library clearance data", e);
+            }
 
         } catch (error: any) {
             console.error("Load Student Error:", error);
@@ -617,7 +630,7 @@ const StudentProfile = () => {
                                                 <tr key={i}>
                                                     <td style={{ border: '1px solid #000', padding: '5px' }}>{r.subject_name}</td>
                                                     <td style={{ border: '1px solid #000', padding: '5px' }}>{r.exam_name}</td>
-                                                    <td style={{ border: '1px solid #000', padding: '5px' }}>{r.marks_attained}%</td>
+                                                    <td style={{ border: '1px solid #000', padding: '5px' }}>{Math.round(r.score || r.marks_attained)}</td>
                                                     <td style={{ border: '1px solid #000', padding: '5px' }}>{r.grade || '-'}</td>
                                                 </tr>
                                             ))}
@@ -628,24 +641,22 @@ const StudentProfile = () => {
                             <table className="table">
                                 <thead>
                                     <tr>
-                                        <th>Term / Period</th>
                                         <th>Subject</th>
+                                        <th>Exam</th>
                                         <th>Score</th>
                                         <th>Grade</th>
-                                        <th>Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {results.length === 0 ? (
-                                        <tr><td colSpan={5} className="text-center p-8 uppercase font-bold text-secondary text-xs">No academic records found</td></tr>
+                                        <tr><td colSpan={4} className="text-center p-8 uppercase font-bold text-secondary text-xs">No academic records found</td></tr>
                                     ) : (
                                         results.map((r: any, i: number) => (
                                             <tr key={i} className="hover-bg-secondary">
-                                                <td className="font-bold text-[11px] uppercase">{r.exam_name}</td>
-                                                <td className="text-[11px] font-bold uppercase">{r.subject_name}</td>
-                                                <td className="font-black text-[11px] text-primary">{Math.round(r.score || r.marks_attained)}%</td>
-                                                <td className="text-[11px] font-black uppercase">{r.grade || 'N/A'}</td>
-                                                <td><span className="badge badge-success px-2 py-0" style={{ fontSize: '8px' }}>VERIFIED</span></td>
+                                                <td className="font-bold text-[11px] uppercase">{r.subject_name}</td>
+                                                <td className="text-[11px] font-bold uppercase">{r.exam_name}</td>
+                                                <td className="font-black text-[11px] text-primary">{Math.round(r.score || r.marks_attained)}</td>
+                                                <td className="text-[11px] font-black uppercase">{r.grade || '-'}</td>
                                             </tr>
                                         ))
                                     )}
@@ -945,10 +956,9 @@ const StudentProfile = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            <tr><td style={{ border: '1px solid #000', padding: '15px' }}>Academics (Books/Exams)</td><td style={{ border: '1px solid #000', padding: '15px' }}>CLEARED</td><td style={{ border: '1px solid #000', padding: '15px' }}></td></tr>
-                            <tr><td style={{ border: '1px solid #000', padding: '15px' }}>Boarding/Hostel</td><td style={{ border: '1px solid #000', padding: '15px' }}>{student.category === 'BOARDING' ? 'PENDING' : 'N/A'}</td><td style={{ border: '1px solid #000', padding: '15px' }}></td></tr>
-                            <tr><td style={{ border: '1px solid #000', padding: '15px' }}>Sports/Games</td><td style={{ border: '1px solid #000', padding: '15px' }}>CLEARED</td><td style={{ border: '1px solid #000', padding: '15px' }}></td></tr>
-                            <tr><td style={{ border: '1px solid #000', padding: '15px' }}>Finance/Accounts</td><td style={{ border: '1px solid #000', padding: '15px' }}>{(student.fee_balance || 0) > 0 ? 'OUTSTANDING BALANCE' : 'CLEARED'}</td><td style={{ border: '1px solid #000', padding: '15px' }}></td></tr>
+                            <tr><td style={{ border: '1px solid #000', padding: '15px' }}>Academics (Books/Exams)</td><td style={{ border: '1px solid #000', padding: '15px' }}>{unreturnedBooks > 0 ? `PENDING (${unreturnedBooks} Unreturned Books)` : 'CLEARED'}</td><td style={{ border: '1px solid #000', padding: '15px' }}></td></tr>
+                            <tr><td style={{ border: '1px solid #000', padding: '15px' }}>Boarding/Hostel</td><td style={{ border: '1px solid #000', padding: '15px' }}>{student.hostel_name ? `PENDING (Allocated to ${student.hostel_name})` : 'CLEARED'}</td><td style={{ border: '1px solid #000', padding: '15px' }}></td></tr>
+                            <tr><td style={{ border: '1px solid #000', padding: '15px' }}>Finance/Accounts</td><td style={{ border: '1px solid #000', padding: '15px' }}>{(student.fee_balance || 0) > 0 ? `OUTSTANDING BALANCE (KES ${student.fee_balance.toLocaleString()})` : 'CLEARED'}</td><td style={{ border: '1px solid #000', padding: '15px' }}></td></tr>
                         </tbody>
                     </table>
 

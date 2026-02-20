@@ -58,6 +58,37 @@ const Finance = () => {
     // Mpesa Form
     const [mpesaForm, setMpesaForm] = useState({ admission_number: '', phone_number: '', amount: '' });
 
+    // Invoice Filters
+    const [invFilters, setInvFilters] = useState({ class_id: '', stream: '', year_id: '', term: '', status: '' });
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const filteredPayments = React.useMemo(() => {
+        const lowerSearch = searchTerm.toLowerCase();
+        return payments.filter((p: any) =>
+            !searchTerm ||
+            (p.student_name && p.student_name.toLowerCase().includes(lowerSearch)) ||
+            (p.reference_number && p.reference_number.toLowerCase().includes(lowerSearch))
+        );
+    }, [payments, searchTerm]);
+
+    const filteredExpenses = React.useMemo(() => {
+        const lowerSearch = searchTerm.toLowerCase();
+        return expenses.filter((exp: any) =>
+            !searchTerm ||
+            (exp.description && exp.description.toLowerCase().includes(lowerSearch)) ||
+            (exp.paid_to && exp.paid_to.toLowerCase().includes(lowerSearch))
+        );
+    }, [expenses, searchTerm]);
+
+    const filteredFees = React.useMemo(() => {
+        const lowerSearch = searchTerm.toLowerCase();
+        return feeStructures.filter((fee: any) =>
+            !searchTerm ||
+            (fee.name && fee.name.toLowerCase().includes(lowerSearch))
+        );
+    }, [feeStructures, searchTerm]);
+
+
     // Options
     const [classes, setClasses] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -85,7 +116,16 @@ const Finance = () => {
                     studentsAPI.getAll()
                 ]);
                 setClasses(d(cls)); setYears(d(yrRes)); setStudents(d(studs));
-                const res = await financeAPI.invoices.getAll(); // Full load
+
+                // Construct clean params
+                const params: any = {};
+                if (invFilters.class_id) params.student__current_class = invFilters.class_id;
+                if (invFilters.stream) params.student__current_class__stream = invFilters.stream;
+                if (invFilters.year_id) params.academic_year = invFilters.year_id;
+                if (invFilters.term) params.term = invFilters.term;
+                if (invFilters.status) params.status = invFilters.status;
+
+                const res = await financeAPI.invoices.getAll(params); // Filtered load
                 setInvoices(d(res));
             } else if (activeTab === 'payments') {
                 const [studs, invs] = await Promise.all([studentsAPI.getAll(), financeAPI.invoices.getAll()]);
@@ -325,6 +365,17 @@ const Finance = () => {
                 <div className="spinner-container"><div className="spinner"></div></div>
             ) : (
                 <div className="space-y-6">
+                    {activeTab !== 'dashboard' && (
+                        <div className="mb-4 no-print flex justify-end">
+                            <input
+                                type="text"
+                                placeholder={`Search ${activeTab.toLowerCase()}...`}
+                                className="input input-sm w-64 shadow-sm"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
+                    )}
                     {activeTab === 'dashboard' && (
                         <div className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -372,7 +423,69 @@ const Finance = () => {
 
                     {activeTab === 'invoices' && (
                         <div className="card">
-                            <h3 className="text-lg font-bold mb-4">All Invoices</h3>
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                                <h3 className="text-lg font-bold">All Invoices</h3>
+
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <select
+                                        className="select select-sm select-bordered"
+                                        value={invFilters.class_id}
+                                        onChange={(e) => setInvFilters({ ...invFilters, class_id: e.target.value })}
+                                    >
+                                        <option value="">All Classes</option>
+                                        {classes.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                    </select>
+
+                                    <select
+                                        className="select select-sm select-bordered"
+                                        value={invFilters.stream}
+                                        onChange={(e) => setInvFilters({ ...invFilters, stream: e.target.value })}
+                                    >
+                                        <option value="">All Streams</option>
+                                        {Array.from(new Set(classes.map((c: any) => c.stream).filter(Boolean))).map((stream: any) => (
+                                            <option key={stream} value={stream}>{stream}</option>
+                                        ))}
+                                    </select>
+
+                                    <select
+                                        className="select select-sm select-bordered"
+                                        value={invFilters.year_id}
+                                        onChange={(e) => setInvFilters({ ...invFilters, year_id: e.target.value })}
+                                    >
+                                        <option value="">All Years</option>
+                                        {years.map((y: any) => <option key={y.id} value={y.id}>{y.name}</option>)}
+                                    </select>
+
+                                    <select
+                                        className="select select-sm select-bordered"
+                                        value={invFilters.term}
+                                        onChange={(e) => setInvFilters({ ...invFilters, term: e.target.value })}
+                                    >
+                                        <option value="">All Terms</option>
+                                        <option value="1">Term 1</option>
+                                        <option value="2">Term 2</option>
+                                        <option value="3">Term 3</option>
+                                    </select>
+
+                                    <select
+                                        className="select select-sm select-bordered"
+                                        value={invFilters.status}
+                                        onChange={(e) => setInvFilters({ ...invFilters, status: e.target.value })}
+                                    >
+                                        <option value="">All Status</option>
+                                        <option value="UNPAID">Unpaid</option>
+                                        <option value="PARTIAL">Partial</option>
+                                        <option value="PAID">Paid</option>
+                                        <option value="OVERPAID">Overpaid</option>
+                                    </select>
+
+                                    <button className="btn btn-sm btn-primary no-print" onClick={loadData}>Apply</button>
+                                    <button className="btn btn-sm btn-outline no-print ml-4" onClick={() => window.print()} title="Print Filtered Invoices">
+                                        <Printer size={14} className="mr-1" /> Print All
+                                    </button>
+                                </div>
+                            </div>
+
                             <div className="overflow-x-auto">
                                 <table className="table w-full">
                                     <thead>
@@ -386,7 +499,11 @@ const Finance = () => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {invoices.map((inv: any) => (
+                                        {invoices.filter((inv: any) =>
+                                            !searchTerm ||
+                                            inv.student_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                            inv.id.toString().includes(searchTerm)
+                                        ).map((inv: any) => (
                                             <tr key={inv.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => setSelectedInvoice(inv)}>
                                                 <td className="font-bold">#INV-{inv.id}</td>
                                                 <td>{inv.student_name}</td>
@@ -425,7 +542,7 @@ const Finance = () => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {payments.map((p: any) => (
+                                        {filteredPayments.map((p: any) => (
                                             <tr key={p.id}>
                                                 <td>{formatDate(p.date_received)}</td>
                                                 <td className="font-bold">#{p.reference_number || p.id}</td>
@@ -463,7 +580,7 @@ const Finance = () => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {expenses.map((exp: any) => (
+                                        {filteredExpenses.map((exp: any) => (
                                             <tr key={exp.id}>
                                                 <td>{formatDate(exp.date_occurred)}</td>
                                                 <td><span className="badge badge-outline">{exp.category}</span></td>
@@ -500,7 +617,7 @@ const Finance = () => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {feeStructures.map((fee: any) => (
+                                        {filteredFees.map((fee: any) => (
                                             <tr key={fee.id}>
                                                 <td className="font-bold">{fee.name}</td>
                                                 <td>{fee.class_level_name || 'All Levels'}</td>
@@ -668,19 +785,83 @@ const Finance = () => {
             </Modal>
             <Modal isOpen={!!selectedInvoice} onClose={() => setSelectedInvoice(null)} title={`Invoice Details - #INV-${selectedInvoice?.id}`}>
                 {selectedInvoice && (
-                    <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-6">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pb-4 border-b">
                             <div><p className="text-xs text-secondary uppercase font-black">Student</p><p className="font-bold">{selectedInvoice.student_name}</p></div>
                             <div><p className="text-xs text-secondary uppercase font-black">Admission</p><p className="font-bold">{selectedInvoice.admission_number}</p></div>
+                            <div><p className="text-xs text-secondary uppercase font-black">Class</p><p className="font-bold">{selectedInvoice.class_name} {selectedInvoice.stream_name}</p></div>
+                            <div><p className="text-xs text-secondary uppercase font-black">Term</p><p className="font-bold">Term {selectedInvoice.term} ({selectedInvoice.academic_year_name})</p></div>
                         </div>
-                        <div className="p-4 bg-secondary-light rounded-lg">
-                            <div className="flex justify-between items-center mb-2"><span>Total Amount</span><span className="font-black text-primary">KES {Number(selectedInvoice.total_amount).toLocaleString()}</span></div>
-                            <div className="flex justify-between items-center mb-2"><span>Paid Amount</span><span className="font-black text-success">KES {Number(selectedInvoice.paid_amount).toLocaleString()}</span></div>
-                            <div className="flex justify-between items-center border-t pt-2"><span>Balance Due</span><span className="font-black text-error">KES {Number(selectedInvoice.balance).toLocaleString()}</span></div>
+
+                        <div>
+                            <h4 className="font-bold text-sm mb-2 text-gray-500 uppercase tracking-wider">Invoice Items</h4>
+                            <div className="overflow-x-auto border rounded-lg">
+                                <table className="table table-compact w-full">
+                                    <thead className="bg-gray-50">
+                                        <tr>
+                                            <th>Description</th>
+                                            <th className="text-right">Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {selectedInvoice.items?.map((item: any) => (
+                                            <tr key={item.id}>
+                                                <td>{item.description}</td>
+                                                <td className="text-right font-mono">KES {Number(item.amount).toLocaleString()}</td>
+                                            </tr>
+                                        ))}
+                                        {selectedInvoice.adjustments?.length > 0 && (
+                                            <>
+                                                <tr className="bg-gray-50"><td colSpan={2} className="text-xs font-bold text-gray-400">ADJUSTMENTS (FINES/WAIVERS)</td></tr>
+                                                {selectedInvoice.adjustments.map((adj: any) => (
+                                                    <tr key={adj.id}>
+                                                        <td>{adj.reason} <span className="text-xs text-gray-400">({adj.adjustment_type})</span></td>
+                                                        <td className={`text-right font-mono ${adj.adjustment_type === 'DEBIT' ? 'text-error' : 'text-success'}`}>
+                                                            {adj.adjustment_type === 'DEBIT' ? '+' : '-'} KES {Number(adj.amount).toLocaleString()}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </>
+                                        )}
+                                        {selectedInvoice.payments?.length > 0 && (
+                                            <>
+                                                <tr className="bg-gray-50"><td colSpan={2} className="text-xs font-bold text-gray-400">PAYMENTS</td></tr>
+                                                {selectedInvoice.payments.map((pay: any) => (
+                                                    <tr key={pay.id}>
+                                                        <td>
+                                                            Payment - {pay.method} {pay.reference_number && `(Ref: ${pay.reference_number})`}
+                                                            <span className="text-xs text-gray-400 block">{formatDate(pay.date_received)}</span>
+                                                        </td>
+                                                        <td className="text-right font-mono text-success">
+                                                            - KES {Number(pay.amount).toLocaleString()}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
+
+                        <div className="p-4 bg-gray-50 rounded-xl space-y-2">
+                            <div className="flex justify-between items-center text-sm">
+                                <span>Subtotal</span>
+                                <span className="font-bold">KES {Number(selectedInvoice.total_amount).toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-sm">
+                                <span>Total Paid</span>
+                                <span className="font-bold text-success">KES {Number(selectedInvoice.paid_amount).toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between items-center border-t pt-2 text-lg">
+                                <span className="font-bold">Balance Due</span>
+                                <span className="font-black text-error">KES {Number(selectedInvoice.balance).toLocaleString()}</span>
+                            </div>
+                        </div>
+
                         <div className="modal-action">
                             <Button variant="ghost" onClick={() => setSelectedInvoice(null)}>Close</Button>
-                            <Button variant="outline" icon={<Printer size={16} />} onClick={() => window.print()}>Print Invoice</Button>
+                            <Button variant="outline" icon={<Printer size={16} />} onClick={() => window.print()}>Print / Save PDF</Button>
                         </div>
                     </div>
                 )}

@@ -1,5 +1,23 @@
 /* Design System: Classic & Professional */
 
+@media print {
+
+  body,
+  html,
+  #root,
+  .main-content,
+  .table-container,
+  .modal,
+  .modal-body,
+  .content-area {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    overflow-y: visible !important;
+    overflow-x: visible !important;
+  }
+}
+
 :root {
   /* Colors - Deep Navy & Slate Theme */
   --primary: #0f172a;
@@ -87,7 +105,7 @@ body {
   /* Classic Compact Size */
 }
 
-/* Typography Refinement */
+/* Typography Refinement: Fluid Scaling + Tighter headers */
 h1,
 h2,
 h3,
@@ -95,36 +113,34 @@ h4,
 h5,
 h6 {
   font-weight: 600;
-  line-height: 1.2;
+  line-height: 1.25;
   margin-bottom: var(--spacing-sm);
-  /* Tighter headings */
   color: var(--primary);
   letter-spacing: -0.025em;
+  /* Hardware accel hint for smoother text rendering if scaled */
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 h1 {
-  font-size: 1.5rem;
+  font-size: clamp(1.25rem, 5vw, 1.5rem);
 }
 
-/* Formerly 2.25rem */
 h2 {
-  font-size: 1.25rem;
+  font-size: clamp(1.125rem, 4vw, 1.25rem);
 }
 
-/* Formerly 1.875rem */
 h3 {
-  font-size: 1.125rem;
+  font-size: clamp(1rem, 3.5vw, 1.125rem);
 }
 
-/* Formerly 1.5rem */
 h4 {
-  font-size: 1rem;
+  font-size: clamp(0.9rem, 3vw, 1rem);
 }
-
-/* Formerly 1.25rem */
 
 p {
   margin-bottom: var(--spacing-md);
+  color: var(--text-secondary);
 }
 
 /* Utility Classes */
@@ -215,12 +231,22 @@ p {
   border-radius: var(--radius);
   padding: var(--spacing-lg);
   box-shadow: var(--shadow-sm);
-  transition: box-shadow 0.2s ease;
+  transition: box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateZ(0);
+  /* Hardware accel */
+  will-change: transform, box-shadow;
 }
 
 .card:hover {
-  box-shadow: var(--shadow);
-  /* Subtle lift */
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px) translateZ(0);
+}
+
+@media (max-width: 640px) {
+  .card {
+    padding: var(--spacing-md);
+    /* Save screen real-estate on mobile */
+  }
 }
 
 /* Button Styles - Standard & Rounder */
@@ -230,15 +256,21 @@ p {
   justify-content: center;
   gap: var(--spacing-sm);
   padding: 0.625rem 1.25rem;
-  /* Increased Padding */
   font-size: 0.875rem;
   font-weight: 600;
   border-radius: var(--radius);
   border: 1px solid transparent;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, background-color;
+  transform: translateZ(0);
   white-space: nowrap;
-  /* Prevent wrapping inside button */
+  min-height: 44px;
+  /* Mobile touch target size */
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.97) translateZ(0);
 }
 
 .btn:disabled {
@@ -367,6 +399,30 @@ p {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  /* Smooth scroll on mobile */
+  scrollbar-width: thin;
+  /* Firefox */
+}
+
+/* Custom Webkit Scrollbar for Professional Look */
+.table-container::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+
+.table-container::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+  border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+  background: var(--secondary-light);
 }
 
 .table {
@@ -434,6 +490,51 @@ p {
   border: 1px solid rgba(180, 83, 9, 0.2);
 }
 
+.btn-warning:hover {
+  background: var(--warning);
+}
+
+@media print {
+
+  /* Class List Print Styles */
+  .print-modal {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    background: white !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    z-index: 99999 !important;
+    transform: none !important;
+    overflow: visible !important;
+  }
+
+  .print-modal .table-container {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  /* Hide everything else if a print-modal is active */
+  body:has(.print-modal)>*:not(#root) {
+    display: none !important;
+  }
+
+  body:has(.print-modal) #root>*:not(.print-modal-container) {
+    display: none !important;
+  }
+
+  /* (Alternatively just hide common app wrappers if standard Modal doesn't portal) */
+  body:has(.print-modal) .sidebar,
+  body:has(.print-modal) .header,
+  body:has(.print-modal) .no-print {
+    display: none !important;
+  }
+}
+
 /* Modal - Professional Animation */
 .modal-overlay {
   position: fixed;
@@ -454,6 +555,7 @@ p {
   background: var(--bg-primary);
   /* Width handled by Tailwind (w-full + max-w-classes) */
   max-height: 90vh;
+  /* Base height */
   /* Prevent overflowing screen height */
   display: flex;
   flex-direction: column;
@@ -468,6 +570,17 @@ p {
   /* Fallback constraint */
   margin: auto;
   /* Centering */
+}
+
+@media (max-width: 640px) {
+  .modal {
+    max-height: 100dvh;
+    /* Use dynamic viewport height on mobile */
+    min-height: 100dvh;
+    /* Take full screen if needed */
+    border-radius: 0;
+    margin: 0;
+  }
 }
 
 .modal-header {
@@ -988,6 +1101,7 @@ p {
 
 /* Print Styles: Clean Document Export */
 @media print {
+
   /* Hide UI elements that are not part of the document */
   .sidebar,
   .top-bar,
@@ -1003,10 +1117,17 @@ p {
   }
 
   /* Reset layout for full-page document printing */
+  body,
+  html {
+    height: auto !important;
+    overflow: visible !important;
+  }
+
   .dashboard-layout {
     display: block !important;
     height: auto !important;
     background: white !important;
+    overflow: visible !important;
   }
 
   .main-content {
@@ -1015,11 +1136,13 @@ p {
     margin: 0 !important;
     padding: 0 !important;
     overflow: visible !important;
+    height: auto !important;
   }
 
   .content-area {
     padding: 0 !important;
     overflow: visible !important;
+    height: auto !important;
   }
 
   /* Enhance table printing */
@@ -1035,7 +1158,7 @@ p {
     border-collapse: collapse !important;
   }
 
-  .table th, 
+  .table th,
   .table td {
     padding: 0.5rem !important;
     border: 1px solid #eee !important;
@@ -1045,10 +1168,12 @@ p {
   .table th {
     background-color: #f8fafc !important;
     -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
   /* Card and stat card adjustments */
-  .card, .stat-card {
+  .card,
+  .stat-card {
     border: 1px solid #eee !important;
     box-shadow: none !important;
     break-inside: avoid;
@@ -1063,6 +1188,7 @@ p {
   .badge {
     border: 1px solid #ccc !important;
     -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
   /* Typography adjustments */
@@ -1072,7 +1198,9 @@ p {
     color: black !important;
   }
 
-  h1, h2, h3 {
+  h1,
+  h2,
+  h3 {
     margin-top: 1rem !important;
     color: black !important;
   }

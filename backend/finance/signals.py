@@ -71,16 +71,24 @@ def get_or_create_invoice(student, year_name=None, term_name=None):
     )
 
     for fee in std_fees:
-        # Avoid duplicating if already present
-        # We check if an item with this fee_structure already exists on this invoice
-        if not InvoiceItem.objects.filter(invoice=invoice, fee_structure=fee).exists():
+        # DEFENSIVE: Avoid duplicating if already present
+        # We check by both fee_structure OR description
+        # This prevents 240k inflation if multiple fee structures for "Tuition" exist
+        exists = InvoiceItem.objects.filter(
+            models.Q(invoice=invoice, fee_structure=fee) |
+            models.Q(invoice=invoice, description=fee.name)
+        ).exists()
+
+        if not exists:
             InvoiceItem.objects.create(
                 invoice=invoice,
                 fee_structure=fee,
-                description=fee.name, # e.g. "Tuition Fee"
+                description=fee.name,
                 amount=fee.amount
             )
-            # We don't need to call update_invoice_totals here because InvoiceItem.save() now does it automatically (via our previous fix)
+            
+    # Explicitly trigger recalculation
+    invoice.recalculate_pricing()
             
     return invoice
 

@@ -162,6 +162,52 @@ class BookLendingViewSet(viewsets.ModelViewSet):
         
         return Response({'status': f'Book returned successfully.{fine_msg}'})
 
+    @action(detail=False, methods=['post'])
+    def mark_overdue(self, request):
+        """
+        Flags books as OVERDUE if they are past their due date and not returned.
+        Can be called manually by admin or via a scheduled cron job.
+        """
+        today = timezone.now().date()
+        overdue_lendings = BookLending.objects.filter(
+            date_returned__isnull=True,
+            due_date__lt=today
+        ).select_related('copy')
+
+        count = 0
+        from django.db import transaction
+        with transaction.atomic():
+            for lending in overdue_lendings:
+                if lending.copy.status != 'OVERDUE':
+                    lending.copy.status = 'OVERDUE'
+                    lending.copy.save(update_fields=['status'])
+                    count += 1
+
+        return Response({'message': f'{count} book copies marked as OVERDUE.'})
+
+    @action(detail=True, methods=['post'])
+    def extend_due_date(self, request, pk=None):
+        """
+        Allows librarian to extend the due date of a lending and increments renewal_count.
+        """
+        lending = self.get_object()
+        if lending.date_returned:
+            return Response({'error': 'Cannot extend a returned book'}, status=status.HTTP_400_BAD_REQUEST)
+
+        days_to_add = int(request.data.get('days', 7))
+        from datetime import timedelta
+        
+        # If currently overdue, reset the copy status to ISSUED
+        if lending.copy.status == 'OVERDUE':
+            lending.copy.status = 'ISSUED'
+            lending.copy.save(update_fields=['status'])
+
+        lending.due_date = lending.due_date + timedelta(days=days_to_add)
+        lending.renewal_count += 1
+        lending.save()
+
+        return Response({'message': f'Due date extended to {lending.due_date}'})
+
 class LibraryFineViewSet(viewsets.ModelViewSet):
     queryset = LibraryFine.objects.select_related('lending', 'lending__copy__book', 'user', 'adjustment').all()
     serializer_class = LibraryFineSerializer

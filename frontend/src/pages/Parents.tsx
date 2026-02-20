@@ -78,10 +78,13 @@ const Parents = () => {
         }
     };
 
-    const filteredParents = parents.filter(p =>
-        p.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.phone.includes(searchTerm)
-    );
+    const filteredParents = React.useMemo(() => {
+        const lowerSearch = searchTerm.toLowerCase();
+        return parents.filter(p =>
+            (p.full_name || '').toLowerCase().includes(lowerSearch) ||
+            (p.phone || '').includes(searchTerm)
+        );
+    }, [parents, searchTerm]);
 
     if (loading) return <div className="spinner-container flex items-center justify-center p-20"><div className="spinner"></div></div>;
 

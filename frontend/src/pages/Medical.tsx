@@ -99,16 +99,19 @@ const Medical = () => {
         setEditingRecord(null);
     };
 
-    const filteredRecords = records.filter(r =>
-        (r.student_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (r.diagnosis || '').toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredRecords = React.useMemo(() => {
+        const lowerSearch = searchTerm.toLowerCase();
+        return records.filter(r =>
+            (r.student_name || '').toLowerCase().includes(lowerSearch) ||
+            (r.diagnosis || '').toLowerCase().includes(lowerSearch)
+        );
+    }, [records, searchTerm]);
 
-    const studentOptions = students.map(s => ({
+    const studentOptions = React.useMemo(() => students.map(s => ({
         id: s.id,
         label: s.full_name,
         subLabel: `ID: ${s.admission_number}`
-    }));
+    })), [students]);
 
     if (loading) {
         return <div className="flex items-center justify-center" style={{ height: '400px' }}><div className="spinner"></div></div>;

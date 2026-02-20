@@ -89,6 +89,7 @@ class Exam(models.Model):
     TYPES = (('CAT', 'CAT'), ('MID_TERM', 'Mid-Term'), ('END_TERM', 'End-Term'))
     name = models.CharField(max_length=100)
     exam_type = models.CharField(max_length=20, choices=TYPES, default='END_TERM')
+    grade_system = models.ForeignKey(GradeSystem, on_delete=models.SET_NULL, null=True, blank=True, help_text="Specific grading system for this exam")
     term = models.ForeignKey(Term, on_delete=models.CASCADE, related_name='exams')
     weighting = models.IntegerField(default=100, help_text="Percentage contribution to final term grade")
     date_started = models.DateField()
@@ -115,15 +116,23 @@ class StudentResult(models.Model):
         super().save(*args, **kwargs)
 
     def calculate_grade(self):
-        # Find applicable grade system (e.g., from class or subject default)
-        # For simplicity, picking the first active system or default
-        # Ideally, link Class -> GradeSystem
+        # 1. Check if exam has a specific grade system
+        sys = self.exam.grade_system
+        # 2. If not, use the system marked as default
+        if not sys:
+            sys = GradeSystem.objects.filter(is_default=True).first()
+        # 3. If no default, just get the first available system
+        if not sys:
+            sys = GradeSystem.objects.first()
+            
         try:
-            # Assuming GradeSystem linked to Class, but Class is on Student
-            # Simple fallback: Get any GradeBoundary that matches score
-            boundaries = GradeBoundary.objects.filter(min_score__lte=self.score, max_score__gte=self.score)
-            if boundaries.exists():
-                self.grade = boundaries.first().grade
+            if sys:
+                # Find boundary within the SPECIFIC system
+                boundaries = GradeBoundary.objects.filter(system=sys, min_score__lte=self.score, max_score__gte=self.score)
+                if boundaries.exists():
+                    self.grade = boundaries.first().grade
+                else:
+                    self.grade = 'N/A'
             else:
                 self.grade = 'N/A'
         except Exception:

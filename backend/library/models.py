@@ -29,6 +29,7 @@ class BookCopy(models.Model):
     STATUS_CHOICES = (
         ('AVAILABLE', 'Available'),
         ('ISSUED', 'Issued'),
+        ('OVERDUE', 'Overdue'),
         ('RESERVED', 'Reserved'),
         ('LOST', 'Lost'),
         ('DAMAGED', 'Damaged'),

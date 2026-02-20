@@ -117,12 +117,15 @@ const Staff = () => {
         setEditingStaff(null);
     };
 
-    const filteredStaff = staff.filter(s =>
-        (s.full_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (s.employee_id || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (s.department || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (s.role || '').toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredStaff = React.useMemo(() => {
+        const lowerSearch = searchTerm.toLowerCase();
+        return staff.filter(s =>
+            (s.full_name || '').toLowerCase().includes(lowerSearch) ||
+            (s.employee_id || '').toLowerCase().includes(lowerSearch) ||
+            (s.department || '').toLowerCase().includes(lowerSearch) ||
+            (s.role || '').toLowerCase().includes(lowerSearch)
+        );
+    }, [staff, searchTerm]);
 
     const renderStaffTable = (staffList: any[]) => (
         <table className="table">
@@ -159,18 +162,20 @@ const Staff = () => {
         </table>
     );
 
-    const groupedStaff = filteredStaff.reduce((groups: any, member) => {
-        let key = 'ALL';
-        if (groupBy === 'ROLE') {
-            key = member.role || 'Unassigned';
-        } else if (groupBy === 'DEPARTMENT') {
-            key = member.department || 'General Administration';
-        }
+    const groupedStaff = React.useMemo(() => {
+        return filteredStaff.reduce((groups: any, member) => {
+            let key = 'ALL';
+            if (groupBy === 'ROLE') {
+                key = member.role || 'Unassigned';
+            } else if (groupBy === 'DEPARTMENT') {
+                key = member.department || 'General Administration';
+            }
 
-        if (!groups[key]) groups[key] = [];
-        groups[key].push(member);
-        return groups;
-    }, {});
+            if (!groups[key]) groups[key] = [];
+            groups[key].push(member);
+            return groups;
+        }, {});
+    }, [filteredStaff, groupBy]);
 
     if (loading) {
         return <div className="flex items-center justify-center p-12 spinner-container"><div className="spinner"></div></div>;

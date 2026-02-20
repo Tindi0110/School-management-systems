@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
     Plus, Edit, Trash2, Users,
     School, Calendar, ClipboardCheck, BarChart3, FileText,
-    Settings, CheckCircle2, TrendingUp, Book, Layers, Trophy, Printer, Square, CheckSquare
+    Settings, CheckCircle2, Book, Layers, Trophy, Printer, Square, CheckSquare, Download
 } from 'lucide-react';
 import { academicsAPI, staffAPI, studentsAPI } from '../api/api';
 import { exportToCSV } from '../utils/export';
@@ -14,8 +14,33 @@ import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 import Button from '../components/common/Button';
 
-const calculateGrade = (score: number) => {
+const calculateGrade = (score: number, gradeSystems: any[], specificSystemId?: number | string | null) => {
     if (!score && score !== 0) return '-';
+
+    // 1. Try specific system
+    let system = gradeSystems.find(s => s.id === specificSystemId || s.id === parseInt(specificSystemId as string));
+
+    // 2. Try default system
+    if (!system) {
+        system = gradeSystems.find(s => s.is_default);
+    }
+
+    // 3. Fallback to first system
+    if (!system && gradeSystems.length > 0) {
+        system = gradeSystems[0];
+    }
+
+    if (system && system.boundaries && system.boundaries.length > 0) {
+        // Sort boundaries descending by min_score to find the right bracket
+        const sortedBoundaries = [...system.boundaries].sort((a, b) => b.min_score - a.min_score);
+        for (const b of sortedBoundaries) {
+            if (score >= b.min_score && score <= b.max_score) {
+                return b.grade;
+            }
+        }
+    }
+
+    // Hardcoded fallback if absolutely no systems are defined in the backend
     if (score >= 80) return 'A';
     if (score >= 75) return 'A-';
     if (score >= 70) return 'B+';
@@ -30,7 +55,7 @@ const calculateGrade = (score: number) => {
     return 'E';
 };
 
-const StudentResultRow = React.memo(({ student, sClass, subjects, studentScores, onScoreChange }: any) => {
+const StudentResultRow = React.memo(({ student, sClass, subjects, studentScores, onScoreChange, activeClassSubjects, resultContext, gradeSystems, examGradeSystemId }: any) => {
     return (
         <tr className="h-12 hover:bg-slate-50 transition-colors">
             <td className="sticky left-0 z-10 bg-white font-medium py-1 px-3">
@@ -39,14 +64,17 @@ const StudentResultRow = React.memo(({ student, sClass, subjects, studentScores,
                     {student.admission_number} | {sClass?.stream}
                 </div>
             </td>
-            {subjects.map((sub: any) => {
+            {subjects.filter((sub: any) => {
+                if (resultContext === 'all') return true;
+                return activeClassSubjects.some((cs: any) => cs.subject === sub.id);
+            }).map((sub: any) => {
                 const entry = (studentScores || {})[sub.id] || { score: '' };
-                const grade = calculateGrade(parseFloat(entry.score));
+                const grade = calculateGrade(parseFloat(entry.score), gradeSystems, examGradeSystemId);
                 return (
-                    <td key={sub.id} className="p-0 relative">
+                    <td key={sub.id} className="p-0 relative border-r">
                         <input
                             type="text"
-                            className={`w-full h-full text-center text-lg font-black bg-transparent border-none outline-none p-0 m-0 ${entry.id ? 'text-slate-950' : 'text-slate-400'}`}
+                            className={`w-full h-full text-center text-sm font-black bg-transparent border-none outline-none p-2 m-0 ${entry.id ? 'text-slate-950' : 'text-slate-400'}`}
                             value={entry.score}
                             placeholder="-"
                             onChange={(e) => onScoreChange(student.id, sub.id, e.target.value)}
@@ -69,6 +97,7 @@ const Academics = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { success, error: toastError, warning } = useToast();
     const { confirm } = useConfirm();
+    const [searchTerm, setSearchTerm] = useState('');
 
 
     // Data States
@@ -119,7 +148,7 @@ const Academics = () => {
     const [attendanceForm, setAttendanceForm] = useState({ student: '', status: 'PRESENT', remark: '', date: new Date().toISOString().split('T')[0] });
     const [attendanceFilter, setAttendanceFilter] = useState({ level: '', classId: '', isBulk: false });
     const [classForm, setClassForm] = useState({ name: '', stream: '', year: new Date().getFullYear().toString(), class_teacher: '', capacity: 40 });
-    const [examForm, setExamForm] = useState({ name: '', exam_type: 'END_TERM', term: '', weighting: 100, date_started: '', is_active: true });
+    const [examForm, setExamForm] = useState({ name: '', exam_type: 'END_TERM', term: '', grade_system: '', weighting: 100, date_started: '', is_active: true });
     const [syllabusForm, setSyllabusForm] = useState({ subject: '', class_grade: '', coverage_percentage: 0 });
     const [editingSyllabusId, setEditingSyllabusId] = useState<number | null>(null);
     const [editingYearId, setEditingYearId] = useState<number | null>(null);
@@ -148,6 +177,7 @@ const Academics = () => {
     const [editingSystemId] = useState<number | null>(null);
     const [examResults, setExamResults] = useState<any[]>([]);
     const [studentScores, setStudentScores] = useState<any>({});
+    const [activeClassSubjects, setActiveClassSubjects] = useState<any[]>([]);
     const [selectedClass, setSelectedClass] = useState<any>(null);
     const [viewClassStudents, setViewClassStudents] = useState<any[]>([]);
     const [selectedExam, setSelectedExam] = useState<any>(null);
@@ -257,23 +287,12 @@ const Academics = () => {
             catch (e: any) { toastError(e.message || 'Failed to delete group'); }
         }
     };
-    const calculateMeanGrade = (results: any[]) => {
+    const calculateMeanGrade = (results: any[], gradeSystems: any[], specificSystemId?: number | string | null) => {
         if (!results || results.length === 0) return 'N/A';
         const totalScore = results.reduce((sum, r) => sum + parseFloat(r.score), 0);
         const avg = totalScore / results.length;
 
-        if (avg >= 80) return 'A';
-        if (avg >= 75) return 'A-';
-        if (avg >= 70) return 'B+';
-        if (avg >= 65) return 'B';
-        if (avg >= 60) return 'B-';
-        if (avg >= 55) return 'C+';
-        if (avg >= 50) return 'C';
-        if (avg >= 45) return 'C-';
-        if (avg >= 40) return 'D+';
-        if (avg >= 35) return 'D';
-        if (avg >= 30) return 'D-';
-        return 'E';
+        return calculateGrade(avg, gradeSystems, specificSystemId);
     };
 
     const loadAllAcademicData = async () => {
@@ -314,7 +333,7 @@ const Academics = () => {
 
             if (resultsRes.status === 'fulfilled') {
                 const results = resultsRes.value.data?.results ?? resultsRes.value.data ?? [];
-                setMeanGrade(calculateMeanGrade(results));
+                setMeanGrade(calculateMeanGrade(results, d(gradesRes)));
             }
 
         } catch (err) {
@@ -557,7 +576,7 @@ const Academics = () => {
             loadAllAcademicData();
             setIsExamModalOpen(false);
             setEditingExamId(null);
-            setExamForm({ name: '', exam_type: 'END_TERM', term: '', weighting: 100, date_started: '', is_active: true });
+            setExamForm({ name: '', exam_type: 'END_TERM', term: '', grade_system: '', weighting: 100, date_started: '', is_active: true });
         } catch (err: any) { toastError(err.message || 'Failed to save exam'); }
         finally { setIsSubmitting(false); }
     };
@@ -567,6 +586,7 @@ const Academics = () => {
             name: e.name,
             exam_type: e.exam_type,
             term: e.term,
+            grade_system: e.grade_system || '',
             weighting: e.weighting,
             date_started: e.date_started,
             is_active: e.is_active
@@ -705,7 +725,12 @@ const Academics = () => {
                     const resultId = data.id;
 
                     if (!score || score.trim() === '') {
-                        if (resultId) promises.push(academicsAPI.results.delete(resultId));
+                        if (resultId) {
+                            promises.push((async () => {
+                                await academicsAPI.results.delete(resultId);
+                                return { studentId, subjectId, deleted: true };
+                            })());
+                        }
                         return;
                     }
 
@@ -714,7 +739,7 @@ const Academics = () => {
                         exam: selectedExam.id,
                         subject: parseInt(subjectId),
                         score: parseFloat(score),
-                        grade: calculateGrade(parseFloat(score)), // Use the helper
+                        grade: calculateGrade(parseFloat(score), gradeSystems, selectedExam.grade_system), // Use the helper
                         recorded_by: user?.id || 1
                     };
 
@@ -732,8 +757,11 @@ const Academics = () => {
             setStudentScores((prev: any) => {
                 const next = { ...prev };
                 saved.forEach((item: any) => {
-                    if (item && item.studentId && item.subjectId && item.id) {
-                        if (next[item.studentId]?.[item.subjectId]) {
+                    if (item && item.studentId && item.subjectId) {
+                        if (item.deleted && next[item.studentId]?.[item.subjectId]) {
+                            // Clear the ID so a future edit does a POST instead of a PUT
+                            delete next[item.studentId][item.subjectId].id;
+                        } else if (item.id && next[item.studentId]?.[item.subjectId]) {
                             next[item.studentId][item.subjectId].id = item.id;
                         }
                     }
@@ -864,6 +892,18 @@ const Academics = () => {
             </div>
 
             {/* Content per Tab */}
+            {activeTab !== 'SUMMARY' && activeTab !== 'ALLOCATION' && (
+                <div className="mb-4 no-print flex justify-end">
+                    <input
+                        type="text"
+                        placeholder={`Search ${activeTab.toLowerCase()}...`}
+                        className="input input-sm w-64 shadow-sm"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+            )}
+
             {activeTab === 'SUMMARY' && (
                 <div className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-lg">
@@ -873,18 +913,9 @@ const Academics = () => {
                             icon={<Users size={16} />}
                             gradient="linear-gradient(135deg, #667eea, #764ba2)"
                         />
-                        <StatCard
-                            title="Pending Exams"
-                            value={exams.filter(e => e.is_active).length.toString()}
-                            icon={<ClipboardCheck size={16} />}
-                            gradient="linear-gradient(135deg, #43e97b, #38f9d7)"
-                        />
-                        <StatCard
-                            title="Mean Grade"
-                            value={meanGrade}
-                            icon={<TrendingUp size={16} />}
-                            gradient="linear-gradient(135deg, #fa709a, #fee140)"
-                        />
+                        <StatCard title="Departments/Groups" value={subjectGroups.length.toString()} icon={<Layers size={16} />} gradient="linear-gradient(135deg, #f5576c, #f093fb)" />
+                        <StatCard title="Pending Exams" value={exams.filter(e => new Date(e.date_started) > new Date() || e.is_active).length.toString()} icon={<Calendar size={16} />} gradient="linear-gradient(135deg, #ff0844, #ffb199)" />
+                        <StatCard title="System Grading Mean" value={meanGrade} icon={<BarChart3 size={16} />} gradient="linear-gradient(135deg, #0ba360, #3cba92)" />
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-lg">
@@ -899,8 +930,9 @@ const Academics = () => {
                                         <div className="flex items-center gap-md">
                                             <div className="p-2 rounded bg-warning-light text-warning"><Calendar size={12} /></div>
                                             <div>
-                                                <p className="font-bold text-[11px] mb-0">{e.name}</p>
-                                                <p className="text-[9px] text-secondary">{e.term_name || 'Active Term'}</p>
+                                                <p className="font-bold text-[11px] mb-0 text-slate-900">{e.name}</p>
+                                                <p className="text-[9px] text-secondary mb-0">{e.term_name || 'Active Term'}</p>
+                                                <p className="text-[8px] text-secondary font-mono bg-slate-100 inline-block px-1 rounded mt-0.5">{new Date(e.date_started).toLocaleDateString()} - {new Date(e.date_ended).toLocaleDateString()}</p>
                                             </div>
                                         </div>
                                         <span className={`badge ${e.is_active ? 'badge-success' : 'badge-error'}`} style={{ fontSize: '8px' }}>{e.is_active ? 'OPEN' : 'CLOSED'}</span>
@@ -939,7 +971,11 @@ const Academics = () => {
 
             {activeTab === 'CLASSES' && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-lg">
-                    {classes.map(cls => (
+                    {classes.filter(cls =>
+                        !searchTerm ||
+                        cls.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        cls.stream.toLowerCase().includes(searchTerm.toLowerCase())
+                    ).map(cls => (
                         <div key={cls.id} className="card hover-bg-secondary transition-all">
                             <div className="flex justify-between items-start mb-4">
                                 <div className="p-2.5 rounded-lg bg-primary-light text-white"><School size={16} /></div>
@@ -1164,7 +1200,10 @@ const Academics = () => {
                 activeTab === 'EXAMS' && (
                     <div className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-lg">
-                            {exams.map(exam => (
+                            {exams.filter(exam =>
+                                !searchTerm ||
+                                exam.name.toLowerCase().includes(searchTerm.toLowerCase())
+                            ).map(exam => (
                                 <div key={exam.id} className="card">
                                     <div className="flex justify-between items-start mb-4">
                                         <div className="p-2.5 rounded-lg bg-warning-light text-warning"><ClipboardCheck size={16} /></div>
@@ -1198,6 +1237,9 @@ const Academics = () => {
                             <p className="text-xs text-secondary mb-0">Performance Overview</p>
                         </div>
                         <div className="flex items-center gap-2">
+                            <Button variant="outline" size="sm" className="no-print mr-4 text-primary border-primary hover:bg-primary-light" onClick={() => window.print()} title="Print Term Reports" icon={<Printer size={14} />}>
+                                Print
+                            </Button>
                             <span className="text-[10px] font-bold uppercase text-secondary">Group By:</span>
                             <div className="join">
                                 <button className={`btn btn-xs join-item ${viewResultsGroupBy === 'STREAM' ? 'btn-active btn-primary' : ''}`} onClick={() => setViewResultsGroupBy('STREAM')}>Stream</button>
@@ -1333,15 +1375,12 @@ const Academics = () => {
                 activeTab === 'CURRICULUM' && (
                     <div className="space-y-6 fade-in">
                         <div className="flex justify-between items-center">
-                            <h2 className="text-lg font-black text-primary uppercase">Syllabus Tracking</h2>
-                            {!isReadOnly && (
-                                <button className="btn btn-sm btn-primary font-black" onClick={() => { setEditingSyllabusId(null); setIsSyllabusModalOpen(true); }}><Plus size={16} /> Record Coverage</button>
-                            )}
+                            <h2 className="text-lg font-black text-primary uppercase">Institutional Subjects</h2>
                         </div>
 
                         <div className="card p-0 overflow-hidden mb-6">
                             <div className="p-3 bg-secondary-light flex justify-between items-center border-bottom">
-                                <h3 className="mb-0 text-xs font-black uppercase">Institutional Subjects</h3>
+                                <h3 className="mb-0 text-xs font-black uppercase">Subject Directory</h3>
                                 {!isReadOnly && (
                                     <button className="btn btn-primary btn-xs" onClick={() => setIsSubjectModalOpen(true)}><Plus size={12} /> New Subject</button>
                                 )}
@@ -1356,7 +1395,12 @@ const Academics = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {subjects.map(s => (
+                                    {subjects.filter(s =>
+                                        !searchTerm ||
+                                        s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                        s.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                        (s.group_name && s.group_name.toLowerCase().includes(searchTerm.toLowerCase()))
+                                    ).map(s => (
                                         <tr key={s.id}>
                                             <td className="font-bold text-[11px]">{s.name}</td>
                                             <td><code>{s.code}</code></td>
@@ -1372,32 +1416,6 @@ const Academics = () => {
                                         </tr>
                                     ))}
                                     {subjects.length === 0 && <tr><td colSpan={4} className="text-center p-4 italic text-secondary">No subjects found.</td></tr>}
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <div className="card p-0 overflow-hidden">
-                            <div className="p-3 bg-secondary-light border-bottom"><h3 className="mb-0 text-xs font-black uppercase">Syllabus Tracking</h3></div>
-                            <table className="table">
-                                <thead><tr><th>Subject</th><th>Class</th><th>Coverage</th><th>Progress</th></tr></thead>
-                                <tbody>
-                                    {syllabusData.length === 0 ? <tr><td colSpan={4} className="text-center p-6 text-secondary text-xs uppercase font-bold">No records found</td></tr> :
-                                        syllabusData.map((s: any) => {
-                                            const cls = classes.find(c => c.id === s.class_grade);
-                                            const sub = subjects.find(sub => sub.id === s.subject);
-                                            return (
-                                                <tr key={s.id} className="hover-bg-secondary">
-                                                    <td className="font-bold text-xs">{sub?.name || 'Unknown'}</td>
-                                                    <td className="text-xs uppercase">{cls?.name || 'N/A'} {cls?.stream || ''}</td>
-                                                    <td className="font-black text-primary text-xs">{s.coverage_percentage}%</td>
-                                                    <td className="w-1/3">
-                                                        <div className="w-full bg-secondary-light rounded-full h-2">
-                                                            <div className="bg-primary h-2 rounded-full" style={{ width: `${s.coverage_percentage}%` }}></div>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })}
                                 </tbody>
                             </table>
                         </div>
@@ -1735,8 +1753,9 @@ const Academics = () => {
 
             <Modal isOpen={isExamModalOpen} onClose={() => setIsExamModalOpen(false)} title="Schedule Assessment/Exam">
                 <form onSubmit={handleExamSubmit}>
-                    <div className="form-group"><label className="label text-[10px] font-black uppercase">Exam Title *</label><input type="text" className="input" value={examForm.name} onChange={(e) => setExamForm({ ...examForm, name: e.target.value })} placeholder="End of Term 1" required /></div>
-                    <div className="grid grid-cols-2 gap-md">
+                    <div className="grid grid-cols-2 gap-md mb-4">
+                        <div className="form-group col-span-2"><label className="label text-[10px] font-black uppercase">Exam Title *</label><input type="text" className="input" value={examForm.name} onChange={(e) => setExamForm({ ...examForm, name: e.target.value })} placeholder="End of Term 1" required /></div>
+
                         <div className="form-group">
                             <label className="label text-[10px] font-black uppercase">Assessment Type</label>
                             <select className="select" value={examForm.exam_type} onChange={(e) => setExamForm({ ...examForm, exam_type: e.target.value })}>
@@ -1744,15 +1763,22 @@ const Academics = () => {
                             </select>
                         </div>
                         <div className="form-group">
-                            <label className="label text-[10px] font-black uppercase">Active Term</label>
+                            <label className="label text-[10px] font-black uppercase">Active Term *</label>
                             <select className="select" value={examForm.term} onChange={(e) => setExamForm({ ...examForm, term: e.target.value })} required>
                                 <option value="">Select Term</option>{terms.map(t => <option key={t.id} value={t.id}>{t.name} ({t.year_name})</option>)}
                             </select>
                         </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-md">
-                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Weighting (%)</label><input type="number" className="input" value={examForm.weighting} onChange={(e) => setExamForm({ ...examForm, weighting: parseInt(e.target.value) })} required /></div>
+
+                        <div className="form-group">
+                            <label className="label text-[10px] font-black uppercase">Grading System</label>
+                            <select className="select" value={examForm.grade_system} onChange={(e) => setExamForm({ ...examForm, grade_system: e.target.value })}>
+                                <option value="">Default Grading System</option>
+                                {gradeSystems.map(gs => <option key={gs.id} value={gs.id}>{gs.name}</option>)}
+                            </select>
+                        </div>
                         <div className="form-group"><label className="label text-[10px] font-black uppercase">Start Date</label><input type="date" className="input" value={examForm.date_started} onChange={(e) => setExamForm({ ...examForm, date_started: e.target.value })} required /></div>
+
+                        <div className="form-group col-span-2"><label className="label text-[10px] font-black uppercase">Weighting (%)</label><input type="number" className="input" value={examForm.weighting} onChange={(e) => setExamForm({ ...examForm, weighting: parseInt(e.target.value) })} required /></div>
                     </div>
                     <Button type="submit" variant="primary" size="sm" className="w-full mt-2 font-black uppercase" loading={isSubmitting} loadingText="Confirming...">Confirm Exam Schedule</Button>
                 </form>
@@ -1826,7 +1852,7 @@ const Academics = () => {
                                     const sResults = examResults.filter(r => r.student === student.id);
                                     const total = sResults.reduce((sum, r) => sum + parseFloat(r.score), 0);
                                     const avg = sResults.length > 0 ? total / sResults.length : 0;
-                                    const meanGrade = calculateMeanGrade(sResults); // Use existing helper
+                                    const meanGrade = calculateMeanGrade(sResults, gradeSystems, selectedExam?.grade_system); // Use existing helper
 
                                     return {
                                         student,
@@ -1876,6 +1902,27 @@ const Academics = () => {
 
             {/* View Class Modal */}
             <Modal isOpen={isViewClassModalOpen} onClose={() => setIsViewClassModalOpen(false)} title={`Class Details: ${selectedClass?.name || ''} ${selectedClass?.stream || ''}`}>
+                <div className="flex justify-end gap-2 mb-4 no-print">
+                    <Button variant="outline" size="sm" onClick={() => {
+                        const exportData = viewClassStudents.map(s => ({
+                            'Student Name': s.full_name,
+                            'Admission Number': s.admission_number,
+                            'Gender': s.gender || 'N/A'
+                        }));
+                        exportToCSV(exportData, `Class_List_${selectedClass?.name}_${selectedClass?.stream}`);
+                    }} icon={<Download size={16} />}>
+                        Export CSV
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => {
+                        // Temporarily add print-modal class to the modal content wrapper before triggering print
+                        const modalContent = document.querySelector('.modal-content');
+                        if (modalContent) modalContent.classList.add('print-modal');
+                        window.print();
+                        if (modalContent) setTimeout(() => modalContent.classList.remove('print-modal'), 1000);
+                    }} className="border-primary text-primary hover:bg-primary hover:text-white" icon={<Printer size={16} />}>
+                        Print List
+                    </Button>
+                </div>
                 <div className="table-container">
                     <table className="table">
                         <thead><tr><th>Student Name</th><th>ADM No</th></tr></thead>
@@ -1938,8 +1985,19 @@ const Academics = () => {
                                                 matrix[r.student][r.subject] = { score: r.score.toString(), id: r.id };
                                             });
                                             setStudentScores(matrix);
+
+                                            // Also load the specific subjects allocated to this class
+                                            if (cid !== 'all') {
+                                                const classSubRes = await academicsAPI.classSubjects.list({ class_id: cid });
+                                                setActiveClassSubjects(classSubRes.data || []);
+                                            } else {
+                                                setActiveClassSubjects([]);
+                                            }
+
                                         } catch (err) { console.error(err); }
                                         setLoading(false);
+                                    } else {
+                                        setActiveClassSubjects([]);
                                     }
                                 }} disabled={!resultContext.level}>
                                     <option value="">Select Stream...</option>
@@ -1958,7 +2016,12 @@ const Academics = () => {
                                         <th className="sticky left-0 z-30 bg-white min-w-[160px] p-3 text-left">
                                             <span className="text-[10px] font-black uppercase text-slate-800">Student Name</span>
                                         </th>
-                                        {subjects.map(sub => (
+                                        {subjects.filter(sub => {
+                                            // 1. If 'All Streams' selected, show all subjects
+                                            if (resultContext.classId === 'all') return true;
+                                            // 2. Otherwise, only show if it's allocated to the selected class
+                                            return activeClassSubjects.some(cs => cs.subject === sub.id);
+                                        }).map(sub => (
                                             <th key={sub.id} className="text-center min-w-[70px] p-2 bg-white" title={`${sub.name} (${sub.code})`}>
                                                 <div className="text-[11px] font-black uppercase text-slate-800">{sub.name.substring(0, 3)}</div>
                                             </th>
@@ -1976,6 +2039,10 @@ const Academics = () => {
                                                 subjects={subjects}
                                                 studentScores={studentScores[student.id]}
                                                 onScoreChange={handleScoreChange}
+                                                activeClassSubjects={activeClassSubjects}
+                                                resultContext={resultContext.classId}
+                                                gradeSystems={gradeSystems}
+                                                examGradeSystemId={selectedExam?.grade_system}
                                             />
                                         );
                                     })}

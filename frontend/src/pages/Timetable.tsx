@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Calendar, Plus, Trash2, Edit, User } from 'lucide-react';
+import { Calendar, Plus, Trash2, Edit, User, Printer, Download } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 import { timetableAPI, classesAPI, subjectsAPI, staffAPI } from '../api/api';
 import Modal from '../components/Modal';
 import Button from '../components/common/Button';
+import { exportToCSV } from '../utils/export';
 import { useSelector } from 'react-redux';
 
 const Timetable = () => {
@@ -168,6 +169,25 @@ const Timetable = () => {
                         <option value="">Select Class...</option>
                         {classes.map(c => <option key={c.id} value={c.id}>{c.name} {c.stream}</option>)}
                     </select>
+                    {selectedClass && (
+                        <div className="flex gap-2 no-print">
+                            <Button variant="outline" size="sm" onClick={() => {
+                                const exportData = slots.map(s => ({
+                                    Day: days.find(d => d.id === s.day)?.label || s.day,
+                                    'Start Time': s.start_time,
+                                    'End Time': s.end_time,
+                                    Subject: s.subject_name,
+                                    Teacher: s.teacher_name || 'None'
+                                }));
+                                exportToCSV(exportData, `Timetable_Class_${selectedClass}`);
+                            }} icon={<Download size={16} />}>
+                                Export
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={() => window.print()} className="border-primary text-primary hover:bg-primary hover:text-white" icon={<Printer size={16} />}>
+                                Print
+                            </Button>
+                        </div>
+                    )}
                     {canAdd && (
                         <Button variant="primary" onClick={() => openModal()} disabled={!selectedClass} icon={<Plus size={18} />}>
                             Add Slot
@@ -177,17 +197,17 @@ const Timetable = () => {
             </div>
 
             {selectedClass ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 print:grid-cols-6 print:gap-1">
                     {days.map(day => {
                         const daySlots = slots.filter(s => s.day === day.id).sort((a, b) => a.start_time.localeCompare(b.start_time));
                         return (
-                            <div key={day.id} className="card bg-secondary-light/30 border-t-4 border-primary p-0">
-                                <div className="p-3 bg-white border-b font-black text-center text-primary uppercase text-sm tracking-wider">
+                            <div key={day.id} className="card bg-secondary-light/30 border-t-4 border-primary p-0 print:border print:shadow-none print:m-0 print:bg-white">
+                                <div className="p-3 bg-white border-b font-black text-center text-primary uppercase text-sm tracking-wider print:p-1 print:text-xs">
                                     {day.label}
                                 </div>
-                                <div className="p-2 space-y-2 min-h-[200px]">
+                                <div className="p-2 space-y-2 min-h-[200px] print:p-1 print:min-h-0 print:space-y-1">
                                     {daySlots.map(slot => (
-                                        <div key={slot.id} className="bg-white p-3 rounded border shadow-sm hover:shadow-md transition-all group relative">
+                                        <div key={slot.id} className="bg-white p-3 rounded border shadow-sm hover:shadow-md transition-all group relative print:shadow-none print:p-1 print:border-secondary-light">
                                             <div className="flex justify-between items-start mb-1">
                                                 <span className="font-mono text-[10px] font-bold bg-primary-light text-primary px-1.5 rounded">
                                                     {slot.start_time.slice(0, 5)} - {slot.end_time.slice(0, 5)}

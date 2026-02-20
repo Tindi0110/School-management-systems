@@ -570,24 +570,24 @@ const Transport = () => {
         }
     };
 
-    const stats = {
+    const stats = React.useMemo(() => ({
         totalFleet: vehicles.length,
         activeRoutes: routes.length,
         totalEnrolled: allocations.filter(a => a?.status === 'ACTIVE').length,
         fuelCostTerm: (fuelRecords || []).reduce((acc, f) => acc + (parseFloat(f?.amount) || 0), 0)
-    };
+    }), [vehicles, routes, allocations, fuelRecords]);
 
-    const studentOptions = students.map(s => ({
+    const studentOptions = React.useMemo(() => students.map(s => ({
         id: String(s.id),
         label: s.full_name,
         subLabel: `ID: ${s.admission_number}`
-    }));
+    })), [students]);
 
-    const routeOptions = routes.map(r => ({
+    const routeOptions = React.useMemo(() => routes.map(r => ({
         id: String(r.id),
         label: `${r.route_code} - ${r.name}`,
         subLabel: `Cost: KES ${parseFloat(r.base_cost).toLocaleString()}`
-    }));
+    })), [routes]);
 
     if (loading) return <div className="spinner-container"><div className="spinner"></div></div>;
 
