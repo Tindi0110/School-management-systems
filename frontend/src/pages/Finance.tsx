@@ -404,7 +404,7 @@ const Finance = () => {
                                                     <td className="font-bold">#INV-{inv.id}</td>
                                                     <td>{inv.student_name}</td>
                                                     <td>KES {Number(inv.total_amount).toLocaleString()}</td>
-                                                    <td className="text-error font-bold">KES {Number(inv.balance).toLocaleString()}</td>
+                                                    <td className={`font-bold ${Number(inv.balance) === 0 ? 'text-success' : Number(inv.balance) < 0 ? 'text-info' : 'text-error'}`}>KES {Number(inv.balance).toLocaleString()}</td>
                                                     <td>
                                                         <span className={`badge ${inv.status === 'PAID' ? 'badge-success' : inv.status === 'OVERPAID' ? 'badge-info text-white' : inv.status === 'PARTIAL' ? 'badge-warning' : 'badge-error'}`}>
                                                             {inv.status}
@@ -507,7 +507,7 @@ const Finance = () => {
                                                 <td className="font-bold">#INV-{inv.id}</td>
                                                 <td>{inv.student_name}</td>
                                                 <td>KES {Number(inv.total_amount).toLocaleString()}</td>
-                                                <td className="text-error font-bold">KES {Number(inv.balance).toLocaleString()}</td>
+                                                <td className={`font-bold ${Number(inv.balance) === 0 ? 'text-success' : Number(inv.balance) < 0 ? 'text-info' : 'text-error'}`}>KES {Number(inv.balance).toLocaleString()}</td>
                                                 <td>
                                                     <span className={`badge ${inv.status === 'PAID' ? 'badge-success' : inv.status === 'OVERPAID' ? 'badge-info text-white' : inv.status === 'PARTIAL' ? 'badge-warning' : 'badge-error'}`}>
                                                         {inv.status}
@@ -863,7 +863,7 @@ const Finance = () => {
                             </div>
                             <div className="flex justify-between items-center border-t pt-2 text-lg">
                                 <span className="font-bold">Balance Due</span>
-                                <span className="font-black text-error">KES {Number(selectedInvoice.balance).toLocaleString()}</span>
+                                <span className={`font-black ${Number(selectedInvoice.balance) === 0 ? 'text-success' : Number(selectedInvoice.balance) < 0 ? 'text-info' : 'text-error'}`}>KES {Number(selectedInvoice.balance).toLocaleString()}</span>
                             </div>
                         </div>
 
