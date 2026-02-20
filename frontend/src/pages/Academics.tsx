@@ -1424,7 +1424,7 @@ const Academics = () => {
                                                 </td>
                                                 <td className="text-right">
                                                     <div className="flex justify-end gap-2">
-                                                        <Button variant="outline" size="xs" className="text-primary font-black border-primary px-2" onClick={async () => {
+                                                        <Button variant="outline" size="sm" className="text-primary font-black border-primary px-2 py-1 h-auto text-[10px]" onClick={async () => {
                                                             const newScore = window.prompt(`Update score for ${res.student_name}:`, res.score);
                                                             if (newScore !== null && !isNaN(parseFloat(newScore))) {
                                                                 try {
@@ -1443,7 +1443,7 @@ const Academics = () => {
                                                                 } catch (err: any) { toastError(err.message || 'Update failed'); }
                                                             }
                                                         }} icon={<Edit size={10} />}>EDIT</Button>
-                                                        <Button variant="outline" size="xs" className="text-error font-black border-error px-2" onClick={async () => {
+                                                        <Button variant="outline" size="sm" className="text-error font-black border-error px-2 py-1 h-auto text-[10px]" onClick={async () => {
                                                             if (await confirm(`Delete result for ${res.student_name}?`, { type: 'danger' })) {
                                                                 try {
                                                                     await academicsAPI.results.delete(res.id);
