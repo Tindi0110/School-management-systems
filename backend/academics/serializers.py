@@ -44,11 +44,14 @@ class GradeSystemSerializer(serializers.ModelSerializer):
 
 class ExamSerializer(serializers.ModelSerializer):
     term_name = serializers.CharField(source='term.name', read_only=True)
-    grade_system_name = serializers.CharField(source='grade_system.name', read_only=True, allow_null=True)
+    grade_system_name = serializers.SerializerMethodField()
     
     class Meta:
         model = Exam
         fields = '__all__'
+
+    def get_grade_system_name(self, obj):
+        return obj.grade_system.name if obj.grade_system else "Default (KNEC)"
 
 class StudentResultSerializer(serializers.ModelSerializer):
     student_name = serializers.CharField(source='student.full_name', read_only=True)
@@ -69,14 +72,7 @@ class ClassSubjectSerializer(serializers.ModelSerializer):
 
 class StudentSubjectSerializer(serializers.ModelSerializer):
     subject_name = serializers.CharField(source='subject.name', read_only=True)
-    student_name = serializers.CharField(source='student.user.get_full_name', read_only=True)
-    
-    class Meta:
-        model = StudentSubject
-        fields = '__all__'
-
     student_name = serializers.CharField(source='student.full_name', read_only=True)
-    subject_name = serializers.CharField(source='subject.name', read_only=True)
     
     class Meta:
         model = StudentSubject
