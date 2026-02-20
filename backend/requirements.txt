@@ -14,3 +14,4 @@ idna
 sqlparse
 typing_extensions
 urllib3
+django-filter
