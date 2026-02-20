@@ -294,7 +294,7 @@ const DashboardLayout = () => {
           flex: 1;
           padding: 1.5rem;
           overflow-y: auto;
-          overflow-x: auto;
+          overflow-x: hidden;
           width: 100%;
           -webkit-overflow-scrolling: touch;
         }

@@ -1471,12 +1471,14 @@ const Academics = () => {
                                         <option value="student">Sort by Student</option>
                                         <option value="class">Sort by Class</option>
                                     </select>
-                                    <button
-                                        className="btn btn-sm btn-ghost bg-white shadow-sm"
-                                        onClick={() => setAttendanceSort({ ...attendanceSort, direction: attendanceSort.direction === 'asc' ? 'desc' : 'asc' })}
+                                    <select
+                                        className="select select-sm bg-white min-w-[140px]"
+                                        value={attendanceSort.direction}
+                                        onChange={(e) => setAttendanceSort({ ...attendanceSort, direction: e.target.value as 'asc' | 'desc' })}
                                     >
-                                        {attendanceSort.direction === 'asc' ? '↑' : '↓'}
-                                    </button>
+                                        <option value="desc">Descending (Newest/Z-A)</option>
+                                        <option value="asc">Ascending (Oldest/A-Z)</option>
+                                    </select>
                                 </div>
                             </div>
                             <div className="flex gap-2 w-full sm:w-auto">

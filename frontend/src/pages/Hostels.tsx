@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
     Plus, Building, Edit, Trash2, Users, Users as UsersIcon, Printer, Package, Wrench, Bed as BedIcon,
-    Layout, Clock, ShieldAlert
+    Layout, Clock, ShieldAlert, Download
 } from 'lucide-react';
 import { hostelAPI, studentsAPI, staffAPI } from '../api/api';
 import { exportToCSV } from '../utils/export';
@@ -501,9 +501,8 @@ const Hostels = () => {
                     <h1>Boarding & Hostel Management</h1>
                     <p className="text-secondary text-sm">Institutional residence logistics, safety, and inventory</p>
                 </div>
-                <div className="flex gap-md no-print">
-                    <Button variant="outline" onClick={() => window.print()} icon={<Printer size={18} />}>Reports</Button>
-                    <Button onClick={() => setIsAllocationModalOpen(true)} icon={<Plus size={18} />}>New Admission</Button>
+                <div className="flex gap-2 no-print">
+                    <Button size="sm" onClick={() => setIsAllocationModalOpen(true)} icon={<Plus size={16} />}>New Admission</Button>
                 </div>
             </div>
 
@@ -581,12 +580,16 @@ const Hostels = () => {
                     <div className="flex justify-between items-center mb-4">
                         <h3>Student Allocations</h3>
                         <div className="flex gap-2 items-center">
-                            <span className="text-xs text-secondary font-bold">Sort By:</span>
-                            <div className="join">
-                                <button className={`join-item btn btn-xs ${allocationSort === 'HOSTEL' ? 'btn-active' : ''}`} onClick={() => setAllocationSort('HOSTEL')}>Hostel</button>
-                                <button className={`join-item btn btn-xs ${allocationSort === 'ROOM' ? 'btn-active' : ''}`} onClick={() => setAllocationSort('ROOM')}>Room</button>
-                                <button className={`join-item btn btn-xs ${allocationSort === 'STATUS' ? 'btn-active' : ''}`} onClick={() => setAllocationSort('STATUS')}>Status</button>
-                            </div>
+                            <span className="text-xs text-secondary font-bold whitespace-nowrap">Sort By:</span>
+                            <select
+                                className="select select-sm bg-white min-w-[120px]"
+                                value={allocationSort}
+                                onChange={(e) => setAllocationSort(e.target.value as any)}
+                            >
+                                <option value="HOSTEL">Hostel</option>
+                                <option value="ROOM">Room</option>
+                                <option value="STATUS">Status</option>
+                            </select>
                             <div className="flex gap-2 ml-4">
                                 <button className="btn btn-outline btn-sm" onClick={() => exportToCSV(allocations.map(a => ({
                                     Student: students.find(s => s.id === a.student)?.full_name,
@@ -628,201 +631,210 @@ const Hostels = () => {
                         </tbody>
                     </table>
                 </div>
-            )}
+            )
+            }
 
             {/* Assets Tab */}
-            {activeTab === 'assets' && (
-                <div className="table-container fade-in">
-                    <div className="flex justify-between items-center mb-4 no-print">
-                        <div className="flex items-center gap-4">
-                            <h3>Hostel Assets</h3>
+            {
+                activeTab === 'assets' && (
+                    <div className="table-container fade-in">
+                        <div className="flex justify-between items-center mb-4 no-print">
+                            <div className="flex items-center gap-4">
+                                <h3>Hostel Assets</h3>
+                                <div className="flex gap-2">
+                                    <select
+                                        className="select select-xs select-bordered"
+                                        value={assetSort.field}
+                                        onChange={(e) => setAssetSort({ ...assetSort, field: e.target.value })}
+                                    >
+                                        <option value="asset_code">Sort by Code</option>
+                                        <option value="asset_type">Sort by Type</option>
+                                        <option value="condition">Sort by Condition</option>
+                                    </select>
+                                    <button
+                                        className="btn btn-xs btn-ghost"
+                                        onClick={() => setAssetSort({ ...assetSort, direction: assetSort.direction === 'asc' ? 'desc' : 'asc' })}
+                                    >
+                                        {assetSort.direction === 'asc' ? '↑' : '↓'}
+                                    </button>
+                                </div>
+                            </div>
                             <div className="flex gap-2">
-                                <select
-                                    className="select select-xs select-bordered"
-                                    value={assetSort.field}
-                                    onChange={(e) => setAssetSort({ ...assetSort, field: e.target.value })}
-                                >
-                                    <option value="asset_code">Sort by Code</option>
-                                    <option value="asset_type">Sort by Type</option>
-                                    <option value="condition">Sort by Condition</option>
-                                </select>
-                                <button
-                                    className="btn btn-xs btn-ghost"
-                                    onClick={() => setAssetSort({ ...assetSort, direction: assetSort.direction === 'asc' ? 'desc' : 'asc' })}
-                                >
-                                    {assetSort.direction === 'asc' ? '↑' : '↓'}
-                                </button>
+                                <button className="btn btn-outline btn-sm" onClick={() => exportToCSV(assets, 'hostel_assets')}><UsersIcon size={14} /> CSV</button>
+                                <button className="btn btn-outline btn-sm" onClick={() => window.print()}><Printer size={14} /> Print</button>
+                                <button className="btn btn-primary btn-sm" onClick={() => { setAssetId(null); setIsAssetModalOpen(true); }}><Plus size={14} /> Add Asset</button>
                             </div>
                         </div>
-                        <div className="flex gap-2">
-                            <button className="btn btn-outline btn-sm" onClick={() => exportToCSV(assets, 'hostel_assets')}><UsersIcon size={14} /> CSV</button>
-                            <button className="btn btn-outline btn-sm" onClick={() => window.print()}><Printer size={14} /> Print</button>
-                            <button className="btn btn-primary btn-sm" onClick={() => { setAssetId(null); setIsAssetModalOpen(true); }}><Plus size={14} /> Add Asset</button>
-                        </div>
-                    </div>
-                    <table className="table">
-                        <thead><tr><th>Name</th><th>Type</th><th>Condition</th><th>Hostel</th><th>Value</th><th>Actions</th></tr></thead>
-                        <tbody>
-                            {assets.length === 0 && <tr><td colSpan={6} className="text-center italic">No assets recorded.</td></tr>}
-                            {[...assets].sort((a, b) => {
-                                const valA = String(a[assetSort.field] || '');
-                                const valB = String(b[assetSort.field] || '');
-                                return assetSort.direction === 'asc'
-                                    ? valA.localeCompare(valB)
-                                    : valB.localeCompare(valA);
-                            }).map(a => (
-                                <tr key={a.id}>
-                                    <td className="font-bold">{a.asset_code}</td>
-                                    <td><span className="badge badge-info">{a.asset_type}</span></td>
-                                    <td>{a.condition}</td>
-                                    <td>{hostels.find(h => h.id === a.hostel)?.name || (a.room ? hostels.find(h => h.id === rooms.find(r => r.id === a.room)?.hostel)?.name : 'General')}</td>
-                                    <td>{a.value?.toLocaleString()}</td>
-                                    <td>
-                                        <div className="flex gap-2">
-                                            <button className="btn btn-sm btn-ghost text-primary" onClick={() => handleEditAsset(a)}><Edit size={14} /></button>
-                                            <button className="btn btn-sm btn-ghost text-error" onClick={() => handleDeleteAsset(a.id)}><Trash2 size={14} /></button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            )}
-
-            {/* Attendance Tab */}
-            {activeTab === 'attendance' && (
-                <div className="table-container fade-in">
-                    <div className="flex justify-between items-center mb-4 no-print">
-                        <h3>Hostel Attendance</h3>
-
-                        <div className="flex gap-2 items-center">
-                            <span className="text-xs text-secondary font-bold">Sort By:</span>
-                            <div className="join mr-4">
-                                <button className={`join-item btn btn-xs ${attendanceSort === 'DATE' ? 'btn-active' : ''}`} onClick={() => setAttendanceSort('DATE')}>Date</button>
-                                <button className={`join-item btn btn-xs ${attendanceSort === 'HOSTEL' ? 'btn-active' : ''}`} onClick={() => setAttendanceSort('HOSTEL')}>Hostel</button>
-                                <button className={`join-item btn btn-xs ${attendanceSort === 'SESSION' ? 'btn-active' : ''}`} onClick={() => setAttendanceSort('SESSION')}>Session</button>
-                            </div>
-
-                            <button className="btn btn-outline btn-sm" onClick={() => exportToCSV(attendance.map(a => ({
-                                Date: a.date,
-                                Session: a.session || 'N/A',
-                                Student: students.find(s => s.id === a.student)?.full_name,
-                                Hostel: hostels.find(h => h.id === rooms.find(r => r.id === allocations.find(al => al.student === a.student && al.status === 'ACTIVE')?.room)?.hostel)?.name || 'N/A',
-                                Status: a.status,
-                                Remarks: a.remarks
-                            })), 'attendance_report')}><UsersIcon size={14} /> CSV</button>
-                            <button className="btn btn-primary btn-sm" onClick={() => { setAttendanceId(null); setIsAttendanceModalOpen(true); }}><Plus size={14} /> Log Attendance</button>
-                        </div>
-                    </div>
-                    <table className="table">
-                        <thead><tr><th>Date</th><th>Session</th><th>Student</th><th>Hostel</th><th>Status</th><th>Remarks</th><th>Actions</th></tr></thead>
-                        <tbody>
-                            {attendance
-                                .sort((a, b) => {
-                                    if (attendanceSort === 'HOSTEL') return (a.hostel_name || '').localeCompare(b.hostel_name || '');
-                                    if (attendanceSort === 'SESSION') return (a.session || '').localeCompare(b.session || '');
-                                    // Default Date Sort
-                                    return new Date(b.date).getTime() - new Date(a.date).getTime();
-                                })
-                                .map(a => (
+                        <table className="table">
+                            <thead><tr><th>Name</th><th>Type</th><th>Condition</th><th>Hostel</th><th>Value</th><th>Actions</th></tr></thead>
+                            <tbody>
+                                {assets.length === 0 && <tr><td colSpan={6} className="text-center italic">No assets recorded.</td></tr>}
+                                {[...assets].sort((a, b) => {
+                                    const valA = String(a[assetSort.field] || '');
+                                    const valB = String(b[assetSort.field] || '');
+                                    return assetSort.direction === 'asc'
+                                        ? valA.localeCompare(valB)
+                                        : valB.localeCompare(valA);
+                                }).map(a => (
                                     <tr key={a.id}>
-                                        <td>{a.date}</td>
-                                        <td><span className="badge badge-ghost text-xs">{a.session || 'N/A'}</span></td>
-                                        <td className="font-bold">{a.student_name || students.find(s => s.id === a.student)?.full_name}</td>
-                                        <td className="text-sm text-secondary">{a.hostel_name || 'N/A'}</td>
-                                        <td><span className={`badge ${a.status === 'PRESENT' ? 'badge-success' : a.status === 'ABSENT' ? 'badge-error' : 'badge-info'}`}>{a.status}</span></td>
-                                        <td>{a.remarks}</td>
-                                        <td className="no-print">
+                                        <td className="font-bold">{a.asset_code}</td>
+                                        <td><span className="badge badge-info">{a.asset_type}</span></td>
+                                        <td>{a.condition}</td>
+                                        <td>{hostels.find(h => h.id === a.hostel)?.name || (a.room ? hostels.find(h => h.id === rooms.find(r => r.id === a.room)?.hostel)?.name : 'General')}</td>
+                                        <td>{a.value?.toLocaleString()}</td>
+                                        <td>
                                             <div className="flex gap-2">
-                                                <button className="btn btn-sm btn-ghost text-primary" onClick={() => handleEditAttendance(a)}><Edit size={14} /></button>
-                                                <button className="btn btn-sm btn-ghost text-error" onClick={() => handleDeleteAttendance(a.id)}><Trash2 size={14} /></button>
+                                                <button className="btn btn-sm btn-ghost text-primary" onClick={() => handleEditAsset(a)}><Edit size={14} /></button>
+                                                <button className="btn btn-sm btn-ghost text-error" onClick={() => handleDeleteAsset(a.id)}><Trash2 size={14} /></button>
                                             </div>
                                         </td>
                                     </tr>
-                                ))
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            )}
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )
+            }
+
+            {/* Attendance Tab */}
+            {
+                activeTab === 'attendance' && (
+                    <div className="table-container fade-in">
+                        <div className="flex justify-between items-center mb-4 no-print">
+                            <h3>Hostel Attendance</h3>
+
+                            <div className="flex gap-2 items-center">
+                                <span className="text-xs text-secondary font-bold">Sort By:</span>
+                                <div className="join mr-4">
+                                    <button className={`join-item btn btn-xs ${attendanceSort === 'DATE' ? 'btn-active' : ''}`} onClick={() => setAttendanceSort('DATE')}>Date</button>
+                                    <button className={`join-item btn btn-xs ${attendanceSort === 'HOSTEL' ? 'btn-active' : ''}`} onClick={() => setAttendanceSort('HOSTEL')}>Hostel</button>
+                                    <button className={`join-item btn btn-xs ${attendanceSort === 'SESSION' ? 'btn-active' : ''}`} onClick={() => setAttendanceSort('SESSION')}>Session</button>
+                                </div>
+
+                                <button className="btn btn-outline btn-sm" onClick={() => exportToCSV(attendance.map(a => ({
+                                    Date: a.date,
+                                    Session: a.session || 'N/A',
+                                    Student: students.find(s => s.id === a.student)?.full_name,
+                                    Hostel: hostels.find(h => h.id === rooms.find(r => r.id === allocations.find(al => al.student === a.student && al.status === 'ACTIVE')?.room)?.hostel)?.name || 'N/A',
+                                    Status: a.status,
+                                    Remarks: a.remarks
+                                })), 'attendance_report')}><UsersIcon size={14} /> CSV</button>
+                                <button className="btn btn-primary btn-sm" onClick={() => { setAttendanceId(null); setIsAttendanceModalOpen(true); }}><Plus size={14} /> Log Attendance</button>
+                            </div>
+                        </div>
+                        <table className="table">
+                            <thead><tr><th>Date</th><th>Session</th><th>Student</th><th>Hostel</th><th>Status</th><th>Remarks</th><th>Actions</th></tr></thead>
+                            <tbody>
+                                {attendance
+                                    .sort((a, b) => {
+                                        if (attendanceSort === 'HOSTEL') return (a.hostel_name || '').localeCompare(b.hostel_name || '');
+                                        if (attendanceSort === 'SESSION') return (a.session || '').localeCompare(b.session || '');
+                                        // Default Date Sort
+                                        return new Date(b.date).getTime() - new Date(a.date).getTime();
+                                    })
+                                    .map(a => (
+                                        <tr key={a.id}>
+                                            <td>{a.date}</td>
+                                            <td><span className="badge badge-ghost text-xs">{a.session || 'N/A'}</span></td>
+                                            <td className="font-bold">{a.student_name || students.find(s => s.id === a.student)?.full_name}</td>
+                                            <td className="text-sm text-secondary">{a.hostel_name || 'N/A'}</td>
+                                            <td><span className={`badge ${a.status === 'PRESENT' ? 'badge-success' : a.status === 'ABSENT' ? 'badge-error' : 'badge-info'}`}>{a.status}</span></td>
+                                            <td>{a.remarks}</td>
+                                            <td className="no-print">
+                                                <div className="flex gap-2">
+                                                    <button className="btn btn-sm btn-ghost text-primary" onClick={() => handleEditAttendance(a)}><Edit size={14} /></button>
+                                                    <button className="btn btn-sm btn-ghost text-error" onClick={() => handleDeleteAttendance(a.id)}><Trash2 size={14} /></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                )
+            }
 
             {/* Discipline Tab */}
-            {activeTab === 'discipline' && (
-                <div className="table-container fade-in">
-                    <div className="flex justify-between items-center mb-4 no-print">
-                        <h3>Discipline Records</h3>
-                        <div className="flex gap-2">
-                            <button className="btn btn-outline btn-sm" onClick={() => exportToCSV(discipline.map(d => ({
-                                Date: d.date,
-                                Student: students.find(s => s.id === d.student)?.full_name,
-                                Hostel: hostels.find(h => h.id === rooms.find(r => r.id === allocations.find(al => al.student === d.student && al.status === 'ACTIVE')?.room)?.hostel)?.name || 'N/A',
-                                Infraction: d.infraction,
-                                Severity: d.severity,
-                                Action: d.action_taken
-                            })), 'discipline_report')}><UsersIcon size={14} /> CSV</button>
-                            <button className="btn btn-outline btn-sm" onClick={() => window.print()}><Printer size={14} /> Print</button>
-                            <button className="btn btn-error btn-sm text-white" onClick={() => { setDisciplineId(null); setIsDisciplineModalOpen(true); }}><ShieldAlert size={14} /> Report Incident</button>
+            {
+                activeTab === 'discipline' && (
+                    <div className="table-container fade-in">
+                        <div className="flex justify-between items-center mb-4 no-print">
+                            <h3>Discipline Records</h3>
+                            <div className="flex gap-2">
+                                <button className="btn btn-outline btn-sm" onClick={() => exportToCSV(discipline.map(d => ({
+                                    Date: d.date,
+                                    Student: students.find(s => s.id === d.student)?.full_name,
+                                    Hostel: hostels.find(h => h.id === rooms.find(r => r.id === allocations.find(al => al.student === d.student && al.status === 'ACTIVE')?.room)?.hostel)?.name || 'N/A',
+                                    Infraction: d.infraction,
+                                    Severity: d.severity,
+                                    Action: d.action_taken
+                                })), 'discipline_report')}><UsersIcon size={14} /> CSV</button>
+                                <button className="btn btn-outline btn-sm" onClick={() => window.print()}><Printer size={14} /> Print</button>
+                                <button className="btn btn-error btn-sm text-white" onClick={() => { setDisciplineId(null); setIsDisciplineModalOpen(true); }}><ShieldAlert size={14} /> Report Incident</button>
+                            </div>
                         </div>
+                        <table className="table">
+                            <thead><tr><th>Date</th><th>Student</th><th>Infraction</th><th>Severity</th><th>Action Taken</th><th>Actions</th></tr></thead>
+                            <tbody>
+                                {discipline.length === 0 && <tr><td colSpan={6} className="text-center italic">No discipline records.</td></tr>}
+                                {discipline.map(d => (
+                                    <tr key={d.id}>
+                                        <td>{d.date || d.incident_date}</td>
+                                        <td className="font-bold">{students.find(s => s.id === d.student)?.full_name}</td>
+                                        <td>{d.offence}</td>
+                                        <td><span className={`badge ${d.severity === 'MAJOR' ? 'badge-error' : 'badge-warning'}`}>{d.severity}</span></td>
+                                        <td>{d.action_taken}</td>
+                                        <td>
+                                            <div className="flex gap-2">
+                                                <button className="btn btn-sm btn-ghost text-primary" onClick={() => handleEditDiscipline(d)}><Edit size={14} /></button>
+                                                <button className="btn btn-sm btn-ghost text-error" onClick={() => handleDeleteDiscipline(d.id)}><Trash2 size={14} /></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
-                    <table className="table">
-                        <thead><tr><th>Date</th><th>Student</th><th>Infraction</th><th>Severity</th><th>Action Taken</th><th>Actions</th></tr></thead>
-                        <tbody>
-                            {discipline.length === 0 && <tr><td colSpan={6} className="text-center italic">No discipline records.</td></tr>}
-                            {discipline.map(d => (
-                                <tr key={d.id}>
-                                    <td>{d.date || d.incident_date}</td>
-                                    <td className="font-bold">{students.find(s => s.id === d.student)?.full_name}</td>
-                                    <td>{d.offence}</td>
-                                    <td><span className={`badge ${d.severity === 'MAJOR' ? 'badge-error' : 'badge-warning'}`}>{d.severity}</span></td>
-                                    <td>{d.action_taken}</td>
-                                    <td>
-                                        <div className="flex gap-2">
-                                            <button className="btn btn-sm btn-ghost text-primary" onClick={() => handleEditDiscipline(d)}><Edit size={14} /></button>
-                                            <button className="btn btn-sm btn-ghost text-error" onClick={() => handleDeleteDiscipline(d.id)}><Trash2 size={14} /></button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            )}
+                )
+            }
 
             {/* Maintenance Tab */}
-            {activeTab === 'maintenance' && (
-                <div className="table-container fade-in">
-                    <div className="flex justify-between items-center mb-4 no-print">
-                        <h3>Hostel Maintenance</h3>
-                        <div className="flex gap-2">
-                            <button className="btn btn-outline btn-sm" onClick={() => exportToCSV(assets, 'hostel_assets')}><UsersIcon size={14} /> CSV</button>
-                            <button className="btn btn-outline btn-sm" onClick={() => window.print()}><Printer size={14} /> Print</button>
-                            <button className="btn btn-primary btn-sm" onClick={() => { setMaintenanceId(null); setIsMaintenanceModalOpen(true); }}><Wrench size={14} /> Log Request</button>
+            {
+                activeTab === 'maintenance' && (
+                    <div className="table-container fade-in">
+                        <div className="flex justify-between items-center mb-4 no-print">
+                            <h3>Hostel Maintenance</h3>
+                            <div className="flex gap-2">
+                                <button className="btn btn-outline btn-sm" onClick={() => exportToCSV(assets, 'hostel_assets')}><UsersIcon size={14} /> CSV</button>
+                                <button className="btn btn-outline btn-sm" onClick={() => window.print()}><Printer size={14} /> Print</button>
+                                <button className="btn btn-primary btn-sm" onClick={() => { setMaintenanceId(null); setIsMaintenanceModalOpen(true); }}><Wrench size={14} /> Log Request</button>
+                            </div>
                         </div>
+                        <table className="table">
+                            <thead><tr><th>Date</th><th>Hostel</th><th>Description</th><th>Cost</th><th>Status</th><th>Actions</th></tr></thead>
+                            <tbody>
+                                {maintenance.length === 0 && <tr><td colSpan={6} className="text-center italic">No maintenance requests.</td></tr>}
+                                {maintenance.map(m => (
+                                    <tr key={m.id}>
+                                        <td>{m.date_reported || m.date}</td>
+                                        <td className="font-bold">{hostels.find(h => String(h.id) === String(m.hostel))?.name || 'N/A'}</td>
+                                        <td>{m.issue}</td>
+                                        <td>{m.repair_cost?.toLocaleString()}</td>
+                                        <td><span className={`badge ${m.status === 'COMPLETED' ? 'badge-success' : 'badge-warning'}`}>{m.status}</span></td>
+                                        <td>
+                                            <div className="flex gap-2">
+                                                <button className="btn btn-sm btn-ghost text-primary" onClick={() => handleEditMaintenance(m)}><Edit size={14} /></button>
+                                                <button className="btn btn-sm btn-ghost text-error" onClick={() => handleDeleteMaintenance(m.id)}><Trash2 size={14} /></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
-                    <table className="table">
-                        <thead><tr><th>Date</th><th>Hostel</th><th>Description</th><th>Cost</th><th>Status</th><th>Actions</th></tr></thead>
-                        <tbody>
-                            {maintenance.length === 0 && <tr><td colSpan={6} className="text-center italic">No maintenance requests.</td></tr>}
-                            {maintenance.map(m => (
-                                <tr key={m.id}>
-                                    <td>{m.date_reported || m.date}</td>
-                                    <td className="font-bold">{hostels.find(h => String(h.id) === String(m.hostel))?.name || 'N/A'}</td>
-                                    <td>{m.issue}</td>
-                                    <td>{m.repair_cost?.toLocaleString()}</td>
-                                    <td><span className={`badge ${m.status === 'COMPLETED' ? 'badge-success' : 'badge-warning'}`}>{m.status}</span></td>
-                                    <td>
-                                        <div className="flex gap-2">
-                                            <button className="btn btn-sm btn-ghost text-primary" onClick={() => handleEditMaintenance(m)}><Edit size={14} /></button>
-                                            <button className="btn btn-sm btn-ghost text-error" onClick={() => handleDeleteMaintenance(m.id)}><Trash2 size={14} /></button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            )}
+                )
+            }
 
             {/* Modals */}
             {/* Modals */}
@@ -1224,6 +1236,13 @@ const Hostels = () => {
             {/* View Residents Modal */}
             <Modal isOpen={isViewResidentsModalOpen} onClose={() => setIsViewResidentsModalOpen(false)} title={`Residents: ${selectedHostel?.name || ''}`}>
                 <div className="p-1">
+                    <div className="flex justify-between items-center mb-4 p-2 bg-secondary-light rounded-lg no-print">
+                        <p className="mb-0 text-sm font-bold">Total Residents: {viewHostelResidents.length}</p>
+                        <div className="flex gap-2">
+                            <Button variant="outline" size="sm" onClick={() => exportToCSV(viewHostelResidents.map(r => ({ 'Student Name': r.student_name, 'Room': r.room_number, 'Bed': r.bed_number })), `${selectedHostel?.name || 'hostel'}_residents`)} icon={<Download size={14} />}>CSV</Button>
+                            <Button variant="primary" size="sm" onClick={() => { setTimeout(() => window.print(), 100); }} icon={<Printer size={14} />}>Print</Button>
+                        </div>
+                    </div>
                     {viewHostelResidents.length === 0 ? (
                         <p className="text-secondary text-center p-4 italic">No active residents in this hostel.</p>
                     ) : (

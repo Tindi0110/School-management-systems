@@ -116,7 +116,7 @@ const Parents = () => {
                 </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
+            <div className="bg-white rounded-xl shadow-sm border overflow-x-auto w-full">
                 <table className="table w-full">
                     <thead>
                         <tr className="bg-secondary-light text-left">
