@@ -227,8 +227,8 @@ const Students = () => {
                         </td>
                         <td>
                             <div className="flex flex-col">
-                                <span className={`font-black text-xs ${(s.fee_balance || 0) > 0 ? 'text-error' : 'text-success'}`}>
-                                    {s.fee_balance ? `KES ${s.fee_balance.toLocaleString()}` : 'CLEARED'}
+                                <span className={`font-black text-xs ${Number(s.fee_balance || 0) === 0 ? 'text-success' : Number(s.fee_balance || 0) < 0 ? 'text-info' : 'text-error'}`}>
+                                    {Number(s.fee_balance || 0) === 0 ? 'CLEARED' : (Number(s.fee_balance || 0) < 0 ? `CREDIT: KES ${Math.abs(Number(s.fee_balance)).toLocaleString()}` : `KES ${Number(s.fee_balance).toLocaleString()}`)}
                                 </span>
                                 <span className="text-[10px] text-secondary font-bold uppercase">Balance</span>
                             </div>

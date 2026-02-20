@@ -483,7 +483,7 @@ const StudentProfile = () => {
                     <div className="flex gap-4">
                         <div className="text-right">
                             <p className="text-[10px] font-black text-secondary uppercase mb-0">Outstanding Balance</p>
-                            <h2 className={`font-black mb-0 ${(student.fee_balance || 0) > 0 ? 'text-error' : 'text-success'}`}>
+                            <h2 className={`font-black mb-0 ${Number(student.fee_balance || 0) === 0 ? 'text-success' : Number(student.fee_balance || 0) < 0 ? 'text-info' : 'text-error'}`}>
                                 KES {(student.fee_balance || 0).toLocaleString()}
                             </h2>
                         </div>
@@ -728,7 +728,7 @@ const StudentProfile = () => {
                                 <div className="flex gap-2">
                                     <div className="text-right mr-4">
                                         <span className="text-[9px] font-black text-secondary uppercase block">Total Balance</span>
-                                        <span className={`text-xs font-black ${(student.fee_balance || 0) > 0 ? 'text-error' : 'text-success'}`}>KES {(student.fee_balance || 0).toLocaleString()}</span>
+                                        <span className={`text-xs font-black ${Number(student.fee_balance || 0) === 0 ? 'text-success' : Number(student.fee_balance || 0) < 0 ? 'text-info' : 'text-error'}`}>KES {(student.fee_balance || 0).toLocaleString()}</span>
                                     </div>
                                     <Button variant="outline" size="sm" className="font-black py-1" onClick={() => window.print()}>GENERATE REPORT</Button>
                                 </div>
@@ -756,7 +756,7 @@ const StudentProfile = () => {
                                                     <td className="text-[10px] font-black text-primary">{item.reference}</td>
                                                     <td className="text-[10px] font-black text-error text-right">{item.debit > 0 ? `KES ${item.debit.toLocaleString()}` : '-'}</td>
                                                     <td className="text-[10px] font-black text-success text-right">{item.credit > 0 ? `KES ${item.credit.toLocaleString()}` : '-'}</td>
-                                                    <td className="text-[10px] font-black text-primary text-right">KES {item.balance.toLocaleString()}</td>
+                                                    <td className={`text-[10px] font-black text-right ${item.balance === 0 ? 'text-success' : item.balance < 0 ? 'text-info' : 'text-error'}`}>KES {item.balance.toLocaleString()}</td>
                                                 </tr>
                                             ))
                                         )}
