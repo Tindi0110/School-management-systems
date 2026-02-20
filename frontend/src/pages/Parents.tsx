@@ -102,8 +102,8 @@ const Parents = () => {
                     <Button variant="outline" size="sm" onClick={() => exportToCSV(parents, 'guardians_registry')} icon={<Download size={16} />}>
                         Export CSV
                     </Button>
-                    <Button variant="primary" size="sm" className="font-black px-6" onClick={() => { setEditingParent(null); setIsModalOpen(true); }} icon={<Plus size={16} />}>
-                        NEW GUARDIAN
+                    <Button variant="primary" size="sm" onClick={() => { setEditingParent(null); setIsModalOpen(true); }} icon={<Plus size={16} />}>
+                        New Guardian
                     </Button>
                 </div>
             </div>

@@ -158,13 +158,13 @@ const Finance = () => {
                     setClasses(d(cls)); setYears(d(yrs));
                 }
             }
-            if (showPaymentModal) {
+            if (showPaymentModal || showMpesaModal) {
                 if (students.length === 0) setStudents(d(await studentsAPI.getAll()));
-                if (invoices.length === 0) setInvoices(d(await financeAPI.invoices.getAll()));
+                if (invoices.length === 0 && showPaymentModal) setInvoices(d(await financeAPI.invoices.getAll()));
             }
         };
         loadModalData();
-    }, [showInvoiceModal, showPaymentModal, showFeeModal]);
+    }, [showInvoiceModal, showPaymentModal, showFeeModal, showMpesaModal]);
 
     const StatsCard = ({ title, value, icon, color }: any) => (
         <div className="card shadow-md flex flex-row items-center gap-4 p-6 border border-gray-100 transition-all hover:shadow-lg">
