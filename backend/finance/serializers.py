@@ -17,20 +17,26 @@ class InvoiceItemSerializer(serializers.ModelSerializer):
 class PaymentSerializer(serializers.ModelSerializer):
     student_name = serializers.CharField(source='invoice.student.full_name', read_only=True)
     invoice_number = serializers.CharField(source='invoice.id', read_only=True)
-    received_by_name = serializers.CharField(source='received_by.get_full_name', read_only=True)
+    received_by_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Payment
         fields = '__all__'
         read_only_fields = ['received_by']
 
+    def get_received_by_name(self, obj):
+        return obj.received_by.get_full_name() if obj.received_by else 'System'
+
 class AdjustmentSerializer(serializers.ModelSerializer):
-    approved_by_name = serializers.CharField(source='approved_by.get_full_name', read_only=True)
+    approved_by_name = serializers.SerializerMethodField()
     
     class Meta:
         model = Adjustment
         fields = '__all__'
         read_only_fields = ['date', 'approved_by']
+
+    def get_approved_by_name(self, obj):
+        return obj.approved_by.get_full_name() if obj.approved_by else 'System'
 
 class InvoiceSerializer(serializers.ModelSerializer):
     student_name = serializers.CharField(source='student.full_name', read_only=True)
@@ -48,9 +54,12 @@ class InvoiceSerializer(serializers.ModelSerializer):
         read_only_fields = ['total_amount', 'paid_amount', 'balance', 'status', 'items', 'is_finalized', 'adjustments']
 
 class ExpenseSerializer(serializers.ModelSerializer):
-    approved_by_name = serializers.CharField(source='approved_by.get_full_name', read_only=True)
+    approved_by_name = serializers.SerializerMethodField()
     
     class Meta:
         model = Expense
         fields = '__all__'
         read_only_fields = ['approved_by']
+
+    def get_approved_by_name(self, obj):
+        return obj.approved_by.get_full_name() if obj.approved_by else 'System'

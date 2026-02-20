@@ -250,8 +250,14 @@ p {
 
 @media (max-width: 640px) {
   .card {
-    padding: var(--spacing-md);
-    /* Save screen real-estate on mobile */
+    padding: 1.25rem;
+    /* More relaxed spacing for professional look on mobile */
+  }
+
+  /* Force responsive wrapping on headers/sections that use justify-between on desktop */
+  .flex.justify-between {
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
   }
 }
 
@@ -277,6 +283,11 @@ p {
 
 .btn:active:not(:disabled) {
   transform: scale(0.97) translateZ(0);
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-1px) translateZ(0);
+  box-shadow: var(--shadow-sm);
 }
 
 .btn:disabled {
@@ -346,6 +357,12 @@ p {
   min-height: 42px;
 }
 
+.input:hover:not(:disabled),
+.select:hover:not(:disabled),
+.textarea:hover:not(:disabled) {
+  border-color: var(--secondary-light);
+}
+
 .input:focus,
 .select:focus {
   outline: none;
@@ -365,9 +382,24 @@ p {
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--text-secondary);
-  margin-bottom: var(--spacing-xs);
+  margin-bottom: var(--spacing-sm);
+  /* Increased from xs for breathing room */
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+
+@media (max-width: 640px) {
+
+  /* Premium Mobile Touch Targets */
+  .btn {
+    min-height: 50px;
+  }
+
+  .input,
+  .select,
+  .textarea {
+    min-height: 48px;
+  }
 }
 
 /* Tabs - Inline Strip */
@@ -476,7 +508,8 @@ p {
 }
 
 .table tbody tr:hover {
-  background: rgba(15, 23, 42, 0.02);
+  background: var(--bg-tertiary);
+  transition: all 0.2s ease;
 }
 
 /* Badges */
