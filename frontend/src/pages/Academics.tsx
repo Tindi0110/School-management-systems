@@ -199,6 +199,7 @@ const Academics = () => {
     const [bulkAttendanceList, setBulkAttendanceList] = useState<any[]>([]);
     const [attendanceRecords, setAttendanceRecords] = useState<any[]>([]);
     const [editingAttendanceId, setEditingAttendanceId] = useState<number | null>(null);
+    const [editingClassId, setEditingClassId] = useState<number | null>(null);
     const [attendanceSort, setAttendanceSort] = useState({ field: 'date', direction: 'desc' });
     const [isExporting, setIsExporting] = useState(false);
 
@@ -620,7 +621,6 @@ const Academics = () => {
         setIsClassModalOpen(true);
     };
 
-    const [editingExamId, setEditingExamId] = useState<number | null>(null);
 
     const handleExamSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
