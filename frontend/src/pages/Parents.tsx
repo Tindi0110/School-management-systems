@@ -116,8 +116,8 @@ const Parents = () => {
                 </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border overflow-x-auto w-full">
-                <table className="table w-full min-w-[1000px]">
+            <div className="bg-white rounded-xl shadow-sm border w-full" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                <table className="table min-w-[1000px]">
                     <thead>
                         <tr className="bg-secondary-light text-left">
                             <th className="p-4 text-xs font-black uppercase text-secondary tracking-wider">Guardian Identity</th>
@@ -137,7 +137,7 @@ const Parents = () => {
                         ) : (
                             filteredParents.map((p) => (
                                 <tr key={p.id} className="hover:bg-gray-50 transition-colors">
-                                    <td className="p-4">
+                                    <td className="p-4 whitespace-nowrap">
                                         <div className="flex items-center gap-3">
                                             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-black text-xs">
                                                 {p.full_name.charAt(0)}
