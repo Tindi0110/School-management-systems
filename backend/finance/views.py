@@ -24,7 +24,7 @@ class InvoiceViewSet(viewsets.ModelViewSet):
     serializer_class = InvoiceSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['student__current_class', 'student__current_class__stream', 'academic_year', 'term', 'status']
+    filterset_fields = ['student', 'student__current_class', 'student__current_class__stream', 'academic_year', 'term', 'status']
     search_fields = ['student__first_name', 'student__last_name', 'student__admission_number']
     ordering_fields = ['date_generated', 'total_amount', 'balance']
 
@@ -145,6 +145,8 @@ class PaymentViewSet(viewsets.ModelViewSet):
     ).all()
     serializer_class = PaymentSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['invoice__student', 'invoice', 'method', 'status']
 
     def create(self, request, *args, **kwargs):
         method = request.data.get('method')
@@ -173,6 +175,8 @@ class AdjustmentViewSet(viewsets.ModelViewSet):
     queryset = Adjustment.objects.select_related('invoice__student', 'approved_by').all()
     serializer_class = AdjustmentSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['invoice__student', 'invoice', 'adjustment_type']
 
     def perform_create(self, serializer):
         serializer.save(approved_by=self.request.user)

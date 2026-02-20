@@ -268,12 +268,12 @@ export const financeAPI = {
     dashboardStats: () => api.get('invoices/dashboard_stats/'),
   },
   payments: {
-    getAll: () => api.get('payments/', ALL),
+    getAll: (params?: any) => api.get('payments/', allWith(params)),
     create: (data: any) => api.post('payments/', data),
     getOne: (id: number) => api.get(`payments/${id}/`),
   },
   adjustments: {
-    getAll: () => api.get('adjustments/', ALL),
+    getAll: (params?: any) => api.get('adjustments/', allWith(params)),
     create: (data: any) => api.post('adjustments/', data),
   },
   expenses: {

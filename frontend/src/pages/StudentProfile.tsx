@@ -20,6 +20,8 @@ const StudentProfile = () => {
     const [student, setStudent] = useState<any>(null);
     const [results, setResults] = useState<any[]>([]);
     const [payments, setPayments] = useState<any[]>([]);
+    const [invoices, setInvoices] = useState<any[]>([]);
+    const [adjustments, setAdjustments] = useState<any[]>([]);
     const [discipline, setDiscipline] = useState<any[]>([]);
     const [documents, setDocuments] = useState<any[]>([]);
     const [activities, setActivities] = useState<any[]>([]);
@@ -109,9 +111,18 @@ const StudentProfile = () => {
             });
             setHealthId(studentRes.data.health_record?.id || null);
 
-            const paymentsRes = await financeAPI.payments.getAll();
-            const allPayments = paymentsRes.data?.results ?? paymentsRes.data ?? [];
-            setPayments(allPayments.filter((p: any) => p.student === Number(id)));
+            try {
+                const [pRes, iRes, aRes] = await Promise.all([
+                    financeAPI.payments.getAll({ invoice__student: Number(id) }),
+                    financeAPI.invoices.getAll({ student: Number(id) }),
+                    financeAPI.adjustments.getAll({ invoice__student: Number(id) })
+                ]);
+                setPayments(d(pRes));
+                setInvoices(d(iRes));
+                setAdjustments(d(aRes));
+            } catch (e) {
+                console.error("Finance Load Error:", e);
+            }
 
             try {
                 const lendingsRes = await libraryAPI.lendings.getAll();
@@ -132,6 +143,51 @@ const StudentProfile = () => {
             setLoading(false);
         }
     };
+
+    const statement = React.useMemo(() => {
+        const items: any[] = [];
+
+        invoices.forEach(inv => {
+            items.push({
+                date: inv.date_generated,
+                description: `Invoice: Term ${inv.term} - ${inv.academic_year_name}`,
+                reference: inv.invoice_number,
+                debit: Number(inv.total_amount),
+                credit: 0,
+                type: 'CHARGE'
+            });
+        });
+
+        payments.forEach(p => {
+            items.push({
+                date: p.payment_date,
+                description: `Fee Payment - ${p.payment_method}`,
+                reference: p.transaction_id,
+                debit: 0,
+                credit: Number(p.amount),
+                type: 'PAYMENT'
+            });
+        });
+
+        adjustments.forEach(adj => {
+            items.push({
+                date: adj.date_adjusted || new Date().toISOString(),
+                description: `Adjustment: ${adj.reason}`,
+                reference: 'ADJ-' + adj.id,
+                debit: adj.adjustment_type === 'DEBIT' ? Number(adj.amount) : 0,
+                credit: adj.adjustment_type === 'WAIVER' || adj.adjustment_type === 'CREDIT' ? Number(adj.amount) : 0,
+                type: 'ADJUSTMENT'
+            });
+        });
+
+        // Calculate running balance
+        let balance = 0;
+        return items.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+            .map(item => {
+                balance += (item.debit - item.credit);
+                return { ...item, balance };
+            });
+    }, [invoices, payments, adjustments]);
 
     const handleDisciplineSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -667,34 +723,46 @@ const StudentProfile = () => {
 
                     {activeTab === 'FINANCE' && (
                         <div className="card p-0 overflow-hidden shadow-lg border">
-                            {/* ... (Keep Finance Logic) ... */}
                             <div className="p-4 border-bottom bg-secondary-light flex justify-between items-center">
                                 <h3 className="mb-0 text-xs font-black uppercase tracking-widest">Accounting Statement</h3>
-                                <Button variant="outline" size="sm" className="font-black py-1">GENERATE REPORT</Button>
+                                <div className="flex gap-2">
+                                    <div className="text-right mr-4">
+                                        <span className="text-[9px] font-black text-secondary uppercase block">Total Balance</span>
+                                        <span className={`text-xs font-black ${(student.fee_balance || 0) > 0 ? 'text-error' : 'text-success'}`}>KES {(student.fee_balance || 0).toLocaleString()}</span>
+                                    </div>
+                                    <Button variant="outline" size="sm" className="font-black py-1" onClick={() => window.print()}>GENERATE REPORT</Button>
+                                </div>
                             </div>
-                            <table className="table">
-                                <thead>
-                                    <tr>
-                                        <th>Date</th>
-                                        <th>Reference</th>
-                                        <th>Mode</th>
-                                        <th>Credit</th>
-                                        <th>Equity</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {payments.map((p, i) => (
-                                        <tr key={i} className="hover-bg-secondary">
-                                            <td className="text-[10px] font-bold">{new Date(p.payment_date).toLocaleDateString()}</td>
-                                            <td className="text-[10px] font-black text-primary">{p.transaction_id}</td>
-                                            <td className="text-[10px] uppercase font-black">{p.payment_method}</td>
-                                            <td className="text-[10px] font-black text-success">KES {p.amount.toLocaleString()}</td>
-                                            <td className="text-[10px] font-bold">REDUCED</td>
+                            <div className="table-container">
+                                <table className="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Description</th>
+                                            <th>Reference</th>
+                                            <th className="text-right">Debit</th>
+                                            <th className="text-right">Credit</th>
+                                            <th className="text-right">Balance</th>
                                         </tr>
-                                    ))}
-                                    {payments.length === 0 && <tr><td colSpan={5} className="text-center py-8 text-[10px] font-black text-secondary uppercase">No historical transactions detected</td></tr>}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        {statement.length === 0 ? (
+                                            <tr><td colSpan={6} className="text-center py-8 text-[10px] font-black text-secondary uppercase">No historical transactions detected</td></tr>
+                                        ) : (
+                                            statement.map((item, i) => (
+                                                <tr key={i} className="hover-bg-secondary">
+                                                    <td className="text-[10px] font-bold whitespace-nowrap">{new Date(item.date).toLocaleDateString()}</td>
+                                                    <td className="text-[10px] font-bold uppercase text-secondary truncate max-w-[200px]">{item.description}</td>
+                                                    <td className="text-[10px] font-black text-primary">{item.reference}</td>
+                                                    <td className="text-[10px] font-black text-error text-right">{item.debit > 0 ? `KES ${item.debit.toLocaleString()}` : '-'}</td>
+                                                    <td className="text-[10px] font-black text-success text-right">{item.credit > 0 ? `KES ${item.credit.toLocaleString()}` : '-'}</td>
+                                                    <td className="text-[10px] font-black text-primary text-right">KES {item.balance.toLocaleString()}</td>
+                                                </tr>
+                                            ))
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     )}
 
