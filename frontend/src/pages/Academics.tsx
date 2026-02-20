@@ -1545,7 +1545,7 @@ const Academics = () => {
                                                 </td>
                                             </tr>
                                         );
-                                    })}
+                                    }))}
                             </tbody>
                         </table>
                     </div>
