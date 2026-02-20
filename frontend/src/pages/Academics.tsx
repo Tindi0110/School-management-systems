@@ -467,7 +467,6 @@ const Academics = () => {
         finally { setIsSubmitting(false); }
     };
     const [editingSubjectId, setEditingSubjectId] = useState<number | null>(null);
-    const [editingClassId, setEditingClassId] = useState<number | null>(null);
 
     const handleSubjectSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
