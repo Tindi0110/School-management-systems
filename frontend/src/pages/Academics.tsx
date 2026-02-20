@@ -55,12 +55,12 @@ const calculateGrade = (score: number, gradeSystems: any[], specificSystemId?: n
     return 'E';
 };
 
-const StudentResultRow = React.memo(({ student, sClass, subjects, studentScores, onScoreChange, activeClassSubjects, resultContext, gradeSystems, examGradeSystemId }: any) => {
+const StudentResultRow = React.memo(({ student, sClass, subjects, studentScores, onScoreChange, onDeleteResult, activeClassSubjects, resultContext, gradeSystems, examGradeSystemId }: any) => {
     return (
-        <tr className="h-12 hover:bg-slate-50 transition-colors">
-            <td className="sticky left-0 z-10 bg-white font-medium py-1 px-3">
-                <div className="truncate w-[160px] text-slate-950 font-bold text-sm" title={student.full_name}>{student.full_name}</div>
-                <div className="text-[10px] text-slate-500 font-mono">
+        <tr className="hover:bg-slate-50 transition-colors border-b">
+            <td className="sticky left-0 z-10 bg-white font-medium py-2 px-3 border-r">
+                <div className="text-slate-950 font-bold text-sm" title={student.full_name}>{student.full_name}</div>
+                <div className="text-[10px] text-slate-500 font-mono mt-0.5">
                     {student.admission_number} | {sClass?.stream}
                 </div>
             </td>
@@ -69,21 +69,45 @@ const StudentResultRow = React.memo(({ student, sClass, subjects, studentScores,
                 return activeClassSubjects.some((cs: any) => cs.subject === sub.id);
             }).map((sub: any) => {
                 const entry = (studentScores || {})[sub.id] || { score: '' };
-                const grade = calculateGrade(parseFloat(entry.score), gradeSystems, examGradeSystemId);
+                const scoreVal = parseFloat(entry.score);
+                const grade = isNaN(scoreVal) ? '' : calculateGrade(scoreVal, gradeSystems, examGradeSystemId);
+                const hasSavedResult = !!entry.id;
                 return (
-                    <td key={sub.id} className="p-0 relative border-r">
-                        <input
-                            type="text"
-                            className={`w-full h-full text-center text-sm font-black bg-transparent border-none outline-none p-2 m-0 ${entry.id ? 'text-slate-950' : 'text-slate-400'}`}
-                            value={entry.score}
-                            placeholder="-"
-                            onChange={(e) => onScoreChange(student.id, sub.id, e.target.value)}
-                        />
-                        <div className="absolute top-1 right-1 pointer-events-none">
-                            <span className={`text-[9px] font-black ${grade === 'A' || grade === 'A-' ? 'text-green-600' : grade === 'E' ? 'text-red-600' : 'text-slate-400'}`}>
-                                {grade !== '-' ? grade : ''}
-                            </span>
+                    <td key={sub.id} className="p-0 relative border-r group">
+                        <div className="flex flex-col items-center">
+                            {/* Score input */}
+                            <input
+                                type="number"
+                                min="0"
+                                max="100"
+                                step="0.5"
+                                className={`w-full text-center text-sm font-black bg-transparent border-none outline-none px-2 pt-2 pb-0 m-0 appearance-none
+                                    ${hasSavedResult ? 'text-blue-700' : 'text-slate-700'}
+                                    focus:bg-blue-50 focus:ring-1 focus:ring-blue-300 transition-colors`}
+                                value={entry.score}
+                                placeholder="—"
+                                onChange={(e) => onScoreChange(student.id, sub.id, e.target.value)}
+                                title={`${sub.name}: ${entry.score || 'not entered'}`}
+                            />
+                            {/* Grade badge */}
+                            <span className={`text-[9px] font-black pb-1 ${grade === 'A' || grade === 'A-' ? 'text-green-600' :
+                                grade === 'E' || grade === 'D-' ? 'text-red-600' :
+                                    grade ? 'text-slate-500' : 'text-slate-300'
+                                }`}>{grade || '•'}</span>
                         </div>
+                        {/* Delete button — only shown for saved results on hover */}
+                        {hasSavedResult && (
+                            <button
+                                type="button"
+                                className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-red-100 text-red-600 hover:bg-red-500 hover:text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-[10px] font-black leading-none"
+                                title={`Delete ${sub.name} score for ${student.full_name}`}
+                                onClick={() => onDeleteResult && onDeleteResult(student.id, sub.id, entry.id)}
+                            >×</button>
+                        )}
+                        {/* Blue dot = saved, not yet in db */}
+                        {entry.score && !hasSavedResult && (
+                            <span className="absolute top-0.5 right-1 w-1.5 h-1.5 rounded-full bg-amber-400" title="Unsaved" />
+                        )}
                     </td>
                 );
             })}
@@ -632,6 +656,23 @@ const Academics = () => {
         setIsResultModalOpen(true);
     };
 
+    const handleDeleteSingleResult = async (studentId: number, subjectId: number, resultId: number) => {
+        if (!window.confirm('Delete this result? This cannot be undone.')) return;
+        try {
+            await academicsAPI.results.delete(resultId);
+            // Remove from local state
+            setStudentScores((prev: any) => {
+                const next = { ...prev };
+                if (next[studentId]?.[subjectId]) {
+                    delete next[studentId][subjectId];
+                }
+                return next;
+            });
+            success('Result deleted');
+        } catch (err: any) {
+            toastError(err.message || 'Failed to delete result');
+        }
+    };
 
 
     const openViewResults = async (exam: any) => {
@@ -2124,7 +2165,7 @@ const Academics = () => {
                                             // 2. Otherwise, only show if it's allocated to the selected class
                                             return activeClassSubjects.some(cs => cs.subject === sub.id);
                                         }).map(sub => (
-                                            <th key={sub.id} className="text-center min-w-[70px] p-2 bg-white" title={`${sub.name} (${sub.code})`}>
+                                            <th key={sub.id} className="text-center min-w-[110px] p-2 bg-white" title={`${sub.name} (${sub.code})`}>
                                                 <div className="text-[11px] font-black uppercase text-slate-800">{sub.name.substring(0, 3)}</div>
                                             </th>
                                         ))}
@@ -2141,6 +2182,7 @@ const Academics = () => {
                                                 subjects={subjects}
                                                 studentScores={studentScores[student.id]}
                                                 onScoreChange={handleScoreChange}
+                                                onDeleteResult={handleDeleteSingleResult}
                                                 activeClassSubjects={activeClassSubjects}
                                                 resultContext={resultContext.classId}
                                                 gradeSystems={gradeSystems}
