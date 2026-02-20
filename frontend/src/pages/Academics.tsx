@@ -1437,7 +1437,7 @@ const Academics = () => {
                                 <h3 className="mb-0 text-xs font-black uppercase">Attendance Register</h3>
                                 <div className="flex gap-2">
                                     <select
-                                        className="select select-xs"
+                                        className="select select-sm"
                                         value={attendanceSort.field}
                                         onChange={(e) => setAttendanceSort({ ...attendanceSort, field: e.target.value })}
                                     >
@@ -1446,7 +1446,7 @@ const Academics = () => {
                                         <option value="class">Sort by Class</option>
                                     </select>
                                     <button
-                                        className="btn btn-xs btn-ghost"
+                                        className="btn btn-sm btn-ghost"
                                         onClick={() => setAttendanceSort({ ...attendanceSort, direction: attendanceSort.direction === 'asc' ? 'desc' : 'asc' })}
                                     >
                                         {attendanceSort.direction === 'asc' ? '↑' : '↓'}
@@ -1458,94 +1458,96 @@ const Academics = () => {
                                 <Button variant="primary" size="sm" onClick={() => { setEditingAttendanceId(null); setAttendanceForm({ student: '', status: 'PRESENT', remark: '', date: new Date().toISOString().split('T')[0] }); setIsAttendanceModalOpen(true); }} icon={<Plus size={12} />}>Log Status</Button>
                             </div>
                         </div>
-                        <div className="card p-0 overflow-hidden bg-white">
-                            <table className="table table-sm">
-                                <thead className="bg-secondary-light/30">
-                                    <tr>
-                                        <th>Date</th>
-                                        <th>Student</th>
-                                        <th>Class</th>
-                                        <th>Status</th>
-                                        <th>Remarks</th>
-                                        <th className="text-right">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {attendanceRecords.length === 0 ? (
-                                        <tr><td colSpan={6} className="text-center p-8 text-secondary italic">No attendance records found. Use "Log Status" to add entries.</td></tr>
-                                    ) : (
-                                        [...attendanceRecords].sort((a, b) => {
-                                            let valA, valB;
-                                            if (attendanceSort.field === 'date') {
-                                                valA = a.date; valB = b.date;
-                                            } else if (attendanceSort.field === 'student') {
-                                                const sA = students.find(s => s.id === a.student);
-                                                const sB = students.find(s => s.id === b.student);
-                                                valA = sA?.full_name || ''; valB = sB?.full_name || '';
-                                            } else {
-                                                const sA = students.find(s => s.id === a.student);
-                                                const sB = students.find(s => s.id === b.student);
-                                                const cA = classes.find(c => c.id === sA?.current_class);
-                                                const cB = classes.find(c => c.id === sB?.current_class);
-                                                valA = `${cA?.name} ${cA?.stream}`; valB = `${cB?.name} ${cB?.stream}`;
-                                            }
-                                            return attendanceSort.direction === 'asc'
-                                                ? (valA > valB ? 1 : -1)
-                                                : (valA < valB ? 1 : -1);
-                                        }).map((att: any) => {
-                                            const student = students.find(s => s.id === att.student);
-                                            const cls = classes.find(c => c.id === student?.current_class);
-                                            return (
-                                                <tr key={att.id} className="hover:bg-blue-50/50">
-                                                    <td className="font-mono text-xs">{att.date}</td>
-                                                    <td>
-                                                        <div className="flex flex-col">
-                                                            <span className="font-bold text-xs">{student?.full_name || 'Unknown'}</span>
-                                                            <span className="text-[9px] text-secondary">{student?.admission_number}</span>
-                                                        </div>
-                                                    </td>
-                                                    <td className="text-xs">{cls ? `${cls.name} ${cls.stream}` : 'N/A'}</td>
-                                                    <td>
-                                                        <span className={`badge badge-sm font-bold ${att.status === 'PRESENT' ? 'badge-success text-white' : att.status === 'ABSENT' ? 'badge-error text-white' : 'badge-warning'}`}>
-                                                            {att.status}
-                                                        </span>
-                                                    </td>
-                                                    <td className="text-xs italic text-secondary">{att.remark || '-'}</td>
-                                                    <td className="text-right flex justify-end gap-1">
-                                                        {!isReadOnly && (
-                                                            <>
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    className="text-primary"
-                                                                    onClick={() => openEditAttendance(att)}
-                                                                    icon={<Edit size={12} />}
-                                                                />
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    className="text-error"
-                                                                    onClick={async () => {
-                                                                        if (await confirm('Delete this attendance record?', { type: 'danger' })) {
-                                                                            try {
-                                                                                await academicsAPI.attendance.delete(att.id);
-                                                                                loadAllAcademicData();
-                                                                                success('Attendance record deleted');
-                                                                            } catch (err: any) { toastError(err.message || 'Failed to delete record'); }
-                                                                        }
-                                                                    }}
-                                                                    icon={<Trash2 size={12} />}
-                                                                />
-                                                            </>
-                                                        )}
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
+                        <table className="table">
+                            <thead className="bg-secondary-light/30">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Student</th>
+                                    <th>Class / Section</th>
+                                    <th>Status</th>
+                                    <th>Remarks</th>
+                                    <th className="text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {attendanceRecords.length === 0 ? (
+                                    <tr><td colSpan={6} className="text-center p-8 text-secondary italic">No attendance records found. Use "Log Status" to add entries.</td></tr>
+                                ) : (
+                                    [...attendanceRecords].sort((a, b) => {
+                                        let valA, valB;
+                                        if (attendanceSort.field === 'date') {
+                                            valA = a.date; valB = b.date;
+                                        } else if (attendanceSort.field === 'student') {
+                                            const sA = students.find(s => s.id === a.student);
+                                            const sB = students.find(s => s.id === b.student);
+                                            valA = sA?.full_name || ''; valB = sB?.full_name || '';
+                                        } else {
+                                            const sA = students.find(s => s.id === a.student);
+                                            const sB = students.find(s => s.id === b.student);
+                                            const cA = classes.find(c => c.id === sA?.current_class);
+                                            const cB = classes.find(c => c.id === sB?.current_class);
+                                            valA = `${cA?.name} ${cA?.stream}`; valB = `${cB?.name} ${cB?.stream}`;
+                                        }
+                                        return attendanceSort.direction === 'asc'
+                                            ? (valA > valB ? 1 : -1)
+                                            : (valA < valB ? 1 : -1);
+                                    }).map((att: any) => {
+                                        const student = students.find(s => s.id === att.student);
+                                        const cls = classes.find(c => c.id === student?.current_class);
+                                        return (
+                                            <tr key={att.id} className="hover:bg-blue-50/50">
+                                                <td className="font-mono text-xs">{att.date}</td>
+                                                <td>
+                                                    <div className="flex flex-col">
+                                                        <span className="font-bold text-xs">{student?.full_name || 'Unknown'}</span>
+                                                        <span className="text-[9px] text-secondary">{student?.admission_number}</span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div className="flex flex-col">
+                                                        <span className="font-bold text-xs">{cls?.name || 'N/A'}</span>
+                                                        <span className="text-[9px] text-secondary font-black uppercase tracking-wider">{cls?.stream || 'General'}</span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span className={`badge badge-sm font-bold ${att.status === 'PRESENT' ? 'badge-success text-white' : att.status === 'ABSENT' ? 'badge-error text-white' : 'badge-warning'}`}>
+                                                        {att.status}
+                                                    </span>
+                                                </td>
+                                                <td className="text-xs italic text-secondary">{att.remark || '-'}</td>
+                                                <td className="text-right flex justify-end gap-1">
+                                                    {!isReadOnly && (
+                                                        <>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="text-primary"
+                                                                onClick={() => openEditAttendance(att)}
+                                                                icon={<Edit size={12} />}
+                                                            />
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="text-error"
+                                                                onClick={async () => {
+                                                                    if (await confirm('Delete this attendance record?', { type: 'danger' })) {
+                                                                        try {
+                                                                            await academicsAPI.attendance.delete(att.id);
+                                                                            loadAllAcademicData();
+                                                                            success('Attendance record deleted');
+                                                                        } catch (err: any) { toastError(err.message || 'Failed to delete record'); }
+                                                                    }
+                                                                }}
+                                                                icon={<Trash2 size={12} />}
+                                                            />
+                                                        </>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                            </tbody>
+                        </table>
                     </div>
                 )
             }
