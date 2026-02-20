@@ -442,6 +442,27 @@ const Academics = () => {
         finally { setIsSubmitting(false); }
     };
 
+    const openEditSubject = (s: any) => {
+        setSubjectForm({
+            name: s.name,
+            code: s.code,
+            group: s.group?.toString() || '',
+            is_optional: !s.is_core
+        });
+        setEditingSubjectId(s.id);
+        setIsSubjectModalOpen(true);
+    };
+
+    const handleDeleteSubject = async (id: number) => {
+        if (await confirm('Permanently delete this subject? Record recovery is impossible.', { type: 'danger' })) {
+            try {
+                await academicsAPI.subjects.delete(id);
+                success('Subject removed globally');
+                loadAllAcademicData();
+            } catch (err: any) { toastError(err.message || 'Failed to remove subject due to active attachments'); }
+        }
+    };
+
     const openEditAttendance = (att: any) => {
         setAttendanceForm({
             student: att.student.toString(),
@@ -1025,9 +1046,39 @@ const Academics = () => {
                             <h3 className="mb-0 text-xs font-black uppercase">Institutional Curriculum</h3>
                             <button className="btn btn-primary btn-xs" onClick={() => setIsSubjectModalOpen(true)}><Plus size={12} /> New Subject</button>
                         </div>
-                        {/* Table Removed as per request */}
-                        <div className="p-8 text-center text-sm text-secondary italic border bg-white">
-                            Select "New Subject" to manage the curriculum.
+                        <div className="overflow-x-auto">
+                            <table className="table w-full relative">
+                                <thead className="sticky top-0 bg-white z-10 shadow-sm text-[10px] uppercase">
+                                    <tr>
+                                        <th className="min-w-[150px]">Subject Name</th>
+                                        <th className="min-w-[100px]">Code</th>
+                                        <th className="min-w-[150px]">Subject Group</th>
+                                        <th className="min-w-[100px]">Type</th>
+                                        <th className="min-w-[100px] text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white">
+                                    {subjects.map((s: any) => (
+                                        <tr key={s.id} className="hover:bg-blue-50/50 text-xs border-b transition-colors group">
+                                            <td className="font-bold">{s.name}</td>
+                                            <td className="font-mono text-[10px]">{s.code}</td>
+                                            <td>{s.group_name || '-'}</td>
+                                            <td><span className={`badge badge-sm font-bold ${s.is_core ? 'badge-primary text-white' : 'badge-ghost text-secondary'}`}>{s.is_core ? 'CORE' : 'ELECTIVE'}</span></td>
+                                            <td className="text-right">
+                                                <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <Button variant="ghost" size="sm" className="text-primary hover:bg-white p-1 shadow-sm border border-transparent hover:border-primary/20" onClick={() => openEditSubject(s)} title="Edit Subject"><Edit size={12} /></Button>
+                                                    <Button variant="ghost" size="sm" className="text-error hover:bg-white p-1 shadow-sm border border-transparent hover:border-error/20" onClick={() => handleDeleteSubject(s.id)} title="Delete Subject"><Trash2 size={12} /></Button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {subjects.length === 0 && (
+                                        <tr>
+                                            <td colSpan={5} className="text-center p-8 text-secondary italic">No subjects added. Select "New Subject" to manage the curriculum.</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
