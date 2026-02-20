@@ -2047,8 +2047,9 @@ const Academics = () => {
                                         setLoading(true);
                                         try {
                                             const res = await academicsAPI.results.getAll({ exam_id: selectedExam.id });
+                                            const rawResults = res.data?.results ?? res.data ?? [];
                                             // Filter results based on selection (Specific Stream or ALL in Level)
-                                            const relevantResults = res.data.filter((r: any) => {
+                                            const relevantResults = rawResults.filter((r: any) => {
                                                 const s = students.find(st => st.id === r.student);
                                                 if (!s) return false;
                                                 // If 'all', match by Level name. If specific ID, match by current_class ID.
@@ -2071,7 +2072,8 @@ const Academics = () => {
                                             // Also load the specific subjects allocated to this class
                                             if (cid !== 'all') {
                                                 const classSubRes = await academicsAPI.classSubjects.list({ class_id: cid });
-                                                setActiveClassSubjects(classSubRes.data || []);
+                                                const classSubData = classSubRes.data?.results ?? classSubRes.data ?? [];
+                                                setActiveClassSubjects(Array.isArray(classSubData) ? classSubData : []);
                                             } else {
                                                 setActiveClassSubjects([]);
                                             }
