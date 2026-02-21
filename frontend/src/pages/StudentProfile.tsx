@@ -677,7 +677,7 @@ const StudentProfile = () => {
 
                     {activeTab === 'ACADEMIC' && (
                         <div className="card overflow-hidden border">
-                            <div className="p-4 border-bottom bg-secondary-light flex justify-between items-center no-column-mobile">
+                            <div className="p-4 border-bottom bg-secondary-light flex justify-between items-center">
                                 <h3 className="mb-0 text-xs font-black uppercase tracking-widest">Examination Ledger</h3>
                                 <Button variant="primary" size="sm" onClick={handleTranscriptPrint}>Download Full Transcript</Button>
                             </div>

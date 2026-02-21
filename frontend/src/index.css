@@ -166,8 +166,7 @@ p {
   max-width: 1200px;
   margin: 0 auto;
   padding: 16px;
-  overflow-x: hidden;
-  /* Traps internal leaks */
+  /* overflow-x: hidden removed to allow internal scrollbars to breath */
 }
 
 @media (min-width: 768px) {
@@ -218,6 +217,13 @@ p {
 
 .flex-nowrap {
   flex-wrap: nowrap !important;
+}
+
+/* Flex Containment - Prevents wide children from pushing parents */
+.flex-1,
+.flex-auto,
+.flex-shrink-0 {
+  min-width: 0;
 }
 
 /* System Wide UI standardizations */
@@ -376,7 +382,8 @@ table.table {
 
 @media (max-width: 640px) {
   .card {
-    padding: var(--spacing-lg);
+    padding: var(--spacing-md);
+    /* Reduced padding to give more room for tables */
     /* Maintained premium feel on mobile */
     border-radius: var(--radius-md);
   }
