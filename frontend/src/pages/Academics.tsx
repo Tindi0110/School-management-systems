@@ -985,13 +985,13 @@ const Academics = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-xl">
                         <StatCard
                             title="Total Capacity"
-                            value={`${classes.reduce((sum, c) => sum + (c.student_count || 0), 0)}/${classes.reduce((sum, c) => sum + (c.capacity || 40), 0)}`}
+                            value={classes.length > 0 ? `${classes.reduce((sum, c) => sum + (c.student_count || 0), 0)}/${classes.reduce((sum, c) => sum + (c.capacity || 40), 0)}` : "No Data"}
                             icon={<Users />}
                             gradient="var(--primary-gradient)"
                         />
-                        <StatCard title="Departments" value={subjectGroups.length.toString()} icon={<Layers />} gradient="linear-gradient(135deg, var(--accent-slate), #708090)" />
-                        <StatCard title="Upcoming Exams" value={exams.filter(e => new Date(e.date_started) > new Date() || e.is_active).length.toString()} icon={<Calendar />} gradient="linear-gradient(135deg, var(--accent-amber), #cc8400)" />
-                        <StatCard title="Overall Mean" value={meanGrade} icon={<BarChart3 />} gradient="linear-gradient(135deg, var(--success), #1e5c3e)" />
+                        <StatCard title="Departments" value={subjectGroups.length > 0 ? subjectGroups.length.toString() : "No Data"} icon={<Layers />} gradient="linear-gradient(135deg, var(--accent-slate), #708090)" />
+                        <StatCard title="Upcoming Exams" value={exams.length > 0 ? exams.filter(e => new Date(e.date_started) > new Date() || e.is_active).length.toString() : "No Data"} icon={<Calendar />} gradient="linear-gradient(135deg, var(--accent-amber), #cc8400)" />
+                        <StatCard title="Overall Mean" value={meanGrade || "No Data"} icon={<BarChart3 />} gradient="linear-gradient(135deg, var(--success), #1e5c3e)" />
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-lg">

@@ -46,17 +46,17 @@
 
   --text-primary: #0f172a;
   /* Slate-900 */
-  --text-secondary: #475569;
+  --text-secondary: #334155;
+  /* Slate-700 */
+  --text-light: #475569;
   /* Slate-600 */
-  --text-light: #64748b;
+  --text-muted: #64748b;
   /* Slate-500 */
-  --text-muted: #94a3b8;
-  /* Slate-400 */
 
-  --border: #e2e8f0;
-  /* Slate-200 for subtle borders */
-  --border-strong: #cbd5e1;
-  /* Slate-300 */
+  --border: #cbd5e1;
+  /* Slate-300 for clearer borders */
+  --border-strong: #94a3b8;
+  /* Slate-400 */
 
   /* Shadows - Layered & Elegant */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
@@ -200,6 +200,7 @@ input::-webkit-inner-spin-button {
 }
 
 input[type=number] {
+  appearance: textfield;
   -moz-appearance: textfield;
 }
 
@@ -260,7 +261,7 @@ input[type=number] {
   background: var(--bg-primary);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: var(--spacing-lg);
+  padding: var(--spacing-md);
   box-shadow: var(--shadow);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   transform: translateZ(0);

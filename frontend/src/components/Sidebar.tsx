@@ -48,7 +48,7 @@ const Sidebar = ({ onClose }: SidebarProps) => {
   return (
     <aside className="sidebar">
       <div className="sidebar-header flex justify-between items-center">
-        <h3 className="text-lg font-bold">School Management System</h3>
+        <h3 className="text-sm font-black tracking-wide uppercase">School Management System</h3>
       </div>
       <nav className="sidebar-nav">
         {filteredLinks.map((link) => (
@@ -65,8 +65,8 @@ const Sidebar = ({ onClose }: SidebarProps) => {
       </nav>
       <div className="sidebar-footer">
         <div className="user-info">
-          <p className="user-name">{user?.username || 'User'}</p>
-          <p className="user-role">
+          <p className="user-name text-xs font-bold">{user?.username || 'User'}</p>
+          <p className="user-role text-[10px]">
             {({
               'ADMIN': 'Administrator',
               'DOS': 'Director of Studies',
@@ -94,7 +94,7 @@ const Sidebar = ({ onClose }: SidebarProps) => {
           border-right: 1px solid rgba(255,255,255,0.05);
         }
         .sidebar-header {
-          padding: var(--spacing-xl) var(--spacing-lg);
+          padding: var(--spacing-md) var(--spacing-md);
           border-bottom: 1px solid rgba(255,255,255,0.08);
           background: var(--primary-dark);
         }
