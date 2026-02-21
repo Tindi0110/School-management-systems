@@ -320,6 +320,8 @@ input[type=number] {
 .table-wrapper {
   width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
 }
 
 table.table {
@@ -361,7 +363,7 @@ table.table {
     border-radius: var(--radius-md);
   }
 
-  .flex.justify-between {
+  .flex.justify-between:not(.no-column-mobile) {
     flex-direction: column;
     align-items: flex-start;
     gap: var(--spacing-sm);

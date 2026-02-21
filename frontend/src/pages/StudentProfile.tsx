@@ -467,7 +467,7 @@ const StudentProfile = () => {
     return (
         <div className="fade-in pb-12">
             {/* Header ... (keep existing) */}
-            <div className="flex justify-between items-center mb-6 no-print">
+            <div className="flex justify-between items-center mb-6 no-print no-column-mobile">
                 <Button variant="outline" size="sm" onClick={() => navigate('/students')} icon={<ArrowLeft size={16} />}>
                     BACK TO REGISTRY
                 </Button>
@@ -677,7 +677,7 @@ const StudentProfile = () => {
 
                     {activeTab === 'ACADEMIC' && (
                         <div className="card overflow-hidden border">
-                            <div className="p-4 border-bottom bg-secondary-light flex justify-between items-center">
+                            <div className="p-4 border-bottom bg-secondary-light flex justify-between items-center no-column-mobile">
                                 <h3 className="mb-0 text-xs font-black uppercase tracking-widest">Examination Ledger</h3>
                                 <Button variant="primary" size="sm" onClick={handleTranscriptPrint}>Download Full Transcript</Button>
                             </div>
@@ -767,10 +767,10 @@ const StudentProfile = () => {
 
                     {activeTab === 'FINANCE' && (
                         <div className="space-y-6">
-                            {/* Financial Summary Cards - Scrollable Row on Mobile */}
-                            <div className="flex flex-nowrap lg:flex-row gap-6 no-print overflow-x-auto pb-4 snap-x touch-pan-x">
+                            {/* Financial Summary Cards - Stacked on Mobile, Row on Desktop */}
+                            <div className="flex flex-wrap lg:flex-row gap-6 no-print pb-4">
                                 {/* Accounting Statement Summary Card */}
-                                <div className="card overflow-hidden border flex-1 min-w-[320px] md:min-w-0 snap-center">
+                                <div className="card border border-primary/10 flex-1 min-w-full lg:min-w-0">
                                     <div className="p-4 border-bottom bg-secondary-light flex justify-between items-center">
                                         <h3 className="mb-0 text-xs font-black uppercase tracking-widest">Accounting Statement</h3>
                                         <div className="flex gap-2">
@@ -781,7 +781,7 @@ const StudentProfile = () => {
                                             <Button variant="outline" size="sm" className="font-black py-1" onClick={() => window.print()}>GENERATE REPORT</Button>
                                         </div>
                                     </div>
-                                    <div className="table-wrapper max-h-[400px]">
+                                    <div className="table-wrapper max-h-[500px]">
                                         <table className="table">
                                             <thead>
                                                 <tr>
@@ -814,7 +814,7 @@ const StudentProfile = () => {
                                 </div>
 
                                 {/* Right Column for Administrative & Rapid Communication */}
-                                <div className="flex flex-col gap-6 w-full lg:w-80 flex-shrink-0 min-w-[300px] snap-center">
+                                <div className="flex flex-col gap-6 w-full lg:w-80 flex-shrink-0">
                                     {/* Administrative Control */}
                                     <div className="card border-top-4 border-primary">
                                         <h4 className="text-[10px] font-black uppercase text-primary border-bottom pb-2 mb-4 tracking-widest flex items-center gap-2">
