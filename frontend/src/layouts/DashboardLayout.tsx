@@ -164,7 +164,7 @@ const DashboardLayout = () => {
         .dashboard-layout {
           display: flex;
           height: 100dvh;
-          background: #f4f6f9;
+          background: var(--bg-secondary);
           position: relative;
         }
         .main-content {
@@ -175,26 +175,26 @@ const DashboardLayout = () => {
           width: 100%; 
         }
         .top-bar {
-          background: white;
-          padding: 1rem 2rem;
+          background: var(--bg-primary);
+          padding: 0 2rem;
           display: flex;
           justify-content: space-between;
           align-items: center;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-          height: 64px;
-          min-height: 64px;
+          box-shadow: var(--shadow-sm);
+          height: 72px; /* Taller for premium feel */
+          min-height: 72px;
+          border-bottom: 1px solid var(--border);
           width: 100%;
           position: sticky;
           top: 0;
           z-index: 80;
         }
         .sidebar-wrapper {
-          width: 260px;
+          width: 280px; /* Slightly wider */
           height: 100dvh;
-          background: #1e3c72;
-          transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-          z-index: 100; /* Ensure it's above everything */
-          box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+          transition: transform 0.4s cubic-bezier(0.2, 0, 0, 1);
+          z-index: 100;
+          box-shadow: var(--shadow-xl);
         }
         
         .mobile-toggle {
@@ -262,37 +262,41 @@ const DashboardLayout = () => {
           align-items: center;
         }
         .icon-btn {
-          background: none;
-          border: none;
+          background: var(--bg-tertiary);
+          border: 1px solid var(--border);
           cursor: pointer;
-          color: #666;
-          padding: 8px;
-          border-radius: 50%;
-          transition: background 0.2s;
+          color: var(--text-secondary);
+          padding: 10px;
+          border-radius: 12px;
+          transition: all 0.2s;
+          position: relative;
         }
         .icon-btn:hover {
-          background: #f0f0f0;
+          background: var(--bg-primary);
+          border-color: var(--primary-accent);
+          color: var(--primary-accent);
+          box-shadow: var(--shadow-sm);
         }
         .logout-btn {
           display: flex;
           align-items: center;
           gap: 0.5rem;
-          background: none;
-          border: 1px solid #ffcdd2;
-          padding: 0.4rem 0.75rem;
-          border-radius: 6px;
+          background: var(--error-light);
+          border: 1px solid transparent;
+          padding: 0.6rem 1rem;
+          border-radius: 10px;
           cursor: pointer;
-          color: #d32f2f;
+          color: var(--error);
           transition: all 0.2s;
-          font-size: 0.85rem;
+          font-size: 0.875rem;
         }
         .logout-btn:hover {
-          background: #ffebee;
-          border-color: #ef9a9a;
+          background: var(--error);
+          color: white;
         }
         .content-area {
           flex: 1;
-          padding: 1.5rem;
+          padding: var(--spacing-xl) var(--spacing-lg);
           overflow-y: auto;
           overflow-x: hidden;
           width: 100%;

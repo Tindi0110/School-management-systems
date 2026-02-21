@@ -158,6 +158,10 @@ class Adjustment(models.Model):
     date = models.DateField(default=timezone.now)
     approved_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
 
+    # Origin Tracking (for Fraud Prevention/Auditing)
+    origin_model = models.CharField(max_length=100, null=True, blank=True, db_index=True) # e.g. "library.LibraryFine"
+    origin_id = models.PositiveIntegerField(null=True, blank=True, db_index=True)
+
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         self.invoice.recalculate_pricing()
@@ -194,6 +198,10 @@ class Expense(models.Model):
     date_occurred = models.DateField(default=timezone.now)
     approved_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     receipt_scan = models.FileField(upload_to='expenses/', null=True, blank=True)
+
+    # Origin Tracking (for Fraud Prevention/Auditing)
+    origin_model = models.CharField(max_length=100, null=True, blank=True, db_index=True) # e.g. "transport.FuelRecord"
+    origin_id = models.PositiveIntegerField(null=True, blank=True, db_index=True)
 
     def __str__(self):
         return f"{self.category}: {self.amount} on {self.date_occurred}"

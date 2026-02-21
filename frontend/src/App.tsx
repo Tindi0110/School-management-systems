@@ -38,8 +38,11 @@ const PageLoader = () => (
 
 // Route Guard
 import ProtectedRoute from './components/ProtectedRoute'
+import { useSessionTimeout } from './hooks/useSessionTimeout'
 
 function App() {
+  useSessionTimeout(); // Enable logout after 30 mins of inactivity
+
   return (
     <Provider store={store}>
       <ErrorBoundary name="Toast Notification System">

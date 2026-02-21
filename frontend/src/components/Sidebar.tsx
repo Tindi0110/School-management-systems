@@ -86,46 +86,73 @@ const Sidebar = ({ onClose }: SidebarProps) => {
         .sidebar {
           width: 100%;
           height: 100%;
-          background: #1e3c72;
+          background: var(--primary);
           color: white;
           display: flex;
           flex-direction: column;
+          box-shadow: var(--shadow-xl);
+          border-right: 1px solid rgba(255,255,255,0.05);
         }
         .sidebar-header {
-          padding: 1.5rem;
-          border-bottom: 1px solid rgba(255,255,255,0.1);
+          padding: var(--spacing-xl) var(--spacing-lg);
+          border-bottom: 1px solid rgba(255,255,255,0.08);
+          background: var(--primary-dark);
         }
         .sidebar-nav {
           flex: 1;
-          padding: 1rem 0;
+          padding: var(--spacing-lg) 0;
           overflow-y: auto;
+          scrollbar-width: none;
+        }
+        .sidebar-nav::-webkit-scrollbar {
+          display: none;
         }
         .nav-item {
           display: flex;
           align-items: center;
-          padding: 0.75rem 1.5rem;
-          color: rgba(255,255,255,0.7);
+          padding: 0.875rem var(--spacing-lg);
+          color: var(--text-muted);
           text-decoration: none;
-          transition: all 0.3s;
+          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+          font-weight: 500;
+          letter-spacing: 0.01em;
+          border-left: 4px solid transparent;
         }
-        .nav-item:hover, .nav-item.active {
-          background: rgba(255,255,255,0.1);
+        .nav-item:hover {
           color: white;
-          border-left: 4px solid #4facfe;
+          background: rgba(255,255,255,0.05);
+        }
+        .nav-item.active {
+          background: rgba(255,255,255,0.08);
+          color: white;
+          border-left-color: var(--primary-accent);
+          font-weight: 600;
         }
         .nav-item svg {
-          margin-right: 0.75rem;
+          margin-right: 1rem;
+          opacity: 0.8;
+          transition: transform 0.2s;
+        }
+        .nav-item:hover svg {
+          transform: scale(1.1);
+          opacity: 1;
         }
         .sidebar-footer {
-          padding: 1rem;
-          background: rgba(0,0,0,0.2);
+          padding: var(--spacing-lg);
+          background: var(--primary-dark);
+          border-top: 1px solid rgba(255,255,255,0.08);
         }
         .user-name {
           font-weight: 600;
+          color: white;
+          font-size: 0.9375rem;
+          margin-bottom: 2px;
         }
         .user-role {
-          font-size: 0.8rem;
-          opacity: 0.7;
+          font-size: 0.75rem;
+          color: var(--text-muted);
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
         }
       `}</style>
     </aside>

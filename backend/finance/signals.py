@@ -9,7 +9,8 @@ from .models import Invoice, InvoiceItem, Expense, FeeStructure
 
 from students.models import Student
 from hostel.models import HostelAllocation, HostelMaintenance, HostelAsset
-from transport.models import TransportAllocation, VehicleMaintenance
+from transport.models import TransportAllocation, VehicleMaintenance, FuelRecord
+from library.models import LibraryFine
 
 def get_or_create_invoice(student, year_name=None, term_name=None):
     """
@@ -178,14 +179,16 @@ def sync_hostel_maintenance_expense(sender, instance, created, **kwargs):
     if (instance.status == 'COMPLETED' or instance.repair_cost > 0) and instance.repair_cost > 0:
         description = f"Hostel Repair: {instance.issue} ({instance.hostel.name if instance.hostel else 'General'})"
         
-        # Idempotency check: simplified by checking description/date/amount
-        Expense.objects.get_or_create(
-            category='MAINTENANCE',
-            amount=instance.repair_cost,
-            date_occurred=instance.date_reported if instance.date_reported else timezone.now().date(),
+        # Use update_or_create for idempotency and robust updates
+        Expense.objects.update_or_create(
+            origin_model='hostel.HostelMaintenance',
+            origin_id=instance.id,
             defaults={
+                'category': 'MAINTENANCE',
+                'amount': instance.repair_cost,
+                'date_occurred': instance.date_reported if instance.date_reported else timezone.now().date(),
                 'description': description,
-                'paid_to': 'Maintenance Vendor', # Generic
+                'paid_to': 'Maintenance Vendor',
                 'approved_by': instance.reported_by
             }
         )
@@ -197,13 +200,35 @@ def sync_vehicle_maintenance_expense(sender, instance, created, **kwargs):
     if (instance.status == 'COMPLETED' or instance.cost > 0) and instance.cost > 0:
         description = f"Vehicle Service: {instance.vehicle.registration_number} - {instance.description}"
         
-        Expense.objects.get_or_create(
-            category='MAINTENANCE',
-            amount=instance.cost,
-            date_occurred=instance.service_date,
+        Expense.objects.update_or_create(
+            origin_model='transport.VehicleMaintenance',
+            origin_id=instance.id,
             defaults={
+                'category': 'MAINTENANCE',
+                'amount': instance.cost,
+                'date_occurred': instance.service_date,
                 'description': description,
                 'paid_to': instance.performed_by or 'Mechanic'
+            }
+        )
+
+@receiver(post_save, sender=FuelRecord)
+def sync_fuel_expense(sender, instance, created, **kwargs):
+    if kwargs.get('raw'):
+        return
+    if instance.amount > 0:
+        description = f"Fuel Purchase: {instance.vehicle.registration_number} - {instance.liters}L (Receipt: {instance.receipt_no or 'N/A'})"
+        
+        # We use update_or_create with origin tracking to ensure persistence on deletion
+        Expense.objects.update_or_create(
+            origin_model='transport.FuelRecord',
+            origin_id=instance.id,
+            defaults={
+                'category': 'OTHER',
+                'amount': instance.amount,
+                'date_occurred': instance.date,
+                'description': description,
+                'paid_to': 'Fuel Station'
             }
         )
 
@@ -215,11 +240,13 @@ def sync_asset_purchase_expense(sender, instance, created, **kwargs):
         total_value = instance.value * instance.quantity
         description = f"Asset Purchase: {instance.asset_type} x{instance.quantity} for {instance.hostel.name if instance.hostel else 'Storage'}"
         
-        Expense.objects.get_or_create(
-            category='SUPPLIES', # Or OTHER
-            amount=total_value,
-            date_occurred=instance.last_audit_date, # Approximation
+        Expense.objects.update_or_create(
+            origin_model='hostel.HostelAsset',
+            origin_id=instance.id,
             defaults={
+                'category': 'SUPPLIES',
+                'amount': total_value,
+                'date_occurred': instance.last_audit_date or timezone.now().date(),
                 'description': description,
                 'paid_to': 'Supplier'
             }

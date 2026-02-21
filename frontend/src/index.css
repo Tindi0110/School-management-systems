@@ -19,70 +19,69 @@
 }
 
 :root {
-  /* Colors - Deep Navy & Slate Theme */
+  /* Colors - Deep Navy & Slate Theme with Premium Highlights */
   --primary: #0f172a;
-  /* Midnight Navy */
   --primary-light: #1e293b;
-  /* Dark Slate */
   --primary-dark: #020617;
-  /* Obsidian */
+  --primary-accent: #3b82f6;
+  /* Modern Blue accent */
 
   --secondary: #64748b;
-  /* Slate Grey */
   --secondary-light: #94a3b8;
-  --accent: #d97706;
-  /* Muted Gold (for highlights) */
+  --accent: #f59e0b;
+  /* Amber-500 for professional highlights */
 
-  --success: #059669;
-  /* Emerald */
-  --success-light: rgba(5, 150, 105, 0.1);
-  --warning: #b45309;
-  /* Amber */
-  --warning-light: rgba(180, 83, 9, 0.1);
-  --error: #be123c;
-  /* Rose */
-  --error-light: rgba(190, 18, 60, 0.1);
-  --info: #0369a1;
-  /* Sky */
-  --info-light: rgba(3, 105, 161, 0.1);
+  --success: #10b981;
+  --success-light: rgba(16, 185, 129, 0.1);
+  --warning: #f59e0b;
+  --warning-light: rgba(245, 158, 11, 0.1);
+  --error: #ef4444;
+  --error-light: rgba(239, 68, 68, 0.1);
+  --info: #0ea5e9;
+  --info-light: rgba(14, 165, 233, 0.1);
 
   --bg-primary: #ffffff;
   --bg-secondary: #f8fafc;
-  /* Slate-50 */
   --bg-tertiary: #f1f5f9;
-  /* Slate-100 */
 
-  --text-primary: #1e293b;
-  /* Slate-800 - Darker/sharper */
+  --text-primary: #0f172a;
+  /* Slate-900 */
   --text-secondary: #475569;
-  /* Slate-600 - Higher contrast */
-  --text-light: #94a3b8;
+  /* Slate-600 */
+  --text-light: #64748b;
+  /* Slate-500 */
+  --text-muted: #94a3b8;
   /* Slate-400 */
 
-  --border: #cbd5e1;
-  /* Slate-300 - Slightly clearer borders */
+  --border: #e2e8f0;
+  /* Slate-200 for subtle borders */
+  --border-strong: #cbd5e1;
+  /* Slate-300 */
 
-  /* Shadows - Subtle & Sharp */
+  /* Shadows - Layered & Elegant */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-xl: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
 
-  /* Spacing - Relaxed/Breathable */
-  --spacing-xs: 0.25rem;
-  --spacing-sm: 0.5rem;
-  --spacing-md: 1rem;
+  /* Spacing - Increased for Breathing Room (Professional Gap) */
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 0.75rem;
+  --spacing-md: 1.25rem;
   --spacing-lg: 2rem;
-  --spacing-xl: 3rem;
+  --spacing-xl: 3.5rem;
+  --spacing-2xl: 5rem;
 
-  /* Border Radius - Soft/Friendly */
-  --radius-sm: 0.25rem;
-  --radius: 0.5rem;
-  /* Rounded Standard */
-  --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
+  /* Border Radius - Refined */
+  --radius-sm: 0.375rem;
+  --radius: 0.625rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
 
   /* Typography */
+  --font-sans: 'Inter', ui-serif, 'Georgia', serif;
+  /* Inter fallback to serif for super-premium feel if font fails */
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 }
@@ -97,12 +96,12 @@ body {
   font-family: var(--font-sans);
   color: var(--text-primary);
   background: var(--bg-secondary);
-  line-height: 1.5;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
-  letter-spacing: -0.01em;
-  /* Tighter tracking */
-  font-size: 0.875rem;
-  /* Classic Compact Size */
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.011em;
+  font-size: 0.9375rem;
+  /* Slightly larger base for professional airy feel */
 }
 
 #root {
@@ -193,6 +192,17 @@ p {
   flex-wrap: nowrap !important;
 }
 
+/* System Wide UI standardizations */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
 .justify-center {
   justify-content: center;
 }
@@ -245,35 +255,34 @@ p {
   width: 100%;
 }
 
-/* Card Component - Professional */
+/* Card Component - Professional & Premium Elevation */
 .card {
   background: var(--bg-primary);
   border: 1px solid var(--border);
-  /* Visually defined */
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
   padding: var(--spacing-lg);
-  box-shadow: var(--shadow-sm);
-  transition: box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   transform: translateZ(0);
-  /* Hardware accel */
   will-change: transform, box-shadow;
 }
 
 .card:hover {
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-2px) translateZ(0);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-4px) translateZ(0);
+  border-color: var(--border-strong);
 }
 
 @media (max-width: 640px) {
   .card {
-    padding: 1.25rem;
-    /* More relaxed spacing for professional look on mobile */
+    padding: var(--spacing-md);
+    border-radius: var(--radius);
   }
 
-  /* Force responsive wrapping on headers/sections that use justify-between on desktop */
   .flex.justify-between {
-    flex-wrap: wrap;
-    gap: var(--spacing-md);
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
   }
 }
 

@@ -183,13 +183,13 @@ const Finance = () => {
     }, [showInvoiceModal, showPaymentModal, showFeeModal, showMpesaModal]);
 
     const StatsCard = ({ title, value, icon, color }: any) => (
-        <div className="card shadow-md flex flex-row items-center gap-4 p-6 border border-gray-100 transition-all hover:shadow-lg">
-            <div className={`p-3 rounded-xl bg-opacity-10 ${color.replace('text-', 'bg-')} ${color}`}>
-                {React.cloneElement(icon, { size: 24 })}
+        <div className="card flex flex-row items-center gap-6 p-6 transition-all">
+            <div className={`p-4 rounded-2xl bg-opacity-10 ${color.replace('text-', 'bg-')} ${color}`}>
+                {React.cloneElement(icon, { size: 28 })}
             </div>
             <div>
-                <p className="text-gray-500 text-sm font-medium">{title}</p>
-                <h3 className="text-2xl font-black">{value}</h3>
+                <p className="text-text-muted text-xs font-bold uppercase tracking-wider mb-1">{title}</p>
+                <h3 className="text-2xl font-black text-primary m-0">{value}</h3>
             </div>
         </div>
     );
@@ -395,17 +395,17 @@ const Finance = () => {
                 )}
             </div>
 
-            <div className="flex gap-1 mb-8 overflow-x-auto p-1 bg-gray-100/50 rounded-xl no-print">
+            <div className="flex gap-2 mb-10 overflow-x-auto p-1.5 bg-bg-tertiary rounded-2xl no-print">
                 {['dashboard', 'invoices', 'payments', 'fees', 'expenses'].map((tab) => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
-                        className={`px-6 py-2.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${activeTab === tab
-                            ? 'bg-white text-primary shadow-sm'
-                            : 'text-gray-600 hover:text-primary hover:bg-white/50'
+                        className={`px-8 py-3 rounded-xl text-sm font-bold transition-all whitespace-nowrap ${activeTab === tab
+                            ? 'bg-bg-primary text-primary shadow-md'
+                            : 'text-text-secondary hover:text-primary hover:bg-bg-primary/60'
                             }`}
                     >
-                        {tab.charAt(0) + tab.slice(1)}
+                        {tab.charAt(0).toUpperCase() + tab.slice(1)}
                     </button>
                 ))}
             </div>

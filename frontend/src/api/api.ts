@@ -216,10 +216,6 @@ export const academicsAPI = {
     update: (id: number, data: any) => api.put(`learning-resources/${id}/`, data),
     delete: (id: number) => api.delete(`learning-resources/${id}/`),
   },
-  alerts: {
-    getAll: () => api.get('alerts/', ALL),
-    create: (data: any) => api.post('alerts/', data),
-  },
   events: {
     getAll: (params?: any) => api.get('school-events/', allWith(params)),
     create: (data: any) => api.post('school-events/', data),

@@ -8,13 +8,17 @@ from .serializers import (
     AdjustmentSerializer, ExpenseSerializer
 )
 from students.models import Student
-from django.db import transaction
 from communication.utils import send_sms, send_email
+from django.db.models import Sum, Q
+from django.utils import timezone
+import threading
+
+from .permissions import IsAdminToDelete
 
 class FeeStructureViewSet(viewsets.ModelViewSet):
     queryset = FeeStructure.objects.select_related('academic_year', 'class_level').all()
     serializer_class = FeeStructureSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminToDelete]
 
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -23,7 +27,7 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         'student', 'student__current_class', 'academic_year'
     ).prefetch_related('items', 'payments', 'payments__received_by', 'adjustments')
     serializer_class = InvoiceSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminToDelete]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['student', 'student__current_class', 'student__current_class__stream', 'academic_year', 'term', 'status']
     search_fields = ['student__first_name', 'student__last_name', 'student__admission_number']
@@ -35,9 +39,6 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         Returns calculated stats and recent invoices for the dashboard.
         Avoids fetching all records to the frontend.
         """
-        from django.db.models import Sum
-        from django.utils import timezone
-        
         # Calculate totals efficiently
         stats = Invoice.objects.aggregate(
             total_invoiced=Sum('total_amount'),
@@ -80,7 +81,6 @@ class InvoiceViewSet(viewsets.ModelViewSet):
             return Response({'error': 'Missing required fields (class_id, term, year_id)'}, status=400)
 
         # 1. Get Active Fee Structures for this Class/Term (including 'All Levels')
-        from django.db.models import Q
         fees = FeeStructure.objects.filter(
             term=term, 
             academic_year_id=year_id
@@ -146,8 +146,6 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         Sends fee reminders via SMS and Email to selected students.
         Processes in the background to avoid network timeouts.
         """
-        import threading
-        
         selected_ids = request.data.get('selected_ids', [])
         message_template = request.data.get('message_template', '')
         send_sms_flag = request.data.get('send_sms', True)
@@ -195,7 +193,7 @@ class PaymentViewSet(viewsets.ModelViewSet):
         'invoice', 'invoice__student', 'received_by'
     ).all()
     serializer_class = PaymentSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminToDelete]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['invoice__student', 'invoice', 'method']
 
@@ -225,7 +223,7 @@ class PaymentViewSet(viewsets.ModelViewSet):
 class AdjustmentViewSet(viewsets.ModelViewSet):
     queryset = Adjustment.objects.select_related('invoice__student', 'approved_by').all()
     serializer_class = AdjustmentSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminToDelete]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['invoice__student', 'invoice', 'adjustment_type']
 
@@ -235,7 +233,7 @@ class AdjustmentViewSet(viewsets.ModelViewSet):
 class ExpenseViewSet(viewsets.ModelViewSet):
     queryset = Expense.objects.select_related('approved_by').all()
     serializer_class = ExpenseSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminToDelete]
 
     def perform_create(self, serializer):
         serializer.save(approved_by=self.request.user)
