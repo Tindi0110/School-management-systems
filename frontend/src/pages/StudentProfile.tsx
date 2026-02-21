@@ -6,7 +6,7 @@ import {
     Plus, MessageSquare, FilePlus, Users, Trash2, History as HistoryIcon, ShieldCheck,
     Mail, MessageCircle, Send
 } from 'lucide-react';
-import { studentsAPI, academicsAPI, financeAPI } from '../api/api';
+import { studentsAPI, academicsAPI, financeAPI, libraryAPI } from '../api/api';
 import Modal from '../components/Modal';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
@@ -27,6 +27,7 @@ const StudentProfile = () => {
     const [documents, setDocuments] = useState<any[]>([]);
     const [activities, setActivities] = useState<any[]>([]);
     const [parents, setParents] = useState<any[]>([]);
+    const [unreturnedBooks, setUnreturnedBooks] = useState<number>(0);
     const [loading, setLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -85,13 +86,15 @@ const StudentProfile = () => {
     const loadCoreStudentData = async () => {
         setLoading(true);
         try {
-            const [studentRes, parentsRes] = await Promise.all([
+            const [studentRes, parentsRes, libRes] = await Promise.all([
                 studentsAPI.getOne(Number(id)),
                 studentsAPI.parents.getForStudent(Number(id)),
+                libraryAPI.lendings.getAll({ student: Number(id), status: 'BORROWED' })
             ]);
 
             setStudent(studentRes.data);
             setParents(parentsRes.data?.results ?? parentsRes.data ?? []);
+            setUnreturnedBooks((libRes.data?.results ?? libRes.data ?? []).length);
 
             setHealthForm({
                 blood_group: studentRes.data.health_record?.blood_group || '',
