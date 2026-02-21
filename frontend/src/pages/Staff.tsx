@@ -285,6 +285,7 @@ const Staff = () => {
                                 <option value="WARDEN">Hostel Warden</option>
                                 <option value="NURSE">Nurse</option>
                                 <option value="ACCOUNTANT">Accountant</option>
+                                <option value="DRIVER">Driver</option>
                                 <option value="ADMIN">Admin/Principal</option>
                                 <option value="SUPPORT">Support Staff</option>
                             </select>

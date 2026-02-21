@@ -165,6 +165,7 @@ const Register = () => {
                                 <option value="DOS">Director of Studies</option>
                                 <option value="REGISTRAR">Admissions Registrar</option>
                                 <option value="WARDEN">Hostel / Transport Warden</option>
+                                <option value="DRIVER">Institutional Driver (Logistics)</option>
                                 <option value="NURSE">School Nurse</option>
                                 <option value="LIBRARIAN">Librarian</option>
                                 <option value="ADMIN">System Administrator</option>

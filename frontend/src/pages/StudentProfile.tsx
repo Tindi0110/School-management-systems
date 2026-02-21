@@ -761,7 +761,8 @@ const StudentProfile = () => {
 
                     {activeTab === 'FINANCE' && (
                         <div className="space-y-6">
-                            <div className="flex flex-row overflow-x-auto pb-4 gap-6 scrollbar-hide no-print">
+                            {/* Financial Summary Cards - Horizontal Scrollable Row for Admin Controls */}
+                            <div className="flex flex-row overflow-x-auto pb-4 gap-6 touch-pan-x no-print">
                                 {/* Accounting Statement Summary Card */}
                                 <div className="card p-0 overflow-hidden shadow-lg border min-w-[500px] flex-shrink-0">
                                     <div className="p-4 border-bottom bg-secondary-light flex justify-between items-center">
