@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
     Plus, Edit, Trash2, Users,
     School, Calendar, ClipboardCheck, BarChart3, FileText,
-    Settings, CheckCircle2, Book, Layers, Trophy, Printer, Square, CheckSquare, Download
+    Settings, CheckCircle2, Layers, Trophy, Printer, Square, CheckSquare, Download
 } from 'lucide-react';
 import { academicsAPI, staffAPI, studentsAPI } from '../api/api';
 import { exportToCSV } from '../utils/export';
@@ -212,7 +212,6 @@ const Academics = () => {
     const [attendanceSort, setAttendanceSort] = useState({ field: 'date', direction: 'desc' });
     const [bulkAttendanceList, setBulkAttendanceList] = useState<any[]>([]);
     const [attendanceRecords, setAttendanceRecords] = useState<any[]>([]);
-    const [activeDropdown, setActiveDropdown] = useState(false);
 
     // RBAC Helpers
     const userString = localStorage.getItem('user');
@@ -911,38 +910,8 @@ const Academics = () => {
                     <p className="text-secondary text-sm font-bold uppercase text-[10px] tracking-widest opacity-70">Institutional Management | {activeYear} • {activeTerm}</p>
                 </div>
                 <div className="flex flex-wrap gap-2 w-full lg:w-auto justify-start lg:justify-end no-print" style={{ zIndex: 60 }}>
-                    {!isReadOnly && (
-                        <>
-                            <Button variant="outline" size="sm" className="flex-1 sm:flex-none" onClick={() => setIsReportModalOpen(true)} icon={<FileText size={14} />}>
-                                Reports
-                            </Button>
-                            <div className="relative flex-1 sm:flex-none">
-                                <Button variant="primary" size="sm" className="w-full" onClick={() => setActiveDropdown(!activeDropdown)} icon={<Plus size={14} />}>
-                                    New Record
-                                </Button>
-                                {activeDropdown && (
-                                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl border border-gray-100 z-[70] p-2 animate-in fade-in slide-in-from-top-2">
-                                        <div className="grid grid-cols-1 gap-1">
-                                            <button className="flex items-center gap-3 w-full px-4 py-3 text-left text-xs font-black uppercase hover:bg-primary-light hover:text-white rounded-lg transition-all" onClick={() => { setIsClassModalOpen(true); setActiveDropdown(false); }}>
-                                                <School size={16} /> New Class Unit
-                                            </button>
-                                            <button className="flex items-center gap-3 w-full px-4 py-3 text-left text-xs font-black uppercase hover:bg-primary-light hover:text-white rounded-lg transition-all" onClick={() => { setIsSubjectModalOpen(true); setActiveDropdown(false); }}>
-                                                <Book size={16} /> New Subject
-                                            </button>
-                                            <button className="flex items-center gap-3 w-full px-4 py-3 text-left text-xs font-black uppercase hover:bg-primary-light hover:text-white rounded-lg transition-all border-t border-gray-50" onClick={() => { setIsAttendanceModalOpen(true); setActiveDropdown(false); }}>
-                                                <CheckCircle2 size={16} className="text-success" /> Attendance
-                                            </button>
-                                            <button className="flex items-center gap-3 w-full px-4 py-3 text-left text-xs font-black uppercase hover:bg-primary-light hover:text-white rounded-lg transition-all" onClick={() => { setIsExamModalOpen(true); setActiveDropdown(false); }}>
-                                                <ClipboardCheck size={16} className="text-warning" /> Schedule Exam
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </>
-                    )}
                     {isReadOnly && (
-                        <Button variant="primary" size="sm" className="flex-1 sm:flex-none" onClick={() => { setIsAttendanceModalOpen(true); setActiveDropdown(false); }} icon={<CheckCircle2 size={14} />}>
+                        <Button variant="primary" size="sm" className="flex-1 sm:flex-none" onClick={() => { setIsAttendanceModalOpen(true); }} icon={<CheckCircle2 size={14} />}>
                             Log Attendance
                         </Button>
                     )}
@@ -950,13 +919,13 @@ const Academics = () => {
             </div>
 
             {/* Navigation Tabs */}
-            <div className="flex gap-2 mb-10 overflow-x-auto p-1.5 bg-bg-tertiary rounded-2xl no-print">
+            <div className="grid grid-cols-4 md:flex md:flex-row gap-2 mb-10 md:overflow-x-auto p-1.5 bg-bg-tertiary rounded-2xl no-print">
                 {(['SUMMARY', 'CLASSES', 'CURRICULUM', 'ALLOCATION', 'EXAMS', 'ATTENDANCE', 'RESOURCES', 'GRADING'] as const)
                     .filter(tab => !isReadOnly || ['SUMMARY', 'CURRICULUM', 'EXAMS', 'ATTENDANCE'].includes(tab))
                     .map(tab => (
                         <button
                             key={tab}
-                            className={`px-8 py-3 rounded-xl text-sm font-bold transition-all whitespace-nowrap ${activeTab === tab
+                            className={`px-2 md:px-8 py-3 rounded-xl text-[10px] md:text-sm font-bold transition-all whitespace-nowrap overflow-hidden text-ellipsis ${activeTab === tab
                                 ? 'bg-bg-primary text-primary shadow-md'
                                 : 'text-text-secondary hover:text-primary hover:bg-bg-primary/60'
                                 }`}
@@ -1150,7 +1119,7 @@ const Academics = () => {
                             <div className="p-4 bg-secondary-light border-bottom">
                                 <h3 className="mb-0 text-xs font-black uppercase tracking-wider">Curriculum Progress</h3>
                             </div>
-                            <div className="overflow-x-auto">
+                            <div className="overflow-x-auto w-full">
                                 <table className="table table-sm min-w-full">
                                     <thead className="bg-secondary-light/30 text-secondary">
                                         <tr>
@@ -1335,8 +1304,8 @@ const Academics = () => {
                                             Add Boundary
                                         </Button>
                                     </div>
-                                    <div className="flex-1 overflow-y-auto p-0">
-                                        <table className="table table-sm w-full">
+                                    <div className="flex-1 overflow-x-auto p-0 w-full">
+                                        <table className="table table-sm min-w-full">
                                             <thead className="sticky top-0 bg-white z-10 shadow-sm text-[10px] uppercase">
                                                 <tr>
                                                     <th>Grade</th>
@@ -1453,60 +1422,38 @@ const Academics = () => {
                                     <h4 className="text-xs font-black uppercase text-secondary">{groupKey}</h4>
                                     <span className="badge badge-sm badge-ghost">{groupedResults[groupKey].length} Candidates</span>
                                 </div>
-                                <table className="table table-xs w-full">
+                                <table className="table table-xs min-w-full">
                                     <thead>
                                         <tr>
                                             <th>Rank</th>
-                                            <th>Student Name</th>
+                                            <th className="min-w-[150px]">Student Name</th>
                                             <th>Admission</th>
-                                            <th className="text-right">Score</th>
+                                            {subjects.filter((sub: any) => groupedResults[groupKey].some((r: any) => r.scores && r.scores[sub.id])).map((sub: any) => (
+                                                <th key={sub.id} className="text-center">{sub.code || sub.name}</th>
+                                            ))}
+                                            <th className="text-right">Total Score</th>
+                                            <th className="text-right">Mean</th>
                                             <th className="text-center">Grade</th>
-                                            <th className="text-right">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {groupedResults[groupKey].map((res: any, index: number) => (
-                                            <tr key={res.id} className={index < 3 ? 'bg-warning-light/20' : ''}>
+                                        {groupedResults[groupKey].sort((a: any, b: any) => b.totalScore - a.totalScore).map((res: any, index: number) => (
+                                            <tr key={res.student} className={index < 3 ? 'bg-warning-light/20' : ''}>
                                                 <td className="font-bold">{index + 1}</td>
-                                                <td>{res.student_name}</td>
+                                                <td className="whitespace-nowrap font-bold text-xs">{res.student_name}</td>
                                                 <td className="font-mono text-[10px]">{res.admission_number}</td>
-                                                <td className="text-right font-black">{res.score}%</td>
+                                                {subjects.filter((sub: any) => groupedResults[groupKey].some((r: any) => r.scores && r.scores[sub.id])).map((sub: any) => (
+                                                    <td key={sub.id} className="text-center text-xs font-mono">
+                                                        {res.scores[sub.id] !== undefined ? `${res.scores[sub.id]}%` : '-'}
+                                                    </td>
+                                                ))}
+                                                <td className="text-right font-black">{res.totalScore}</td>
+                                                <td className="text-right font-bold text-primary">{res.meanScore}%</td>
                                                 <td className="text-center">
-                                                    <span className={`badge badge-sm ${['A', 'A-'].includes(res.grade) ? 'badge-success' : ['D', 'E'].includes(res.grade) ? 'badge-error' : 'badge-ghost'}`}>{res.grade}</span>
-                                                </td>
-                                                <td className="text-right">
-                                                    <div className="flex justify-end gap-2">
-                                                        <Button variant="outline" size="sm" className="text-primary font-black border-primary px-2 py-1 h-auto text-[10px]" onClick={async () => {
-                                                            const newScore = window.prompt(`Update score for ${res.student_name}:`, res.score);
-                                                            if (newScore !== null && !isNaN(parseFloat(newScore))) {
-                                                                try {
-                                                                    const scoreVal = parseFloat(newScore);
-                                                                    const payload = {
-                                                                        student: res.student,
-                                                                        exam: res.exam,
-                                                                        subject: res.subject,
-                                                                        score: scoreVal,
-                                                                        grade: calculateGrade(scoreVal, gradeSystems, selectedExam.grade_system),
-                                                                        recorded_by: user?.id || 1
-                                                                    };
-                                                                    await academicsAPI.results.update(res.id, payload);
-                                                                    success('Score updated');
-                                                                    openViewResults(selectedExam); // Refresh rankings
-                                                                } catch (err: any) { toastError(err.message || 'Update failed'); }
-                                                            }
-                                                        }} icon={<Edit size={10} />}>EDIT</Button>
-                                                        <Button variant="outline" size="sm" className="text-error font-black border-error px-2 py-1 h-auto text-[10px]" onClick={async () => {
-                                                            if (await confirm(`Delete result for ${res.student_name}?`, { type: 'danger' })) {
-                                                                try {
-                                                                    await academicsAPI.results.delete(res.id);
-                                                                    success('Result deleted');
-                                                                    openViewResults(selectedExam); // Refresh rankings
-                                                                } catch (err: any) { toastError(err.message || 'Delete failed'); }
-                                                            }
-                                                        }} icon={<Trash2 size={10} />}>DELETE</Button>
-                                                    </div>
+                                                    <span className={`badge badge-sm ${['A', 'A-'].includes(res.meanGrade) ? 'badge-success' : ['D', 'E'].includes(res.meanGrade) ? 'badge-error' : 'badge-ghost'}`}>{res.meanGrade || '-'}</span>
                                                 </td>
                                             </tr>
+
                                         ))}
                                     </tbody>
                                 </table>
