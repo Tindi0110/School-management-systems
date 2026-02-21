@@ -144,7 +144,10 @@ class InvoiceViewSet(viewsets.ModelViewSet):
     def send_reminders(self, request):
         """
         Sends fee reminders via SMS and Email to selected students.
+        Processes in the background to avoid network timeouts.
         """
+        import threading
+        
         selected_ids = request.data.get('selected_ids', [])
         message_template = request.data.get('message_template', '')
         send_sms_flag = request.data.get('send_sms', True)
@@ -153,58 +156,38 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         if not selected_ids:
             return Response({'error': 'No students selected'}, status=400)
 
-        invoices = Invoice.objects.filter(id__in=selected_ids).select_related('student')
-        success_count = 0
-        fail_count = 0
-        results = []
+        # 1. Define the background task
+        def run_sending():
+            invoices = Invoice.objects.filter(id__in=selected_ids).select_related('student')
+            for inv in invoices:
+                student = inv.student
+                phone = student.guardian_phone
+                email = None
+                
+                primary_parent = student.parents.first()
+                if primary_parent:
+                    phone = primary_parent.phone or phone
+                    email = primary_parent.email
+                
+                fullname = student.full_name
+                balance = inv.balance
+                
+                msg = message_template.replace('{student_name}', fullname).replace('{balance}', str(balance))
+                if not msg:
+                    msg = f"Dear Parent, this is a reminder regarding {fullname}'s outstanding fee balance of KES {balance}. Please settle as soon as possible."
 
-        for inv in invoices:
-            student = inv.student
-            # 1. Resolve Contact Info
-            phone = student.guardian_phone
-            email = None
-            
-            # Check Parent model if primary exists
-            primary_parent = student.parents.first() # Simplification: take first parent as primary
-            if primary_parent:
-                phone = primary_parent.phone or phone
-                email = primary_parent.email
-            
-            fullname = student.full_name
-            balance = inv.balance
-            
-            # 2. Prepare Message
-            # Simple placeholder replacement
-            msg = message_template.replace('{student_name}', fullname).replace('{balance}', str(balance))
-            if not msg:
-                msg = f"Dear Parent, this is a reminder regarding {fullname}'s outstanding fee balance of KES {balance}. Please settle as soon as possible."
+                if send_sms_flag and phone:
+                    send_sms(phone, msg)
+                
+                if send_email_flag and email:
+                    send_email(email, f"Fee Reminder: {fullname}", msg)
 
-            # 3. Send SMS
-            sms_status = "Skipped"
-            if send_sms_flag and phone:
-                ok, res = send_sms(phone, msg)
-                sms_status = "Sent" if ok else f"Failed: {res}"
-            
-            # 4. Send Email
-            email_status = "Skipped"
-            if send_email_flag and email:
-                ok, res = send_email(email, f"Fee Reminder: {fullname}", msg)
-                email_status = "Sent" if ok else f"Failed: {res}"
-
-            if sms_status == "Sent" or email_status == "Sent":
-                success_count += 1
-            else:
-                fail_count += 1
-            
-            results.append({
-                'student': fullname,
-                'sms': sms_status,
-                'email': email_status
-            })
+        # 2. Trigger thread and return immediately
+        thread = threading.Thread(target=run_sending)
+        thread.start()
 
         return Response({
-            'message': f'Completed sending reminders. Success: {success_count}, Failed: {fail_count}',
-            'results': results
+            'message': f'Reminder process started for {len(selected_ids)} students. This may take a few minutes as messages are sent in the background.'
         })
 
 class PaymentViewSet(viewsets.ModelViewSet):
