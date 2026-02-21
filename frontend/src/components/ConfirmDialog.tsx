@@ -59,15 +59,12 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
                         <AlertCircle className={style.icon} size={24} />
                     </div>
                     <div className="flex-1">
-                        <div className="flex justify-between items-start mb-2">
-                            <h3 className="text-lg font-bold text-gray-900">{title}</h3>
-                            <button onClick={onCancel} className="text-gray-400 hover:text-gray-600">
-                                <X size={20} />
-                            </button>
+                        <h3 className={`text-xl font-black uppercase tracking-tight ${type === 'danger' ? 'text-red-700' : 'text-slate-900'}`}>{title}</h3>
+                        <div className="mt-4 p-5 bg-white border border-slate-200 rounded-2xl shadow-sm">
+                            <p className={`text-sm leading-relaxed font-bold ${type === 'danger' ? 'text-red-600' : 'text-slate-600'}`}>
+                                {message}
+                            </p>
                         </div>
-                        <p className="text-sm text-gray-500 leading-relaxed">
-                            {message}
-                        </p>
                     </div>
                 </div>
                 <div className="modal-footer bg-gray-50 px-6 py-4 flex justify-end gap-3 rounded-b-lg">

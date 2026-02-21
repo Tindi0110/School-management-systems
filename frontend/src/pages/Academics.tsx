@@ -1045,8 +1045,8 @@ const Academics = () => {
             )}
 
             {activeTab === 'CURRICULUM' && (
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-lg">
-                    <div className="md:col-span-1 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-lg overflow-hidden">
+                    <div className="md:col-span-1 space-y-4 min-w-0">
                         <div className="card">
                             <div className="flex justify-between items-center mb-4">
                                 <h4 className="text-[10px] font-black uppercase text-secondary mb-0">Subject Groups</h4>
@@ -1065,9 +1065,10 @@ const Academics = () => {
                             </div>
                         </div>
                     </div>
-                    <div className="md:col-span-3 table-wrapper shadow-lg">
+                    <div className="md:col-span-3 overflow-hidden shadow-lg border rounded-2xl min-w-0">
                         <div className="p-3 bg-secondary-light flex justify-between items-center border-bottom">
                             <h3 className="mb-0 text-xs font-black uppercase">Institutional Curriculum</h3>
+                            {/* ... buttons ... */}
                             <button className="btn btn-primary btn-xs ml-auto-mobile" onClick={() => setIsSubjectModalOpen(true)}><Plus size={12} /> New Subject</button>
                         </div>
                         <div className="overflow-x-auto w-full">
@@ -1116,11 +1117,11 @@ const Academics = () => {
                             )}
                         </div>
 
-                        <div className="table-wrapper shadow-lg">
+                        <div className="overflow-hidden shadow-lg border rounded-2xl">
                             <div className="p-4 bg-secondary-light border-bottom flex justify-between items-center">
                                 <h3 className="mb-0 text-xs font-black uppercase tracking-wider">Curriculum Progress</h3>
                             </div>
-                            <div className="overflow-x-auto w-full">
+                            <div className="table-wrapper">
                                 <table className="table table-sm min-w-[800px] relative">
                                     <thead className="bg-secondary-light/30 text-secondary">
                                         <tr>
@@ -1181,89 +1182,90 @@ const Academics = () => {
                             </div>
                         </div>
                     </div>
-                </div>
+                </div >
             )}
 
 
-            {activeTab === 'ALLOCATION' && (
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-lg h-[calc(100vh-200px)]">
-                    <div className="md:col-span-1 border-right pr-4">
-                        <h3 className="text-xs font-black uppercase mb-4">Select Class</h3>
-                        <div className="space-y-2">
-                            {classes.map(c => (
-                                <div
-                                    key={c.id}
-                                    className={`p-3 rounded-lg cursor-pointer border hover:border-primary transition-all ${selectedAllocationClass === c.id.toString() ? 'bg-primary-light border-primary' : 'bg-white'}`}
-                                    onClick={() => { setSelectedAllocationClass(c.id.toString()); fetchClassAllocations(c.id.toString()); }}
-                                >
-                                    <div className="font-bold text-xs">{c.name} {c.stream}</div>
-                                    <div className="text-[10px] text-secondary">{c.student_count} Students</div>
+            {
+                activeTab === 'ALLOCATION' && (
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-lg h-[calc(100vh-200px)]">
+                        <div className="md:col-span-1 border-right pr-4">
+                            <h3 className="text-xs font-black uppercase mb-4">Select Class</h3>
+                            <div className="space-y-2">
+                                {classes.map(c => (
+                                    <div
+                                        key={c.id}
+                                        className={`p-3 rounded-lg cursor-pointer border hover:border-primary transition-all ${selectedAllocationClass === c.id.toString() ? 'bg-primary-light border-primary' : 'bg-white'}`}
+                                        onClick={() => { setSelectedAllocationClass(c.id.toString()); fetchClassAllocations(c.id.toString()); }}
+                                    >
+                                        <div className="font-bold text-xs">{c.name} {c.stream}</div>
+                                        <div className="text-[10px] text-secondary">{c.student_count} Students</div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="md:col-span-3 min-w-0">
+                            {selectedAllocationClass ? (
+                                <div className="card h-full flex flex-col">
+                                    <div className="card-header flex justify-between items-center py-3 border-bottom">
+                                        <div>
+                                            <h3 className="mb-0 text-sm font-black uppercase">Class Subjects</h3>
+                                            <p className="text-[10px] text-secondary">Manage subjects taught in this class</p>
+                                        </div>
+                                        <Button variant="primary" size="sm" onClick={syncClassSubjects} loading={isSyncing} loadingText="Syncing...">
+                                            Sync to Students
+                                        </Button>
+                                    </div>
+                                    <div className="p-0 table-wrapper overflow-y-auto flex-1">
+                                        <table className="table table-striped min-w-[600px]">
+                                            <thead>
+                                                <tr>
+                                                    <th className="w-10">Active</th>
+                                                    <th>Subject Name</th>
+                                                    <th>Code</th>
+                                                    <th>Group</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {subjects.map(subject => {
+                                                    const allocation = classAllocations.find(a => a.subject === subject.id);
+                                                    const isAllocated = !!allocation;
+                                                    return (
+                                                        <tr key={subject.id} className={isAllocated ? 'bg-green-50' : ''}>
+                                                            <td>
+                                                                <input
+                                                                    type="checkbox"
+                                                                    className="checkbox checkbox-sm checkbox-primary"
+                                                                    checked={isAllocated}
+                                                                    onChange={() => toggleClassSubject(subject.id, allocation?.id)}
+                                                                />
+                                                            </td>
+                                                            <td className="font-bold text-xs">{subject.name}</td>
+                                                            <td><code>{subject.code}</code></td>
+                                                            <td className="text-[10px] uppercase text-secondary">{subject.group_name || '-'}</td>
+                                                            <td>
+                                                                {isAllocated ?
+                                                                    <span className="badge badge-success text-[9px]">Allocated</span> :
+                                                                    <span className="badge badge-ghost text-[9px]">Available</span>
+                                                                }
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
-                            ))}
+                            ) : (
+                                <div className="h-full flex flex-col items-center justify-center text-secondary opacity-50">
+                                    <Layers size={48} className="mb-4" />
+                                    <p className="font-bold">Select a class to manage allocations</p>
+                                </div>
+                            )}
                         </div>
                     </div>
-                    <div className="md:col-span-3">
-                        {selectedAllocationClass ? (
-                            <div className="card h-full flex flex-col">
-                                <div className="card-header flex justify-between items-center py-3 border-bottom">
-                                    <div>
-                                        <h3 className="mb-0 text-sm font-black uppercase">Class Subjects</h3>
-                                        <p className="text-[10px] text-secondary">Manage subjects taught in this class</p>
-                                    </div>
-                                    <Button variant="primary" size="sm" onClick={syncClassSubjects} loading={isSyncing} loadingText="Syncing...">
-                                        Sync to Students
-                                    </Button>
-                                </div>
-                                <div className="p-0 table-wrapper overflow-y-auto flex-1">
-                                    <table className="table table-striped min-w-[600px]">
-                                        <thead>
-                                            <tr>
-                                                <th className="w-10">Active</th>
-                                                <th>Subject Name</th>
-                                                <th>Code</th>
-                                                <th>Group</th>
-                                                <th>Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {subjects.map(subject => {
-                                                const allocation = classAllocations.find(a => a.subject === subject.id);
-                                                const isAllocated = !!allocation;
-                                                return (
-                                                    <tr key={subject.id} className={isAllocated ? 'bg-green-50' : ''}>
-                                                        <td>
-                                                            <input
-                                                                type="checkbox"
-                                                                className="checkbox checkbox-sm checkbox-primary"
-                                                                checked={isAllocated}
-                                                                onChange={() => toggleClassSubject(subject.id, allocation?.id)}
-                                                            />
-                                                        </td>
-                                                        <td className="font-bold text-xs">{subject.name}</td>
-                                                        <td><code>{subject.code}</code></td>
-                                                        <td className="text-[10px] uppercase text-secondary">{subject.group_name || '-'}</td>
-                                                        <td>
-                                                            {isAllocated ?
-                                                                <span className="badge badge-success text-[9px]">Allocated</span> :
-                                                                <span className="badge badge-ghost text-[9px]">Available</span>
-                                                            }
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="h-full flex flex-col items-center justify-center text-secondary opacity-50">
-                                <Layers size={48} className="mb-4" />
-                                <p className="font-bold">Select a class to manage allocations</p>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            )
+                )
             }
 
             {
@@ -1467,8 +1469,8 @@ const Academics = () => {
 
             {
                 activeTab === 'RESOURCES' && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-lg">
-                        <div className="table-wrapper shadow-lg">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-lg overflow-hidden">
+                        <div className="overflow-hidden shadow-lg border rounded-2xl min-w-0">
                             <div className="p-3 bg-secondary-light flex justify-between items-center border-bottom">
                                 <h3 className="mb-0 text-xs font-black uppercase">Grading Policies</h3>
                                 <Button variant="primary" size="sm" className="ml-auto-mobile" onClick={() => setIsGradeModalOpen(true)} icon={<Plus size={12} />}>New System</Button>
@@ -1555,7 +1557,7 @@ const Academics = () => {
 
             {
                 activeTab === 'ATTENDANCE' && (
-                    <div className="table-wrapper shadow-lg mb-8">
+                    <div className="overflow-hidden shadow-lg mb-8 border rounded-2xl">
                         <div className="p-4 bg-secondary-light flex flex-col sm:flex-row justify-between items-start sm:items-center border-bottom gap-4">
                             <div className="flex items-center gap-4">
                                 <h3 className="mb-0 text-xs font-black uppercase tracking-wider">Attendance Register</h3>
