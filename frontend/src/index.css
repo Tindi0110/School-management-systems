@@ -65,14 +65,14 @@
   --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
 
-  /* Spacing - Professional 4px Base Scale */
-  --spacing-xs: 4px;
-  --spacing-sm: 8px;
-  --spacing-md: 16px;
-  --spacing-lg: 24px;
-  --spacing-xl: 32px;
-  --spacing-2xl: 48px;
-  --spacing-3xl: 64px;
+  /* Spacing - Enhanced for breathing room */
+  --spacing-xs: 6px;
+  --spacing-sm: 12px;
+  --spacing-md: 20px;
+  --spacing-lg: 32px;
+  --spacing-xl: 40px;
+  --spacing-2xl: 60px;
+  --spacing-3xl: 80px;
 
   /* Border Radius - Refined */
   --radius-sm: 0.375rem;
@@ -1161,13 +1161,71 @@ table.table {
   }
 
   .transition-all {
-    transition-property: all;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    transition-duration: 150ms;
+    /* Transitions - Pro Performance */
+    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  .duration-300 {
-    transition-duration: 300ms;
+  .table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    background: var(--bg-primary);
+    border-radius: var(--radius-lg);
+    position: relative;
+  }
+
+  .table-wrapper::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  .table-wrapper::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 10px;
+  }
+
+  /* Results Entry Matrix */
+  .results-entry-table,
+  .results-entry-table * {
+    border: none !important;
+    border-width: 0 !important;
+    box-shadow: none !important;
+    outline: none !important;
+    border-radius: 0 !important;
+    background-image: none !important;
+  }
+
+  .results-entry-table input {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    background: transparent !important;
+  }
+
+  .results-entry-table thead th {
+    background: #ffffff !important;
+  }
+
+  .results-entry-table tbody tr:hover {
+    background-color: #f8fafc !important;
+  }
+
+  .results-entry-table tbody td {
+    background: transparent !important;
+  }
+
+  .results-entry-table tr {
+    background: white !important;
+  }
+
+  .checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .checkbox-group input {
+    width: auto;
   }
 
   .ease-in-out {
@@ -1495,6 +1553,8 @@ table.table {
 .auth-page {
   min-height: 100vh;
   display: flex;
+  flex-direction: column;
+  /* Crucial for vertical stacking */
   align-items: center;
   justify-content: center;
   background: var(--bg-secondary);
@@ -1505,14 +1565,17 @@ table.table {
 
 .auth-card {
   width: 100%;
-  max-width: 440px;
+  max-width: 480px;
+  /* Slightly wider for better text flow */
   background: var(--bg-primary);
   border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-2xl);
+  box-shadow: var(--shadow-xl);
   overflow: hidden;
   position: relative;
   z-index: 10;
   border: 1px solid var(--border);
+  margin: auto;
+  /* Ensure centering */
 }
 
 .auth-header {
@@ -1575,6 +1638,15 @@ table.table {
   z-index: 1;
 }
 
+@media (max-width: 768px) {
+  .auth-gradient-bg {
+    width: 300px;
+    height: 300px;
+    filter: blur(40px);
+    opacity: 0.1;
+  }
+}
+
 .auth-gradient-1 {
   background: var(--primary);
   top: -200px;
@@ -1585,6 +1657,54 @@ table.table {
   background: var(--secondary);
   bottom: -200px;
   left: -200px;
+}
+
+/* ===== COMPONENT GROUPING ===== */
+.btn-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+  align-items: center;
+}
+
+.card-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+/* Responsive Alignment */
+@media (max-width: 768px) {
+  .justify-end-mobile {
+    justify-content: flex-end !important;
+    width: 100%;
+  }
+
+  .ml-auto-mobile {
+    margin-left: auto !important;
+  }
+}
+
+.form-container-md {
+  max-width: 600px;
+  width: 100%;
+}
+
+.form-container-sm {
+  max-width: 400px;
+  width: 100%;
+}
+
+.border-left-4 {
+  border-left-width: 4px !important;
+}
+
+.border-top-4 {
+  border-top-width: 4px !important;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
 
 /* ===== BACKGROUND UTILITIES ===== */
@@ -1617,17 +1737,7 @@ table.table {
   z-index: 2147483647;
 }
 
-.badge-xs {
-  font-size: 9px !important;
-  padding: 2px 6px !important;
-  line-height: 1;
-}
 
-.badge-xxs {
-  font-size: 8px !important;
-  padding: 1px 4px !important;
-  line-height: 1;
-}
 
 .progress-fill {
   height: 100%;

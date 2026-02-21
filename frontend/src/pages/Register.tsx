@@ -181,6 +181,10 @@ const Register = () => {
                     Already have an account? <Link to="/login" className="text-primary hover:underline ml-1">Sign In</Link>
                 </div>
             </div>
+
+            <div className="absolute bottom-8 text-center w-full z-10 pointer-events-none">
+                <p className="text-[10px] text-secondary font-bold uppercase tracking-[0.2em] opacity-40">Secure Institutional Portal v2.0</p>
+            </div>
         </div>
     );
 };

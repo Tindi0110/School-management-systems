@@ -285,7 +285,8 @@ const Students = () => {
 
     return (
         <div className="fade-in">
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8 no-print">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-12 no-print">
+
                 <div className="w-full lg:w-auto">
                     <h1 className="text-3xl font-black tracking-tight">Institutional Registry</h1>
                     <p className="text-secondary font-bold uppercase text-[10px] tracking-widest opacity-70">SIS Management | Enrollment: {students.length}</p>

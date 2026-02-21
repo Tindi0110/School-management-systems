@@ -904,7 +904,7 @@ const Academics = () => {
 
     return (
         <div className="fade-in">
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8 no-print">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-12 no-print">
                 <div className="w-full lg:w-auto">
                     <h1 className="text-3xl font-black tracking-tight">Academics Module</h1>
                     <p className="text-secondary text-sm font-bold uppercase text-[10px] tracking-widest opacity-70">Institutional Management | {activeYear} • {activeTerm}</p>
@@ -1068,10 +1068,11 @@ const Academics = () => {
                     <div className="md:col-span-3 table-wrapper shadow-lg">
                         <div className="p-3 bg-secondary-light flex justify-between items-center border-bottom">
                             <h3 className="mb-0 text-xs font-black uppercase">Institutional Curriculum</h3>
-                            <button className="btn btn-primary btn-xs" onClick={() => setIsSubjectModalOpen(true)}><Plus size={12} /> New Subject</button>
+                            <button className="btn btn-primary btn-xs ml-auto-mobile" onClick={() => setIsSubjectModalOpen(true)}><Plus size={12} /> New Subject</button>
                         </div>
-                        <div className="overflow-x-auto">
-                            <table className="table w-full relative">
+                        <div className="overflow-x-auto w-full">
+                            <table className="table min-w-[800px] relative">
+
                                 <thead className="sticky top-0 bg-white z-10 shadow-sm text-[10px] uppercase">
                                     <tr>
                                         <th className="min-w-[150px]">Subject Name</th>
@@ -1111,16 +1112,16 @@ const Academics = () => {
                         <div className="flex justify-between items-center">
                             <h2 className="text-lg font-black text-primary uppercase">Syllabus Tracking</h2>
                             {!isReadOnly && (
-                                <button className="btn btn-sm btn-primary font-black shadow-md" onClick={() => { setEditingSyllabusId(null); setIsSyllabusModalOpen(true); }}><Plus size={16} /> Record Coverage</button>
+                                <button className="btn btn-sm btn-primary font-black shadow-md w-full md:w-auto" onClick={() => { setEditingSyllabusId(null); setIsSyllabusModalOpen(true); }}><Plus size={16} /> Record Coverage</button>
                             )}
                         </div>
 
                         <div className="table-wrapper shadow-lg">
-                            <div className="p-4 bg-secondary-light border-bottom">
+                            <div className="p-4 bg-secondary-light border-bottom flex justify-between items-center">
                                 <h3 className="mb-0 text-xs font-black uppercase tracking-wider">Curriculum Progress</h3>
                             </div>
                             <div className="overflow-x-auto w-full">
-                                <table className="table table-sm min-w-full">
+                                <table className="table table-sm min-w-[800px] relative">
                                     <thead className="bg-secondary-light/30 text-secondary">
                                         <tr>
                                             <th className="min-w-[150px]">Subject</th>
@@ -1213,8 +1214,8 @@ const Academics = () => {
                                         Sync to Students
                                     </Button>
                                 </div>
-                                <div className="p-0 overflow-y-auto flex-1">
-                                    <table className="table table-striped">
+                                <div className="p-0 table-wrapper overflow-y-auto flex-1">
+                                    <table className="table table-striped min-w-[600px]">
                                         <thead>
                                             <tr>
                                                 <th className="w-10">Active</th>
@@ -1470,14 +1471,14 @@ const Academics = () => {
                         <div className="table-wrapper shadow-lg">
                             <div className="p-3 bg-secondary-light flex justify-between items-center border-bottom">
                                 <h3 className="mb-0 text-xs font-black uppercase">Grading Policies</h3>
-                                <Button variant="primary" size="sm" onClick={() => setIsGradeModalOpen(true)} icon={<Plus size={12} />}>New System</Button>
+                                <Button variant="primary" size="sm" className="ml-auto-mobile" onClick={() => setIsGradeModalOpen(true)} icon={<Plus size={12} />}>New System</Button>
                             </div>
                             <div className="p-4 space-y-4">
                                 {gradeSystems.map(gs => (
                                     <div key={gs.id} className="border rounded p-3 bg-secondary-light">
-                                        <div className="flex justify-between mb-2">
+                                        <div className="flex justify-between items-center mb-2">
                                             <span className="font-black text-[10px] uppercase">{gs.name}</span>
-                                            <div className="flex gap-2">
+                                            <div className="flex gap-2 items-center justify-end-mobile">
                                                 {gs.is_default && <span className="badge badge-success badge-xxs">DEFAULT</span>}
                                                 <button className="text-secondary hover:text-primary transition-colors p-1" onClick={(e) => {
                                                     e.stopPropagation();
@@ -1502,7 +1503,7 @@ const Academics = () => {
                         <div className="card">
                             <div className="card-header py-2 flex justify-between items-center">
                                 <h3 className="mb-0 text-xs font-black uppercase">Academic timeline</h3>
-                                <Button variant="primary" size="sm" onClick={() => setIsYearModalOpen(true)} icon={<Plus size={12} />} />
+                                <Button variant="primary" size="sm" className="ml-auto-mobile" onClick={() => setIsYearModalOpen(true)} icon={<Plus size={12} />} />
                             </div>
                             <div className="p-2 space-y-2">
                                 {academicYears.map(y => (
@@ -1513,7 +1514,7 @@ const Academics = () => {
                                                 <span className="font-black text-[11px] uppercase">Cycle {y.name}</span>
                                             </div>
                                             {!isReadOnly && (
-                                                <div className="flex gap-1">
+                                                <div className="flex gap-1 items-center justify-end-mobile">
                                                     <Button variant="ghost" size="sm" className="text-info" onClick={() => setIsTermModalOpen(true)} title="Add Term" icon={<Plus size={10} />} />
                                                     <Button variant="ghost" size="sm" onClick={() => openEditYear(y)} title="Edit Year" icon={<Edit size={10} />} />
                                                 </div>
@@ -1537,7 +1538,7 @@ const Academics = () => {
                                                         </button>
                                                     </span>
                                                     {!isReadOnly && (
-                                                        <Button variant="ghost" size="sm" className="text-secondary hover:text-error p-1" onClick={(e) => { e.stopPropagation(); handleDeleteTerm(t.id); }} title="Delete Term" icon={<Trash2 size={12} />} />
+                                                        <Button variant="ghost" size="sm" className="text-secondary hover:text-error p-1 ml-auto-mobile" onClick={(e) => { e.stopPropagation(); handleDeleteTerm(t.id); }} title="Delete Term" icon={<Trash2 size={12} />} />
                                                     )}
                                                 </div>
                                             ))}
@@ -2308,35 +2309,6 @@ const Academics = () => {
                 </form>
             </Modal>
 
-            <style>{`
-                .results-entry-table, 
-                .results-entry-table * { 
-                    border: none !important; 
-                    border-width: 0 !important; 
-                    box-shadow: none !important; 
-                    outline: none !important; 
-                    border-radius: 0 !important;
-                    background-image: none !important;
-                }
-                .results-entry-table input {
-                    appearance: none !important;
-                    -webkit-appearance: none !important;
-                    background: transparent !important;
-                }
-                .results-entry-table thead th { background: #ffffff !important; }
-                .results-entry-table tbody tr:hover { background-color: #f8fafc !important; }
-                .results-entry-table tbody td { background: transparent !important; }
-                
-                /* Remove Modal Borders for Results */
-                .modal-header, .modal-footer { border: none !important; background: white !important; }
-                .modal { border: none !important; box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.3) !important; background: white !important; }
-                .results-entry-table tr { background: white !important; }
-
-                .dropdown:hover .dropdown-content { display: block; }
-                .scrollbar-hide::-webkit-scrollbar { display: none; }
-                .checkbox-group { display: flex; align-items: center; gap: 0.5rem; }
-                .checkbox-group input { width: auto; }
-            `}</style>
         </div >
     );
 };
