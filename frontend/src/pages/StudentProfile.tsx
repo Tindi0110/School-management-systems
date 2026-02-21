@@ -112,29 +112,29 @@ const StudentProfile = () => {
             });
             setHealthId(studentRes.data.health_record?.id || null);
 
+            const studentUser = studentRes.data.user;
+
+            // Secondary Fetches
             try {
-                const [pRes, iRes, aRes] = await Promise.all([
+                const [pRes, iRes, aRes, lendingsRes] = await Promise.all([
                     financeAPI.payments.getAll({ invoice__student: Number(id) }),
                     financeAPI.invoices.getAll({ student: Number(id) }),
-                    financeAPI.adjustments.getAll({ invoice__student: Number(id) })
+                    financeAPI.adjustments.getAll({ invoice__student: Number(id) }),
+                    studentUser ? libraryAPI.lendings.getAll({ user: studentUser, date_returned__isnull: true }) : Promise.resolve({ data: [] })
                 ]);
+
                 setPayments(d(pRes));
                 setInvoices(d(iRes));
                 setAdjustments(d(aRes));
-            } catch (e) {
-                console.error("Finance Load Error:", e);
-            }
 
-            try {
-                const lendingsRes = await libraryAPI.lendings.getAll();
-                const allLendings = lendingsRes.data?.results ?? lendingsRes.data ?? [];
-                const studentUser = studentRes.data.user;
                 if (studentUser) {
+                    const allLendings = d(lendingsRes);
+                    // Double check filtering locally in case backend doesn't support the query params yet
                     const activeLendings = allLendings.filter((l: any) => l.user === studentUser && !l.date_returned);
                     setUnreturnedBooks(activeLendings.length);
                 }
             } catch (e) {
-                console.error("Could not load library clearance data", e);
+                console.error("Secondary Data Load Error:", e);
             }
 
         } catch (error: any) {

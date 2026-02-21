@@ -128,9 +128,6 @@ h6 {
   margin-bottom: var(--spacing-sm);
   color: var(--primary);
   letter-spacing: -0.025em;
-  /* Hardware accel hint for smoother text rendering if scaled */
-  transform: translateZ(0);
-  backface-visibility: hidden;
 }
 
 h1 {
@@ -350,13 +347,10 @@ table.table {
   margin-bottom: var(--spacing-lg);
   box-shadow: var(--shadow);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  transform: translateZ(0);
-  will-change: transform, box-shadow;
 }
 
 .card:hover {
   box-shadow: var(--shadow-md);
-  transform: translateY(-4px) translateZ(0);
   border-color: var(--border-strong);
 }
 
@@ -387,19 +381,16 @@ table.table {
   border: 1px solid transparent;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: transform, background-color;
-  transform: translateZ(0);
   white-space: nowrap;
   min-height: 48px;
   /* Mobile touch target size */
 }
 
 .btn:active:not(:disabled) {
-  transform: scale(0.97) translateZ(0);
+  transform: scale(0.97);
 }
 
 .btn:hover:not(:disabled) {
-  transform: translateY(-1px) translateZ(0);
   box-shadow: var(--shadow-sm);
 }
 
@@ -714,53 +705,7 @@ table.table {
   }
 }
 
-/* Modal - Professional Animation */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.6);
-  /* Navy tint opacity */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 99999;
-  /* Force Top Layer */
-  animation: fadeIn 0.2s ease-out;
-  backdrop-filter: blur(2px);
-  pointer-events: auto;
-}
-
-.modal {
-  background: var(--bg-primary);
-  /* Width handled by Tailwind (w-full + max-w-classes) */
-  max-height: 90vh;
-  /* Base height */
-  /* Prevent overflowing screen height */
-  display: flex;
-  flex-direction: column;
-  /* Organize header/body/footer */
-
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-xl);
-  animation: scaleIn 0.1s ease-out;
-  border: 1px solid var(--border);
-  width: 100%;
-  max-width: 600px;
-  /* Fallback constraint */
-  margin: auto;
-  /* Centering */
-}
-
-@media (max-width: 640px) {
-  .modal {
-    max-height: 100dvh;
-    /* Use dynamic viewport height on mobile */
-    min-height: 100dvh;
-    /* Take full screen if needed */
-    border-radius: 0;
-    margin: 0;
-  }
-}
+/* Old Modal styles removed and consolidated below under MODAL SYSTEM */
 
 .modal-header {
   padding: var(--spacing-lg);
@@ -1573,13 +1518,14 @@ table.table {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background-color: rgba(15, 23, 42, 0.6);
+  background-color: rgba(15, 23, 42, 0.7);
+  /* Slightly darker since blur is removed */
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 100000;
-  backdrop-filter: blur(4px);
   pointer-events: auto;
+  animation: fadeIn 0.2s ease-out;
 }
 
 .modal-container {
@@ -1669,7 +1615,6 @@ table.table {
   height: 3rem;
   border-radius: 1rem;
   background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;

@@ -67,8 +67,8 @@ api.interceptors.response.use(
 );
 
 // Helper: always fetch full dataset for list endpoints
-const ALL = { params: { page_size: 20000 } };
-const allWith = (extra?: Record<string, any>) => ({ params: { page_size: 20000, ...extra } });
+const ALL = { params: { page_size: 2000 } };
+const allWith = (extra?: Record<string, any>) => ({ params: { page_size: 2000, ...extra } });
 
 // API endpoints
 export const authAPI = {
@@ -360,7 +360,7 @@ export const libraryAPI = {
     delete: (id: number) => api.delete(`book-copies/${id}/`),
   },
   lendings: {
-    getAll: () => api.get('book-lendings/', ALL),
+    getAll: (params?: any) => api.get('book-lendings/', allWith(params)),
     create: (data: any) => api.post('book-lendings/', data),
     update: (id: number, data: any) => api.put(`book-lendings/${id}/`, data),
     delete: (id: number) => api.delete(`book-lendings/${id}/`),
