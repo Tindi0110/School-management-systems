@@ -6,7 +6,7 @@ import {
     Plus, MessageSquare, FilePlus, Users, Trash2, History as HistoryIcon, ShieldCheck,
     Mail, MessageCircle, Send
 } from 'lucide-react';
-import { studentsAPI, academicsAPI, financeAPI, libraryAPI } from '../api/api';
+import { studentsAPI, academicsAPI, financeAPI } from '../api/api';
 import Modal from '../components/Modal';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
@@ -27,7 +27,6 @@ const StudentProfile = () => {
     const [documents, setDocuments] = useState<any[]>([]);
     const [activities, setActivities] = useState<any[]>([]);
     const [parents, setParents] = useState<any[]>([]);
-    const [unreturnedBooks, setUnreturnedBooks] = useState<number>(0);
     const [loading, setLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -81,9 +80,7 @@ const StudentProfile = () => {
     const [activityForm, setActivityForm] = useState({ name: '', role: '', year: new Date().getFullYear(), activity_type: 'Club' });
     const [documentForm, setDocumentForm] = useState<any>({ doc_type: 'OTHER', file: null });
 
-    useEffect(() => {
-        if (id) loadStudentData();
-    }, [id]);
+
 
     const loadCoreStudentData = async () => {
         setLoading(true);
@@ -142,6 +139,11 @@ const StudentProfile = () => {
         } catch (e) {
             console.error(`Error loading ${activeTab} data:`, e);
         }
+    };
+
+    const loadStudentData = async () => {
+        await loadCoreStudentData();
+        await loadTabData();
     };
 
     useEffect(() => {
