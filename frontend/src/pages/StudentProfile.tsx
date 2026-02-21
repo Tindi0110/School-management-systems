@@ -527,7 +527,7 @@ const StudentProfile = () => {
 
 
             <div className="grid grid-cols-12 gap-8">
-                <div className="col-span-12 lg:col-span-8 space-y-8">
+                <div className="col-span-12 lg:col-span-8 space-y-8 min-w-0">
                     {/* ... (SUMMARY tab remains same) ... */}
                     {activeTab === 'SUMMARY' && (
                         <>
