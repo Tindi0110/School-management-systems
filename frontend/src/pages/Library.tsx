@@ -381,19 +381,19 @@ const Library = () => {
 
             {/* Quick Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                <div className="card p-4 flex items-center gap-4 border-l-4 border-info">
+                <div className="card flex items-center gap-4 border-l-4 border-info">
                     <Bookmark className="text-info" size={24} />
                     <div><p className="text-xs text-secondary font-bold uppercase">Out on Loan</p><h3>{stats.activeLendings}</h3></div>
                 </div>
-                <div className="card p-4 flex items-center gap-4 border-l-4 border-warning">
+                <div className="card flex items-center gap-4 border-l-4 border-warning">
                     <Receipt className="text-warning" size={24} />
                     <div><p className="text-xs text-secondary font-bold uppercase">Unpaid Fines</p><h3>KES {stats.totalFines.toLocaleString()}</h3></div>
                 </div>
-                <div className="card p-4 flex items-center gap-4 border-l-4 border-success">
+                <div className="card flex items-center gap-4 border-l-4 border-success">
                     <Layers className="text-success" size={24} />
                     <div><p className="text-xs text-secondary font-bold uppercase">Total Copies</p><h3>{stats.totalCopies}</h3></div>
                 </div>
-                <div className="card p-4 flex items-center gap-4 border-l-4 border-primary">
+                <div className="card flex items-center gap-4 border-l-4 border-primary">
                     <Book className="text-primary" size={24} />
                     <div><p className="text-xs text-secondary font-bold uppercase">Unique Titles</p><h3>{stats.totalBooks}</h3></div>
                 </div>
@@ -426,7 +426,7 @@ const Library = () => {
 
             {/* Catalog Content */}
             {activeTab === 'catalog' && (
-                <div className="table-container fade-in">
+                <div className="table-wrapper fade-in">
                     <div className="flex justify-between items-center mb-4">
                         <h3>Asset Catalog</h3>
                         <div className="flex gap-2">
@@ -482,7 +482,7 @@ const Library = () => {
 
             {/* Inventory Content */}
             {activeTab === 'copies' && (
-                <div className="table-container fade-in">
+                <div className="table-wrapper fade-in">
                     {!viewingInventoryBookId ? (
                         <>
                             <div className="flex justify-between items-center mb-4">
@@ -578,7 +578,7 @@ const Library = () => {
 
             {/* Lendings Content */}
             {activeTab === 'lendings' && (
-                <div className="table-container fade-in">
+                <div className="table-wrapper fade-in">
                     <div className="flex justify-between items-center mb-4">
                         <h3>Circulation Record</h3>
                         {!isReadOnly && (
@@ -636,7 +636,7 @@ const Library = () => {
 
             {/* Fines Content */}
             {activeTab === 'fines' && (
-                <div className="table-container fade-in">
+                <div className="table-wrapper fade-in">
                     <div className="flex justify-between items-center mb-4">
                         <h3>Library Fines & Discipline</h3>
                         <div className="flex gap-2">

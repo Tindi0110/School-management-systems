@@ -23,19 +23,13 @@ interface StatCardProps {
 }
 
 export const StatCard: React.FC<StatCardProps> = ({ title, value, icon, gradient, onClick }) => {
-    // If a gradient is provided, we use it, otherwise fallback to primary
-    const backgroundStyle = gradient || 'var(--primary)';
-
     return (
         <div
-            className={`card flex flex-row items-center gap-4 p-4 transition-all border-none ${onClick ? 'cursor-pointer active:scale-95' : ''}`}
-            style={{
-                background: backgroundStyle,
-                color: 'white'
-            }}
+            className={`stat-card transition-all ${onClick ? 'cursor-pointer active:scale-95' : ''}`}
+            style={{ '--stat-bg': gradient } as React.CSSProperties}
             onClick={onClick}
         >
-            <div className="p-3 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center shadow-inner">
+            <div className="stat-icon-wrapper">
                 {icon && React.cloneElement(icon as React.ReactElement<any>, { size: 22, strokeWidth: 2.5 })}
             </div>
             <div>
@@ -45,5 +39,6 @@ export const StatCard: React.FC<StatCardProps> = ({ title, value, icon, gradient
         </div>
     );
 };
+
 
 export default Card;

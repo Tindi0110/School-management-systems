@@ -199,7 +199,7 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 {/* Left Column - Main Viewport */}
                 <div className="lg:col-span-4 h-full">
-                    <div className="card p-6 shadow-xl border-top-4 border-primary h-full">
+                    <div className="card border-top-4 border-primary h-full">
                         <div className="flex items-center justify-between mb-6">
                             <h3 className="text-xs font-black uppercase tracking-widest text-secondary flex items-center gap-2">
                                 <Activity size={16} /> Quick Operations
@@ -236,7 +236,7 @@ const Dashboard = () => {
 
                 {/* Center Column - Events */}
                 <div className="lg:col-span-5">
-                    <div className="card p-6 border-top-4 border-info shadow-xl">
+                    <div className="card border-top-4 border-info">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="text-xs font-black uppercase tracking-widest text-secondary flex items-center gap-2">
                                 <Calendar size={16} /> Calendar Events
@@ -266,7 +266,7 @@ const Dashboard = () => {
 
                 {/* Right Column - Alerts */}
                 <div className="lg:col-span-3">
-                    <div className="card p-6 border-top-4 border-warning shadow-xl">
+                    <div className="card border-top-4 border-warning">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="text-xs font-black uppercase tracking-widest text-secondary flex items-center gap-2">
                                 <Bell size={16} /> System Alerts

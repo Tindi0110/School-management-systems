@@ -76,7 +76,7 @@ const DashboardLayout = () => {
   }, []);
 
   return (
-    <div className="dashboard-layout">
+    <div className="dashboard-layout page-wrapper">
       {/* Mobile Sidebar Overlay */}
       <div
         className={`sidebar-overlay ${isSidebarOpen ? 'open' : ''}`}
@@ -156,7 +156,9 @@ const DashboardLayout = () => {
           </div>
         </header>
         <div className="content-area">
-          <Outlet />
+          <div className="container">
+            <Outlet />
+          </div>
         </div>
       </main>
 

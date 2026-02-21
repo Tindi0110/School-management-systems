@@ -194,78 +194,80 @@ const Students = () => {
 
     // Reusable Table Render
     const renderTable = (list: any[]) => (
-        <table className="table">
-            <thead>
-                <tr>
-                    <th>Identity</th>
-                    <th>Class / Unit</th>
-                    <th>Financials</th>
-                    <th>Adherence</th>
-                    <th>Presence</th>
-                    <th className="no-print">Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {list.map((s) => (
-                    <tr key={s.id} className="hover-bg-secondary transition-all">
-                        <td>
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-black text-xs shadow-sm">
-                                    {(s.full_name || '??').split(' ').map((n: any) => n[0]).join('').slice(0, 2)}
-                                </div>
-                                <div className="flex flex-col">
-                                    <span className="font-bold text-primary text-sm">{s.full_name}</span>
-                                    <span className="text-xs text-secondary font-semibold uppercase tracking-wider">{s.admission_number} | <span className={s.category === 'BOARDING' ? 'text-info font-black' : 'text-secondary'}>{s.category}</span></span>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <div className="flex flex-col">
-                                <span className="font-bold text-sm">{s.class_name || 'Unassigned'}</span>
-                                <span className="text-xs text-secondary font-black uppercase">{s.class_stream || 'General'}</span>
-                            </div>
-                        </td>
-                        <td>
-                            <div className="flex flex-col">
-                                <span className={`font-black text-xs ${Number(s.fee_balance || 0) === 0 ? 'text-success' : Number(s.fee_balance || 0) < 0 ? 'text-info' : 'text-error'}`}>
-                                    {Number(s.fee_balance || 0) === 0 ? 'CLEARED' : (Number(s.fee_balance || 0) < 0 ? `CREDIT: KES ${Math.abs(Number(s.fee_balance)).toLocaleString()}` : `KES ${Number(s.fee_balance).toLocaleString()}`)}
-                                </span>
-                                <span className="text-[10px] text-secondary font-bold uppercase">Balance</span>
-                            </div>
-                        </td>
-                        <td>
-                            <span className={`badge ${s.status === 'ACTIVE' ? 'badge-success' : s.status === 'SUSPENDED' ? 'badge-error' : 'badge-info'}`}>
-                                {s.status}
-                            </span>
-                        </td>
-                        <td>
-                            <div className="flex items-center gap-1.5 text-xs font-bold text-secondary">
-                                <div className={`w-2 h-2 rounded-full ${s.attendance_percentage >= 90 ? 'bg-success' : s.attendance_percentage >= 75 ? 'bg-warning' : 'bg-error'}`}></div> {s.attendance_percentage || 0}% Rate
-                            </div>
-                        </td>
-                        <td className="no-print">
-                            <div className="flex gap-2">
-                                <button className="btn btn-sm btn-ghost text-primary" onClick={async () => {
-                                    if (s.user) {
-                                        info(`User Account Active: ${s.user}`);
-                                    } else {
-                                        if (await confirm(`Generate User Account for ${s.full_name}?`)) {
-                                            try { await studentsAPI.linkUser(s.id); success('User generated successfully'); loadData(); }
-                                            catch (e) { errorToast('Linking failed'); }
-                                        }
-                                    }
-                                }} title={s.user ? "User Linked" : "Generate User Account"}>
-                                    {s.user ? <UserCheck size={14} className="text-success" /> : <UserIcon size={14} className="opacity-50" />}
-                                </button>
-                                <button className="btn btn-sm btn-outline px-3" onClick={() => openModal(s)} title="Edit Student"><Edit size={14} /></button>
-                                <button className="btn btn-sm btn-primary px-3" onClick={() => navigate(`/students/${s.id}`)} title="View Profile"><UserIcon size={14} /></button>
-                                <button className="btn btn-sm btn-ghost text-error px-2" onClick={() => deleteStudent(s.id)} title="Archive Student"><Trash2 size={14} /></button>
-                            </div>
-                        </td>
+        <div className="table-wrapper">
+            <table className="table">
+                <thead>
+                    <tr>
+                        <th>Identity</th>
+                        <th>Class / Unit</th>
+                        <th>Financials</th>
+                        <th>Adherence</th>
+                        <th>Presence</th>
+                        <th className="no-print">Action</th>
                     </tr>
-                ))}
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    {list.map((s) => (
+                        <tr key={s.id} className="hover-bg-secondary transition-all">
+                            <td>
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-black text-xs shadow-sm">
+                                        {(s.full_name || '??').split(' ').map((n: any) => n[0]).join('').slice(0, 2)}
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="font-bold text-primary text-sm">{s.full_name}</span>
+                                        <span className="text-xs text-secondary font-semibold uppercase tracking-wider">{s.admission_number} | <span className={s.category === 'BOARDING' ? 'text-info font-black' : 'text-secondary'}>{s.category}</span></span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div className="flex flex-col">
+                                    <span className="font-bold text-sm">{s.class_name || 'Unassigned'}</span>
+                                    <span className="text-xs text-secondary font-black uppercase">{s.class_stream || 'General'}</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div className="flex flex-col">
+                                    <span className={`font-black text-xs ${Number(s.fee_balance || 0) === 0 ? 'text-success' : Number(s.fee_balance || 0) < 0 ? 'text-info' : 'text-error'}`}>
+                                        {Number(s.fee_balance || 0) === 0 ? 'CLEARED' : (Number(s.fee_balance || 0) < 0 ? `CREDIT: KES ${Math.abs(Number(s.fee_balance)).toLocaleString()}` : `KES ${Number(s.fee_balance).toLocaleString()}`)}
+                                    </span>
+                                    <span className="text-[10px] text-secondary font-bold uppercase">Balance</span>
+                                </div>
+                            </td>
+                            <td>
+                                <span className={`badge ${s.status === 'ACTIVE' ? 'badge-success' : s.status === 'SUSPENDED' ? 'badge-error' : 'badge-info'}`}>
+                                    {s.status}
+                                </span>
+                            </td>
+                            <td>
+                                <div className="flex items-center gap-1.5 text-xs font-bold text-secondary">
+                                    <div className={`w-2 h-2 rounded-full ${s.attendance_percentage >= 90 ? 'bg-success' : s.attendance_percentage >= 75 ? 'bg-warning' : 'bg-error'}`}></div> {s.attendance_percentage || 0}% Rate
+                                </div>
+                            </td>
+                            <td className="no-print">
+                                <div className="flex gap-2">
+                                    <button className="btn btn-sm btn-ghost text-primary" onClick={async () => {
+                                        if (s.user) {
+                                            info(`User Account Active: ${s.user}`);
+                                        } else {
+                                            if (await confirm(`Generate User Account for ${s.full_name}?`)) {
+                                                try { await studentsAPI.linkUser(s.id); success('User generated successfully'); loadData(); }
+                                                catch (e) { errorToast('Linking failed'); }
+                                            }
+                                        }
+                                    }} title={s.user ? "User Linked" : "Generate User Account"}>
+                                        {s.user ? <UserCheck size={14} className="text-success" /> : <UserIcon size={14} className="opacity-50" />}
+                                    </button>
+                                    <button className="btn btn-sm btn-outline px-3" onClick={() => openModal(s)} title="Edit Student"><Edit size={14} /></button>
+                                    <button className="btn btn-sm btn-primary px-3" onClick={() => navigate(`/students/${s.id}`)} title="View Profile"><UserIcon size={14} /></button>
+                                    <button className="btn btn-sm btn-ghost text-error px-2" onClick={() => deleteStudent(s.id)} title="Archive Student"><Trash2 size={14} /></button>
+                                </div>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
     );
 
     const groupedData = filteredStudents.reduce((groups: any, s) => {

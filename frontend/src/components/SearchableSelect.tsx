@@ -47,12 +47,11 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
     );
 
     return (
-        <div className="form-group" ref={wrapperRef} style={{ position: 'relative' }}>
+        <div className="form-group relative" ref={wrapperRef}>
             {label && <label className="label">{label} {required && '*'}</label>}
             <div
-                className={`input flex items-center justify-between cursor-pointer ${isOpen ? 'active' : ''}`}
+                className={`input min-h-[42px] flex items-center justify-between cursor-pointer ${isOpen ? 'active' : ''}`}
                 onClick={() => setIsOpen(!isOpen)}
-                style={{ minHeight: '42px' }}
             >
                 <span className={selectedOption ? '' : 'text-light'}>
                     {selectedOption ? selectedOption.label : placeholder}
@@ -61,22 +60,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
             </div>
 
             {isOpen && (
-                <div
-                    className="card fade-in"
-                    style={{
-                        position: 'absolute',
-                        top: '100%',
-                        left: 0,
-                        right: 0,
-                        zIndex: 100,
-                        marginTop: '4px',
-                        padding: 'var(--spacing-sm)',
-                        maxHeight: '300px',
-                        overflowY: 'auto',
-                        border: '1px solid var(--border)',
-                        boxShadow: 'var(--shadow-lg)'
-                    }}
-                >
+                <div className="select-dropdown fade-in">
                     <div className="search-container mb-2">
                         <Search size={16} className="search-icon" />
                         <input
@@ -96,19 +80,15 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                             filteredOptions.map((opt) => (
                                 <div
                                     key={opt.id}
-                                    className="p-2 cursor-pointer hover-bg-secondary"
-                                    style={{
-                                        borderRadius: 'var(--radius)',
-                                        backgroundColor: value?.toString() === opt.id.toString() ? 'var(--bg-secondary)' : 'transparent'
-                                    }}
+                                    className={`select-option ${value?.toString() === opt.id.toString() ? 'selected' : ''}`}
                                     onClick={() => {
                                         onChange(opt.id);
                                         setIsOpen(false);
                                         setSearchTerm('');
                                     }}
                                 >
-                                    <div className="font-semibold">{opt.label}</div>
-                                    {opt.subLabel && <div className="text-sm text-secondary">{opt.subLabel}</div>}
+                                    <div className="font-semibold text-sm">{opt.label}</div>
+                                    {opt.subLabel && <div className="text-[10px] text-secondary">{opt.subLabel}</div>}
                                 </div>
                             ))
                         )}
@@ -116,6 +96,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                 </div>
             )}
         </div>
+
     );
 };
 

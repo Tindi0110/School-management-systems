@@ -110,7 +110,7 @@ const SystemHealth = () => {
                 </div>
 
                 {/* Server Time */}
-                <div className="card p-6 border-top-4 border-info shadow-lg">
+                <div className="card border-top-4 border-info">
                     <div className="flex items-center gap-4">
                         <div className="p-4 rounded-2xl bg-info/10">
                             <Clock size={24} className="text-info" />
@@ -128,7 +128,7 @@ const SystemHealth = () => {
                 </div>
 
                 {/* Environment */}
-                <div className="card p-6 border-top-4 border-primary shadow-lg">
+                <div className="card border-top-4 border-primary">
                     <div className="flex items-center gap-4">
                         <div className="p-4 rounded-2xl bg-primary/10">
                             <Globe size={24} className="text-primary" />
@@ -149,8 +149,8 @@ const SystemHealth = () => {
                     <h3 className="text-xs font-black uppercase tracking-widest text-secondary flex items-center gap-2">
                         <Server size={16} /> Backend Services
                     </h3>
-                    <div className="card p-0 overflow-hidden shadow-xl">
-                        <table className="w-full text-left">
+                    <div className="card table-wrapper">
+                        <table className="table w-full text-left">
                             <thead className="bg-secondary-light">
                                 <tr>
                                     <th className="px-6 py-4 text-[10px] font-black uppercase text-secondary">Service</th>
@@ -197,7 +197,7 @@ const SystemHealth = () => {
                     <h3 className="text-xs font-black uppercase tracking-widest text-secondary flex items-center gap-2">
                         <Smartphone size={16} /> Client Environment
                     </h3>
-                    <div className="card p-6 shadow-xl">
+                    <div className="card">
                         <div className="space-y-4">
                             <div className="flex justify-between items-center pb-2 border-b border-secondary-light">
                                 <span className="text-[10px] font-black uppercase text-secondary">Browser</span>

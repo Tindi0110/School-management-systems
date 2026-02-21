@@ -482,7 +482,7 @@ const StudentProfile = () => {
             </div>
 
             {/* Stats Card ... (keep existing) */}
-            <div className="card mb-8 overflow-hidden bg-white shadow-xl border">
+            <div className="card mb-8 overflow-hidden border">
                 <div className="h-24 bg-primary relative">
                     <div className="absolute -bottom-12 left-8 p-1 bg-white rounded-2xl shadow-lg no-print border">
                         <div className="w-24 h-24 rounded-xl bg-secondary-light flex items-center justify-center text-secondary">
@@ -494,7 +494,7 @@ const StudentProfile = () => {
                     <div>
                         <div className="flex items-center gap-3">
                             <h1 className="mb-0 text-2xl font-black text-primary uppercase">{student.full_name}</h1>
-                            <span className={`badge ${student.status === 'ACTIVE' ? 'badge-success' : 'badge-error'}`} style={{ fontSize: '10px' }}>
+                            <span className={`badge badge-xs ${student.status === 'ACTIVE' ? 'badge-success' : 'badge-error'}`}>
                                 {student.status}
                             </span>
                         </div>
@@ -532,23 +532,23 @@ const StudentProfile = () => {
                     {activeTab === 'SUMMARY' && (
                         <>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div className="card p-6 bg-white flex flex-col items-center text-center shadow-md border-top-4 border-success">
+                                <div className="card flex flex-col items-center text-center border-top-4 border-success">
                                     <div className="w-12 h-12 rounded-full bg-success/10 text-success flex items-center justify-center mb-3"><TrendingUp size={24} /></div>
                                     <h4 className="font-black text-xs uppercase text-secondary mb-1">Average Grade</h4>
                                     <h2 className="mb-0 font-black text-primary">{student.average_grade || 'N/A'}</h2>
                                 </div>
-                                <div className="card p-6 bg-white flex flex-col items-center text-center shadow-md border-top-4 border-info">
+                                <div className="card flex flex-col items-center text-center border-top-4 border-info">
                                     <div className="w-12 h-12 rounded-full bg-info/10 text-info flex items-center justify-center mb-3"><HistoryIcon size={24} /></div>
                                     <h4 className="font-black text-xs uppercase text-secondary mb-1">Attendance</h4>
                                     <h2 className="mb-0 font-black text-primary">{student.attendance_percentage}%</h2>
                                 </div>
-                                <div className="card p-6 bg-white flex flex-col items-center text-center shadow-md border-top-4 border-error">
+                                <div className="card flex flex-col items-center text-center border-top-4 border-error">
                                     <div className="w-12 h-12 rounded-full bg-error/10 text-error flex items-center justify-center mb-3"><ShieldAlert size={24} /></div>
                                     <h4 className="font-black text-xs uppercase text-secondary mb-1">Incident Rep.</h4>
                                     <h2 className="mb-0 font-black text-primary">{discipline.length}</h2>
                                 </div>
                             </div>
-                            <div className="card p-0 overflow-hidden shadow-lg border">
+                            <div className="card overflow-hidden border">
                                 <div className="p-4 bg-primary text-white flex justify-between items-center">
                                     <h3 className="mb-0 text-xs font-black uppercase tracking-widest">Institutional Timeline</h3>
                                     <Button variant="outline" size="sm" className="border-white text-white hover:bg-white hover:text-primary">
@@ -569,7 +569,7 @@ const StudentProfile = () => {
                                                             </div>
                                                             <div className="text-right">
                                                                 <p className="font-black text-sm mb-0">{r.score || r.marks_attained}%</p>
-                                                                <span className="badge badge-success text-[8px] px-2 py-0">GRADE: {r.grade || 'N/A'}</span>
+                                                                <span className="badge badge-success badge-xxs px-2 py-0">GRADE: {r.grade || 'N/A'}</span>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -596,7 +596,7 @@ const StudentProfile = () => {
                                 </Button>
                             </div>
                             {discipline.length === 0 ? (
-                                <div className="card p-12 text-center bg-success/5 border-dashed border-2 border-success/20">
+                                <div className="card text-center bg-success/5 border-dashed border-2 border-success/20">
                                     <ShieldCheck size={48} className="mx-auto text-success mb-4" />
                                     <h3 className="text-success font-black uppercase text-sm">Pristine Conduct</h3>
                                     <p className="text-secondary text-xs font-bold uppercase mb-0">Official records show no disciplinary interventions</p>
@@ -604,7 +604,7 @@ const StudentProfile = () => {
                             ) : (
                                 <div className="space-y-4">
                                     {discipline.map((d, i) => (
-                                        <div key={i} className="card p-5 border-left-4 border-error relative shadow-sm">
+                                        <div key={i} className="card border-left-4 border-error relative">
                                             <div className="absolute top-2 right-2 flex gap-2 z-50">
                                                 <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); handleEditDiscipline(d); }} icon={<Edit size={14} />} title="Edit" />
                                                 <Button variant="ghost" size="sm" className="text-error" onClick={(e) => { e.stopPropagation(); handleDeleteDiscipline(d.id); }} icon={<Trash2 size={14} />} title="Delete" />
@@ -613,7 +613,7 @@ const StudentProfile = () => {
                                             <h4 className="font-black text-[11px] text-error uppercase mb-1">{d.offence_category}</h4>
                                             <p className="text-xs text-secondary font-bold mb-3">{d.description}</p>
                                             <div className="flex gap-4">
-                                                <span className="badge badge-error" style={{ fontSize: '9px' }}>ACTION: {d.action_taken}</span>
+                                                <span className="badge badge-error badge-xxs">ACTION: {d.action_taken}</span>
                                                 <span className="text-[9px] font-black text-secondary uppercase italic">REPORTED BY: {d.reported_by_name || 'STAFF'}</span>
                                             </div>
                                         </div>
@@ -640,7 +640,7 @@ const StudentProfile = () => {
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 gap-8">
-                                <div className="card p-6 shadow-md border-top-4 border-info">
+                                <div className="card border-top-4 border-info">
                                     <div className="flex items-center gap-3 mb-6">
                                         <Heart className="text-info" size={20} />
                                         <h3 className="mb-0 text-xs font-black uppercase tracking-widest">Vital Records</h3>
@@ -658,7 +658,7 @@ const StudentProfile = () => {
                                         </div>
                                     </div>
                                 </div>
-                                <div className="card p-6 shadow-md border-top-4 border-warning">
+                                <div className="card border-top-4 border-warning">
                                     <div className="flex items-center gap-3 mb-6">
                                         <AlertTriangle className="text-warning" size={20} />
                                         <h3 className="mb-0 text-xs font-black uppercase tracking-widest">Emergency Services</h3>
@@ -676,7 +676,7 @@ const StudentProfile = () => {
                     )}
 
                     {activeTab === 'ACADEMIC' && (
-                        <div className="card p-0 overflow-hidden shadow-lg border">
+                        <div className="card overflow-hidden border">
                             <div className="p-4 border-bottom bg-secondary-light flex justify-between items-center">
                                 <h3 className="mb-0 text-xs font-black uppercase tracking-widest">Examination Ledger</h3>
                                 <Button variant="primary" size="sm" onClick={handleTranscriptPrint}>Download Full Transcript</Button>
@@ -684,39 +684,39 @@ const StudentProfile = () => {
 
                             {/* Hidden Transcript Template inside ACADEMIC Tab */}
                             <div id="transcript-form" className="hidden">
-                                <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
-                                    <div style={{ textAlign: 'center', borderBottom: '2px solid #000', paddingBottom: '10px', marginBottom: '20px' }}>
+                                <div className="report-container">
+                                    <div className="report-header">
                                         <h1>OFFICIAL ACADEMIC TRANSCRIPT</h1>
                                         <p>School Management System</p>
                                     </div>
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
-                                        <div><strong>Student:</strong> {student.full_name}</div>
-                                        <div><strong>ADM:</strong> {student.admission_number}</div>
-                                        <div><strong>Class:</strong> {student.class_name}</div>
-                                        <div><strong>Mean Grade:</strong> {student.average_grade || 'N/A'}</div>
-                                        <div><strong>Attendance:</strong> {student.attendance_percentage}%</div>
-                                        <div><strong>Class Position:</strong> {(() => {
+                                    <div className="report-grid">
+                                        <div className="report-grid-item"><span className="report-grid-label">Student:</span> {student.full_name}</div>
+                                        <div className="report-grid-item"><span className="report-grid-label">ADM:</span> {student.admission_number}</div>
+                                        <div className="report-grid-item"><span className="report-grid-label">Class:</span> {student.class_name}</div>
+                                        <div className="report-grid-item"><span className="report-grid-label">Mean Grade:</span> {student.average_grade || 'N/A'}</div>
+                                        <div className="report-grid-item"><span className="report-grid-label">Attendance:</span> {student.attendance_percentage}%</div>
+                                        <div className="report-grid-item"><span className="report-grid-label">Class Position:</span> {(() => {
                                             if (!results.length) return 'N/A';
                                             const avg = results.reduce((s: number, r: any) => s + parseFloat(r.score || 0), 0) / results.length;
                                             return `${Math.round(avg)}% overall`;
                                         })()}</div>
                                     </div>
-                                    <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '20px' }}>
+                                    <table className="report-table">
                                         <thead>
-                                            <tr style={{ background: '#eee' }}>
-                                                <th style={{ border: '1px solid #000', padding: '5px' }}>Subject</th>
-                                                <th style={{ border: '1px solid #000', padding: '5px' }}>Exam</th>
-                                                <th style={{ border: '1px solid #000', padding: '5px' }}>Score</th>
-                                                <th style={{ border: '1px solid #000', padding: '5px' }}>Grade</th>
+                                            <tr>
+                                                <th>Subject</th>
+                                                <th>Exam</th>
+                                                <th>Score</th>
+                                                <th>Grade</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {results.map((r, i) => (
                                                 <tr key={i}>
-                                                    <td style={{ border: '1px solid #000', padding: '5px' }}>{r.subject_name}</td>
-                                                    <td style={{ border: '1px solid #000', padding: '5px' }}>{r.exam_name}</td>
-                                                    <td style={{ border: '1px solid #000', padding: '5px' }}>{Math.round(r.score || r.marks_attained)}</td>
-                                                    <td style={{ border: '1px solid #000', padding: '5px' }}>{r.grade || '-'}</td>
+                                                    <td>{r.subject_name}</td>
+                                                    <td>{r.exam_name}</td>
+                                                    <td>{Math.round(r.score || r.marks_attained)}</td>
+                                                    <td>{r.grade || '-'}</td>
                                                 </tr>
                                             ))}
                                         </tbody>
@@ -768,7 +768,7 @@ const StudentProfile = () => {
                             {/* Financial Summary Cards - Horizontal Scrollable Row for Admin Controls */}
                             <div className="flex flex-row flex-nowrap overflow-x-auto pb-4 gap-6 touch-pan-x no-print">
                                 {/* Accounting Statement Summary Card */}
-                                <div className="card p-0 overflow-hidden shadow-lg border min-w-[500px] flex-shrink-0">
+                                <div className="card overflow-hidden border min-w-[500px] flex-shrink-0">
                                     <div className="p-4 border-bottom bg-secondary-light flex justify-between items-center">
                                         <h3 className="mb-0 text-xs font-black uppercase tracking-widest">Accounting Statement</h3>
                                         <div className="flex gap-2">
@@ -812,7 +812,7 @@ const StudentProfile = () => {
                                 </div>
 
                                 {/* Administrative Control Copy for Financials Tab */}
-                                <div className="card p-6 shadow-xl border-top-4 border-primary min-w-[320px] flex-shrink-0">
+                                <div className="card border-top-4 border-primary min-w-[320px] flex-shrink-0">
                                     <h4 className="text-[10px] font-black uppercase text-primary border-bottom pb-2 mb-4 tracking-widest flex items-center gap-2">
                                         <ShieldCheck size={14} /> Administrative Control
                                     </h4>
@@ -836,7 +836,7 @@ const StudentProfile = () => {
                                 </div>
 
                                 {/* Rapid Communication Copy for Financials Tab */}
-                                <div className="card p-6 shadow-xl bg-primary text-white min-w-[320px] flex-shrink-0">
+                                <div className="card bg-primary text-white min-w-[320px] flex-shrink-0">
                                     <MessageSquare className="mb-4 opacity-50" size={32} />
                                     <h4 className="text-[10px] font-black uppercase mb-1 tracking-widest">Rapid Communication</h4>
                                     <p className="text-[10px] font-bold opacity-80 leading-relaxed mb-4">Instant contact regarding behavior or financial status.</p>
@@ -888,7 +888,7 @@ const StudentProfile = () => {
                                             </div>
                                             <p className="text-[10px] font-black text-secondary uppercase mb-2">Role: {act.role}</p>
                                             <div className="flex gap-2">
-                                                <span className="badge badge-success px-2 py-0" style={{ fontSize: '8px' }}>ACTIVE PARTICIPANT</span>
+                                                <span className="badge badge-success badge-xxs px-2 py-0">ACTIVE PARTICIPANT</span>
                                             </div>
                                         </div>
                                     ))}
@@ -907,7 +907,7 @@ const StudentProfile = () => {
                             <div className="grid grid-cols-3 gap-6">
                                 {documents.length === 0 ? <p className="text-secondary italic text-xs uppercase font-bold text-center py-8 col-span-3">No documents archived</p> :
                                     documents.map((doc, i) => (
-                                        <div key={i} className="card p-5 text-center hover-bg-secondary cursor-pointer border-dashed border-2 flex flex-col items-center gap-3 relative">
+                                        <div key={i} className="card text-center hover-bg-secondary cursor-pointer border-dashed border-2 flex flex-col items-center gap-3 relative">
                                             <Button variant="ghost" size="sm" className="absolute top-2 right-2 text-error z-50" onClick={(e) => { e.stopPropagation(); handleDeleteDocument(doc.id); }} icon={<Trash2 size={14} />} title="Delete" />
                                             <div className="w-10 h-10 rounded-full bg-secondary-light flex items-center justify-center"><FileText className="text-primary" /></div>
                                             <h4 className="text-[10px] font-black uppercase text-primary mb-0">{doc.doc_type || 'DOCUMENT'}</h4>
@@ -925,7 +925,7 @@ const StudentProfile = () => {
                     {/* Only show these cards if NOT on the Finance tab, as we moved them to a scrollable row there */}
                     {activeTab !== 'FINANCE' && (
                         <>
-                            <div className="card p-6 shadow-xl border-top-4 border-primary">
+                            <div className="card border-top-4 border-primary">
                                 <h4 className="text-[10px] font-black uppercase text-primary border-bottom pb-2 mb-4 tracking-widest flex items-center gap-2">
                                     <ShieldCheck size={14} /> Administrative Control
                                 </h4>
@@ -948,7 +948,7 @@ const StudentProfile = () => {
                                 </div>
                             </div>
 
-                            <div className="card p-6 shadow-xl bg-primary text-white">
+                            <div className="card bg-primary text-white">
                                 <MessageSquare className="mb-4 opacity-50" size={32} />
                                 <h4 className="text-[10px] font-black uppercase mb-1 tracking-widest">Rapid Communication</h4>
                                 <p className="text-[10px] font-bold opacity-80 leading-relaxed mb-4">Send instant alerts or messages to guardian/parent.</p>
@@ -1125,35 +1125,31 @@ const StudentProfile = () => {
 
             {/* Clearance Form Template */}
             <div id="clearance-form" className="hidden">
-                <div style={{ padding: '40px', fontFamily: 'serif', lineHeight: '1.6' }}>
-                    <div style={{ textAlign: 'center', borderBottom: '2px solid #000', paddingBottom: '20px', marginBottom: '40px' }}>
-                        <h1 style={{ textTransform: 'uppercase', letterSpacing: '2px' }}>Student Clearance Form</h1>
+                <div className="report-container clearance-form">
+                    <div className="report-header">
+                        <h1>Student Clearance Form</h1>
                         <p>School Administration Details</p>
                     </div>
                     <p>This is to certify that <strong>{student.full_name}</strong> (ADM: <strong>{student.admission_number}</strong>) has successfully cleared with the following departments:</p>
 
-                    <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '30px', marginBottom: '50px' }}>
+                    <table className="report-table">
                         <thead>
                             <tr>
-                                <th style={{ border: '1px solid #000', padding: '10px', textAlign: 'left' }}>Department</th>
-                                <th style={{ border: '1px solid #000', padding: '10px', textAlign: 'left' }}>Status</th>
-                                <th style={{ border: '1px solid #000', padding: '10px', textAlign: 'left' }}>Signature/Stamp</th>
+                                <th>Department</th>
+                                <th>Status</th>
+                                <th>Signature/Stamp</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr><td style={{ border: '1px solid #000', padding: '15px' }}>Academics (Books/Exams)</td><td style={{ border: '1px solid #000', padding: '15px' }}>{unreturnedBooks > 0 ? `PENDING (${unreturnedBooks} Unreturned Books)` : 'CLEARED'}</td><td style={{ border: '1px solid #000', padding: '15px' }}></td></tr>
-                            <tr><td style={{ border: '1px solid #000', padding: '15px' }}>Boarding/Hostel</td><td style={{ border: '1px solid #000', padding: '15px' }}>{student.hostel_name ? `PENDING (Allocated to ${student.hostel_name})` : 'CLEARED'}</td><td style={{ border: '1px solid #000', padding: '15px' }}></td></tr>
-                            <tr><td style={{ border: '1px solid #000', padding: '15px' }}>Finance/Accounts</td><td style={{ border: '1px solid #000', padding: '15px' }}>{(student.fee_balance || 0) > 0 ? `OUTSTANDING BALANCE (KES ${student.fee_balance.toLocaleString()})` : 'CLEARED'}</td><td style={{ border: '1px solid #000', padding: '15px' }}></td></tr>
+                            <tr><td>Academics (Books/Exams)</td><td>{unreturnedBooks > 0 ? `PENDING (${unreturnedBooks} Unreturned Books)` : 'CLEARED'}</td><td></td></tr>
+                            <tr><td>Boarding/Hostel</td><td>{student.hostel_name ? `PENDING (Allocated to ${student.hostel_name})` : 'CLEARED'}</td><td></td></tr>
+                            <tr><td>Finance/Accounts</td><td>{(student.fee_balance || 0) > 0 ? `OUTSTANDING BALANCE (KES ${student.fee_balance.toLocaleString()})` : 'CLEARED'}</td><td></td></tr>
                         </tbody>
                     </table>
 
-                    <div style={{ marginTop: '50px', display: 'flex', justifyContent: 'space-between' }}>
-                        <div>
-                            <div style={{ borderTop: '1px solid #000', width: '200px', paddingTop: '5px' }}>Student Signature</div>
-                        </div>
-                        <div>
-                            <div style={{ borderTop: '1px solid #000', width: '200px', paddingTop: '5px' }}>Principal Signature</div>
-                        </div>
+                    <div className="signature-group">
+                        <div className="signature-line">Student Signature</div>
+                        <div className="signature-line">Principal Signature</div>
                     </div>
                 </div>
             </div>

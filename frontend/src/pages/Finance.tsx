@@ -436,7 +436,7 @@ const Finance = () => {
 
                             <div className="card">
                                 <h3 className="text-lg font-bold mb-4">Recent Invoices</h3>
-                                <div className="w-full" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                                <div className="table-wrapper">
                                     <table className="table min-w-[800px]">
                                         <thead>
                                             <tr>
@@ -562,7 +562,7 @@ const Finance = () => {
                                 </div>
                             </div>
 
-                            <div className="w-full" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                            <div className="table-wrapper">
                                 <table className="table min-w-[800px]">
                                     <thead>
                                         <tr>
@@ -639,7 +639,7 @@ const Finance = () => {
                                 <h3 className="text-lg font-bold">Payment Transactions</h3>
                                 {!isReadOnly && <Button variant="primary" size="sm" onClick={() => setShowPaymentModal(true)} icon={<Plus size={16} />}>Receive Payment</Button>}
                             </div>
-                            <div className="w-full" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                            <div className="table-wrapper">
                                 <table className="table min-w-[800px]">
                                     <thead>
                                         <tr>
@@ -678,7 +678,7 @@ const Finance = () => {
                                     </Button>
                                 )}
                             </div>
-                            <div className="w-full" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                            <div className="table-wrapper">
                                 <table className="table min-w-[800px]">
                                     <thead>
                                         <tr>
@@ -715,7 +715,7 @@ const Finance = () => {
                                     </Button>
                                 )}
                             </div>
-                            <div className="w-full" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                            <div className="table-wrapper">
                                 <table className="table min-w-[700px]">
                                     <thead>
                                         <tr>

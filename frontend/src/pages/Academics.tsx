@@ -909,7 +909,7 @@ const Academics = () => {
                     <h1 className="text-3xl font-black tracking-tight">Academics Module</h1>
                     <p className="text-secondary text-sm font-bold uppercase text-[10px] tracking-widest opacity-70">Institutional Management | {activeYear} • {activeTerm}</p>
                 </div>
-                <div className="flex flex-wrap gap-2 w-full lg:w-auto justify-start lg:justify-end no-print" style={{ zIndex: 60 }}>
+                <div className="flex flex-wrap gap-2 w-full lg:w-auto justify-start lg:justify-end no-print z-60">
                     {isReadOnly && (
                         <Button variant="primary" size="sm" className="flex-1 sm:flex-none" onClick={() => { setIsAttendanceModalOpen(true); }} icon={<CheckCircle2 size={14} />}>
                             Log Attendance
@@ -980,7 +980,7 @@ const Academics = () => {
                                                 <p className="text-[8px] text-secondary font-mono bg-slate-100 inline-block px-1 rounded mt-0.5">{new Date(e.date_started).toLocaleDateString()} - {new Date(e.date_ended).toLocaleDateString()}</p>
                                             </div>
                                         </div>
-                                        <span className={`badge ${e.is_active ? 'badge-success' : 'badge-error'}`} style={{ fontSize: '8px' }}>{e.is_active ? 'OPEN' : 'CLOSED'}</span>
+                                        <span className={`badge ${e.is_active ? 'badge-success' : 'badge-error'} badge-xxs`}>{e.is_active ? 'OPEN' : 'CLOSED'}</span>
                                     </div>
                                 ))}
                             </div>
@@ -1003,7 +1003,7 @@ const Academics = () => {
                                             <span>{s.coverage_percentage}%</span>
                                         </div>
                                         <div className="w-full bg-secondary-light h-1 rounded-full">
-                                            <div className={`h-full rounded-full ${s.coverage_percentage > 80 ? 'bg-success' : s.coverage_percentage > 50 ? 'bg-primary' : 'bg-error'}`} style={{ width: `${s.coverage_percentage}%` }}></div>
+                                            <div className={`progress-fill ${s.coverage_percentage > 80 ? 'bg-success' : s.coverage_percentage > 50 ? 'bg-primary' : 'bg-error'}`} style={{ width: `${s.coverage_percentage}%` }}></div>
                                         </div>
                                     </div>
                                 ))}
@@ -1024,7 +1024,7 @@ const Academics = () => {
                         <div key={cls.id} className="card hover-bg-secondary transition-all">
                             <div className="flex justify-between items-start mb-4">
                                 <div className="p-2.5 rounded-lg bg-primary-light text-white"><School size={16} /></div>
-                                <span className="badge badge-info" style={{ fontSize: '9px', padding: '1px 6px' }}>CAP: {cls.capacity}</span>
+                                <span className="badge badge-info badge-xs">CAP: {cls.capacity}</span>
                             </div>
                             <h3 className="mb-1 text-sm font-black">{cls.name} <span className="text-secondary">{cls.stream}</span></h3>
                             <p className="text-[10px] font-bold text-secondary mb-4 flex items-center gap-1 uppercase"><Users size={10} /> {cls.student_count} Students</p>
@@ -1047,7 +1047,7 @@ const Academics = () => {
             {activeTab === 'CURRICULUM' && (
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-lg">
                     <div className="md:col-span-1 space-y-4">
-                        <div className="card p-4">
+                        <div className="card">
                             <div className="flex justify-between items-center mb-4">
                                 <h4 className="text-[10px] font-black uppercase text-secondary mb-0">Subject Groups</h4>
                                 <Button variant="outline" size="sm" onClick={() => { setEditingGroupId(null); setGroupForm({ name: '' }); setIsGroupModalOpen(true); }} icon={<Plus size={10} />} />
@@ -1065,7 +1065,7 @@ const Academics = () => {
                             </div>
                         </div>
                     </div>
-                    <div className="md:col-span-3 table-container shadow-lg">
+                    <div className="md:col-span-3 table-wrapper shadow-lg">
                         <div className="p-3 bg-secondary-light flex justify-between items-center border-bottom">
                             <h3 className="mb-0 text-xs font-black uppercase">Institutional Curriculum</h3>
                             <button className="btn btn-primary btn-xs" onClick={() => setIsSubjectModalOpen(true)}><Plus size={12} /> New Subject</button>
@@ -1115,7 +1115,7 @@ const Academics = () => {
                             )}
                         </div>
 
-                        <div className="table-container shadow-lg">
+                        <div className="table-wrapper shadow-lg">
                             <div className="p-4 bg-secondary-light border-bottom">
                                 <h3 className="mb-0 text-xs font-black uppercase tracking-wider">Curriculum Progress</h3>
                             </div>
@@ -1357,7 +1357,7 @@ const Academics = () => {
                                 <div key={exam.id} className="card">
                                     <div className="flex justify-between items-start mb-4">
                                         <div className="p-2.5 rounded-lg bg-warning-light text-warning"><ClipboardCheck size={16} /></div>
-                                        <span className={`badge ${exam.is_active ? 'badge-success' : 'badge-error'}`} style={{ fontSize: '9px' }}>{exam.is_active ? 'ACTIVE' : 'LOCKED'}</span>
+                                        <span className={`badge ${exam.is_active ? 'badge-success' : 'badge-error'} badge-xs`}>{exam.is_active ? 'ACTIVE' : 'LOCKED'}</span>
                                     </div>
                                     <h3 className="mb-1 text-sm font-black">{exam.name}</h3>
                                     <p className="text-[10px] font-bold text-secondary mb-3 uppercase">Wt: {exam.weighting}% | {exam.term_name || 'Term 1'}</p>
@@ -1467,7 +1467,7 @@ const Academics = () => {
             {
                 activeTab === 'RESOURCES' && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-lg">
-                        <div className="table-container shadow-lg">
+                        <div className="table-wrapper shadow-lg">
                             <div className="p-3 bg-secondary-light flex justify-between items-center border-bottom">
                                 <h3 className="mb-0 text-xs font-black uppercase">Grading Policies</h3>
                                 <Button variant="primary" size="sm" onClick={() => setIsGradeModalOpen(true)} icon={<Plus size={12} />}>New System</Button>
@@ -1478,7 +1478,7 @@ const Academics = () => {
                                         <div className="flex justify-between mb-2">
                                             <span className="font-black text-[10px] uppercase">{gs.name}</span>
                                             <div className="flex gap-2">
-                                                {gs.is_default && <span className="badge badge-success" style={{ fontSize: '8px', padding: '1px 5px' }}>DEFAULT</span>}
+                                                {gs.is_default && <span className="badge badge-success badge-xxs">DEFAULT</span>}
                                                 <button className="text-secondary hover:text-primary transition-colors p-1" onClick={(e) => {
                                                     e.stopPropagation();
                                                     setSelectedSystem(gs);
@@ -1554,7 +1554,7 @@ const Academics = () => {
 
             {
                 activeTab === 'ATTENDANCE' && (
-                    <div className="table-container shadow-lg mb-8">
+                    <div className="table-wrapper shadow-lg mb-8">
                         <div className="p-4 bg-secondary-light flex flex-col sm:flex-row justify-between items-start sm:items-center border-bottom gap-4">
                             <div className="flex items-center gap-4">
                                 <h3 className="mb-0 text-xs font-black uppercase tracking-wider">Attendance Register</h3>
@@ -2048,7 +2048,7 @@ const Academics = () => {
                         Print List
                     </Button>
                 </div>
-                <div className="table-container">
+                <div className="table-wrapper">
                     <table className="table">
                         <thead><tr><th>Student Name</th><th>ADM No</th></tr></thead>
                         <tbody>

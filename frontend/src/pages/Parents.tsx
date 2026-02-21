@@ -116,7 +116,7 @@ const Parents = () => {
                 </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border w-full" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+            <div className="bg-white rounded-xl shadow-sm border table-wrapper">
                 <table className="table min-w-[1000px]">
                     <thead>
                         <tr className="bg-secondary-light text-left">

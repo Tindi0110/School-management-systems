@@ -42,7 +42,8 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return (
         <ToastContext.Provider value={{ showToast, success, error, info, warning }}>
             {children}
-            <div className="fixed top-4 right-4 flex flex-col gap-2 pointer-events-none" style={{ zIndex: 2147483647 }}>
+            <div className="fixed top-4 right-4 flex flex-col gap-2 pointer-events-none z-max">
+
                 {toasts.map((toast) => (
                     <Toast
                         key={toast.id}

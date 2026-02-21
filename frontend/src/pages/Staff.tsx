@@ -128,38 +128,40 @@ const Staff = () => {
     }, [staff, searchTerm]);
 
     const renderStaffTable = (staffList: any[]) => (
-        <table className="table">
-            <thead>
-                <tr>
-                    <th>Staff Member</th>
-                    <th>Department</th>
-                    <th>Role</th>
-                    <th>Date Joined</th>
-                    <th className="no-print">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {staffList.map((member) => (
-                    <tr key={member.id}>
-                        <td>
-                            <div className="flex flex-col">
-                                <span className="font-semibold">{member.full_name || member.username}</span>
-                                <span className="text-sm text-secondary">ID: {member.employee_id}</span>
-                            </div>
-                        </td>
-                        <td>{member.department || 'General'}</td>
-                        <td><span className="badge badge-info">{member.role}</span></td>
-                        <td>{new Date(member.date_joined).toLocaleDateString()}</td>
-                        <td className="no-print">
-                            <div className="flex gap-sm">
-                                <Button variant="outline" size="sm" onClick={() => openModal(member)} title="Edit" icon={<Edit size={14} />} />
-                                <Button variant="danger" size="sm" onClick={() => handleDelete(member.id)} title="Delete" icon={<Trash2 size={14} />} />
-                            </div>
-                        </td>
+        <div className="table-wrapper">
+            <table className="table">
+                <thead>
+                    <tr>
+                        <th>Staff Member</th>
+                        <th>Department</th>
+                        <th>Role</th>
+                        <th>Date Joined</th>
+                        <th className="no-print">Actions</th>
                     </tr>
-                ))}
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    {staffList.map((member) => (
+                        <tr key={member.id}>
+                            <td>
+                                <div className="flex flex-col">
+                                    <span className="font-semibold">{member.full_name || member.username}</span>
+                                    <span className="text-sm text-secondary">ID: {member.employee_id}</span>
+                                </div>
+                            </td>
+                            <td>{member.department || 'General'}</td>
+                            <td><span className="badge badge-info">{member.role}</span></td>
+                            <td>{new Date(member.date_joined).toLocaleDateString()}</td>
+                            <td className="no-print">
+                                <div className="flex gap-sm">
+                                    <Button variant="outline" size="sm" onClick={() => openModal(member)} title="Edit" icon={<Edit size={14} />} />
+                                    <Button variant="danger" size="sm" onClick={() => handleDelete(member.id)} title="Delete" icon={<Trash2 size={14} />} />
+                                </div>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
     );
 
     const groupedStaff = React.useMemo(() => {

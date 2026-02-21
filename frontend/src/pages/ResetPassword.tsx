@@ -35,88 +35,85 @@ const ResetPassword = () => {
     };
 
     return (
-        <div className="auth-page-container">
-            <div className="auth-bg-gradient-1" style={{ background: '#1e40af' }}></div>
-            <div className="auth-bg-gradient-2" style={{ background: '#3b82f6' }}></div>
-
-            <div className="auth-header-section">
-                <h1 className="auth-title">Create New Password</h1>
-                <p className="auth-subtitle">Almost there! Set a new strong password to secure your account and return to your dashboard.</p>
-            </div>
+        <div className="auth-page">
+            <div className="auth-gradient-bg auth-gradient-1"></div>
+            <div className="auth-gradient-bg auth-gradient-2"></div>
 
             <div className="auth-card">
                 {!done ? (
                     <>
-                        <div className="text-center mb-6">
-                            <div style={{
-                                width: '64px', height: '64px', background: '#f5f3ff', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem auto', color: '#7c3aed'
-                            }}>
-                                <School size={32} />
+                        <div className="auth-header">
+                            <div className="flex justify-center mb-4">
+                                <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center text-primary border border-primary/20">
+                                    <School size={32} />
+                                </div>
                             </div>
-                            <h2 style={{ fontSize: '1.25rem', fontWeight: 900, color: '#1e293b', textTransform: 'uppercase' }}>New Password</h2>
-                            <p style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Secure your institutional access</p>
+                            <h2>New Password</h2>
+                            <p>Secure your institutional access</p>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div className="auth-input-group">
-                                <label className="auth-label">New Password</label>
-                                <div className="auth-input-wrapper">
-                                    <Lock size={18} color="#94a3b8" style={{ marginRight: '0.5rem' }} />
-                                    <input
-                                        type={showPassword ? "text" : "password"}
-                                        className="auth-input"
-                                        placeholder="••••••••"
-                                        value={password}
-                                        onChange={e => setPassword(e.target.value)}
-                                        required
-                                        minLength={8}
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}
-                                    >
-                                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                                    </button>
+                        <div className="auth-content">
+                            <form onSubmit={handleSubmit} className="space-y-6">
+                                <div className="auth-input-group">
+                                    <label className="label uppercase text-[10px] font-black mb-1">New Password</label>
+                                    <div className="auth-input-wrapper">
+                                        <Lock size={18} className="auth-input-icon" />
+                                        <input
+                                            type={showPassword ? "text" : "password"}
+                                            className="input auth-input-field"
+                                            placeholder="••••••••"
+                                            value={password}
+                                            onChange={e => setPassword(e.target.value)}
+                                            required
+                                            minLength={8}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-secondary hover:text-primary transition-colors"
+                                        >
+                                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div className="auth-input-group">
-                                <label className="auth-label">Confirm Password</label>
-                                <div className="auth-input-wrapper">
-                                    <Lock size={18} color="#94a3b8" style={{ marginRight: '0.5rem' }} />
-                                    <input
-                                        type={showPassword ? "text" : "password"}
-                                        className="auth-input"
-                                        placeholder="••••••••"
-                                        value={confirmPassword}
-                                        onChange={e => setConfirmPassword(e.target.value)}
-                                        required
-                                    />
+                                <div className="auth-input-group">
+                                    <label className="label uppercase text-[10px] font-black mb-1">Confirm Password</label>
+                                    <div className="auth-input-wrapper">
+                                        <Lock size={18} className="auth-input-icon" />
+                                        <input
+                                            type={showPassword ? "text" : "password"}
+                                            className="input auth-input-field"
+                                            placeholder="••••••••"
+                                            value={confirmPassword}
+                                            onChange={e => setConfirmPassword(e.target.value)}
+                                            required
+                                        />
+                                    </div>
                                 </div>
-                            </div>
 
-                            <button type="submit" disabled={loading} className="auth-button">
-                                {loading ? 'Updating...' : 'Reset Password'}
-                            </button>
-                        </form>
+                                <button type="submit" disabled={loading} className="btn btn-primary w-full py-3 h-auto font-black uppercase tracking-widest shadow-lg flex items-center justify-center gap-2">
+                                    {loading ? 'Updating...' : 'Reset Password'}
+                                </button>
+                            </form>
+                        </div>
                     </>
                 ) : (
-                    <div style={{ textAlign: 'center', padding: '2rem 0' }}>
-                        <div style={{ width: '80px', height: '80px', background: '#dcfce7', color: '#16a34a', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem auto' }}>
-                            <CheckCircle size={40} />
+                    <div className="auth-content text-center py-8">
+                        <div className="w-20 h-20 bg-success/10 text-success rounded-full flex items-center justify-center mx-auto mb-6">
+                            <CheckCircle size={48} />
                         </div>
-                        <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#1e293b', marginBottom: '0.5rem' }}>Password Updated</h3>
-                        <p style={{ fontSize: '0.875rem', color: '#64748b', marginBottom: '1.5rem' }}>Your password has been changed successfully. You can now use your new password to log in.</p>
-                        <Link to="/login" className="auth-button" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', textDecoration: 'none' }}>
+                        <h3 className="text-xl font-black text-primary uppercase mb-2">Password Updated</h3>
+                        <p className="text-secondary font-bold text-sm mb-8 leading-relaxed px-4">Your password has been changed successfully. You can now use your new credentials to log in.</p>
+                        <Link to="/login" className="btn btn-primary w-full py-3 h-auto font-black uppercase tracking-widest shadow-lg flex items-center justify-center">
                             Go to Login
                         </Link>
                     </div>
                 )}
             </div>
 
-            <div style={{ marginTop: '2rem', textAlign: 'center', position: 'relative', zIndex: 10 }}>
-                <p style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.2em', opacity: 0.6 }}>Secure Institutional Portal v2.0</p>
+            <div className="absolute bottom-8 text-center w-full z-10 pointer-events-none">
+                <p className="text-[10px] text-secondary font-bold uppercase tracking-[0.2em] opacity-40">Secure Institutional Portal v2.0</p>
             </div>
         </div>
     );

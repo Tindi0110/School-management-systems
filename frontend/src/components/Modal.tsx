@@ -21,38 +21,9 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, size = 
     };
 
     return (
-        <div
-            className="modal-overlay"
-            style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: 'rgba(15, 23, 42, 0.6)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                zIndex: 99999,
-                backdropFilter: 'blur(4px)',
-                pointerEvents: 'auto'
-            }}
-            onClick={onClose}
-        >
+        <div className="modal-overlay" onClick={onClose}>
             <div
-                className={`modal w-full ${sizeClasses[size]}`}
-                style={{
-                    backgroundColor: 'white', // var(--bg-primary)
-                    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)', // var(--shadow-xl)
-                    borderRadius: '0.5rem', // var(--radius-lg)
-                    maxHeight: size === 'full' ? '98vh' : '90vh',
-                    height: size === 'full' ? '95vh' : 'auto',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    position: 'relative',
-                    zIndex: 100000,
-                    pointerEvents: 'auto'
-                }}
+                className={`modal-container w-full ${sizeClasses[size]} ${size === 'full' ? 'h-[95vh] m-2' : 'max-h-[90vh]'}`}
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="modal-header">
@@ -71,6 +42,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, size = 
             </div>
         </div>
     );
+
 };
 
 export default Modal;

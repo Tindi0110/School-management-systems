@@ -507,19 +507,19 @@ const Hostels = () => {
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-md mb-8">
-                <div className="card p-4 flex items-center gap-md border-left-4 border-primary">
+                <div className="card flex items-center gap-md border-left-4 border-primary">
                     <Building className="text-primary" size={24} />
                     <div><p className="text-xs text-secondary font-bold uppercase">Hostels</p><h3>{stats.totalHostels}</h3></div>
                 </div>
-                <div className="card p-4 flex items-center gap-md border-left-4 border-success">
+                <div className="card flex items-center gap-md border-left-4 border-success">
                     <UsersIcon className="text-success" size={24} />
                     <div><p className="text-xs text-secondary font-bold uppercase">Residents</p><h3>{stats.totalResidents}</h3></div>
                 </div>
-                <div className="card p-4 flex items-center gap-md border-left-4 border-warning">
+                <div className="card flex items-center gap-md border-left-4 border-warning">
                     <Layout className="text-warning" size={24} />
                     <div><p className="text-xs text-secondary font-bold uppercase">Occupancy</p><h3>{Math.round((stats.totalResidents / (stats.totalCapacity || 1)) * 100)}%</h3></div>
                 </div>
-                <div className="card p-4 flex items-center gap-md border-left-4 border-error">
+                <div className="card flex items-center gap-md border-left-4 border-error">
                     <Wrench className="text-error" size={24} />
                     <div><p className="text-xs text-secondary font-bold uppercase">Maintenance</p><h3>{stats.maintenanceIssues}</h3></div>
                 </div>
@@ -539,7 +539,7 @@ const Hostels = () => {
             {activeTab === 'registry' && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-lg">
                     {hostels.map(h => (
-                        <div key={h.id} className="card p-6 border-top-4 border-primary hover-scale">
+                        <div key={h.id} className="card border-top-4 border-primary hover-scale">
                             <div className="flex justify-between items-start mb-4">
                                 <div><h3 className="mb-0">{h.name}</h3><span className={`badge ${h.gender_allowed === 'M' ? 'badge-primary' : 'badge-error'}`}>{h.gender_allowed === 'M' ? 'BOYS' : 'GIRLS'}</span></div>
                                 <Building className="text-secondary opacity-20" size={40} />
@@ -553,9 +553,10 @@ const Hostels = () => {
                                 </div>
                                 <div className="flex justify-between"><span className="text-secondary">Type:</span><span className="font-semibold">{h.hostel_type}</span></div>
                                 <div className="flex justify-between"><span className="text-secondary">Rooms:</span><span className="font-semibold">{rooms.filter(r => r.hostel === h.id).length} Units</span></div>
-                                <div className="w-full bg-secondary-light rounded-full h-2 mt-4">
-                                    <div className="bg-primary h-2 rounded-full" style={{ width: `${h.occupancy_rate || 0}%` }}></div>
+                                <div className="w-full bg-secondary-light rounded-full h-2 mt-4 overflow-hidden">
+                                    <div className="progress-fill bg-primary" style={{ width: `${h.occupancy_rate || 0}%` }}></div>
                                 </div>
+
                                 <p className="text-right text-xs font-bold text-primary mt-1">{h.occupancy_rate || 0}% Occupied</p>
                             </div>
                             <div className="flex gap-2 mt-6 pt-4 border-top">
@@ -567,7 +568,7 @@ const Hostels = () => {
                             </div>
                         </div>
                     ))}
-                    <div className="card p-6 flex flex-col items-center justify-center border-dashed border-2 text-secondary cursor-pointer hover-bg-secondary" onClick={() => setIsHostelModalOpen(true)}>
+                    <div className="card flex flex-col items-center justify-center border-dashed border-2 text-secondary cursor-pointer hover-bg-secondary" onClick={() => setIsHostelModalOpen(true)}>
                         <Plus size={32} className="mb-2" />
                         <p className="font-bold">Add New Hostel</p>
                     </div>
@@ -576,7 +577,7 @@ const Hostels = () => {
 
             {/* Allocations Tab */}
             {activeTab === 'allocations' && (
-                <div className="table-container fade-in">
+                <div className="table-wrapper fade-in">
                     <div className="flex justify-between items-center mb-4">
                         <h3>Student Allocations</h3>
                         <div className="flex gap-2 items-center">
@@ -637,7 +638,7 @@ const Hostels = () => {
             {/* Assets Tab */}
             {
                 activeTab === 'assets' && (
-                    <div className="table-container fade-in">
+                    <div className="table-wrapper fade-in">
                         <div className="flex justify-between items-center mb-4 no-print">
                             <div className="flex items-center gap-4">
                                 <h3>Hostel Assets</h3>
@@ -701,7 +702,7 @@ const Hostels = () => {
             {/* Attendance Tab */}
             {
                 activeTab === 'attendance' && (
-                    <div className="table-container fade-in">
+                    <div className="table-wrapper fade-in">
                         <div className="flex justify-between items-center mb-4 no-print">
                             <h3>Hostel Attendance</h3>
 
@@ -765,7 +766,7 @@ const Hostels = () => {
             {/* Discipline Tab */}
             {
                 activeTab === 'discipline' && (
-                    <div className="table-container fade-in">
+                    <div className="table-wrapper fade-in">
                         <div className="flex justify-between items-center mb-4 no-print">
                             <h3>Discipline Records</h3>
                             <div className="flex gap-2">
@@ -809,7 +810,7 @@ const Hostels = () => {
             {/* Maintenance Tab */}
             {
                 activeTab === 'maintenance' && (
-                    <div className="table-container fade-in">
+                    <div className="table-wrapper fade-in">
                         <div className="flex justify-between items-center mb-4 no-print">
                             <h3>Hostel Maintenance</h3>
                             <div className="flex gap-2">

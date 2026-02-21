@@ -621,19 +621,19 @@ const Transport = () => {
             </div>
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8 w-full">
-                <div className="card p-4 flex items-center gap-4 border-left-4 border-primary">
+                <div className="card flex items-center gap-4 border-left-4 border-primary">
                     <Bus className="text-primary" size={24} />
                     <div><p className="text-xs text-secondary font-bold uppercase">Fleet Size</p><h3>{stats.totalFleet}</h3></div>
                 </div>
-                <div className="card p-4 flex items-center gap-4 border-left-4 border-success">
+                <div className="card flex items-center gap-4 border-left-4 border-success">
                     <Navigation className="text-success" size={24} />
                     <div><p className="text-xs text-secondary font-bold uppercase">Active Routes</p><h3>{stats.activeRoutes}</h3></div>
                 </div>
-                <div className="card p-4 flex items-center gap-4 border-left-4 border-info">
+                <div className="card flex items-center gap-4 border-left-4 border-info">
                     <Users className="text-info" size={24} />
                     <div><p className="text-xs text-secondary font-bold uppercase">Enrollments</p><h3>{stats.totalEnrolled}</h3></div>
                 </div>
-                <div className="card p-4 flex items-center gap-4 border-left-4 border-warning">
+                <div className="card flex items-center gap-4 border-left-4 border-warning">
                     <Droplet className="text-warning" size={24} />
                     <div><p className="text-xs text-secondary font-bold uppercase">Fuel (KES)</p><h3>{stats.fuelCostTerm.toLocaleString()}</h3></div>
                 </div>
@@ -660,7 +660,7 @@ const Transport = () => {
             {activeTab === 'fleet' && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {vehicles.map(v => (
-                        <div key={v.id} className="card p-6 hover-scale border-top-4 border-primary">
+                        <div key={v.id} className="card hover-scale border-top-4 border-primary">
                             <div className="flex justify-between items-start mb-4">
                                 <div>
                                     <h3 className="mb-0">{v.registration_number}</h3>
@@ -693,7 +693,7 @@ const Transport = () => {
             {activeTab === 'routes' && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {routes.map(r => (
-                        <div key={r.id} className="card p-6 border-left-4 border-primary">
+                        <div key={r.id} className="card border-left-4 border-primary">
                             <div className="flex justify-between items-start mb-4">
                                 <div>
                                     <div className="flex items-center gap-2 mb-1"><span className="badge badge-primary">{r.route_code}</span></div>

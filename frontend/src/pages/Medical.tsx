@@ -114,7 +114,7 @@ const Medical = () => {
     })), [students]);
 
     if (loading) {
-        return <div className="flex items-center justify-center" style={{ height: '400px' }}><div className="spinner"></div></div>;
+        return <div className="flex items-center justify-center min-h-[400px]"><div className="spinner"></div></div>;
     }
 
     return (
@@ -150,7 +150,7 @@ const Medical = () => {
                 </div>
             </div>
 
-            <div className="table-container">
+            <div className="table-wrapper">
                 <table className="table">
                     <thead>
                         <tr>
@@ -176,14 +176,14 @@ const Medical = () => {
                                     </td>
                                     <td>
                                         <div className="flex items-center gap-md">
-                                            <div style={{ padding: '8px', background: 'var(--bg-secondary)', borderRadius: '50%' }}>
+                                            <div className="p-2 bg-secondary rounded-full">
                                                 <UserIcon size={16} className="text-secondary" />
                                             </div>
                                             <span className="font-semibold">{record.student_name}</span>
                                         </div>
                                     </td>
                                     <td>
-                                        <span className="badge badge-error" style={{ background: 'rgba(231, 76, 60, 0.1)', color: 'var(--error)' }}>
+                                        <span className="badge badge-error bg-error-light">
                                             {record.diagnosis}
                                         </span>
                                     </td>

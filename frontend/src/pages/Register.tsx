@@ -45,7 +45,6 @@ const Register = () => {
                     setLoading(false);
                 }, 1500);
             } else {
-                // Try to extract specific error messages from backend
                 const errorData = err.response?.data;
                 let errorMessage = "Registration failed. Please try again.";
 
@@ -53,7 +52,6 @@ const Register = () => {
                     if (typeof errorData === 'string') {
                         errorMessage = errorData;
                     } else if (typeof errorData === 'object') {
-                        // Extract first error message found (common Django Rest Framework format)
                         const keys = Object.keys(errorData);
                         if (keys.length > 0) {
                             const firstError = errorData[keys[0]];
@@ -73,138 +71,114 @@ const Register = () => {
     };
 
     return (
-        <div className="auth-page-container">
-            {/* Background Effects */}
-            <div className="auth-bg-gradient-1" style={{ background: '#4338ca' }}></div> {/* Indigo */}
-            <div className="auth-bg-gradient-2" style={{ background: '#7e22ce' }}></div> {/* Purple */}
-
-            {/* Header Text Section */}
-            <div className="auth-header-section">
-                <h1 className="auth-title" style={{ fontSize: '2rem' }}>
-                    Join Our Community
-                </h1>
-                <p className="auth-subtitle" style={{ color: '#e0e7ff', marginBottom: '1.5rem' }}>
-                    Create an account to access the school management portal. Streamline communication, track progress, and stay organized.
-                </p>
-
-                <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '1rem' }}>
-                    {['Secure Access', 'Real-time Tracking', 'Financial Tools'].map((text, i) => (
-                        <div key={i} style={{
-                            display: 'flex', alignItems: 'center', gap: '0.5rem',
-                            background: 'rgba(49, 46, 129, 0.5)', padding: '0.375rem 0.75rem',
-                            borderRadius: '9999px', border: '1px solid rgba(99, 102, 241, 0.3)',
-                            fontSize: '0.875rem', fontWeight: 600, color: '#a5b4fc'
-                        }}>
-                            <CheckCircle size={16} color="#4ade80" />
-                            <span>{text}</span>
-                        </div>
-                    ))}
-                </div>
-            </div>
+        <div className="auth-page">
+            <div className="auth-gradient-bg auth-gradient-1"></div>
+            <div className="auth-gradient-bg auth-gradient-2"></div>
 
             <div className="auth-card">
-                <div className="text-center mb-6">
-                    <div style={{
-                        width: '56px', height: '56px', background: '#eef2ff', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem auto', color: '#4f46e5'
-                    }}>
-                        <School size={28} />
+
+                <div className="auth-header">
+                    <div className="flex justify-center mb-4">
+                        <div className="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center text-primary border border-primary/20">
+                            <School size={28} />
+                        </div>
                     </div>
-                    <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: '#1e293b', textTransform: 'uppercase', lineHeight: 1 }}>Create Account</h2>
-                    <p style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '0.5rem' }}>Join the Institution</p>
+                    <h2>Create Account</h2>
+                    <p>Join the Institution</p>
                 </div>
 
-                {error && (
-                    <div style={{
-                        background: '#fef2f2', borderLeft: '4px solid #ef4444', padding: '0.75rem', marginBottom: '1.5rem', borderRadius: '0 0.5rem 0.5rem 0', display: 'flex', alignItems: 'center', color: '#b91c1c', fontSize: '0.75rem', fontWeight: 700
-                    }}>
-                        <span style={{ marginRight: '0.5rem' }}>⚠️</span> {error}
-                    </div>
-                )}
-
-                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    <div className="auth-input-group" style={{ marginBottom: 0 }}>
-                        <label className="auth-label">Full Name</label>
-                        <div className="auth-input-wrapper">
-                            <User size={18} color="#94a3b8" style={{ marginRight: '0.5rem' }} />
-                            <input type="text" className="auth-input"
-                                placeholder="John Doe"
-                                value={formData.full_name} onChange={e => setFormData({ ...formData, full_name: e.target.value })} required />
+                <div className="auth-content">
+                    {error && (
+                        <div className="badge badge-error w-full py-3 mb-6 flex items-center justify-center gap-2 rounded-lg font-black uppercase text-[10px]">
+                            <Shield size={14} /> {error}
                         </div>
-                    </div>
+                    )}
 
-                    <div className="auth-input-group" style={{ marginBottom: 0 }}>
-                        <label className="auth-label">Username / Staff ID</label>
-                        <div className="auth-input-wrapper">
-                            <User size={18} color="#94a3b8" style={{ marginRight: '0.5rem' }} />
-                            <input type="text" className="auth-input"
-                                placeholder="e.g. jdoe or STAFF-001"
-                                autoComplete="off"
-                                value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} required />
-                        </div>
-                    </div>
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="auth-input-group">
+                                <label className="label uppercase text-[10px] font-black mb-1">Full Name</label>
+                                <div className="auth-input-wrapper">
+                                    <User size={18} className="auth-input-icon" />
+                                    <input type="text" className="input auth-input-field"
+                                        placeholder="John Doe"
+                                        value={formData.full_name} onChange={e => setFormData({ ...formData, full_name: e.target.value })} required />
+                                </div>
+                            </div>
 
-                    <div className="auth-input-group" style={{ marginBottom: 0 }}>
-                        <label className="auth-label">Email Address</label>
-                        <div className="auth-input-wrapper">
-                            <Mail size={18} color="#94a3b8" style={{ marginRight: '0.5rem' }} />
-                            <input type="email" className="auth-input"
-                                placeholder="name@school.com"
-                                autoComplete="email"
-                                value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} required />
-                        </div>
-                    </div>
-
-                    <div className="auth-input-group" style={{ marginBottom: 0 }}>
-                        <label className="auth-label">Role</label>
-                        <div className="auth-input-wrapper">
-                            <Shield size={18} color="#94a3b8" style={{ marginRight: '0.5rem' }} />
-                            <select className="auth-input" style={{ cursor: 'pointer' }}
-                                value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })}>
-                                <option value="TEACHER">Academic Staff (Teacher)</option>
-                                <option value="ACCOUNTANT">Bursar / Accountant</option>
-                                <option value="DOS">Director of Studies</option>
-                                <option value="REGISTRAR">Admissions Registrar</option>
-                                <option value="WARDEN">Hostel / Transport Warden</option>
-                                <option value="DRIVER">Institutional Driver (Logistics)</option>
-                                <option value="NURSE">School Nurse</option>
-                                <option value="LIBRARIAN">Librarian</option>
-                                <option value="ADMIN">System Administrator</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                        <div className="auth-input-group" style={{ marginBottom: 0 }}>
-                            <label className="auth-label">Password</label>
-                            <div className="auth-input-wrapper">
-                                <LockIcon size={18} color="#94a3b8" style={{ marginRight: '0.5rem' }} />
-                                <input type="password" className="auth-input"
-                                    placeholder="••••••"
-                                    autoComplete="new-password"
-                                    value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} required />
+                            <div className="auth-input-group">
+                                <label className="label uppercase text-[10px] font-black mb-1">Username / ID</label>
+                                <div className="auth-input-wrapper">
+                                    <User size={18} className="auth-input-icon" />
+                                    <input type="text" className="input auth-input-field"
+                                        placeholder="e.g. jdoe01"
+                                        autoComplete="off"
+                                        value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} required />
+                                </div>
                             </div>
                         </div>
-                        <div className="auth-input-group" style={{ marginBottom: 0 }}>
-                            <label className="auth-label">Confirm</label>
+
+                        <div className="auth-input-group">
+                            <label className="label uppercase text-[10px] font-black mb-1">Email Address</label>
                             <div className="auth-input-wrapper">
-                                <LockIcon size={18} color="#94a3b8" style={{ marginRight: '0.5rem' }} />
-                                <input type="password" className="auth-input"
-                                    placeholder="••••••"
-                                    autoComplete="new-password"
-                                    value={formData.confirm_password} onChange={e => setFormData({ ...formData, confirm_password: e.target.value })} required />
+                                <Mail size={18} className="auth-input-icon" />
+                                <input type="email" className="input auth-input-field"
+                                    placeholder="name@school.com"
+                                    autoComplete="email"
+                                    value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} required />
                             </div>
                         </div>
-                    </div>
 
-                    <button type="submit" disabled={loading} className="auth-button" style={{ background: '#312e81' }}>
-                        {loading ? 'Processing...' : <><span style={{ marginRight: '0.5rem' }}>Register Account</span> <ArrowRight size={16} /></>}
-                    </button>
-                </form>
+                        <div className="auth-input-group">
+                            <label className="label uppercase text-[10px] font-black mb-1">Institutional Role</label>
+                            <div className="auth-input-wrapper">
+                                <Shield size={18} className="auth-input-icon" />
+                                <select className="select auth-input-field cursor-pointer font-bold h-auto"
+                                    value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })}>
+                                    <option value="TEACHER">Academic Staff</option>
+                                    <option value="ACCOUNTANT">Bursar / Accountant</option>
+                                    <option value="DOS">Director of Studies</option>
+                                    <option value="REGISTRAR">Registrar</option>
+                                    <option value="WARDEN">Hostel Warden</option>
+                                    <option value="DRIVER">Institutional Driver</option>
+                                    <option value="NURSE">School Nurse</option>
+                                    <option value="LIBRARIAN">Librarian</option>
+                                    <option value="ADMIN">Administrator</option>
+                                </select>
+                            </div>
+                        </div>
 
-                <div className="auth-footer">
-                    <p>
-                        Already have an account? <Link to="/login" className="auth-link" style={{ color: '#4f46e5' }}>Sign In</Link>
-                    </p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="auth-input-group">
+                                <label className="label uppercase text-[10px] font-black mb-1">Password</label>
+                                <div className="auth-input-wrapper">
+                                    <LockIcon size={18} className="auth-input-icon" />
+                                    <input type="password" className="input auth-input-field"
+                                        placeholder="••••••"
+                                        autoComplete="new-password"
+                                        value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} required />
+                                </div>
+                            </div>
+                            <div className="auth-input-group">
+                                <label className="label uppercase text-[10px] font-black mb-1">Confirm</label>
+                                <div className="auth-input-wrapper">
+                                    <LockIcon size={18} className="auth-input-icon" />
+                                    <input type="password" className="input auth-input-field"
+                                        placeholder="••••••"
+                                        autoComplete="new-password"
+                                        value={formData.confirm_password} onChange={e => setFormData({ ...formData, confirm_password: e.target.value })} required />
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" disabled={loading} className="btn btn-primary w-full py-3 h-auto font-black uppercase tracking-widest shadow-lg flex items-center justify-center gap-2 mt-4">
+                            {loading ? 'Processing...' : <><span className="mr-2">Register Account</span> <ArrowRight size={18} /></>}
+                        </button>
+                    </form>
+                </div>
+
+                <div className="auth-footer text-xs font-bold text-secondary">
+                    Already have an account? <Link to="/login" className="text-primary hover:underline ml-1">Sign In</Link>
                 </div>
             </div>
         </div>
