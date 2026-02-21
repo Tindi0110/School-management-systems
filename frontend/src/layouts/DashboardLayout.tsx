@@ -65,12 +65,18 @@ const DashboardLayout = () => {
         console.error("Failed to check calendar events", error);
       }
     };
-    checkDueEvents();
-    fetchNotifications();
 
-    // Refresh notifications every 2 minutes
-    const interval = setInterval(fetchNotifications, 120000);
-    return () => clearInterval(interval);
+    let intervalId: any;
+    const timer = setTimeout(() => {
+      checkDueEvents(); // Run checkDueEvents immediately after delay
+      fetchNotifications(); // Initial fetch
+      intervalId = setInterval(fetchNotifications, 5 * 60 * 1000); // Check every 5 mins
+    }, 2000); // Delay background tasks by 2s to prioritize page load
+
+    return () => {
+      clearTimeout(timer);
+      if (intervalId) clearInterval(intervalId);
+    };
   }, []);
 
   return (
@@ -122,7 +128,7 @@ const DashboardLayout = () => {
                     {alerts.map(alert => (
                       <div key={`alert-${alert.id}`} className={`p-3 border-b bg-red-50`}>
                         <div className="flex gap-2">
-                          <div className={`mt-1 w-2 h-2 rounded-full bg-red-500`}></div>
+                          <div className="mt-1 w-2 h-2 rounded-full bg-red-500"></div>
                           <div>
                             <p className="m-0 font-bold text-xs text-red-900 uppercase tracking-tight">{alert.title}</p>
                             <p className="m-0 text-xs text-red-700 leading-tight mt-1">{alert.message}</p>

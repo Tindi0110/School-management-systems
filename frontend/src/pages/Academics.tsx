@@ -259,7 +259,7 @@ const Academics = () => {
             try {
                 await academicsAPI.subjectGroups.delete(id);
                 success('Group deleted');
-                loadAllAcademicData();
+                loadMetadata();
             }
             catch (e: any) { toastError(e.message || 'Failed to delete group'); }
         }
@@ -272,53 +272,78 @@ const Academics = () => {
         return calculateGrade(avg, gradeSystems, specificSystemId);
     };
 
-    const loadAllAcademicData = async () => {
+    const loadMetadata = async () => {
         setLoading(true);
         try {
-            const [
-                yearsRes, termsRes, classesRes, subjectsRes,
-                groupsRes, examsRes, gradesRes, staffRes,
-                studentRes, resultsRes, attRes, syllabusRes
-            ] = await Promise.allSettled([
+            const d = (r: PromiseSettledResult<any>) => r.status === 'fulfilled' ? (r.value.data?.results ?? r.value.data ?? []) : [];
+            const [yearsRes, termsRes, classesRes, subjectsRes, groupsRes, gradesRes, staffRes] = await Promise.allSettled([
                 academicsAPI.years.getAll(),
                 academicsAPI.terms.getAll(),
                 academicsAPI.classes.getAll(),
                 academicsAPI.subjects.getAll(),
                 academicsAPI.subjectGroups.getAll(),
-                academicsAPI.exams.getAll(),
                 academicsAPI.gradeSystems.getAll(),
                 staffAPI.getAll(),
-                studentsAPI.getAll(),
-                academicsAPI.results.getAll({ page_size: 500 }),
-                academicsAPI.attendance.getAll(),
-                academicsAPI.syllabus.getAll()
             ]);
-
-            const d = (r: PromiseSettledResult<any>) => r.status === 'fulfilled' ? (r.value.data?.results ?? r.value.data ?? []) : [];
 
             setAcademicYears(d(yearsRes));
             setTerms(d(termsRes));
             setClasses(d(classesRes));
             setSubjects(d(subjectsRes));
             setSubjectGroups(d(groupsRes));
-            setExams(d(examsRes));
             setGradeSystems(d(gradesRes));
             setStaff(d(staffRes));
-            setStudents(d(studentRes));
-            setSyllabusData(d(syllabusRes));
-            setAttendanceRecords(d(attRes));
-
-            if (resultsRes.status === 'fulfilled') {
-                const results = resultsRes.value.data?.results ?? resultsRes.value.data ?? [];
-                setMeanGrade(calculateMeanGrade(results, d(gradesRes)));
-            }
-
         } catch (err) {
-            console.error('Error loading academic data:', err);
+            console.error('Error loading academic metadata:', err);
         } finally {
             setLoading(false);
         }
     };
+
+    const loadTabSpecificData = async () => {
+        const d = (res: any) => res.data?.results ?? res.data ?? [];
+        try {
+            if (activeTab === 'SUMMARY') {
+                const [studentRes, resultsRes] = await Promise.all([
+                    studentsAPI.getAll({ page_size: 200 }),
+                    academicsAPI.results.getAll({ page_size: 500 })
+                ]);
+                setStudents(d(studentRes));
+                const results = d(resultsRes);
+                setMeanGrade(calculateMeanGrade(results, gradeSystems));
+            } else if (activeTab === 'EXAMS') {
+                const res = await academicsAPI.exams.getAll();
+                setExams(d(res));
+            } else if (activeTab === 'ATTENDANCE') {
+                const [attRes, studentRes] = await Promise.all([
+                    academicsAPI.attendance.getAll(),
+                    studentsAPI.getAll({ page_size: 200 })
+                ]);
+                setAttendanceRecords(d(attRes));
+                setStudents(d(studentRes));
+            } else if (activeTab === 'CURRICULUM') {
+                const res = await academicsAPI.syllabus.getAll();
+                setSyllabusData(d(res));
+            } else if (activeTab === 'ALLOCATION' && !classAllocations.length) {
+                // allocations are often class-specific, but let's load initial if needed
+            }
+        } catch (err) {
+            console.error(`Error loading data for tab ${activeTab}:`, err);
+        }
+    };
+
+    const loadAllAcademicData = async () => {
+        await loadMetadata();
+        await loadTabSpecificData();
+    };
+
+    useEffect(() => {
+        loadMetadata();
+    }, []);
+
+    useEffect(() => {
+        loadTabSpecificData();
+    }, [activeTab]);
 
     // Allocation Handlers
     const fetchClassAllocations = async (classId: string) => {
@@ -1207,6 +1232,20 @@ const Academics = () => {
                         <div className="md:col-span-3 min-w-0">
                             {selectedAllocationClass ? (
                                 <div className="card h-full flex flex-col">
+                                    <div className="relative overflow-hidden rounded-3xl bg-secondary text-white p-8 mb-8 shadow-2xl">
+                                        <div className="relative z-10 flex justify-between items-center">
+                                            <div>
+                                                <h1 className="text-3xl font-black mb-1 capitalize">Academic Management</h1>
+                                                <p className="text-xs opacity-70 font-medium">Manage curriculum, examinations, and institutional standards</p>
+                                            </div>
+                                            <div className="flex gap-4">
+                                                <div className="flex items-center gap-1.5 px-3 py-1 bg-white/10 rounded-full border border-white/10">
+                                                    <Calendar size={12} className="text-info-light" />
+                                                    <span className="text-[10px] font-bold uppercase">2024 • Term 1</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                     <div className="card-header flex justify-between items-center py-3 border-bottom">
                                         <div>
                                             <h3 className="mb-0 text-sm font-black uppercase">Class Subjects</h3>
@@ -1595,7 +1634,7 @@ const Academics = () => {
                                         <th className="min-w-[120px]">Class / Section</th>
                                         <th className="min-w-[100px]">Status</th>
                                         <th className="min-w-[150px]">Remarks</th>
-                                        <th className="min-w-[100px] text-right sticky right-0 bg-white/90 backdrop-blur">Actions</th>
+                                        <th className="min-w-[100px] text-right sticky right-0 bg-white/90">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>

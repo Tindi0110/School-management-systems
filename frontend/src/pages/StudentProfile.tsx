@@ -85,24 +85,16 @@ const StudentProfile = () => {
         if (id) loadStudentData();
     }, [id]);
 
-    const loadStudentData = async () => {
+    const loadCoreStudentData = async () => {
         setLoading(true);
         try {
-            const [studentRes, resultsRes, disciplineRes, activitiesRes, documentsRes, parentsRes] = await Promise.all([
+            const [studentRes, parentsRes] = await Promise.all([
                 studentsAPI.getOne(Number(id)),
-                academicsAPI.results.getAll({ student_id: Number(id) }),
-                studentsAPI.discipline.getAll(Number(id)),
-                studentsAPI.activities.getAll(Number(id)),
-                studentsAPI.documents.getAll(Number(id)),
                 studentsAPI.parents.getForStudent(Number(id)),
             ]);
-            const d = (r: any) => r?.data?.results ?? r?.data ?? [];
+
             setStudent(studentRes.data);
-            setResults(d(resultsRes));
-            setDiscipline(d(disciplineRes));
-            setActivities(d(activitiesRes));
-            setDocuments(d(documentsRes));
-            setParents(d(parentsRes));
+            setParents(parentsRes.data?.results ?? parentsRes.data ?? []);
 
             setHealthForm({
                 blood_group: studentRes.data.health_record?.blood_group || '',
@@ -114,38 +106,51 @@ const StudentProfile = () => {
             });
             setHealthId(studentRes.data.health_record?.id || null);
 
-            const studentUser = studentRes.data.user;
-
-            // Secondary Fetches
-            try {
-                const [pRes, iRes, aRes, lendingsRes] = await Promise.all([
-                    financeAPI.payments.getAll({ invoice__student: Number(id) }),
-                    financeAPI.invoices.getAll({ student: Number(id) }),
-                    financeAPI.adjustments.getAll({ invoice__student: Number(id) }),
-                    studentUser ? libraryAPI.lendings.getAll({ user: studentUser, date_returned__isnull: true }) : Promise.resolve({ data: [] })
-                ]);
-
-                setPayments(d(pRes));
-                setInvoices(d(iRes));
-                setAdjustments(d(aRes));
-
-                if (studentUser) {
-                    const allLendings = d(lendingsRes);
-                    // Double check filtering locally in case backend doesn't support the query params yet
-                    const activeLendings = allLendings.filter((l: any) => l.user === studentUser && !l.date_returned);
-                    setUnreturnedBooks(activeLendings.length);
-                }
-            } catch (e) {
-                console.error("Secondary Data Load Error:", e);
-            }
-
         } catch (error: any) {
-            console.error("Load Student Error:", error);
+            console.error("Load Core Student Error:", error);
             setError(error.response?.data?.detail || error.message || "Failed to load student profile.");
         } finally {
             setLoading(false);
         }
     };
+
+    const loadTabData = async () => {
+        const d = (r: any) => r?.data?.results ?? r?.data ?? [];
+        try {
+            if (activeTab === 'ACADEMIC') {
+                const resultsRes = await academicsAPI.results.getAll({ student_id: Number(id) });
+                setResults(d(resultsRes));
+            } else if (activeTab === 'FINANCE') {
+                const [pRes, iRes, aRes] = await Promise.all([
+                    financeAPI.payments.getAll({ invoice__student: Number(id) }),
+                    financeAPI.invoices.getAll({ student: Number(id) }),
+                    financeAPI.adjustments.getAll({ invoice__student: Number(id) })
+                ]);
+                setPayments(d(pRes));
+                setInvoices(d(iRes));
+                setAdjustments(d(aRes));
+            } else if (activeTab === 'DISCIPLINE') {
+                const disciplineRes = await studentsAPI.discipline.getAll(Number(id));
+                setDiscipline(d(disciplineRes));
+            } else if (activeTab === 'ACTIVITIES') {
+                const activitiesRes = await studentsAPI.activities.getAll(Number(id));
+                setActivities(d(activitiesRes));
+            } else if (activeTab === 'DOCUMENTS') {
+                const documentsRes = await studentsAPI.documents.getAll(Number(id));
+                setDocuments(d(documentsRes));
+            }
+        } catch (e) {
+            console.error(`Error loading ${activeTab} data:`, e);
+        }
+    };
+
+    useEffect(() => {
+        if (id) loadCoreStudentData();
+    }, [id]);
+
+    useEffect(() => {
+        if (id) loadTabData();
+    }, [id, activeTab]);
 
     const statement = React.useMemo(() => {
         const items: any[] = [];
@@ -877,7 +882,7 @@ const StudentProfile = () => {
                                                             <th className="text-[10px] font-black uppercase text-slate-400 py-4 px-6 min-w-[150px]">Reference</th>
                                                             <th className="text-[10px] font-black uppercase text-slate-400 py-4 px-6 text-right min-w-[120px]">Debit (+)</th>
                                                             <th className="text-[10px] font-black uppercase text-slate-400 py-4 px-6 text-right min-w-[120px]">Credit (-)</th>
-                                                            <th className="text-[10px] font-black uppercase text-slate-800 py-4 px-6 text-right sticky right-0 bg-slate-50/95 backdrop-blur-sm shadow-[-5px_0_10px_rgba(0,0,0,0.02)] min-w-[130px]">Net Balance</th>
+                                                            <th className="text-[10px] font-black uppercase text-slate-800 py-4 px-6 text-right sticky right-0 bg-slate-50/95 shadow-[-5px_0_10px_rgba(0,0,0,0.02)] min-w-[130px]">Net Balance</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody className="divide-y divide-slate-100">
@@ -915,7 +920,7 @@ const StudentProfile = () => {
                                                                             {item.credit > 0 ? `KES ${item.credit.toLocaleString()}` : '—'}
                                                                         </span>
                                                                     </td>
-                                                                    <td className={`py-4 px-6 text-right font-black text-xs sticky right-0 backdrop-blur-sm group-hover:bg-slate-50 transition-colors ${item.balance === 0 ? 'text-success' : item.balance < 0 ? 'text-info' : 'text-error'}`}>
+                                                                    <td className={`py-4 px-6 text-right font-black text-xs sticky right-0 group-hover:bg-slate-50 transition-colors ${item.balance === 0 ? 'text-success' : item.balance < 0 ? 'text-info' : 'text-error'}`}>
                                                                         KES {item.balance.toLocaleString()}
                                                                     </td>
                                                                 </tr>

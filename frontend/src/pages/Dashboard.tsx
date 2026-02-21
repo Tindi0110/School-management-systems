@@ -59,16 +59,17 @@ const Dashboard = () => {
     const loadDashboardData = async () => {
         try {
             const todayStr = new Date().toISOString().split('T')[0];
-            const [statsRes, alertsRes, eventsRes, examsRes, yearsRes, termsRes] = await Promise.all([
+
+            // Phase 1: Immediate Stats & Context
+            const [statsRes, yearsRes, termsRes] = await Promise.allSettled([
                 statsAPI.getDashboard(),
-                communicationAPI.alerts.getActive(),
-                academicsAPI.events.getAll({ start_date: todayStr, page_size: 10 }),
-                academicsAPI.exams.getAll({ start_date: todayStr, page_size: 10 }),
                 academicsAPI.years.getAll({ is_active: true }),
                 academicsAPI.terms.getAll({ is_active: true }),
             ]);
 
-            const s = statsRes?.data || {};
+            const d = (r: PromiseSettledResult<any>) => r.status === 'fulfilled' ? (r.value.data?.results ?? r.value.data ?? {}) : {};
+
+            const s = d(statsRes);
             setStats({
                 totalStudents: s.total_students ?? 0,
                 totalStaff: s.total_staff ?? 0,
@@ -76,11 +77,28 @@ const Dashboard = () => {
                 pendingPayments: s.pending_invoices ?? 0,
             });
 
-            setAlerts(alertsRes?.data?.results || alertsRes?.data || []);
+            const yearsData = Array.isArray(d(yearsRes)) ? d(yearsRes) : [];
+            const termsData = Array.isArray(d(termsRes)) ? d(termsRes) : [];
+            let activeY = yearsData.find((y: any) => y.is_active === true)?.name
+                || yearsData.find((y: any) => String(y.is_active) === 'true')?.name
+                || (yearsData.length > 0 ? yearsData[yearsData.length - 1].name : '2024');
+            const activeT = termsData.find((t: any) => t.is_active === true)?.name
+                || (termsData.length > 0 ? termsData[termsData.length - 1].name : 'Term 1');
+            setActiveAcademic({ year: activeY, term: activeT });
 
-            // Merge Events and Exams for Calendar
-            const apiEvents = eventsRes?.data?.results || eventsRes?.data || [];
-            const apiExams = (examsRes?.data?.results || examsRes?.data || []).map((ex: any) => ({
+            // Phase 2: Secondary Content (Alerts & Events)
+            const [alertsRes, eventsRes, examsRes] = await Promise.allSettled([
+                communicationAPI.alerts.getActive(),
+                academicsAPI.events.getAll({ start_date: todayStr, page_size: 10 }),
+                academicsAPI.exams.getAll({ start_date: todayStr, page_size: 10 }),
+            ]);
+
+            const dList = (r: PromiseSettledResult<any>) => r.status === 'fulfilled' ? (r.value.data?.results ?? r.value.data ?? []) : [];
+
+            setAlerts(dList(alertsRes));
+
+            const apiEvents = dList(eventsRes);
+            const apiExams = dList(examsRes).map((ex: any) => ({
                 id: `exam-${ex.id}`,
                 title: `${ex.name} (${ex.exam_type})`,
                 date: ex.date_started,
@@ -93,18 +111,8 @@ const Dashboard = () => {
             today.setHours(0, 0, 0, 0);
             setEvents(allEvents.filter((e: any) => new Date(e.date) >= today).slice(0, 5));
 
-            // Active academic year/term
-            const yearsData = yearsRes?.data?.results || yearsRes?.data || [];
-            const termsData = termsRes?.data?.results || termsRes?.data || [];
-            let activeY = yearsData.find((y: any) => y.is_active === true)?.name
-                || yearsData.find((y: any) => String(y.is_active) === 'true')?.name
-                || (yearsData.length > 0 ? yearsData[yearsData.length - 1].name : '2024');
-            const activeT = termsData.find((t: any) => t.is_active === true)?.name
-                || (termsData.length > 0 ? termsData[termsData.length - 1].name : 'Term 1');
-            setActiveAcademic({ year: activeY, term: activeT });
-
         } catch (error) {
-            console.error(error);
+            console.error('Dashboard load error:', error);
         } finally {
             setLoading(false);
         }
@@ -142,7 +150,7 @@ const Dashboard = () => {
                         </div>
                         <h1 className="text-3xl font-black mb-1 capitalize">Welcome, {getRoleDisplay(user?.role || 'GUEST')}</h1>
                         <div className="flex items-center gap-4 mt-2">
-                            <div className="flex items-center gap-1.5 px-3 py-1 bg-white/10 rounded-full border border-white/10 backdrop-blur-md">
+                            <div className="flex items-center gap-1.5 px-3 py-1 bg-white/10 rounded-full border border-white/10">
                                 <Calendar size={12} className="text-info-light" />
                                 <span className="text-[10px] font-bold uppercase">{activeAcademic.year} • {activeAcademic.term}</span>
                             </div>
