@@ -52,8 +52,8 @@ const Students = () => {
         setLoading(true);
         try {
             const [studentsRes, classesRes] = await Promise.all([
-                studentsAPI.getAll(),
-                academicsAPI.classes.getAll(),
+                studentsAPI.getAll({ page_size: 50 }),
+                academicsAPI.classes.getAll({ page_size: 50 }),
             ]);
             // Handle both paginated { results: [] } and plain array responses
             const studentsData = studentsRes.data?.results ?? studentsRes.data ?? [];
@@ -69,7 +69,7 @@ const Students = () => {
 
     const reloadStudentsOnly = async () => {
         try {
-            const studentsRes = await studentsAPI.getAll();
+            const studentsRes = await studentsAPI.getAll({ page_size: 50 });
             setStudents(studentsRes.data?.results ?? studentsRes.data ?? []);
         } catch (error) {
             // silent

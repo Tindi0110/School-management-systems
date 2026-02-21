@@ -26,11 +26,11 @@ const DashboardLayout = () => {
     try {
       const { communicationAPI } = await import('../api/api');
       const [notifsRes, alertsRes] = await Promise.all([
-        communicationAPI.notifications.getAll(),
-        communicationAPI.alerts.getAll()
+        communicationAPI.notifications.getUnread(),
+        communicationAPI.alerts.getActive()
       ]);
       setNotifications(notifsRes.data?.results || notifsRes.data || []);
-      setAlerts((alertsRes.data?.results || alertsRes.data || []).filter((a: any) => a.is_active));
+      setAlerts(alertsRes.data?.results || alertsRes.data || []);
     } catch (error) {
       console.error("Failed to fetch notifications", error);
     }
@@ -52,11 +52,9 @@ const DashboardLayout = () => {
     const checkDueEvents = async () => {
       try {
         const { academicsAPI } = await import('../api/api');
-        const res = await academicsAPI.events.getAll();
-        const events = res.data?.results || res.data || [];
         const today = new Date().toISOString().split('T')[0];
-
-        const dueToday = events.filter((e: any) => e.start_date === today);
+        const res = await academicsAPI.events.getAll({ start_date: today });
+        const dueToday = res.data?.results || res.data || [];
 
         if (dueToday.length > 0) {
           dueToday.forEach((e: any) => {

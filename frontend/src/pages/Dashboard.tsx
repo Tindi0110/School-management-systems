@@ -7,7 +7,7 @@ import {
     Star, Award, Zap
 } from 'lucide-react';
 import { StatCard } from '../components/Card';
-import { statsAPI, staffAPI, academicsAPI } from '../api/api';
+import { statsAPI, staffAPI, academicsAPI, communicationAPI } from '../api/api';
 import Modal from '../components/Modal';
 import { useToast } from '../context/ToastContext';
 
@@ -58,14 +58,14 @@ const Dashboard = () => {
 
     const loadDashboardData = async () => {
         try {
-            // Use lightweight stats endpoint + only what's needed for display
+            const todayStr = new Date().toISOString().split('T')[0];
             const [statsRes, alertsRes, eventsRes, examsRes, yearsRes, termsRes] = await Promise.all([
                 statsAPI.getDashboard(),
-                Promise.resolve({ data: { results: [] as any[] } }).catch(() => ({ data: { results: [] as any[] } })),
-                academicsAPI.events.getAll().catch(() => ({ data: [] })),
-                academicsAPI.exams.getAll().catch(() => ({ data: [] })),
-                academicsAPI.years.getAll().catch(() => ({ data: [] })),
-                academicsAPI.terms.getAll().catch(() => ({ data: [] })),
+                communicationAPI.alerts.getActive(),
+                academicsAPI.events.getAll({ start_date: todayStr, page_size: 10 }),
+                academicsAPI.exams.getAll({ start_date: todayStr, page_size: 10 }),
+                academicsAPI.years.getAll({ is_active: true }),
+                academicsAPI.terms.getAll({ is_active: true }),
             ]);
 
             const s = statsRes?.data || {};

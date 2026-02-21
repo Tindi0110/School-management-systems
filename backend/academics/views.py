@@ -18,10 +18,12 @@ from .serializers import (
 class AcademicYearViewSet(viewsets.ModelViewSet):
     queryset = AcademicYear.objects.all()
     serializer_class = AcademicYearSerializer
+    filterset_fields = ['is_active']
 
 class TermViewSet(viewsets.ModelViewSet):
     queryset = Term.objects.all()
     serializer_class = TermSerializer
+    filterset_fields = ['is_active', 'academic_year']
 
 
 class SubjectGroupViewSet(viewsets.ModelViewSet):
@@ -47,6 +49,14 @@ class GradeBoundaryViewSet(viewsets.ModelViewSet):
 class ExamViewSet(viewsets.ModelViewSet):
     queryset = Exam.objects.all()
     serializer_class = ExamSerializer
+    filterset_fields = ['academic_year', 'term', 'status']
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        start_date = self.request.query_params.get('start_date')
+        if start_date:
+            qs = qs.filter(date_started__gte=start_date)
+        return qs
 
 from .permissions import IsClassTeacherForSubject
 

@@ -121,44 +121,35 @@ const Finance = () => {
         try {
             const d = (r: any) => r?.data?.results ?? r?.data ?? [];
             if (activeTab === 'dashboard') {
-                // Super-fast dashboard load: stats + 5 recent invoices only
                 const res = await financeAPI.invoices.dashboardStats();
                 setStats(res.data);
                 setInvoices(res.data.recentInvoices);
-                // No need to fetch payments here anymore!
             } else if (activeTab === 'invoices') {
-                const [cls, yrRes, studs] = await Promise.all([
-                    classesAPI.getAll(),
-                    academicsAPI.years.getAll(),
-                    studentsAPI.getAll()
+                // Targeted fetch for invoices tab
+                const [cls, yrRes] = await Promise.all([
+                    classesAPI.getAll({ page_size: 50 }),
+                    academicsAPI.years.getAll({ page_size: 10 })
                 ]);
-                setClasses(d(cls)); setYears(d(yrRes)); setStudents(d(studs));
+                setClasses(d(cls)); setYears(d(yrRes));
 
-                // Construct clean params
-                const params: any = {};
+                const params: any = { page_size: 50, ...invFilters };
                 if (invFilters.year_id) params.academic_year = invFilters.year_id;
-                if (invFilters.term) params.term = invFilters.term;
-                if (invFilters.status) params.status = invFilters.status;
 
-                const res = await financeAPI.invoices.getAll(params); // Filtered load
+                const res = await financeAPI.invoices.getAll(params);
                 setInvoices(d(res));
             } else if (activeTab === 'payments') {
-                const [studs, invs] = await Promise.all([studentsAPI.getAll(), financeAPI.invoices.getAll()]);
-                setStudents(d(studs)); setInvoices(d(invs));
-                const res = await financeAPI.payments.getAll();
+                const res = await financeAPI.payments.getAll({ page_size: 50 });
                 setPayments(d(res));
             } else if (activeTab === 'fees') {
-                const [cls, yrs] = await Promise.all([classesAPI.getAll(), academicsAPI.years.getAll()]);
-                setClasses(d(cls)); setYears(d(yrs));
-                const res = await financeAPI.feeStructures.getAll();
+                const res = await financeAPI.feeStructures.getAll(); // Usually small
                 setFeeStructures(d(res));
             } else if (activeTab === 'expenses') {
-                const res = await financeAPI.expenses.getAll();
+                const res = await financeAPI.expenses.getAll({ page_size: 50 });
                 setExpenses(d(res));
             }
         } catch (error: any) {
             console.error('Error loading finance data:', error);
-            toastError(error?.message || 'Failed to load finance data. Check console for details.');
+            toastError(error?.message || 'Failed to load finance data.');
         } finally {
             setLoading(false);
         }
@@ -170,13 +161,19 @@ const Finance = () => {
         const loadModalData = async () => {
             if (showInvoiceModal || showFeeModal) {
                 if (classes.length === 0 || years.length === 0) {
-                    const [cls, yrs] = await Promise.all([classesAPI.getAll(), academicsAPI.years.getAll()]);
+                    const [cls, yrs] = await Promise.all([
+                        classesAPI.getAll({ page_size: 50 }),
+                        academicsAPI.years.getAll({ is_active: true })
+                    ]);
                     setClasses(d(cls)); setYears(d(yrs));
                 }
             }
             if (showPaymentModal || showMpesaModal) {
-                if (students.length === 0) setStudents(d(await studentsAPI.getAll()));
-                if (invoices.length === 0 && showPaymentModal) setInvoices(d(await financeAPI.invoices.getAll()));
+                // Only fetch students if really needed, and use a limited set or search
+                if (students.length === 0) {
+                    const studs = await studentsAPI.getAll({ page_size: 100 }); // Enough for most recent lookups
+                    setStudents(d(studs));
+                }
             }
         };
         loadModalData();

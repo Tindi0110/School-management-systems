@@ -66,9 +66,13 @@ api.interceptors.response.use(
   }
 );
 
-// Helper: always fetch full dataset for list endpoints
-const ALL = { params: { page_size: 2000 } };
-const allWith = (extra?: Record<string, any>) => ({ params: { page_size: 2000, ...extra } });
+// Helper configs for different data needs
+export const RECENT = { params: { page_size: 10 } };
+export const SUMMARY = { params: { page_size: 50 } };
+export const ALL = { params: { page_size: 2000 } };
+export const allWith = (extra?: Record<string, any>) => ({ params: { page_size: 2000, ...extra } });
+export const recentWith = (extra?: Record<string, any>) => ({ params: { page_size: 10, ...extra } });
+export const summaryWith = (extra?: Record<string, any>) => ({ params: { page_size: 50, ...extra } });
 
 // API endpoints
 export const authAPI = {
@@ -148,50 +152,50 @@ export const staffAPI = {
 
 export const academicsAPI = {
   years: {
-    getAll: () => api.get('academic-years/', ALL),
+    getAll: (params?: any) => api.get('academic-years/', allWith(params)),
     create: (data: any) => api.post('academic-years/', data),
     update: (id: number, data: any) => api.put(`academic-years/${id}/`, data),
     delete: (id: number) => api.delete(`academic-years/${id}/`),
   },
   terms: {
-    getAll: () => api.get('terms/', ALL),
+    getAll: (params?: any) => api.get('terms/', allWith(params)),
     create: (data: any) => api.post('terms/', data),
     update: (id: number, data: any) => api.put(`terms/${id}/`, data),
     delete: (id: number) => api.delete(`terms/${id}/`),
   },
   classes: {
-    getAll: () => api.get('classes/', ALL),
+    getAll: (params?: any) => api.get('classes/', allWith(params)),
     getOne: (id: number) => api.get(`classes/${id}/`),
     create: (data: any) => api.post('classes/', data),
     update: (id: number, data: any) => api.put(`classes/${id}/`, data),
     delete: (id: number) => api.delete(`classes/${id}/`),
   },
   subjectGroups: {
-    getAll: () => api.get('subject-groups/', ALL),
+    getAll: (params?: any) => api.get('subject-groups/', allWith(params)),
     create: (data: any) => api.post('subject-groups/', data),
     update: (id: number, data: any) => api.put(`subject-groups/${id}/`, data),
     delete: (id: number) => api.delete(`subject-groups/${id}/`),
   },
   subjects: {
-    getAll: () => api.get('subjects/', ALL),
+    getAll: (params?: any) => api.get('subjects/', allWith(params)),
     create: (data: any) => api.post('subjects/', data),
     update: (id: number, data: any) => api.put(`subjects/${id}/`, data),
     delete: (id: number) => api.delete(`subjects/${id}/`),
   },
   gradeSystems: {
-    getAll: () => api.get('grade-systems/', ALL),
+    getAll: (params?: any) => api.get('grade-systems/', allWith(params)),
     create: (data: any) => api.post('grade-systems/', data),
     update: (id: number, data: any) => api.put(`grade-systems/${id}/`, data),
     delete: (id: number) => api.delete(`grade-systems/${id}/`),
   },
   gradeBoundaries: {
-    getAll: () => api.get('grade-boundaries/', ALL),
+    getAll: (params?: any) => api.get('grade-boundaries/', allWith(params)),
     create: (data: any) => api.post('grade-boundaries/', data),
     update: (id: number, data: any) => api.put(`grade-boundaries/${id}/`, data),
     delete: (id: number) => api.delete(`grade-boundaries/${id}/`),
   },
   exams: {
-    getAll: () => api.get('exams/', ALL),
+    getAll: (params?: any) => api.get('exams/', allWith(params)),
     getOne: (id: number) => api.get(`exams/${id}/`),
     create: (data: any) => api.post('exams/', data),
     update: (id: number, data: any) => api.put(`exams/${id}/`, data),
@@ -252,7 +256,7 @@ export const timetableAPI = {
 
 export const financeAPI = {
   feeStructures: {
-    getAll: () => api.get('fee-structures/', ALL),
+    getAll: (params?: any) => api.get('fee-structures/', allWith(params)),
     create: (data: any) => api.post('fee-structures/', data),
     update: (id: number, data: any) => api.put(`fee-structures/${id}/`, data),
     delete: (id: number) => api.delete(`fee-structures/${id}/`),
@@ -276,7 +280,7 @@ export const financeAPI = {
     create: (data: any) => api.post('adjustments/', data),
   },
   expenses: {
-    getAll: () => api.get('expenses/', ALL),
+    getAll: (params?: any) => api.get('expenses/', allWith(params)),
     create: (data: any) => api.post('expenses/', data),
     update: (id: number, data: any) => api.put(`expenses/${id}/`, data),
     patch: (id: number, data: any) => api.patch(`expenses/${id}/`, data),
@@ -452,11 +456,13 @@ export const transportAPI = {
 
 export const communicationAPI = {
   notifications: {
-    getAll: () => api.get('notifications/', ALL),
+    getAll: (params?: any) => api.get('notifications/', recentWith(params)),
+    getUnread: () => api.get('notifications/', recentWith({ is_read: false })),
     update: (id: number, data: any) => api.patch(`notifications/${id}/`, data),
   },
   alerts: {
-    getAll: () => api.get('alerts/', ALL),
+    getAll: (params?: any) => api.get('alerts/', recentWith(params)),
+    getActive: () => api.get('alerts/', recentWith({ is_active: true })),
   }
 };
 
