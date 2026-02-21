@@ -164,6 +164,20 @@ def setup_rbac():
         'STUDENT': [
              'sms.view_dashboard',
              # Add specific student perms if needed
+        ],
+        'DRIVER': [
+            'sms.view_dashboard',
+            'sms.view_transport',
+            'transport.view_transportconfig',
+            'transport.view_vehicle',
+            'transport.view_route',
+            'transport.view_pickuppoint',
+            'transport.view_transportallocation',
+            'transport.view_triplog',
+            'transport.view_transportattendance',
+            'transport.view_fuelrecord',
+            'transport.view_transportincident',
+            'transport.view_vehiclemaintenance',
         ]
     }
 

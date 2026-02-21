@@ -767,10 +767,10 @@ const StudentProfile = () => {
 
                     {activeTab === 'FINANCE' && (
                         <div className="space-y-6">
-                            {/* Financial Summary Cards - Responsive Row for Admin Controls */}
-                            <div className="flex flex-col lg:flex-row gap-6 no-print">
+                            {/* Financial Summary Cards - Scrollable Row on Mobile */}
+                            <div className="flex flex-nowrap lg:flex-row gap-6 no-print overflow-x-auto pb-4 snap-x touch-pan-x">
                                 {/* Accounting Statement Summary Card */}
-                                <div className="card overflow-hidden border flex-1 min-w-0">
+                                <div className="card overflow-hidden border flex-1 min-w-[320px] md:min-w-0 snap-center">
                                     <div className="p-4 border-bottom bg-secondary-light flex justify-between items-center">
                                         <h3 className="mb-0 text-xs font-black uppercase tracking-widest">Accounting Statement</h3>
                                         <div className="flex gap-2">
@@ -814,7 +814,7 @@ const StudentProfile = () => {
                                 </div>
 
                                 {/* Right Column for Administrative & Rapid Communication */}
-                                <div className="flex flex-col gap-6 w-full lg:w-80 flex-shrink-0">
+                                <div className="flex flex-col gap-6 w-full lg:w-80 flex-shrink-0 min-w-[300px] snap-center">
                                     {/* Administrative Control */}
                                     <div className="card border-top-4 border-primary">
                                         <h4 className="text-[10px] font-black uppercase text-primary border-bottom pb-2 mb-4 tracking-widest flex items-center gap-2">
@@ -1113,9 +1113,9 @@ const StudentProfile = () => {
 
 
             <Modal isOpen={isClearanceModalOpen} onClose={() => setIsClearanceModalOpen(false)} title="Print Student Clearance" size="md">
-                <div className="space-y-4">
-                    <p className="text-secondary text-sm">Download or print the official clearance document for <strong>{student.full_name}</strong>.</p>
-                    <div className="p-4 bg-secondary-light rounded-lg border border-dashed border-primary/30 flex flex-col items-center gap-4">
+                <div className="space-y-6 text-center">
+                    <p className="text-secondary text-sm px-6">Download or print the official institutional clearance document for <strong>{student.full_name}</strong>. This document verifies the student's status across all departments.</p>
+                    <div className="mx-auto max-w-xs p-6 bg-secondary-light/30 rounded-2xl border border-dashed border-primary/20 flex flex-col items-center gap-4 shadow-inner">
                         <FileText size={48} className="text-primary opacity-50" />
                         <span className="text-[10px] font-black uppercase tracking-widest text-primary">Official Transcript & Clearance</span>
                     </div>

@@ -23,7 +23,7 @@ const Sidebar = ({ onClose }: SidebarProps) => {
     { name: 'Hostels', path: '/hostels', icon: <Building size={20} />, permission: 'view_hostel', roles: ['ADMIN', 'WARDEN', 'PRINCIPAL', 'REGISTRAR'] },
     { name: 'Library', path: '/library', icon: <BookOpen size={20} />, permission: 'view_library', roles: ['ADMIN', 'PRINCIPAL', 'LIBRARIAN', 'DOS'] },
     { name: 'Medical', path: '/medical', icon: <Pill size={20} />, permission: 'view_medical', roles: ['ADMIN', 'NURSE', 'PRINCIPAL'] },
-    { name: 'Transport', path: '/transport', icon: <Bus size={20} />, permission: 'view_transportallocation', roles: ['ADMIN', 'PRINCIPAL', 'REGISTRAR', 'WARDEN'] },
+    { name: 'Transport', path: '/transport', icon: <Bus size={20} />, permission: 'view_transportallocation', roles: ['ADMIN', 'PRINCIPAL', 'REGISTRAR', 'WARDEN', 'DRIVER'] },
     { name: 'Timetable', path: '/timetable', icon: <Calendar size={20} />, permission: 'view_academics', roles: ['ADMIN', 'PRINCIPAL', 'TEACHER', 'STUDENT', 'DOS'] },
     { name: 'System Health', path: '/health', icon: <Activity size={20} />, permission: 'view_audit', roles: ['ADMIN'] },
   ]
@@ -76,7 +76,8 @@ const Sidebar = ({ onClose }: SidebarProps) => {
               'WARDEN': 'Warden',
               'NURSE': 'Nurse',
               'LIBRARIAN': 'Librarian',
-              'STUDENT': 'Student'
+              'STUDENT': 'Student',
+              'DRIVER': 'Institutional Driver'
             }[role as string] || role)}
           </p>
         </div>
