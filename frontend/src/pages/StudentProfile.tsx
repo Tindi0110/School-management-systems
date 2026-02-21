@@ -424,19 +424,23 @@ const StudentProfile = () => {
     };
 
     const handleWhatsApp = () => {
-        const phone = student.guardian_phone || '';
-        const message = encodeURIComponent(`Hello ${student.guardian_name || 'Guardian'}, this is regarding ${student.full_name} (ADM: ${student.admission_number}). `);
+        const primaryParent = parents.find(p => p.is_primary) || parents[0];
+        const phone = primaryParent?.phone_number || student.guardian_phone || '';
+        const name = primaryParent?.full_name || student.guardian_name || 'Guardian';
+        const message = encodeURIComponent(`Hello ${name}, this is regarding ${student.full_name} (ADM: ${student.admission_number}). `);
         window.open(`https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${message}`, '_blank');
     };
 
     const handleEmail = () => {
-        const email = student.guardian_email || '';
+        const primaryParent = parents.find(p => p.is_primary) || parents[0];
+        const email = primaryParent?.email || student.guardian_email || '';
         const subject = encodeURIComponent(`Regarding ${student.full_name} - ${student.admission_number}`);
         window.location.href = `mailto:${email}?subject=${subject}`;
     };
 
     const handleDirectSMS = () => {
-        const phone = student.guardian_phone || '';
+        const primaryParent = parents.find(p => p.is_primary) || parents[0];
+        const phone = primaryParent?.phone_number || student.guardian_phone || '';
         window.location.href = `sms:${phone}`;
     };
 
@@ -762,7 +766,7 @@ const StudentProfile = () => {
                     {activeTab === 'FINANCE' && (
                         <div className="space-y-6">
                             {/* Financial Summary Cards - Horizontal Scrollable Row for Admin Controls */}
-                            <div className="flex flex-row overflow-x-auto pb-4 gap-6 touch-pan-x no-print">
+                            <div className="flex flex-row flex-nowrap overflow-x-auto pb-4 gap-6 touch-pan-x no-print">
                                 {/* Accounting Statement Summary Card */}
                                 <div className="card p-0 overflow-hidden shadow-lg border min-w-[500px] flex-shrink-0">
                                     <div className="p-4 border-bottom bg-secondary-light flex justify-between items-center">

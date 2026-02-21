@@ -26,13 +26,23 @@ class PasswordResetRequestView(APIView):
         if user:
             token = default_token_generator.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
-            reset_link = f"http://localhost:5173/reset-password/{uid}/{token}" # Update with actual frontend URL
+            reset_link = f"{settings.FRONTEND_URL}/reset-password/{uid}/{token}"
             
             # Send Email
             try:
+                subject = 'Password Reset Request - School Management System'
+                message = (
+                    f"Hello {user.get_full_name() or user.username},\n\n"
+                    "We received a request to reset your password for your School Management System account.\n"
+                    "Click the link below to set a new password:\n\n"
+                    f"{reset_link}\n\n"
+                    "If you did not request this change, please ignore this email.\n\n"
+                    "Best regards,\n"
+                    "System Administration"
+                )
                 send_mail(
-                    'Password Reset Request',
-                    f'Click the link to reset your password: {reset_link}',
+                    subject,
+                    message,
                     settings.DEFAULT_FROM_EMAIL,
                     [email],
                     fail_silently=False,

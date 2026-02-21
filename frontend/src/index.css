@@ -189,6 +189,10 @@ p {
   touch-action: pan-x !important;
 }
 
+.flex-nowrap {
+  flex-wrap: nowrap !important;
+}
+
 .justify-center {
   justify-content: center;
 }
