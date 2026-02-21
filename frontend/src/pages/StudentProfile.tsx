@@ -864,302 +864,303 @@ const StudentProfile = () => {
                                     </div>
                                 </div>
                             </div>
+                        </div>
                     )}
 
-                            {activeTab === 'ACTIVITIES' && (
-                                <div className="space-y-6">
-                                    <div className="flex justify-between items-center px-2">
-                                        <h3 className="mb-0 text-xs font-black uppercase tracking-widest text-secondary">Extra-Curricular Participation</h3>
-                                        <Button variant="primary" size="sm" className="font-black shadow-lg" onClick={() => {
-                                            setActivityId(null);
-                                            setActivityForm({ name: '', role: '', year: new Date().getFullYear(), activity_type: 'Club' });
-                                            setIsActivityModalOpen(true);
-                                        }} icon={<Plus size={14} />}>
-                                            JOIN CLUB/SPORT
-                                        </Button>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-6">
-                                        {activities.length === 0 ? <p className="text-secondary italic text-xs uppercase font-bold text-center py-8 col-span-2">No extra-curricular activities recorded</p> :
-                                            activities.map((act, i) => (
-                                                <div key={i} className={`card p-6 border-left-4 border-primary shadow-md relative`}>
-                                                    <div className="absolute top-2 right-2 flex gap-2 z-50">
-                                                        <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); handleEditActivity(act); }} icon={<Edit size={14} />} title="Edit" />
-                                                        <Button variant="ghost" size="sm" className="text-error" onClick={(e) => { e.stopPropagation(); handleDeleteActivity(act.id); }} icon={<Trash2 size={14} />} title="Delete" />
-                                                    </div>
-                                                    <div className="flex justify-between items-start mb-3">
-                                                        <h4 className="font-black text-xs uppercase text-primary mb-0">{act.name}</h4>
-                                                        <span className="text-[9px] font-black text-secondary uppercase bg-secondary-light px-2 py-0.5 rounded">{act.year}</span>
-                                                    </div>
-                                                    <p className="text-[10px] font-black text-secondary uppercase mb-2">Role: {act.role}</p>
-                                                    <div className="flex gap-2">
-                                                        <span className="badge badge-success badge-xxs px-2 py-0">ACTIVE PARTICIPANT</span>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {activeTab === 'DOCUMENTS' && (
-                                <div className="space-y-6">
-                                    <div className="flex justify-between items-center px-2">
-                                        <h3 className="mb-0 text-xs font-black uppercase tracking-widest text-secondary">Institutional Repository</h3>
-                                        <Button variant="primary" size="sm" className="font-black shadow-lg" onClick={() => setIsDocumentModalOpen(true)} icon={<FilePlus size={14} />}>
-                                            ATTACH FILE
-                                        </Button>
-                                    </div>
-                                    <div className="grid grid-cols-3 gap-6">
-                                        {documents.length === 0 ? <p className="text-secondary italic text-xs uppercase font-bold text-center py-8 col-span-3">No documents archived</p> :
-                                            documents.map((doc, i) => (
-                                                <div key={i} className="card text-center hover-bg-secondary cursor-pointer border-dashed border-2 flex flex-col items-center gap-3 relative">
-                                                    <Button variant="ghost" size="sm" className="absolute top-2 right-2 text-error z-50" onClick={(e) => { e.stopPropagation(); handleDeleteDocument(doc.id); }} icon={<Trash2 size={14} />} title="Delete" />
-                                                    <div className="w-10 h-10 rounded-full bg-secondary-light flex items-center justify-center"><FileText className="text-primary" /></div>
-                                                    <h4 className="text-[10px] font-black uppercase text-primary mb-0">{doc.doc_type || 'DOCUMENT'}</h4>
-                                                    <p className="text-[9px] text-secondary font-bold mb-0 truncate w-full">{doc.file.split('/').pop()}</p>
-                                                </div>
-                                            ))}
-                                    </div>
-                                </div>
-                            )}
-
-                        </div>
-
-                {/* Sidebar Context */}
-                    <div className="col-span-12 lg:col-span-4 space-y-8 no-print">
-                        {/* Only show these cards if NOT on the Finance tab, as we moved them to a scrollable row there */}
-                        {activeTab !== 'FINANCE' && (
-                            <>
-                                <div className="card border-top-4 border-primary">
-                                    <h4 className="text-[10px] font-black uppercase text-primary border-bottom pb-2 mb-4 tracking-widest flex items-center gap-2">
-                                        <ShieldCheck size={14} /> Administrative Control
-                                    </h4>
-                                    <div className="space-y-4">
-                                        <div className="flex justify-between items-center text-[10px] font-black uppercase text-secondary"><span>Admission Date</span> <span className="text-primary">{new Date(student.admission_date).toLocaleDateString()}</span></div>
-                                        <div className="flex justify-between items-start text-[10px] font-black uppercase text-secondary">
-                                            <span>Primary Guardian</span>
-                                            <div className="text-right">
-                                                <span className="text-primary block">{parents.find(p => p.is_primary)?.full_name || student.guardian_name}</span>
-                                                <span className="text-secondary text-[8px] block opacity-70 tracking-normal">{parents.find(p => p.is_primary)?.phone_number || student.guardian_phone}</span>
+                    {activeTab === 'ACTIVITIES' && (
+                        <div className="space-y-6">
+                            <div className="flex justify-between items-center px-2">
+                                <h3 className="mb-0 text-xs font-black uppercase tracking-widest text-secondary">Extra-Curricular Participation</h3>
+                                <Button variant="primary" size="sm" className="font-black shadow-lg" onClick={() => {
+                                    setActivityId(null);
+                                    setActivityForm({ name: '', role: '', year: new Date().getFullYear(), activity_type: 'Club' });
+                                    setIsActivityModalOpen(true);
+                                }} icon={<Plus size={14} />}>
+                                    JOIN CLUB/SPORT
+                                </Button>
+                            </div>
+                            <div className="grid grid-cols-2 gap-6">
+                                {activities.length === 0 ? <p className="text-secondary italic text-xs uppercase font-bold text-center py-8 col-span-2">No extra-curricular activities recorded</p> :
+                                    activities.map((act, i) => (
+                                        <div key={i} className={`card p-6 border-left-4 border-primary shadow-md relative`}>
+                                            <div className="absolute top-2 right-2 flex gap-2 z-50">
+                                                <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); handleEditActivity(act); }} icon={<Edit size={14} />} title="Edit" />
+                                                <Button variant="ghost" size="sm" className="text-error" onClick={(e) => { e.stopPropagation(); handleDeleteActivity(act.id); }} icon={<Trash2 size={14} />} title="Delete" />
+                                            </div>
+                                            <div className="flex justify-between items-start mb-3">
+                                                <h4 className="font-black text-xs uppercase text-primary mb-0">{act.name}</h4>
+                                                <span className="text-[9px] font-black text-secondary uppercase bg-secondary-light px-2 py-0.5 rounded">{act.year}</span>
+                                            </div>
+                                            <p className="text-[10px] font-black text-secondary uppercase mb-2">Role: {act.role}</p>
+                                            <div className="flex gap-2">
+                                                <span className="badge badge-success badge-xxs px-2 py-0">ACTIVE PARTICIPANT</span>
                                             </div>
                                         </div>
-                                        <div className="flex justify-between items-center text-[10px] font-black uppercase text-secondary"><span>House Unit</span> <span className="text-primary">{student.residence_details || student.hostel_name || 'DAY SCHOLAR'}</span></div>
-                                        <div className="flex justify-between items-center text-[10px] font-black uppercase text-secondary"><span>Transport</span> <span className="text-primary">{student.transport_details || 'NONE'}</span></div>
-                                    </div>
-                                    <div className="mt-8 space-y-2">
-                                        <Button variant="outline" size="sm" className="w-full uppercase font-black py-2 tracking-widest" onClick={() => setIsTransferModalOpen(true)}>Transfer Unit</Button>
-                                        <Button variant="ghost" size="sm" className="text-error w-full uppercase font-black py-2 tracking-widest" onClick={handleSuspend}>Restrict / Suspend</Button>
-                                        <Button variant="danger" size="sm" className="w-full uppercase font-black py-2 tracking-widest mt-2" onClick={handleForceDelete}>PERMANENTLY DELETE</Button>
-                                    </div>
-                                </div>
+                                    ))}
+                            </div>
+                        </div>
+                    )}
 
-                                <div className="card bg-primary text-white">
-                                    <MessageSquare className="mb-4 opacity-50" size={32} />
-                                    <h4 className="text-[10px] font-black uppercase mb-1 tracking-widest">Rapid Communication</h4>
-                                    <p className="text-[10px] font-bold opacity-80 leading-relaxed mb-4">Send instant alerts or messages to guardian/parent.</p>
+                    {activeTab === 'DOCUMENTS' && (
+                        <div className="space-y-6">
+                            <div className="flex justify-between items-center px-2">
+                                <h3 className="mb-0 text-xs font-black uppercase tracking-widest text-secondary">Institutional Repository</h3>
+                                <Button variant="primary" size="sm" className="font-black shadow-lg" onClick={() => setIsDocumentModalOpen(true)} icon={<FilePlus size={14} />}>
+                                    ATTACH FILE
+                                </Button>
+                            </div>
+                            <div className="grid grid-cols-3 gap-6">
+                                {documents.length === 0 ? <p className="text-secondary italic text-xs uppercase font-bold text-center py-8 col-span-3">No documents archived</p> :
+                                    documents.map((doc, i) => (
+                                        <div key={i} className="card text-center hover-bg-secondary cursor-pointer border-dashed border-2 flex flex-col items-center gap-3 relative">
+                                            <Button variant="ghost" size="sm" className="absolute top-2 right-2 text-error z-50" onClick={(e) => { e.stopPropagation(); handleDeleteDocument(doc.id); }} icon={<Trash2 size={14} />} title="Delete" />
+                                            <div className="w-10 h-10 rounded-full bg-secondary-light flex items-center justify-center"><FileText className="text-primary" /></div>
+                                            <h4 className="text-[10px] font-black uppercase text-primary mb-0">{doc.doc_type || 'DOCUMENT'}</h4>
+                                            <p className="text-[9px] text-secondary font-bold mb-0 truncate w-full">{doc.file.split('/').pop()}</p>
+                                        </div>
+                                    ))}
+                            </div>
+                        </div>
+                    )}
 
-                                    <div className="grid grid-cols-3 gap-2 mb-4">
-                                        <button onClick={handleWhatsApp} className="flex flex-col items-center justify-center p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-all gap-1" title="WhatsApp">
-                                            <MessageCircle size={18} />
-                                            <span className="text-[8px] font-black uppercase">WA</span>
-                                        </button>
-                                        <button onClick={handleEmail} className="flex flex-col items-center justify-center p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-all gap-1" title="Email">
-                                            <Mail size={18} />
-                                            <span className="text-[8px] font-black uppercase">Email</span>
-                                        </button>
-                                        <button onClick={handleDirectSMS} className="flex flex-col items-center justify-center p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-all gap-1" title="SMS">
-                                            <Send size={18} />
-                                            <span className="text-[8px] font-black uppercase">SMS</span>
-                                        </button>
-                                    </div>
-
-                                    <button className="btn btn-xs bg-white text-primary w-full uppercase font-black shadow-lg" onClick={handleMessage}>Open Messenger</button>
-                                </div>
-                            </>
-                        )}
-                    </div>
                 </div>
 
-                {/* Modals ... (keep existing) */}
-                <Modal isOpen={isDisciplineModalOpen} onClose={() => setIsDisciplineModalOpen(false)} title="New Discipline Intervention" size="md">
-                    <form onSubmit={handleDisciplineSubmit} className="space-y-4 form-container-md mx-auto">
-                        <div className="grid grid-cols-2 gap-md">
-                            <div className="form-group"><label className="label text-[10px] font-black uppercase">Incident Date</label><input type="date" className="input" value={disciplineForm.incident_date} onChange={e => setDisciplineForm({ ...disciplineForm, incident_date: e.target.value })} required /></div>
-                            <div className="form-group"><label className="label text-[10px] font-black uppercase">Offence Category</label><input type="text" className="input" placeholder="e.g. Lateness, Theft" value={disciplineForm.offence_category} onChange={e => setDisciplineForm({ ...disciplineForm, offence_category: e.target.value })} required /></div>
-                        </div>
-                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Detailed Description</label><textarea className="input" rows={3} value={disciplineForm.description} onChange={e => setDisciplineForm({ ...disciplineForm, description: e.target.value })} required></textarea></div>
-                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Action Taken</label><input type="text" className="input" placeholder="e.g. Suspension, Warning" value={disciplineForm.action_taken} onChange={e => setDisciplineForm({ ...disciplineForm, action_taken: e.target.value })} required /></div>
-                        <div className="modal-footer pt-4">
-                            <Button type="submit" variant="danger" className="w-full font-black uppercase shadow-lg" loading={isSubmitting} loadingText="Saving...">
-                                Submit Institutional Record
-                            </Button>
-                        </div>
-                    </form>
-                </Modal>
-
-                {/* Transfer Modal */}
-                <Modal isOpen={isTransferModalOpen} onClose={() => setIsTransferModalOpen(false)} title="Transfer Student Unit" size="sm">
-                    <form onSubmit={handleTransfer} className="space-y-4 form-container-sm mx-auto">
-                        <p className="text-secondary text-xs">Select the new class/unit for this student.</p>
-                        <select className="select" value={transferClassId} onChange={e => setTransferClassId(e.target.value)} required>
-                            <option value="">Select New Class</option>
-                            {classes.map(c => <option key={c.id} value={c.id}>{c.name} {c.stream}</option>)}
-                        </select>
-                        <div className="modal-footer pt-4">
-                            <Button type="button" variant="outline" onClick={() => setIsTransferModalOpen(false)}>Cancel</Button>
-                            <Button type="submit" variant="primary" loading={isSubmitting} loadingText="Processing...">
-                                Process Transfer
-                            </Button>
-                        </div>
-                    </form>
-                </Modal>
-
-                <Modal isOpen={isHealthModalOpen} onClose={() => setIsHealthModalOpen(false)} title="Update Medical Integrity" size="md">
-                    <form onSubmit={handleHealthSubmit} className="space-y-4 form-container-md mx-auto">
-                        <div className="grid grid-cols-2 gap-md">
-                            <div className="form-group"><label className="label text-[10px] font-black uppercase">Blood Group</label><input type="text" className="input" value={healthForm.blood_group} onChange={e => setHealthForm({ ...healthForm, blood_group: e.target.value })} /></div>
-                            <div className="form-group"><label className="label text-[10px] font-black uppercase">Known Allergies</label><input type="text" className="input" value={healthForm.allergies} onChange={e => setHealthForm({ ...healthForm, allergies: e.target.value })} /></div>
-                        </div>
-                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Chronic Conditions</label><textarea className="input" rows={2} value={healthForm.chronic_conditions} onChange={e => setHealthForm({ ...healthForm, chronic_conditions: e.target.value })}></textarea></div>
-                        <div className="grid grid-cols-2 gap-md border-top pt-4">
-                            <div className="form-group"><label className="label text-[10px] font-black uppercase">Emergency Contact</label><input type="text" className="input" value={healthForm.emergency_contact_name} onChange={e => setHealthForm({ ...healthForm, emergency_contact_name: e.target.value })} required /></div>
-                            <div className="form-group"><label className="label text-[10px] font-black uppercase">Emergency Phone</label><input type="tel" className="input" value={healthForm.emergency_contact_phone} onChange={e => setHealthForm({ ...healthForm, emergency_contact_phone: e.target.value })} required /></div>
-                        </div>
-                        <div className="modal-footer pt-4 flex justify-between gap-4">
-                            {healthId && <Button type="button" variant="outline" className="text-error font-black uppercase" onClick={handleDeleteHealth}>Delete Record</Button>}
-                            <Button type="submit" variant="secondary" className="font-black uppercase shadow-lg flex-grow" loading={isSubmitting} loadingText="Syncing...">
-                                Sync Medical Database
-                            </Button>
-                        </div>
-                    </form>
-                </Modal>
-
-                <Modal isOpen={isActivityModalOpen} onClose={() => setIsActivityModalOpen(false)} title="Register Extra-Curricular Activity" size="md">
-                    <form onSubmit={handleActivitySubmit} className="space-y-4 form-container-md mx-auto">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="form-group"><label className="label text-[10px] font-black uppercase">Activity Name</label><input type="text" className="input" placeholder="e.g. Debate Club" value={activityForm.name} onChange={e => setActivityForm({ ...activityForm, name: e.target.value })} required /></div>
-                            <div className="form-group"><label className="label text-[10px] font-black uppercase">Type</label>
-                                <select className="select" value={activityForm.activity_type} onChange={e => setActivityForm({ ...activityForm, activity_type: e.target.value })}>
-                                    <option>Club</option><option>Sport</option><option>Arts</option>
-                                </select>
+                {/* Sidebar Context */}
+                <div className="col-span-12 lg:col-span-4 space-y-8 no-print">
+                    {/* Only show these cards if NOT on the Finance tab, as we moved them to a scrollable row there */}
+                    {activeTab !== 'FINANCE' && (
+                        <>
+                            <div className="card border-top-4 border-primary">
+                                <h4 className="text-[10px] font-black uppercase text-primary border-bottom pb-2 mb-4 tracking-widest flex items-center gap-2">
+                                    <ShieldCheck size={14} /> Administrative Control
+                                </h4>
+                                <div className="space-y-4">
+                                    <div className="flex justify-between items-center text-[10px] font-black uppercase text-secondary"><span>Admission Date</span> <span className="text-primary">{new Date(student.admission_date).toLocaleDateString()}</span></div>
+                                    <div className="flex justify-between items-start text-[10px] font-black uppercase text-secondary">
+                                        <span>Primary Guardian</span>
+                                        <div className="text-right">
+                                            <span className="text-primary block">{parents.find(p => p.is_primary)?.full_name || student.guardian_name}</span>
+                                            <span className="text-secondary text-[8px] block opacity-70 tracking-normal">{parents.find(p => p.is_primary)?.phone_number || student.guardian_phone}</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex justify-between items-center text-[10px] font-black uppercase text-secondary"><span>House Unit</span> <span className="text-primary">{student.residence_details || student.hostel_name || 'DAY SCHOLAR'}</span></div>
+                                    <div className="flex justify-between items-center text-[10px] font-black uppercase text-secondary"><span>Transport</span> <span className="text-primary">{student.transport_details || 'NONE'}</span></div>
+                                </div>
+                                <div className="mt-8 space-y-2">
+                                    <Button variant="outline" size="sm" className="w-full uppercase font-black py-2 tracking-widest" onClick={() => setIsTransferModalOpen(true)}>Transfer Unit</Button>
+                                    <Button variant="ghost" size="sm" className="text-error w-full uppercase font-black py-2 tracking-widest" onClick={handleSuspend}>Restrict / Suspend</Button>
+                                    <Button variant="danger" size="sm" className="w-full uppercase font-black py-2 tracking-widest mt-2" onClick={handleForceDelete}>PERMANENTLY DELETE</Button>
+                                </div>
                             </div>
-                        </div>
-                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Role / Position</label><input type="text" className="input" placeholder="e.g. Member, Captain" value={activityForm.role} onChange={e => setActivityForm({ ...activityForm, role: e.target.value })} /></div>
-                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Year</label><input type="number" className="input" value={activityForm.year} onChange={e => setActivityForm({ ...activityForm, year: parseInt(e.target.value) })} /></div>
-                        <div className="modal-footer pt-4">
-                            <Button type="submit" variant="primary" className="w-full font-black uppercase" loading={isSubmitting} loadingText="Registering...">
-                                Register Participation
-                            </Button>
-                        </div>
-                    </form>
-                </Modal>
 
-                <Modal isOpen={isDocumentModalOpen} onClose={() => setIsDocumentModalOpen(false)} title="Upload Institutional Document" size="sm">
-                    <form onSubmit={handleDocumentSubmit} className="space-y-4 form-container-sm mx-auto">
-                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Document Type</label>
-                            <select className="select" value={documentForm.doc_type} onChange={e => setDocumentForm({ ...documentForm, doc_type: e.target.value })}>
-                                <option value="BIRTH_CERT">Birth Certificate</option>
-                                <option value="REPORT_CARD">Report Card</option>
-                                <option value="TRANSFER_LETTER">Transfer Letter</option>
-                                <option value="OTHER">Other</option>
-                            </select>
-                        </div>
-                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Select File</label><input type="file" className="file-input w-full" onChange={e => setDocumentForm({ ...documentForm, file: e.target.files?.[0] || null })} required /></div>
-                        <div className="modal-footer pt-4">
-                            <Button type="submit" variant="primary" className="w-full font-black uppercase" loading={isSubmitting} loadingText="Uploading...">
-                                Upload to Archive
-                            </Button>
-                        </div>
-                    </form>
-                </Modal>
+                            <div className="card bg-primary text-white">
+                                <MessageSquare className="mb-4 opacity-50" size={32} />
+                                <h4 className="text-[10px] font-black uppercase mb-1 tracking-widest">Rapid Communication</h4>
+                                <p className="text-[10px] font-bold opacity-80 leading-relaxed mb-4">Send instant alerts or messages to guardian/parent.</p>
 
+                                <div className="grid grid-cols-3 gap-2 mb-4">
+                                    <button onClick={handleWhatsApp} className="flex flex-col items-center justify-center p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-all gap-1" title="WhatsApp">
+                                        <MessageCircle size={18} />
+                                        <span className="text-[8px] font-black uppercase">WA</span>
+                                    </button>
+                                    <button onClick={handleEmail} className="flex flex-col items-center justify-center p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-all gap-1" title="Email">
+                                        <Mail size={18} />
+                                        <span className="text-[8px] font-black uppercase">Email</span>
+                                    </button>
+                                    <button onClick={handleDirectSMS} className="flex flex-col items-center justify-center p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-all gap-1" title="SMS">
+                                        <Send size={18} />
+                                        <span className="text-[8px] font-black uppercase">SMS</span>
+                                    </button>
+                                </div>
 
-                <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title="Edit Student Profile" size="md">
-                    <form onSubmit={handleEditSubmit} className="space-y-4 form-container-md mx-auto">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="form-group"><label className="label text-[10px] font-black uppercase">Full Name</label><input type="text" className="input" value={student.full_name} onChange={e => setStudent({ ...student, full_name: e.target.value })} required /></div>
-                            <div className="form-group"><label className="label text-[10px] font-black uppercase">Admission Number</label><input type="text" className="input" value={student.admission_number} onChange={e => setStudent({ ...student, admission_number: e.target.value })} required /></div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="form-group"><label className="label text-[10px] font-black uppercase">Class</label>
-                                <select className="select" value={student.current_class} onChange={e => setStudent({ ...student, current_class: e.target.value })}>
-                                    <option value="">Select Class</option>
-                                    {classes.map(c => <option key={c.id} value={c.id}>{c.name} {c.stream}</option>)}
-                                </select>
+                                <button className="btn btn-xs bg-white text-primary w-full uppercase font-black shadow-lg" onClick={handleMessage}>Open Messenger</button>
                             </div>
-                            <div className="form-group"><label className="label text-[10px] font-black uppercase">Category</label>
-                                <select className="select" value={student.category} onChange={e => setStudent({ ...student, category: e.target.value })}>
-                                    <option value="DAY">Day Scholar</option>
-                                    <option value="BOARDING">Boarding</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Status</label>
-                            <select className="select" value={student.status} onChange={e => setStudent({ ...student, status: e.target.value })}>
-                                <option value="ACTIVE">Active</option>
-                                <option value="SUSPENDED">Suspended</option>
-                                <option value="WITHDRAWN">Withdrawn</option>
-                                <option value="ALUMNI">Alumni</option>
-                                <option value="TRANSFERRED">Transferred</option>
-                            </select>
-                        </div>
-                        <div className="modal-footer pt-4">
-                            <Button type="submit" variant="primary" className="w-full font-black uppercase" loading={isSubmitting} loadingText="Updating...">
-                                Update Profile
-                            </Button>
-                        </div>
-                    </form>
-                </Modal>
-
-
-                <Modal isOpen={isClearanceModalOpen} onClose={() => setIsClearanceModalOpen(false)} title="Print Student Clearance" size="md">
-                    <div className="space-y-4">
-                        <p className="text-secondary text-sm">Download or print the official clearance document for <strong>{student.full_name}</strong>.</p>
-                        <div className="p-4 bg-secondary-light rounded-lg border border-dashed border-primary/30 flex flex-col items-center gap-4">
-                            <FileText size={48} className="text-primary opacity-50" />
-                            <span className="text-[10px] font-black uppercase tracking-widest text-primary">Official Transcript & Clearance</span>
-                        </div>
-                        <div className="modal-footer pt-4 flex gap-4">
-                            <Button variant="outline" className="flex-grow font-black uppercase" onClick={() => setIsClearanceModalOpen(false)}>Close</Button>
-                            <Button variant="primary" className="flex-grow font-black uppercase shadow-lg" onClick={handlePrintClearance} icon={<Printer size={18} />}>
-                                GENERATE PDF / PRINT
-                            </Button>
-                        </div>
-                    </div>
-                </Modal>
-
-                {/* Clearance Form Template */}
-                <div id="clearance-form" className="hidden">
-                    <div className="report-container clearance-form">
-                        <div className="report-header">
-                            <h1>Student Clearance Form</h1>
-                            <p>School Administration Details</p>
-                        </div>
-                        <p>This is to certify that <strong>{student.full_name}</strong> (ADM: <strong>{student.admission_number}</strong>) has successfully cleared with the following departments:</p>
-
-                        <table className="report-table">
-                            <thead>
-                                <tr>
-                                    <th>Department</th>
-                                    <th>Status</th>
-                                    <th>Signature/Stamp</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr><td>Academics (Books/Exams)</td><td>{unreturnedBooks > 0 ? `PENDING (${unreturnedBooks} Unreturned Books)` : 'CLEARED'}</td><td></td></tr>
-                                <tr><td>Boarding/Hostel</td><td>{student.hostel_name ? `PENDING (Allocated to ${student.hostel_name})` : 'CLEARED'}</td><td></td></tr>
-                                <tr><td>Finance/Accounts</td><td>{(student.fee_balance || 0) > 0 ? `OUTSTANDING BALANCE (KES ${student.fee_balance.toLocaleString()})` : 'CLEARED'}</td><td></td></tr>
-                            </tbody>
-                        </table>
-
-                        <div className="signature-group">
-                            <div className="signature-line">Student Signature</div>
-                            <div className="signature-line">Principal Signature</div>
-                        </div>
-                    </div>
+                        </>
+                    )}
                 </div>
-
             </div>
-            );
+
+            {/* Modals ... (keep existing) */}
+            <Modal isOpen={isDisciplineModalOpen} onClose={() => setIsDisciplineModalOpen(false)} title="New Discipline Intervention" size="md">
+                <form onSubmit={handleDisciplineSubmit} className="space-y-4 form-container-md mx-auto">
+                    <div className="grid grid-cols-2 gap-md">
+                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Incident Date</label><input type="date" className="input" value={disciplineForm.incident_date} onChange={e => setDisciplineForm({ ...disciplineForm, incident_date: e.target.value })} required /></div>
+                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Offence Category</label><input type="text" className="input" placeholder="e.g. Lateness, Theft" value={disciplineForm.offence_category} onChange={e => setDisciplineForm({ ...disciplineForm, offence_category: e.target.value })} required /></div>
+                    </div>
+                    <div className="form-group"><label className="label text-[10px] font-black uppercase">Detailed Description</label><textarea className="input" rows={3} value={disciplineForm.description} onChange={e => setDisciplineForm({ ...disciplineForm, description: e.target.value })} required></textarea></div>
+                    <div className="form-group"><label className="label text-[10px] font-black uppercase">Action Taken</label><input type="text" className="input" placeholder="e.g. Suspension, Warning" value={disciplineForm.action_taken} onChange={e => setDisciplineForm({ ...disciplineForm, action_taken: e.target.value })} required /></div>
+                    <div className="modal-footer pt-4">
+                        <Button type="submit" variant="danger" className="w-full font-black uppercase shadow-lg" loading={isSubmitting} loadingText="Saving...">
+                            Submit Institutional Record
+                        </Button>
+                    </div>
+                </form>
+            </Modal>
+
+            {/* Transfer Modal */}
+            <Modal isOpen={isTransferModalOpen} onClose={() => setIsTransferModalOpen(false)} title="Transfer Student Unit" size="sm">
+                <form onSubmit={handleTransfer} className="space-y-4 form-container-sm mx-auto">
+                    <p className="text-secondary text-xs">Select the new class/unit for this student.</p>
+                    <select className="select" value={transferClassId} onChange={e => setTransferClassId(e.target.value)} required>
+                        <option value="">Select New Class</option>
+                        {classes.map(c => <option key={c.id} value={c.id}>{c.name} {c.stream}</option>)}
+                    </select>
+                    <div className="modal-footer pt-4">
+                        <Button type="button" variant="outline" onClick={() => setIsTransferModalOpen(false)}>Cancel</Button>
+                        <Button type="submit" variant="primary" loading={isSubmitting} loadingText="Processing...">
+                            Process Transfer
+                        </Button>
+                    </div>
+                </form>
+            </Modal>
+
+            <Modal isOpen={isHealthModalOpen} onClose={() => setIsHealthModalOpen(false)} title="Update Medical Integrity" size="md">
+                <form onSubmit={handleHealthSubmit} className="space-y-4 form-container-md mx-auto">
+                    <div className="grid grid-cols-2 gap-md">
+                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Blood Group</label><input type="text" className="input" value={healthForm.blood_group} onChange={e => setHealthForm({ ...healthForm, blood_group: e.target.value })} /></div>
+                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Known Allergies</label><input type="text" className="input" value={healthForm.allergies} onChange={e => setHealthForm({ ...healthForm, allergies: e.target.value })} /></div>
+                    </div>
+                    <div className="form-group"><label className="label text-[10px] font-black uppercase">Chronic Conditions</label><textarea className="input" rows={2} value={healthForm.chronic_conditions} onChange={e => setHealthForm({ ...healthForm, chronic_conditions: e.target.value })}></textarea></div>
+                    <div className="grid grid-cols-2 gap-md border-top pt-4">
+                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Emergency Contact</label><input type="text" className="input" value={healthForm.emergency_contact_name} onChange={e => setHealthForm({ ...healthForm, emergency_contact_name: e.target.value })} required /></div>
+                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Emergency Phone</label><input type="tel" className="input" value={healthForm.emergency_contact_phone} onChange={e => setHealthForm({ ...healthForm, emergency_contact_phone: e.target.value })} required /></div>
+                    </div>
+                    <div className="modal-footer pt-4 flex justify-between gap-4">
+                        {healthId && <Button type="button" variant="outline" className="text-error font-black uppercase" onClick={handleDeleteHealth}>Delete Record</Button>}
+                        <Button type="submit" variant="secondary" className="font-black uppercase shadow-lg flex-grow" loading={isSubmitting} loadingText="Syncing...">
+                            Sync Medical Database
+                        </Button>
+                    </div>
+                </form>
+            </Modal>
+
+            <Modal isOpen={isActivityModalOpen} onClose={() => setIsActivityModalOpen(false)} title="Register Extra-Curricular Activity" size="md">
+                <form onSubmit={handleActivitySubmit} className="space-y-4 form-container-md mx-auto">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Activity Name</label><input type="text" className="input" placeholder="e.g. Debate Club" value={activityForm.name} onChange={e => setActivityForm({ ...activityForm, name: e.target.value })} required /></div>
+                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Type</label>
+                            <select className="select" value={activityForm.activity_type} onChange={e => setActivityForm({ ...activityForm, activity_type: e.target.value })}>
+                                <option>Club</option><option>Sport</option><option>Arts</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div className="form-group"><label className="label text-[10px] font-black uppercase">Role / Position</label><input type="text" className="input" placeholder="e.g. Member, Captain" value={activityForm.role} onChange={e => setActivityForm({ ...activityForm, role: e.target.value })} /></div>
+                    <div className="form-group"><label className="label text-[10px] font-black uppercase">Year</label><input type="number" className="input" value={activityForm.year} onChange={e => setActivityForm({ ...activityForm, year: parseInt(e.target.value) })} /></div>
+                    <div className="modal-footer pt-4">
+                        <Button type="submit" variant="primary" className="w-full font-black uppercase" loading={isSubmitting} loadingText="Registering...">
+                            Register Participation
+                        </Button>
+                    </div>
+                </form>
+            </Modal>
+
+            <Modal isOpen={isDocumentModalOpen} onClose={() => setIsDocumentModalOpen(false)} title="Upload Institutional Document" size="sm">
+                <form onSubmit={handleDocumentSubmit} className="space-y-4 form-container-sm mx-auto">
+                    <div className="form-group"><label className="label text-[10px] font-black uppercase">Document Type</label>
+                        <select className="select" value={documentForm.doc_type} onChange={e => setDocumentForm({ ...documentForm, doc_type: e.target.value })}>
+                            <option value="BIRTH_CERT">Birth Certificate</option>
+                            <option value="REPORT_CARD">Report Card</option>
+                            <option value="TRANSFER_LETTER">Transfer Letter</option>
+                            <option value="OTHER">Other</option>
+                        </select>
+                    </div>
+                    <div className="form-group"><label className="label text-[10px] font-black uppercase">Select File</label><input type="file" className="file-input w-full" onChange={e => setDocumentForm({ ...documentForm, file: e.target.files?.[0] || null })} required /></div>
+                    <div className="modal-footer pt-4">
+                        <Button type="submit" variant="primary" className="w-full font-black uppercase" loading={isSubmitting} loadingText="Uploading...">
+                            Upload to Archive
+                        </Button>
+                    </div>
+                </form>
+            </Modal>
+
+
+            <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title="Edit Student Profile" size="md">
+                <form onSubmit={handleEditSubmit} className="space-y-4 form-container-md mx-auto">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Full Name</label><input type="text" className="input" value={student.full_name} onChange={e => setStudent({ ...student, full_name: e.target.value })} required /></div>
+                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Admission Number</label><input type="text" className="input" value={student.admission_number} onChange={e => setStudent({ ...student, admission_number: e.target.value })} required /></div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Class</label>
+                            <select className="select" value={student.current_class} onChange={e => setStudent({ ...student, current_class: e.target.value })}>
+                                <option value="">Select Class</option>
+                                {classes.map(c => <option key={c.id} value={c.id}>{c.name} {c.stream}</option>)}
+                            </select>
+                        </div>
+                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Category</label>
+                            <select className="select" value={student.category} onChange={e => setStudent({ ...student, category: e.target.value })}>
+                                <option value="DAY">Day Scholar</option>
+                                <option value="BOARDING">Boarding</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div className="form-group"><label className="label text-[10px] font-black uppercase">Status</label>
+                        <select className="select" value={student.status} onChange={e => setStudent({ ...student, status: e.target.value })}>
+                            <option value="ACTIVE">Active</option>
+                            <option value="SUSPENDED">Suspended</option>
+                            <option value="WITHDRAWN">Withdrawn</option>
+                            <option value="ALUMNI">Alumni</option>
+                            <option value="TRANSFERRED">Transferred</option>
+                        </select>
+                    </div>
+                    <div className="modal-footer pt-4">
+                        <Button type="submit" variant="primary" className="w-full font-black uppercase" loading={isSubmitting} loadingText="Updating...">
+                            Update Profile
+                        </Button>
+                    </div>
+                </form>
+            </Modal>
+
+
+            <Modal isOpen={isClearanceModalOpen} onClose={() => setIsClearanceModalOpen(false)} title="Print Student Clearance" size="md">
+                <div className="space-y-4">
+                    <p className="text-secondary text-sm">Download or print the official clearance document for <strong>{student.full_name}</strong>.</p>
+                    <div className="p-4 bg-secondary-light rounded-lg border border-dashed border-primary/30 flex flex-col items-center gap-4">
+                        <FileText size={48} className="text-primary opacity-50" />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-primary">Official Transcript & Clearance</span>
+                    </div>
+                    <div className="modal-footer pt-4 flex gap-4">
+                        <Button variant="outline" className="flex-grow font-black uppercase" onClick={() => setIsClearanceModalOpen(false)}>Close</Button>
+                        <Button variant="primary" className="flex-grow font-black uppercase shadow-lg" onClick={handlePrintClearance} icon={<Printer size={18} />}>
+                            GENERATE PDF / PRINT
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
+
+            {/* Clearance Form Template */}
+            <div id="clearance-form" className="hidden">
+                <div className="report-container clearance-form">
+                    <div className="report-header">
+                        <h1>Student Clearance Form</h1>
+                        <p>School Administration Details</p>
+                    </div>
+                    <p>This is to certify that <strong>{student.full_name}</strong> (ADM: <strong>{student.admission_number}</strong>) has successfully cleared with the following departments:</p>
+
+                    <table className="report-table">
+                        <thead>
+                            <tr>
+                                <th>Department</th>
+                                <th>Status</th>
+                                <th>Signature/Stamp</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Academics (Books/Exams)</td><td>{unreturnedBooks > 0 ? `PENDING (${unreturnedBooks} Unreturned Books)` : 'CLEARED'}</td><td></td></tr>
+                            <tr><td>Boarding/Hostel</td><td>{student.hostel_name ? `PENDING (Allocated to ${student.hostel_name})` : 'CLEARED'}</td><td></td></tr>
+                            <tr><td>Finance/Accounts</td><td>{(student.fee_balance || 0) > 0 ? `OUTSTANDING BALANCE (KES ${student.fee_balance.toLocaleString()})` : 'CLEARED'}</td><td></td></tr>
+                        </tbody>
+                    </table>
+
+                    <div className="signature-group">
+                        <div className="signature-line">Student Signature</div>
+                        <div className="signature-line">Principal Signature</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    );
 };
 
-            export default StudentProfile;
+export default StudentProfile;
