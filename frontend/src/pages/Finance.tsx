@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { financeAPI, academicsAPI, studentsAPI, classesAPI, mpesaAPI } from '../api/api';
-import { CreditCard, FileText, TrendingUp, CheckCircle, Plus, Printer } from 'lucide-react';
+import { CreditCard, FileText, TrendingUp, CheckCircle, Plus, Printer, Bell, Send, Mail, MessageSquare } from 'lucide-react';
 import SearchableSelect from '../components/SearchableSelect';
 import Modal from '../components/Modal';
 import { useToast } from '../context/ToastContext';
@@ -61,6 +61,13 @@ const Finance = () => {
     // Invoice Filters
     const [invFilters, setInvFilters] = useState({ class_id: '', stream: '', year_id: '', term: '', status: '' });
     const [searchTerm, setSearchTerm] = useState('');
+    const [selectedInvoices, setSelectedInvoices] = useState<number[]>([]);
+    const [showReminderModal, setShowReminderModal] = useState(false);
+    const [reminderForm, setReminderForm] = useState({
+        template: 'Dear Parent, this is a reminder regarding {student_name}\'s outstanding fee balance of KES {balance}. Please settle as soon as possible.',
+        send_sms: true,
+        send_email: true
+    });
 
     const filteredPayments = React.useMemo(() => {
         const lowerSearch = searchTerm.toLowerCase();
@@ -318,6 +325,32 @@ const Finance = () => {
         }
     };
 
+    const toggleInvoiceSelection = (id: number) => {
+        setSelectedInvoices(prev =>
+            prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+        );
+    };
+
+    const handleSendReminders = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        try {
+            const res = await financeAPI.invoices.sendReminders({
+                selected_ids: selectedInvoices,
+                message_template: reminderForm.template,
+                send_sms: reminderForm.send_sms,
+                send_email: reminderForm.send_email
+            });
+            success(res.data.message);
+            setShowReminderModal(false);
+            setSelectedInvoices([]);
+        } catch (err: any) {
+            toastError(err.message || 'Failed to send reminders');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
 
     return (
@@ -341,6 +374,11 @@ const Finance = () => {
                         <Button variant="primary" icon={<FileText size={18} />} className="no-print flex-1 sm:flex-none" onClick={() => setShowInvoiceModal(true)}>
                             Invoices
                         </Button>
+                        {selectedInvoices.length > 0 && (
+                            <Button variant="secondary" icon={<Bell size={18} />} className="no-print bg-orange-600 border-orange-600 hover:bg-orange-700 text-white flex-1 sm:flex-none" onClick={() => setShowReminderModal(true)}>
+                                Remind ({selectedInvoices.length})
+                            </Button>
+                        )}
                     </div>
                 )}
             </div>
@@ -390,6 +428,21 @@ const Finance = () => {
                                     <table className="table min-w-[800px]">
                                         <thead>
                                             <tr>
+                                                <th className="w-10">
+                                                    <input
+                                                        type="checkbox"
+                                                        className="checkbox checkbox-xs"
+                                                        onChange={(e) => {
+                                                            if (e.target.checked) {
+                                                                const outstanding = invoices.filter(i => Number(i.balance) > 0).map(i => i.id);
+                                                                setSelectedInvoices(outstanding);
+                                                            } else {
+                                                                setSelectedInvoices([]);
+                                                            }
+                                                        }}
+                                                        checked={selectedInvoices.length > 0 && selectedInvoices.length === invoices.filter(i => Number(i.balance) > 0).length}
+                                                    />
+                                                </th>
                                                 <th>Reference</th>
                                                 <th>Student</th>
                                                 <th>Total</th>
@@ -400,7 +453,19 @@ const Finance = () => {
                                         </thead>
                                         <tbody>
                                             {invoices.slice(0, 5).map((inv: any) => (
-                                                <tr key={inv.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => setSelectedInvoice(inv)}>
+                                                <tr key={inv.id} className="hover:bg-gray-50 cursor-pointer" onClick={(e) => {
+                                                    if ((e.target as HTMLElement).tagName === 'INPUT') return;
+                                                    setSelectedInvoice(inv);
+                                                }}>
+                                                    <td>
+                                                        <input
+                                                            type="checkbox"
+                                                            className="checkbox checkbox-xs"
+                                                            checked={selectedInvoices.includes(inv.id)}
+                                                            onChange={() => toggleInvoiceSelection(inv.id)}
+                                                            disabled={Number(inv.balance) <= 0}
+                                                        />
+                                                    </td>
                                                     <td className="font-bold">#INV-{inv.id}</td>
                                                     <td>{inv.student_name}</td>
                                                     <td>KES {Number(inv.total_amount).toLocaleString()}</td>
@@ -489,6 +554,24 @@ const Finance = () => {
                                 <table className="table min-w-[800px]">
                                     <thead>
                                         <tr>
+                                            <th className="w-10">
+                                                <input
+                                                    type="checkbox"
+                                                    className="checkbox checkbox-xs"
+                                                    onChange={(e) => {
+                                                        const visibleOutstanding = invoices.filter((inv: any) =>
+                                                            (!searchTerm || inv.student_name.toLowerCase().includes(searchTerm.toLowerCase()) || inv.id.toString().includes(searchTerm)) &&
+                                                            Number(inv.balance) > 0
+                                                        ).map(i => i.id);
+
+                                                        if (e.target.checked) {
+                                                            setSelectedInvoices(prev => Array.from(new Set([...prev, ...visibleOutstanding])));
+                                                        } else {
+                                                            setSelectedInvoices(prev => prev.filter(id => !visibleOutstanding.includes(id)));
+                                                        }
+                                                    }}
+                                                />
+                                            </th>
                                             <th>Reference</th>
                                             <th>Student</th>
                                             <th>Total</th>
@@ -503,7 +586,19 @@ const Finance = () => {
                                             inv.student_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                                             inv.id.toString().includes(searchTerm)
                                         ).map((inv: any) => (
-                                            <tr key={inv.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => setSelectedInvoice(inv)}>
+                                            <tr key={inv.id} className="hover:bg-gray-50 cursor-pointer" onClick={(e) => {
+                                                if ((e.target as HTMLElement).tagName === 'INPUT') return;
+                                                setSelectedInvoice(inv);
+                                            }}>
+                                                <td>
+                                                    <input
+                                                        type="checkbox"
+                                                        className="checkbox checkbox-xs"
+                                                        checked={selectedInvoices.includes(inv.id)}
+                                                        onChange={() => toggleInvoiceSelection(inv.id)}
+                                                        disabled={Number(inv.balance) <= 0}
+                                                    />
+                                                </td>
                                                 <td className="font-bold">#INV-{inv.id}</td>
                                                 <td>{inv.student_name}</td>
                                                 <td>KES {Number(inv.total_amount).toLocaleString()}</td>
@@ -936,6 +1031,78 @@ const Finance = () => {
                     <div className="modal-action">
                         <Button type="button" variant="ghost" onClick={() => setShowMpesaModal(false)}>Cancel</Button>
                         <Button type="submit" variant="primary" className="bg-green-600 hover:bg-green-700 border-none" loading={isSubmitting} loadingText="Sending...">Send STK Push</Button>
+                    </div>
+                </form>
+            </Modal>
+
+            {/* Bulk Reminder Modal */}
+            <Modal isOpen={showReminderModal} onClose={() => setShowReminderModal(false)} title="Send Automated Fee Reminders">
+                <form onSubmit={handleSendReminders} className="space-y-4">
+                    <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 flex items-start gap-3">
+                        <Bell className="text-blue-600 mt-1 shrink-0" size={20} />
+                        <div>
+                            <h4 className="font-bold text-blue-900 text-sm">Target: {selectedInvoices.length} Parents</h4>
+                            <p className="text-xs text-blue-700 leading-relaxed">
+                                You are about to send automated reminders to {selectedInvoices.length} selected parents. The system will automatically fetch their contact information and insert the correct student name and balance.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="form-control">
+                        <label className="label">
+                            <span className="label-text font-bold">Message Template</span>
+                            <span className="label-text-alt text-gray-400">Use {`{student_name}`} and {`{balance}`} as placeholders</span>
+                        </label>
+                        <textarea
+                            className="textarea textarea-bordered h-32 text-sm leading-relaxed"
+                            required
+                            value={reminderForm.template}
+                            onChange={e => setReminderForm({ ...reminderForm, template: e.target.value })}
+                        />
+                        <div className="label">
+                            <span className="label-text-alt text-gray-500">Character count: {reminderForm.template.length}</span>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <label className="flex items-center gap-3 p-4 border rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
+                            <input
+                                type="checkbox"
+                                className="checkbox checkbox-primary"
+                                checked={reminderForm.send_sms}
+                                onChange={e => setReminderForm({ ...reminderForm, send_sms: e.target.checked })}
+                            />
+                            <div className="flex items-center gap-2">
+                                <MessageSquare size={18} className="text-gray-400" />
+                                <span className="text-sm font-bold">Send SMS</span>
+                            </div>
+                        </label>
+                        <label className="flex items-center gap-3 p-4 border rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
+                            <input
+                                type="checkbox"
+                                className="checkbox checkbox-primary"
+                                checked={reminderForm.send_email}
+                                onChange={e => setReminderForm({ ...reminderForm, send_email: e.target.checked })}
+                            />
+                            <div className="flex items-center gap-2">
+                                <Mail size={18} className="text-gray-400" />
+                                <span className="text-sm font-bold">Send Email</span>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div className="modal-action">
+                        <Button type="button" variant="ghost" onClick={() => setShowReminderModal(false)}>Cancel</Button>
+                        <Button
+                            type="submit"
+                            variant="primary"
+                            className="bg-orange-600 hover:bg-orange-700 border-none px-8"
+                            loading={isSubmitting}
+                            loadingText="Sending Batch..."
+                            icon={<Send size={16} />}
+                        >
+                            Send Reminders Now
+                        </Button>
                     </div>
                 </form>
             </Modal>

@@ -9,6 +9,7 @@ from .serializers import (
 )
 from students.models import Student
 from django.db import transaction
+from communication.utils import send_sms, send_email
 
 class FeeStructureViewSet(viewsets.ModelViewSet):
     queryset = FeeStructure.objects.select_related('academic_year', 'class_level').all()
@@ -138,6 +139,73 @@ class InvoiceViewSet(viewsets.ModelViewSet):
                 updated_count += 1
                 
         return Response({'message': f'Synchronized {updated_count} invoices successfully.'})
+
+    @action(detail=False, methods=['post'])
+    def send_reminders(self, request):
+        """
+        Sends fee reminders via SMS and Email to selected students.
+        """
+        selected_ids = request.data.get('selected_ids', [])
+        message_template = request.data.get('message_template', '')
+        send_sms_flag = request.data.get('send_sms', True)
+        send_email_flag = request.data.get('send_email', True)
+
+        if not selected_ids:
+            return Response({'error': 'No students selected'}, status=400)
+
+        invoices = Invoice.objects.filter(id__in=selected_ids).select_related('student')
+        success_count = 0
+        fail_count = 0
+        results = []
+
+        for inv in invoices:
+            student = inv.student
+            # 1. Resolve Contact Info
+            phone = student.guardian_phone
+            email = None
+            
+            # Check Parent model if primary exists
+            primary_parent = student.parents.first() # Simplification: take first parent as primary
+            if primary_parent:
+                phone = primary_parent.phone or phone
+                email = primary_parent.email
+            
+            fullname = student.full_name
+            balance = inv.balance
+            
+            # 2. Prepare Message
+            # Simple placeholder replacement
+            msg = message_template.replace('{student_name}', fullname).replace('{balance}', str(balance))
+            if not msg:
+                msg = f"Dear Parent, this is a reminder regarding {fullname}'s outstanding fee balance of KES {balance}. Please settle as soon as possible."
+
+            # 3. Send SMS
+            sms_status = "Skipped"
+            if send_sms_flag and phone:
+                ok, res = send_sms(phone, msg)
+                sms_status = "Sent" if ok else f"Failed: {res}"
+            
+            # 4. Send Email
+            email_status = "Skipped"
+            if send_email_flag and email:
+                ok, res = send_email(email, f"Fee Reminder: {fullname}", msg)
+                email_status = "Sent" if ok else f"Failed: {res}"
+
+            if sms_status == "Sent" or email_status == "Sent":
+                success_count += 1
+            else:
+                fail_count += 1
+            
+            results.append({
+                'student': fullname,
+                'sms': sms_status,
+                'email': email_status
+            })
+
+        return Response({
+            'message': f'Completed sending reminders. Success: {success_count}, Failed: {fail_count}',
+            'results': results
+        })
 
 class PaymentViewSet(viewsets.ModelViewSet):
     queryset = Payment.objects.select_related(

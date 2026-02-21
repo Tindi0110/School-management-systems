@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import {
-    User, BookOpen, CreditCard, ShieldAlert, Heart, FileText,
+User, BookOpen, CreditCard, ShieldAlert, Heart, FileText,
     ArrowLeft, Printer, Edit, Phone, TrendingUp, AlertTriangle,
-    Plus, MessageSquare, FilePlus, Users, Trash2, History as HistoryIcon, ShieldCheck
+    Plus, MessageSquare, FilePlus, Users, Trash2, History as HistoryIcon, ShieldCheck,
+    Mail, MessageCircle, Send
 } from 'lucide-react';
 import { studentsAPI, academicsAPI, financeAPI, libraryAPI } from '../api/api';
 import Modal from '../components/Modal';
@@ -422,6 +422,23 @@ const StudentProfile = () => {
         }
     };
 
+    const handleWhatsApp = () => {
+        const phone = student.guardian_phone || '';
+        const message = encodeURIComponent(`Hello ${student.guardian_name || 'Guardian'}, this is regarding ${student.full_name} (ADM: ${student.admission_number}). `);
+        window.open(`https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${message}`, '_blank');
+    };
+
+    const handleEmail = () => {
+        const email = student.guardian_email || '';
+        const subject = encodeURIComponent(`Regarding ${student.full_name} - ${student.admission_number}`);
+        window.location.href = `mailto:${email}?subject=${subject}`;
+    };
+
+    const handleDirectSMS = () => {
+        const phone = student.guardian_phone || '';
+        window.location.href = `sms:${phone}`;
+    };
+
     const handleMessage = async () => {
         toast.info('Direct SMS messaging feature is being integrated with the gateway. Please use the Messenger tab for now.');
     };
@@ -742,46 +759,99 @@ const StudentProfile = () => {
                     )}
 
                     {activeTab === 'FINANCE' && (
-                        <div className="card p-0 overflow-hidden shadow-lg border">
-                            <div className="p-4 border-bottom bg-secondary-light flex justify-between items-center">
-                                <h3 className="mb-0 text-xs font-black uppercase tracking-widest">Accounting Statement</h3>
-                                <div className="flex gap-2">
-                                    <div className="text-right mr-4">
-                                        <span className="text-[9px] font-black text-secondary uppercase block">Total Balance</span>
-                                        <span className={`text-xs font-black ${Number(student.fee_balance || 0) === 0 ? 'text-success' : Number(student.fee_balance || 0) < 0 ? 'text-info' : 'text-error'}`}>KES {(student.fee_balance || 0).toLocaleString()}</span>
+                        <div className="space-y-6">
+                            <div className="flex flex-row overflow-x-auto pb-4 gap-6 scrollbar-hide no-print">
+                                {/* Accounting Statement Summary Card */}
+                                <div className="card p-0 overflow-hidden shadow-lg border min-w-[500px] flex-shrink-0">
+                                    <div className="p-4 border-bottom bg-secondary-light flex justify-between items-center">
+                                        <h3 className="mb-0 text-xs font-black uppercase tracking-widest">Accounting Statement</h3>
+                                        <div className="flex gap-2">
+                                            <div className="text-right mr-4">
+                                                <span className="text-[9px] font-black text-secondary uppercase block">Total Balance</span>
+                                                <span className={`text-xs font-black ${Number(student.fee_balance || 0) === 0 ? 'text-success' : Number(student.fee_balance || 0) < 0 ? 'text-info' : 'text-error'}`}>KES {(student.fee_balance || 0).toLocaleString()}</span>
+                                            </div>
+                                            <Button variant="outline" size="sm" className="font-black py-1" onClick={() => window.print()}>GENERATE REPORT</Button>
+                                        </div>
                                     </div>
-                                    <Button variant="outline" size="sm" className="font-black py-1" onClick={() => window.print()}>GENERATE REPORT</Button>
-                                </div>
-                            </div>
-                            <div className="table-container">
-                                <table className="table">
-                                    <thead>
-                                        <tr>
-                                            <th>Date</th>
-                                            <th>Description</th>
-                                            <th>Reference</th>
-                                            <th className="text-right">Debit</th>
-                                            <th className="text-right">Credit</th>
-                                            <th className="text-right">Balance</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {statement.length === 0 ? (
-                                            <tr><td colSpan={6} className="text-center py-8 text-[10px] font-black text-secondary uppercase">No historical transactions detected</td></tr>
-                                        ) : (
-                                            statement.map((item, i) => (
-                                                <tr key={i} className="hover-bg-secondary">
-                                                    <td className="text-[10px] font-bold whitespace-nowrap">{new Date(item.date).toLocaleDateString()}</td>
-                                                    <td className="text-[10px] font-bold uppercase text-secondary truncate max-w-[200px]">{item.description}</td>
-                                                    <td className="text-[10px] font-black text-primary">{item.reference}</td>
-                                                    <td className="text-[10px] font-black text-error text-right">{item.debit > 0 ? `KES ${item.debit.toLocaleString()}` : '-'}</td>
-                                                    <td className="text-[10px] font-black text-success text-right">{item.credit > 0 ? `KES ${item.credit.toLocaleString()}` : '-'}</td>
-                                                    <td className={`text-[10px] font-black text-right ${item.balance === 0 ? 'text-success' : item.balance < 0 ? 'text-info' : 'text-error'}`}>KES {item.balance.toLocaleString()}</td>
+                                    <div className="table-container max-h-[400px] overflow-y-auto">
+                                        <table className="table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Date</th>
+                                                    <th>Description</th>
+                                                    <th>Reference</th>
+                                                    <th className="text-right">Debit</th>
+                                                    <th className="text-right">Credit</th>
+                                                    <th className="text-right">Balance</th>
                                                 </tr>
-                                            ))
-                                        )}
-                                    </tbody>
-                                </table>
+                                            </thead>
+                                            <tbody>
+                                                {statement.length === 0 ? (
+                                                    <tr><td colSpan={6} className="text-center py-8 text-[10px] font-black text-secondary uppercase">No historical transactions detected</td></tr>
+                                                ) : (
+                                                    statement.map((item, i) => (
+                                                        <tr key={i} className="hover-bg-secondary">
+                                                            <td className="text-[10px] font-bold whitespace-nowrap">{new Date(item.date).toLocaleDateString()}</td>
+                                                            <td className="text-[10px] font-bold uppercase text-secondary truncate max-w-[200px]">{item.description}</td>
+                                                            <td className="text-[10px] font-black text-primary">{item.reference}</td>
+                                                            <td className="text-[10px] font-black text-error text-right">{item.debit > 0 ? `KES ${item.debit.toLocaleString()}` : '-'}</td>
+                                                            <td className="text-[10px] font-black text-success text-right">{item.credit > 0 ? `KES ${item.credit.toLocaleString()}` : '-'}</td>
+                                                            <td className={`text-[10px] font-black text-right ${item.balance === 0 ? 'text-success' : item.balance < 0 ? 'text-info' : 'text-error'}`}>KES {item.balance.toLocaleString()}</td>
+                                                        </tr>
+                                                    ))
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                {/* Administrative Control Copy for Financials Tab */}
+                                <div className="card p-6 shadow-xl border-top-4 border-primary min-w-[320px] flex-shrink-0">
+                                    <h4 className="text-[10px] font-black uppercase text-primary border-bottom pb-2 mb-4 tracking-widest flex items-center gap-2">
+                                        <ShieldCheck size={14} /> Administrative Control
+                                    </h4>
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between items-center text-[10px] font-black uppercase text-secondary"><span>Admission Date</span> <span className="text-primary">{new Date(student.admission_date).toLocaleDateString()}</span></div>
+                                        <div className="flex justify-between items-start text-[10px] font-black uppercase text-secondary">
+                                            <span>Primary Guardian</span>
+                                            <div className="text-right">
+                                                <span className="text-primary block">{parents.find(p => p.is_primary)?.full_name || student.guardian_name}</span>
+                                                <span className="text-secondary text-[8px] block opacity-70 tracking-normal">{parents.find(p => p.is_primary)?.phone_number || student.guardian_phone}</span>
+                                            </div>
+                                        </div>
+                                        <div className="flex justify-between items-center text-[10px] font-black uppercase text-secondary"><span>House Unit</span> <span className="text-primary">{student.residence_details || student.hostel_name || 'DAY SCHOLAR'}</span></div>
+                                        <div className="flex justify-between items-center text-[10px] font-black uppercase text-secondary"><span>Transport</span> <span className="text-primary">{student.transport_details || 'NONE'}</span></div>
+                                    </div>
+                                    <div className="mt-8 space-y-2">
+                                        <Button variant="outline" size="sm" className="w-full uppercase font-black py-2 tracking-widest" onClick={() => setIsTransferModalOpen(true)}>Transfer Unit</Button>
+                                        <Button variant="ghost" size="sm" className="text-error w-full uppercase font-black py-2 tracking-widest" onClick={handleSuspend}>Restrict / Suspend</Button>
+                                        <Button variant="danger" size="sm" className="w-full uppercase font-black py-2 tracking-widest mt-2" onClick={handleForceDelete}>PERMANENTLY DELETE</Button>
+                                    </div>
+                                </div>
+
+                                {/* Rapid Communication Copy for Financials Tab */}
+                                <div className="card p-6 shadow-xl bg-primary text-white min-w-[320px] flex-shrink-0">
+                                    <MessageSquare className="mb-4 opacity-50" size={32} />
+                                    <h4 className="text-[10px] font-black uppercase mb-1 tracking-widest">Rapid Communication</h4>
+                                    <p className="text-[10px] font-bold opacity-80 leading-relaxed mb-4">Instant contact regarding behavior or financial status.</p>
+
+                                    <div className="grid grid-cols-3 gap-2 mb-4">
+                                        <button onClick={handleWhatsApp} className="flex flex-col items-center justify-center p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-all gap-1" title="WhatsApp">
+                                            <MessageCircle size={18} />
+                                            <span className="text-[8px] font-black uppercase">WA</span>
+                                        </button>
+                                        <button onClick={handleEmail} className="flex flex-col items-center justify-center p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-all gap-1" title="Email">
+                                            <Mail size={18} />
+                                            <span className="text-[8px] font-black uppercase">Email</span>
+                                        </button>
+                                        <button onClick={handleDirectSMS} className="flex flex-col items-center justify-center p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-all gap-1" title="SMS">
+                                            <Send size={18} />
+                                            <span className="text-[8px] font-black uppercase">SMS</span>
+                                        </button>
+                                    </div>
+
+                                    <button className="btn btn-xs bg-white text-primary w-full uppercase font-black shadow-lg" onClick={handleMessage}>Open Messenger</button>
+                                </div>
                             </div>
                         </div>
                     )}
@@ -845,36 +915,57 @@ const StudentProfile = () => {
                 </div>
 
                 {/* Sidebar Context */}
-                <div className="col-span-12 lg:col-span-4 space-y-8">
-                    <div className="card p-6 shadow-xl border-top-4 border-primary">
-                        <h4 className="text-[10px] font-black uppercase text-primary border-bottom pb-2 mb-4 tracking-widest flex items-center gap-2">
-                            <ShieldCheck size={14} /> Administrative Control
-                        </h4>
-                        <div className="space-y-4">
-                            <div className="flex justify-between items-center text-[10px] font-black uppercase text-secondary"><span>Admission Date</span> <span className="text-primary">{new Date(student.admission_date).toLocaleDateString()}</span></div>
-                            <div className="flex justify-between items-start text-[10px] font-black uppercase text-secondary">
-                                <span>Primary Guardian</span>
-                                <div className="text-right">
-                                    <span className="text-primary block">{parents.find(p => p.is_primary)?.full_name || student.guardian_name}</span>
-                                    <span className="text-secondary text-[8px] block opacity-70 tracking-normal">{parents.find(p => p.is_primary)?.phone_number || student.guardian_phone}</span>
+                <div className="col-span-12 lg:col-span-4 space-y-8 no-print">
+                    {/* Only show these cards if NOT on the Finance tab, as we moved them to a scrollable row there */}
+                    {activeTab !== 'FINANCE' && (
+                        <>
+                            <div className="card p-6 shadow-xl border-top-4 border-primary">
+                                <h4 className="text-[10px] font-black uppercase text-primary border-bottom pb-2 mb-4 tracking-widest flex items-center gap-2">
+                                    <ShieldCheck size={14} /> Administrative Control
+                                </h4>
+                                <div className="space-y-4">
+                                    <div className="flex justify-between items-center text-[10px] font-black uppercase text-secondary"><span>Admission Date</span> <span className="text-primary">{new Date(student.admission_date).toLocaleDateString()}</span></div>
+                                    <div className="flex justify-between items-start text-[10px] font-black uppercase text-secondary">
+                                        <span>Primary Guardian</span>
+                                        <div className="text-right">
+                                            <span className="text-primary block">{parents.find(p => p.is_primary)?.full_name || student.guardian_name}</span>
+                                            <span className="text-secondary text-[8px] block opacity-70 tracking-normal">{parents.find(p => p.is_primary)?.phone_number || student.guardian_phone}</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex justify-between items-center text-[10px] font-black uppercase text-secondary"><span>House Unit</span> <span className="text-primary">{student.residence_details || student.hostel_name || 'DAY SCHOLAR'}</span></div>
+                                    <div className="flex justify-between items-center text-[10px] font-black uppercase text-secondary"><span>Transport</span> <span className="text-primary">{student.transport_details || 'NONE'}</span></div>
+                                </div>
+                                <div className="mt-8 space-y-2">
+                                    <Button variant="outline" size="sm" className="w-full uppercase font-black py-2 tracking-widest" onClick={() => setIsTransferModalOpen(true)}>Transfer Unit</Button>
+                                    <Button variant="ghost" size="sm" className="text-error w-full uppercase font-black py-2 tracking-widest" onClick={handleSuspend}>Restrict / Suspend</Button>
+                                    <Button variant="danger" size="sm" className="w-full uppercase font-black py-2 tracking-widest mt-2" onClick={handleForceDelete}>PERMANENTLY DELETE</Button>
                                 </div>
                             </div>
-                            <div className="flex justify-between items-center text-[10px] font-black uppercase text-secondary"><span>House Unit</span> <span className="text-primary">{student.residence_details || student.hostel_name || 'DAY SCHOLAR'}</span></div>
-                            <div className="flex justify-between items-center text-[10px] font-black uppercase text-secondary"><span>Transport</span> <span className="text-primary">{student.transport_details || 'NONE'}</span></div>
-                        </div>
-                        <div className="mt-8 space-y-2">
-                            <Button variant="outline" size="sm" className="w-full uppercase font-black py-2 tracking-widest" onClick={() => setIsTransferModalOpen(true)}>Transfer Unit</Button>
-                            <Button variant="ghost" size="sm" className="text-error w-full uppercase font-black py-2 tracking-widest" onClick={handleSuspend}>Restrict / Suspend</Button>
-                            <Button variant="danger" size="sm" className="w-full uppercase font-black py-2 tracking-widest mt-2" onClick={handleForceDelete}>PERMANENTLY DELETE</Button>
-                        </div>
-                    </div>
 
-                    <div className="card p-6 shadow-xl bg-primary text-white">
-                        <MessageSquare className="mb-4 opacity-50" size={32} />
-                        <h4 className="text-[10px] font-black uppercase mb-1 tracking-widest">Rapid Communication</h4>
-                        <p className="text-[10px] font-bold opacity-80 leading-relaxed mb-4">Send instant SMS alert to guardian regarding behavior or financial status.</p>
-                        <button className="btn btn-xs bg-white text-primary w-full uppercase font-black shadow-lg" onClick={handleMessage}>Open Messenger</button>
-                    </div>
+                            <div className="card p-6 shadow-xl bg-primary text-white">
+                                <MessageSquare className="mb-4 opacity-50" size={32} />
+                                <h4 className="text-[10px] font-black uppercase mb-1 tracking-widest">Rapid Communication</h4>
+                                <p className="text-[10px] font-bold opacity-80 leading-relaxed mb-4">Send instant alerts or messages to guardian/parent.</p>
+
+                                <div className="grid grid-cols-3 gap-2 mb-4">
+                                    <button onClick={handleWhatsApp} className="flex flex-col items-center justify-center p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-all gap-1" title="WhatsApp">
+                                        <MessageCircle size={18} />
+                                        <span className="text-[8px] font-black uppercase">WA</span>
+                                    </button>
+                                    <button onClick={handleEmail} className="flex flex-col items-center justify-center p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-all gap-1" title="Email">
+                                        <Mail size={18} />
+                                        <span className="text-[8px] font-black uppercase">Email</span>
+                                    </button>
+                                    <button onClick={handleDirectSMS} className="flex flex-col items-center justify-center p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-all gap-1" title="SMS">
+                                        <Send size={18} />
+                                        <span className="text-[8px] font-black uppercase">SMS</span>
+                                    </button>
+                                </div>
+
+                                <button className="btn btn-xs bg-white text-primary w-full uppercase font-black shadow-lg" onClick={handleMessage}>Open Messenger</button>
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
 
