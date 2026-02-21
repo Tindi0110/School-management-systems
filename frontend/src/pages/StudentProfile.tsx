@@ -465,9 +465,9 @@ const StudentProfile = () => {
     // ... (keep existing modals)
 
     return (
-        <div className="fade-in pb-12">
+        <div className="fade-in pb-12 w-full max-w-full overflow-x-hidden">
             {/* Header ... (keep existing) */}
-            <div className="flex justify-between items-center mb-6 no-print no-column-mobile">
+            <div className="flex justify-between items-center mb-6 no-print">
                 <Button variant="outline" size="sm" onClick={() => navigate('/students')} icon={<ArrowLeft size={16} />}>
                     BACK TO REGISTRY
                 </Button>

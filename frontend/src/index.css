@@ -95,7 +95,10 @@
 
 html,
 body {
+  width: 100%;
+  max-width: 100%;
   overflow-x: hidden;
+  position: relative;
   /* Prevent full-page horizontal scroll */
 }
 
@@ -163,6 +166,8 @@ p {
   max-width: 1200px;
   margin: 0 auto;
   padding: 16px;
+  overflow-x: hidden;
+  /* Traps internal leaks */
 }
 
 @media (min-width: 768px) {
@@ -323,6 +328,17 @@ input[type=number] {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   position: relative;
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
+}
+
+.table-wrapper::-webkit-scrollbar {
+  height: 6px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 10px;
 }
 
 table.table {
@@ -941,23 +957,7 @@ table.table {
     --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  .table-wrapper {
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    background: var(--bg-primary);
-    border-radius: var(--radius-lg);
-    position: relative;
-  }
-
-  .table-wrapper::-webkit-scrollbar {
-    height: 6px;
-  }
-
-  .table-wrapper::-webkit-scrollbar-thumb {
-    background: var(--border);
-    border-radius: 10px;
-  }
+  /* Redundant table-wrapper styles removed - standardized at line 320 */
 
   /* Results Entry Matrix */
   .results-entry-table,
