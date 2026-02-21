@@ -303,6 +303,7 @@ const DashboardLayout = () => {
           flex: 1;
           padding: var(--spacing-xl) var(--spacing-lg);
           overflow-y: auto;
+          overflow-x: hidden;
           width: 100%;
           -webkit-overflow-scrolling: touch;
         }

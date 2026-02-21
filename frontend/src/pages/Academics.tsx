@@ -304,11 +304,16 @@ const Academics = () => {
         const d = (res: any) => res.data?.results ?? res.data ?? [];
         try {
             if (activeTab === 'SUMMARY') {
-                const [studentRes, resultsRes] = await Promise.all([
+                // Load everything the summary needs in parallel
+                const [studentRes, resultsRes, examsRes, syllabusRes] = await Promise.all([
                     studentsAPI.getAll({ page_size: 200 }),
-                    academicsAPI.results.getAll({ page_size: 500 })
+                    academicsAPI.results.getAll({ page_size: 500 }),
+                    academicsAPI.exams.getAll(),
+                    academicsAPI.syllabus.getAll()
                 ]);
                 setStudents(d(studentRes));
+                setExams(d(examsRes));
+                setSyllabusData(d(syllabusRes));
                 const results = d(resultsRes);
                 setMeanGrade(calculateMeanGrade(results, gradeSystems));
             } else if (activeTab === 'EXAMS') {
@@ -322,8 +327,12 @@ const Academics = () => {
                 setAttendanceRecords(d(attRes));
                 setStudents(d(studentRes));
             } else if (activeTab === 'CURRICULUM') {
-                const res = await academicsAPI.syllabus.getAll();
-                setSyllabusData(d(res));
+                const [syllabusRes, studentRes] = await Promise.all([
+                    academicsAPI.syllabus.getAll(),
+                    studentsAPI.getAll({ page_size: 200 })
+                ]);
+                setSyllabusData(d(syllabusRes));
+                setStudents(d(studentRes));
             } else if (activeTab === 'ALLOCATION' && !classAllocations.length) {
                 // allocations are often class-specific, but let's load initial if needed
             }
@@ -928,7 +937,7 @@ const Academics = () => {
     const studentOptions = students.map(s => ({ id: s.id, label: s.full_name, subLabel: `ADM: ${s.admission_number}` }));
 
     return (
-        <div className="fade-in">
+        <div className="fade-in overflow-x-hidden w-full">
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-12 no-print">
                 <div className="w-full lg:w-auto">
                     <h1 className="text-3xl font-black tracking-tight">Academics Module</h1>
@@ -1002,7 +1011,7 @@ const Academics = () => {
                                             <div>
                                                 <p className="font-bold text-[11px] mb-0 text-slate-900">{e.name}</p>
                                                 <p className="text-[9px] text-secondary mb-0">{e.term_name || 'Active Term'}</p>
-                                                <p className="text-[8px] text-secondary font-mono bg-slate-100 inline-block px-1 rounded mt-0.5">{new Date(e.date_started).toLocaleDateString()} - {new Date(e.date_ended).toLocaleDateString()}</p>
+                                                <p className="text-[8px] text-secondary font-mono bg-slate-100 inline-block px-1 rounded mt-0.5">{e.date_started ? new Date(e.date_started + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'TBD'}{e.date_ended ? ` – ${new Date(e.date_ended + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}` : ''}</p>
                                             </div>
                                         </div>
                                         <span className={`badge ${e.is_active ? 'badge-success' : 'badge-error'} badge-xxs`}>{e.is_active ? 'OPEN' : 'CLOSED'}</span>
