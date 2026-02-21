@@ -676,191 +676,267 @@ const StudentProfile = () => {
                     )}
 
                     {activeTab === 'ACADEMIC' && (
-                        <div className="card overflow-hidden border">
-                            <div className="p-4 border-bottom bg-secondary-light flex justify-between items-center">
-                                <h3 className="mb-0 text-xs font-black uppercase tracking-widest">Examination Ledger</h3>
-                                <Button variant="primary" size="sm" onClick={handleTranscriptPrint}>Download Full Transcript</Button>
-                            </div>
-
-                            {/* Hidden Transcript Template inside ACADEMIC Tab */}
-                            <div id="transcript-form" className="hidden">
-                                <div className="report-container">
-                                    <div className="report-header">
-                                        <h1>OFFICIAL ACADEMIC TRANSCRIPT</h1>
-                                        <p>School Management System</p>
+                        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            {/* Performance Analytics Dashboard */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div className="card bg-white border-none shadow-xl p-6 flex items-center gap-6 group hover:shadow-2xl transition-all duration-300">
+                                    <div className="w-16 h-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                                        <TrendingUp size={32} />
                                     </div>
-                                    <div className="report-grid">
-                                        <div className="report-grid-item"><span className="report-grid-label">Student:</span> {student.full_name}</div>
-                                        <div className="report-grid-item"><span className="report-grid-label">ADM:</span> {student.admission_number}</div>
-                                        <div className="report-grid-item"><span className="report-grid-label">Class:</span> {student.class_name}</div>
-                                        <div className="report-grid-item"><span className="report-grid-label">Mean Grade:</span> {student.average_grade || 'N/A'}</div>
-                                        <div className="report-grid-item"><span className="report-grid-label">Attendance:</span> {student.attendance_percentage}%</div>
-                                        <div className="report-grid-item"><span className="report-grid-label">Class Position:</span> {(() => {
-                                            if (!results.length) return 'N/A';
-                                            const avg = results.reduce((s: number, r: any) => s + parseFloat(r.score || 0), 0) / results.length;
-                                            return `${Math.round(avg)}% overall`;
-                                        })()}</div>
+                                    <div>
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Mean Score</p>
+                                        <h2 className="text-3xl font-black text-slate-900 mb-0">
+                                            {(() => {
+                                                const validScores = results.map((r: any) => parseFloat(r.score || r.marks_attained || 0)).filter(s => !isNaN(s));
+                                                return validScores.length > 0 ? (validScores.reduce((a, b) => a + b, 0) / validScores.length).toFixed(1) : '0';
+                                            })()}%
+                                        </h2>
                                     </div>
-                                    <table className="report-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Subject</th>
-                                                <th>Exam</th>
-                                                <th>Score</th>
-                                                <th>Grade</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {results.map((r, i) => (
-                                                <tr key={i}>
-                                                    <td>{r.subject_name}</td>
-                                                    <td>{r.exam_name}</td>
-                                                    <td>{Math.round(r.score || r.marks_attained)}</td>
-                                                    <td>{r.grade || '-'}</td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                                </div>
+                                <div className="card bg-white border-none shadow-xl p-6 flex items-center gap-6 group hover:shadow-2xl transition-all duration-300">
+                                    <div className="w-16 h-16 rounded-2xl bg-success/10 text-success flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                                        <ShieldCheck size={32} />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Mean Grade</p>
+                                        <h2 className="text-3xl font-black text-slate-900 mb-0">{student.average_grade || '—'}</h2>
+                                    </div>
+                                </div>
+                                <div className="card bg-white border-none shadow-xl p-6 flex items-center gap-6 group hover:shadow-2xl transition-all duration-300">
+                                    <div className="w-16 h-16 rounded-2xl bg-info/10 text-info flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                                        <BookOpen size={32} />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Subjects Recorded</p>
+                                        <h2 className="text-3xl font-black text-slate-900 mb-0">{new Set(results.map(r => r.subject_name)).size}</h2>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="table-wrapper">
-                                <table className="table">
-                                    <thead>
-                                        <tr>
-                                            <th>Subject</th>
-                                            <th>Exam</th>
-                                            <th>Score</th>
-                                            <th>Grade</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {results.length === 0 ? (
-                                            <tr><td colSpan={4} className="text-center p-8 uppercase font-bold text-secondary text-xs">No academic records found</td></tr>
-                                        ) : (
-                                            results.map((r: any, i: number) => (
-                                                <tr key={i} className="hover-bg-secondary">
-                                                    <td className="font-bold text-[11px] uppercase">{r.subject_name}</td>
-                                                    <td className="text-[11px] font-bold uppercase">{r.exam_name}</td>
-                                                    <td className="font-black text-[11px] text-primary">{Math.round(r.score || r.marks_attained)}</td>
-                                                    <td className="text-[11px] font-black uppercase">{r.grade || '-'}</td>
+
+                            <div className="card border-none shadow-xl bg-white overflow-hidden">
+                                <div className="p-5 border-b bg-slate-50/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                                    <div>
+                                        <h3 className="text-sm font-black uppercase tracking-widest text-slate-800 mb-1">Examination Ledger</h3>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Detailed breakdown of institutional assessments</p>
+                                    </div>
+                                    <Button variant="primary" size="sm" className="font-black shadow-lg shadow-primary/20" onClick={handleTranscriptPrint} icon={<Printer size={14} />}>GENERATE TRANSCRIPT</Button>
+                                </div>
+
+                                <div className="relative group">
+                                    <div className="lg:hidden absolute right-4 top-1/2 -translate-y-1/2 z-10 animate-pulse pointer-events-none opacity-40">
+                                        <div className="bg-slate-800 text-white p-2 rounded-full">
+                                            <TrendingUp className="rotate-90" size={12} />
+                                        </div>
+                                    </div>
+
+                                    <div className="table-wrapper overflow-x-auto">
+                                        <table className="table w-full">
+                                            <thead>
+                                                <tr className="bg-slate-50">
+                                                    <th className="py-4 px-6 text-[10px] font-black uppercase text-slate-400 min-w-[180px]">Subject Title</th>
+                                                    <th className="py-4 px-6 text-[10px] font-black uppercase text-slate-400 min-w-[220px]">Examination Cycle</th>
+                                                    <th className="py-4 px-6 text-[10px] font-black uppercase text-slate-400 text-center min-w-[100px]">Raw Score</th>
+                                                    <th className="py-4 px-6 text-[10px] font-black uppercase text-slate-400 text-center min-w-[100px]">Grade</th>
+                                                    <th className="py-4 px-6 text-[10px] font-black uppercase text-slate-400 text-right min-w-[150px]">Performance Hint</th>
                                                 </tr>
-                                            ))
-                                        )}
-                                        {/* Summary Row */}
-                                        {results.length > 0 && (() => {
-                                            const validScores = results.map((r: any) => parseFloat(r.score || r.marks_attained || 0)).filter(s => !isNaN(s));
-                                            const avgScore = validScores.length > 0 ? validScores.reduce((a, b) => a + b, 0) / validScores.length : 0;
-                                            const meanGrade = student.average_grade || 'N/A';
-                                            return (
-                                                <tr className="bg-primary/5 border-top-2 border-primary">
-                                                    <td colSpan={2} className="font-black text-[11px] uppercase text-primary px-3 py-3">SUMMARY</td>
-                                                    <td className="font-black text-primary text-[11px] px-3">{avgScore.toFixed(1)}%</td>
-                                                    <td className="font-black text-primary text-[11px] px-3 uppercase">{meanGrade}</td>
-                                                </tr>
-                                            );
-                                        })()}
-                                    </tbody>
-                                </table>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-100">
+                                                {results.length === 0 ? (
+                                                    <tr>
+                                                        <td colSpan={5} className="text-center py-20 opacity-30 font-black uppercase tracking-widest text-xs">No academic records found</td>
+                                                    </tr>
+                                                ) : (
+                                                    results.map((r: any, i: number) => {
+                                                        const score = Math.round(r.score || r.marks_attained);
+                                                        return (
+                                                            <tr key={i} className="hover:bg-slate-50/80 transition-colors">
+                                                                <td className="py-4 px-6">
+                                                                    <div className="flex items-center gap-3">
+                                                                        <div className="w-8 h-8 rounded bg-primary/5 text-primary flex items-center justify-center font-black text-[10px] uppercase">
+                                                                            {r.subject_name?.substring(0, 2)}
+                                                                        </div>
+                                                                        <span className="text-[11px] font-black text-slate-800 uppercase tracking-tight">{r.subject_name}</span>
+                                                                    </div>
+                                                                </td>
+                                                                <td className="py-4 px-6">
+                                                                    <span className="text-[10px] font-bold text-slate-500 uppercase">{r.exam_name}</span>
+                                                                </td>
+                                                                <td className="py-4 px-6 text-center">
+                                                                    <span className="text-sm font-black text-primary font-mono">{score}%</span>
+                                                                </td>
+                                                                <td className="py-4 px-6 text-center">
+                                                                    <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${['A', 'A-', 'B+', 'B'].includes(r.grade) ? 'bg-success/10 text-success' :
+                                                                        ['C+', 'C', 'C-'].includes(r.grade) ? 'bg-blue-100 text-blue-700' :
+                                                                            'bg-red-100 text-red-700'
+                                                                        }`}>
+                                                                        {r.grade || '—'}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="py-4 px-6 text-right">
+                                                                    <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden max-w-[120px] ml-auto">
+                                                                        <div
+                                                                            className={`h-full rounded-full transition-all duration-500 ${score >= 70 ? 'bg-success' : score >= 50 ? 'bg-info' : 'bg-error'}`}
+                                                                            style={{ width: `${score}%` }}
+                                                                        ></div>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    })
+                                                )}
+                                            </tbody>
+                                            {results.length > 0 && (
+                                                <tfoot className="bg-slate-900 text-white">
+                                                    <tr>
+                                                        <td colSpan={2} className="py-4 px-6 text-[10px] font-black uppercase tracking-widest text-white/50">Cumulative Mean Performance</td>
+                                                        <td className="py-4 px-6 text-center text-sm font-black">
+                                                            {(results.reduce((s: number, r: any) => s + parseFloat(r.score || 0), 0) / (results.length || 1)).toFixed(1)}%
+                                                        </td>
+                                                        <td colSpan={2} className="py-4 px-6 text-right text-sm font-black text-success">
+                                                            OVERALL: {student.average_grade}
+                                                        </td>
+                                                    </tr>
+                                                </tfoot>
+                                            )}
+                                        </table>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     )}
 
                     {activeTab === 'FINANCE' && (
-                        <div className="space-y-6">
-                            {/* Financial Summary Cards - Stacked on Mobile, Row on Desktop */}
-                            <div className="flex flex-wrap lg:flex-row gap-6 no-print pb-4">
-                                {/* Accounting Statement Summary Card */}
-                                <div className="card border border-primary/10 flex-1 min-w-full lg:min-w-0">
-                                    <div className="p-4 border-bottom bg-secondary-light flex justify-between items-center">
-                                        <h3 className="mb-0 text-xs font-black uppercase tracking-widest">Accounting Statement</h3>
-                                        <div className="flex gap-2">
-                                            <div className="text-right mr-4">
-                                                <span className="text-[9px] font-black text-secondary uppercase block">Total Balance</span>
-                                                <span className={`text-xs font-black ${Number(student.fee_balance || 0) === 0 ? 'text-success' : Number(student.fee_balance || 0) < 0 ? 'text-info' : 'text-error'}`}>KES {(student.fee_balance || 0).toLocaleString()}</span>
+                        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            {/* Modern Financial Dashboard */}
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 no-print">
+                                <div className="md:col-span-2 card bg-gradient-to-br from-slate-900 to-slate-800 text-white border-none shadow-2xl relative overflow-hidden">
+                                    <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/5 rounded-full blur-3xl"></div>
+                                    <div className="absolute -left-8 -bottom-8 w-32 h-32 bg-primary/10 rounded-full blur-3xl"></div>
+                                    <div className="relative z-10 p-2">
+                                        <div className="flex justify-between items-start mb-6">
+                                            <div>
+                                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/50 mb-1">Total Fee Liability</p>
+                                                <h1 className="text-3xl font-black tracking-tighter mb-0">
+                                                    KES {(student.fee_balance || 0).toLocaleString()}
+                                                </h1>
                                             </div>
-                                            <Button variant="outline" size="sm" className="font-black py-1" onClick={() => window.print()}>GENERATE REPORT</Button>
+                                            <div className={`p-3 rounded-2xl ${Number(student.fee_balance || 0) <= 0 ? 'bg-success/20 text-success' : 'bg-error/20 text-error shadow-[0_0_20px_rgba(239,68,68,0.2)]'}`}>
+                                                <CreditCard size={28} />
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="table-wrapper max-h-[500px]">
-                                        <table className="table">
-                                            <thead>
-                                                <tr>
-                                                    <th>Date</th>
-                                                    <th>Description</th>
-                                                    <th>Reference</th>
-                                                    <th className="text-right">Debit</th>
-                                                    <th className="text-right">Credit</th>
-                                                    <th className="text-right">Balance</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {statement.length === 0 ? (
-                                                    <tr><td colSpan={6} className="text-center py-8 text-[10px] font-black text-secondary uppercase">No historical transactions detected</td></tr>
-                                                ) : (
-                                                    statement.map((item, i) => (
-                                                        <tr key={i} className="hover-bg-secondary">
-                                                            <td className="text-[10px] font-bold whitespace-nowrap">{new Date(item.date).toLocaleDateString()}</td>
-                                                            <td className="text-[10px] font-bold uppercase text-secondary">{item.description}</td>
-                                                            <td className="text-[10px] font-black text-primary">{item.reference}</td>
-                                                            <td className="text-[10px] font-black text-error text-right">{item.debit > 0 ? `KES ${item.debit.toLocaleString()}` : '-'}</td>
-                                                            <td className="text-[10px] font-black text-success text-right">{item.credit > 0 ? `KES ${item.credit.toLocaleString()}` : '-'}</td>
-                                                            <td className={`text-[10px] font-black text-right ${item.balance === 0 ? 'text-success' : item.balance < 0 ? 'text-info' : 'text-error'}`}>KES {item.balance.toLocaleString()}</td>
-                                                        </tr>
-                                                    ))
-                                                )}
-                                            </tbody>
-                                        </table>
+                                        <div className="flex items-center gap-4 text-[10px] font-bold">
+                                            <span className={`px-2 py-1 rounded-lg ${Number(student.fee_balance || 0) <= 0 ? 'bg-success/20 text-success' : 'bg-white/10 text-white'}`}>
+                                                STATUS: {Number(student.fee_balance || 0) <= 0 ? 'CLEARED' : 'OUTSTANDING'}
+                                            </span>
+                                            <span className="text-white/40 uppercase tracking-widest">Acc: {student.admission_number}</span>
+                                        </div>
                                     </div>
                                 </div>
+                                <div className="card border-none bg-blue-50/50 shadow-sm flex flex-col justify-center items-center text-center p-6 border-t-4 border-blue-500">
+                                    <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mb-3">
+                                        <TrendingUp size={24} />
+                                    </div>
+                                    <p className="text-[10px] font-black uppercase text-slate-500 mb-1">Invoiced Sum</p>
+                                    <h3 className="text-xl font-black text-slate-900 mb-0">KES {invoices.reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0).toLocaleString()}</h3>
+                                </div>
+                                <div className="card border-none bg-emerald-50/50 shadow-sm flex flex-col justify-center items-center text-center p-6 border-t-4 border-emerald-500">
+                                    <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-3">
+                                        <ShieldCheck size={24} />
+                                    </div>
+                                    <p className="text-[10px] font-black uppercase text-slate-500 mb-1">Total Receipts</p>
+                                    <h3 className="text-xl font-black text-slate-900 mb-0">KES {payments.reduce((sum, pay) => sum + Number(pay.amount || 0), 0).toLocaleString()}</h3>
+                                </div>
+                            </div>
 
-                                {/* Right Column for Administrative & Rapid Communication */}
-                                <div className="flex flex-col gap-6 w-full lg:w-80 flex-shrink-0">
-                                    {/* Administrative Control */}
-                                    <div className="card border-top-4 border-primary">
-                                        <h4 className="text-[10px] font-black uppercase text-primary border-bottom pb-2 mb-4 tracking-widest flex items-center gap-2">
-                                            <ShieldCheck size={14} /> Administrative Control
-                                        </h4>
-                                        <div className="space-y-4">
-                                            <div className="flex justify-between items-center text-[10px] font-black uppercase text-secondary"><span>Admission Date</span> <span className="text-primary">{new Date(student.admission_date).toLocaleDateString()}</span></div>
-                                            <div className="flex justify-between items-start text-[10px] font-black uppercase text-secondary">
-                                                <span>Primary Guardian</span>
-                                                <div className="text-right">
-                                                    <span className="text-primary block">{parents.find(p => p.is_primary)?.full_name || student.guardian_name}</span>
-                                                    <span className="text-secondary text-[8px] block opacity-70 tracking-normal">{parents.find(p => p.is_primary)?.phone_number || student.guardian_phone}</span>
+                            <div className="flex flex-col lg:flex-row gap-8">
+                                <div className="flex-grow min-w-0">
+                                    <div className="card border-none shadow-xl bg-white overflow-hidden">
+                                        <div className="p-5 border-b bg-slate-50/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                                            <div>
+                                                <h3 className="text-sm font-black uppercase tracking-widest text-slate-800 mb-1">Accounting Ledger</h3>
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Verified transaction history & adjustments</p>
+                                            </div>
+                                            <div className="flex gap-2 w-full sm:w-auto">
+                                                <Button variant="outline" size="sm" className="bg-white shadow-sm font-black flex-1 sm:flex-none" onClick={() => window.print()} icon={<Printer size={14} />}>PRINT PDF</Button>
+                                            </div>
+                                        </div>
+
+                                        <div className="relative group">
+                                            <div className="lg:hidden absolute right-4 top-1/2 -translate-y-1/2 z-10 animate-pulse pointer-events-none opacity-40">
+                                                <div className="bg-slate-800 text-white p-2 rounded-full">
+                                                    <TrendingUp className="rotate-90" size={12} />
                                                 </div>
                                             </div>
-                                            <div className="flex justify-between items-center text-[10px] font-black uppercase text-secondary"><span>House Unit</span> <span className="text-primary">{student.residence_details || student.hostel_name || 'DAY SCHOLAR'}</span></div>
-                                            <div className="flex justify-between items-center text-[10px] font-black uppercase text-secondary"><span>Transport</span> <span className="text-primary">{student.transport_details || 'NONE'}</span></div>
-                                        </div>
-                                        <div className="mt-8 space-y-2">
-                                            <Button variant="outline" size="sm" className="w-full uppercase font-black py-2 tracking-widest" onClick={() => setIsTransferModalOpen(true)}>Transfer Unit</Button>
-                                            <Button variant="ghost" size="sm" className="text-error w-full uppercase font-black py-2 tracking-widest" onClick={() => setIsSuspendModalOpen(true)}>Restrict / Suspend</Button>
-                                            <Button variant="danger" size="sm" className="w-full uppercase font-black py-2 tracking-widest mt-2" onClick={() => setIsDeleteModalOpen(true)}>PERMANENTLY DELETE</Button>
-                                        </div>
-                                    </div>
 
-                                    {/* Rapid Communication */}
-                                    <div className="card bg-primary text-white">
-                                        <MessageSquare className="mb-4 opacity-50" size={32} />
-                                        <h4 className="text-[10px] font-black uppercase mb-1 tracking-widest">Rapid Communication</h4>
-                                        <p className="text-[10px] font-bold opacity-80 leading-relaxed mb-4">Instant contact regarding behavior or financial status.</p>
-
-                                        <div className="grid grid-cols-3 gap-2 mb-4">
-                                            <button onClick={handleWhatsApp} className="flex flex-col items-center justify-center p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-all gap-1" title="WhatsApp">
-                                                <MessageCircle size={18} />
-                                                <span className="text-[8px] font-black uppercase">WA</span>
-                                            </button>
-                                            <button onClick={handleEmail} className="flex flex-col items-center justify-center p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-all gap-1" title="Email">
-                                                <Mail size={18} />
-                                                <span className="text-[8px] font-black uppercase">Email</span>
-                                            </button>
-                                            <button onClick={handleDirectSMS} className="flex flex-col items-center justify-center p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-all gap-1" title="SMS">
-                                                <Send size={18} />
-                                                <span className="text-[8px] font-black uppercase">SMS</span>
-                                            </button>
+                                            <div className="table-wrapper overflow-x-auto">
+                                                <table className="table table-lg w-full">
+                                                    <thead>
+                                                        <tr className="bg-slate-50">
+                                                            <th className="text-[10px] font-black uppercase text-slate-400 py-4 px-6 min-w-[120px]">Date</th>
+                                                            <th className="text-[10px] font-black uppercase text-slate-400 py-4 px-6 min-w-[200px]">Description</th>
+                                                            <th className="text-[10px] font-black uppercase text-slate-400 py-4 px-6 min-w-[150px]">Reference</th>
+                                                            <th className="text-[10px] font-black uppercase text-slate-400 py-4 px-6 text-right min-w-[120px]">Debit (+)</th>
+                                                            <th className="text-[10px] font-black uppercase text-slate-400 py-4 px-6 text-right min-w-[120px]">Credit (-)</th>
+                                                            <th className="text-[10px] font-black uppercase text-slate-800 py-4 px-6 text-right sticky right-0 bg-slate-50/95 backdrop-blur-sm shadow-[-5px_0_10px_rgba(0,0,0,0.02)] min-w-[130px]">Net Balance</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="divide-y divide-slate-100">
+                                                        {statement.length === 0 ? (
+                                                            <tr>
+                                                                <td colSpan={6} className="text-center py-20">
+                                                                    <div className="flex flex-col items-center gap-2 opacity-30">
+                                                                        <CreditCard size={48} />
+                                                                        <p className="text-xs font-black uppercase tracking-widest">No transaction data</p>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        ) : (
+                                                            statement.map((item, i) => (
+                                                                <tr key={i} className="hover:bg-slate-50/80 transition-colors group">
+                                                                    <td className="py-4 px-6">
+                                                                        <span className="text-xs font-black text-slate-600 font-mono">{new Date(item.date).toLocaleDateString()}</span>
+                                                                    </td>
+                                                                    <td className="py-4 px-6">
+                                                                        <div className="flex items-center gap-3">
+                                                                            <div className={`w-2 h-2 rounded-full ${item.debit > 0 ? 'bg-error shadow-[0_0_8px_rgba(239,68,68,0.4)]' : 'bg-success shadow-[0_0_8px_rgba(16,185,129,0.4)]'}`}></div>
+                                                                            <span className="text-[11px] font-black text-slate-800 uppercase tracking-tight">{item.description}</span>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td className="py-4 px-6">
+                                                                        <span className="text-[10px] font-black text-primary bg-primary/5 px-2 py-1 rounded border border-primary/10">{item.reference || 'SYSTEM_GEN'}</span>
+                                                                    </td>
+                                                                    <td className="py-4 px-6 text-right">
+                                                                        <span className={`text-xs font-black ${item.debit > 0 ? 'text-error' : 'text-slate-300'}`}>
+                                                                            {item.debit > 0 ? `KES ${item.debit.toLocaleString()}` : '—'}
+                                                                        </span>
+                                                                    </td>
+                                                                    <td className="py-4 px-6 text-right">
+                                                                        <span className={`text-xs font-black ${item.credit > 0 ? 'text-success' : 'text-slate-300'}`}>
+                                                                            {item.credit > 0 ? `KES ${item.credit.toLocaleString()}` : '—'}
+                                                                        </span>
+                                                                    </td>
+                                                                    <td className={`py-4 px-6 text-right font-black text-xs sticky right-0 backdrop-blur-sm group-hover:bg-slate-50 transition-colors ${item.balance === 0 ? 'text-success' : item.balance < 0 ? 'text-info' : 'text-error'}`}>
+                                                                        KES {item.balance.toLocaleString()}
+                                                                    </td>
+                                                                </tr>
+                                                            ))
+                                                        )}
+                                                    </tbody>
+                                                    {statement.length > 0 && (
+                                                        <tfoot className="bg-slate-900 text-white">
+                                                            <tr>
+                                                                <td colSpan={3} className="py-4 px-6 text-[10px] font-black uppercase tracking-widest text-white/50">Cumulative Closing Position</td>
+                                                                <td className="py-4 px-6 text-right text-xs font-black text-error/80">KES {statement.reduce((s, i) => s + i.debit, 0).toLocaleString()}</td>
+                                                                <td className="py-4 px-6 text-right text-xs font-black text-success/80">KES {statement.reduce((s, i) => s + i.credit, 0).toLocaleString()}</td>
+                                                                <td className={`py-4 px-6 text-right text-sm font-black sticky right-0 bg-slate-800 ${Number(student.fee_balance || 0) <= 0 ? 'text-success' : 'text-error'}`}>
+                                                                    KES {(student.fee_balance || 0).toLocaleString()}
+                                                                </td>
+                                                            </tr>
+                                                        </tfoot>
+                                                    )}
+                                                </table>
+                                            </div>
                                         </div>
-
-                                        <button className="btn btn-xs bg-white text-primary w-full uppercase font-black shadow-lg" onClick={handleMessage}>Open Messenger</button>
                                     </div>
                                 </div>
                             </div>
@@ -882,8 +958,8 @@ const StudentProfile = () => {
                             <div className="grid grid-cols-2 gap-6">
                                 {activities.length === 0 ? <p className="text-secondary italic text-xs uppercase font-bold text-center py-8 col-span-2">No extra-curricular activities recorded</p> :
                                     activities.map((act, i) => (
-                                        <div key={i} className={`card p-6 border-left-4 border-primary shadow-md relative`}>
-                                            <div className="absolute top-2 right-2 flex gap-2 z-50">
+                                        <div key={i} className={`card p-6 border-left-4 border-primary shadow-md relative group hover:shadow-xl transition-all`}>
+                                            <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
                                                 <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); handleEditActivity(act); }} icon={<Edit size={14} />} title="Edit" />
                                                 <Button variant="ghost" size="sm" className="text-error" onClick={(e) => { e.stopPropagation(); handleDeleteActivity(act.id); }} icon={<Trash2 size={14} />} title="Delete" />
                                             </div>
@@ -893,7 +969,7 @@ const StudentProfile = () => {
                                             </div>
                                             <p className="text-[10px] font-black text-secondary uppercase mb-2">Role: {act.role}</p>
                                             <div className="flex gap-2">
-                                                <span className="badge badge-success badge-xxs px-2 py-0">ACTIVE PARTICIPANT</span>
+                                                <span className="badge badge-success badge-xs px-2 py-0 font-black">ACTIVE PARTICIPANT</span>
                                             </div>
                                         </div>
                                     ))}
@@ -948,8 +1024,8 @@ const StudentProfile = () => {
                                 </div>
                                 <div className="mt-8 space-y-2">
                                     <Button variant="outline" size="sm" className="w-full uppercase font-black py-2 tracking-widest" onClick={() => setIsTransferModalOpen(true)}>Transfer Unit</Button>
-                                    <Button variant="ghost" size="sm" className="text-error w-full uppercase font-black py-2 tracking-widest" onClick={handleSuspend}>Restrict / Suspend</Button>
-                                    <Button variant="danger" size="sm" className="w-full uppercase font-black py-2 tracking-widest mt-2" onClick={handleForceDelete}>PERMANENTLY DELETE</Button>
+                                    <Button variant="ghost" size="sm" className="text-warning w-full uppercase font-black py-2 tracking-widest" onClick={() => setIsSuspendModalOpen(true)}>Restrict / Suspend</Button>
+                                    <Button variant="danger" size="sm" className="w-full uppercase font-black py-2 tracking-widest mt-2 shadow-lg shadow-error/20" onClick={() => setIsDeleteModalOpen(true)}>PERMANENTLY DELETE</Button>
                                 </div>
                             </div>
 
@@ -1200,7 +1276,7 @@ const StudentProfile = () => {
                 </div>
             </Modal>
 
-        </div>
+        </div >
     );
 };
 
