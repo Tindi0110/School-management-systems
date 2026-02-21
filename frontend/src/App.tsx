@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react'
+import { Suspense } from 'react'
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { Provider } from 'react-redux'
 import { store } from './store'
