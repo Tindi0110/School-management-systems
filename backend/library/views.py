@@ -140,13 +140,18 @@ class BookLendingViewSet(viewsets.ModelViewSet):
                         latest_invoice = Invoice.objects.filter(student=student).order_by('-date_generated').first()
                         
                         if latest_invoice:
-                            adjustment = Adjustment.objects.create(
-                                invoice=latest_invoice,
-                                adjustment_type='DEBIT',
-                                amount=amount,
-                                reason=f"Library Fine: {lending.copy.book.title} ({days_late} days late)",
-                                date=timezone.now().date(),
-                                approved_by=request.user # The librarian/admin processing return
+                            # Use update_or_create with origin tracking for robustness
+                            adjustment, _ = Adjustment.objects.update_or_create(
+                                origin_model='library.LibraryFine',
+                                origin_id=fine.id,
+                                defaults={
+                                    'invoice': latest_invoice,
+                                    'adjustment_type': 'DEBIT',
+                                    'amount': amount,
+                                    'reason': f"Library Fine: {lending.copy.book.title} ({days_late} days late)",
+                                    'date': timezone.now().date(),
+                                    'approved_by': request.user
+                                }
                             )
                             fine.adjustment = adjustment
                             fine.save()
@@ -156,7 +161,7 @@ class BookLendingViewSet(viewsets.ModelViewSet):
                     else:
                          fine_msg = f" Book returned {days_late} days late. Fine of KES {amount} recorded (Student link not found)."
                 except Exception as e:
-                    print(f"Finance Sync Error: {e}")
+                    logger.error(f"Finance Sync Error: {e}")
                     fine_msg = f" Book returned late. Fine recorded but Finance Sync failed."
 
         
@@ -269,13 +274,18 @@ class LibraryFineViewSet(viewsets.ModelViewSet):
 
             try:
                 with transaction.atomic():
-                    adjustment = Adjustment.objects.create(
-                        invoice=invoice,
-                        adjustment_type='DEBIT',
-                        amount=fine.amount,
-                        reason=reason,
-                        date=fine.date_issued,
-                        approved_by=request.user,
+                    # Use update_or_create with origin tracking
+                    adjustment, _ = Adjustment.objects.update_or_create(
+                        origin_model='library.LibraryFine',
+                        origin_id=fine.id,
+                        defaults={
+                            'invoice': invoice,
+                            'adjustment_type': 'DEBIT',
+                            'amount': fine.amount,
+                            'reason': reason,
+                            'date': fine.date_issued,
+                            'approved_by': request.user,
+                        }
                     )
                     fine.adjustment = adjustment
                     fine.save(update_fields=['adjustment'])

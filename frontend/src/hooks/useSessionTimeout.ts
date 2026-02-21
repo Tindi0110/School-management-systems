@@ -8,7 +8,7 @@ export const useSessionTimeout = (timeoutMs: number = DEFAULT_TIMEOUT) => {
     const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const logout = () => {
-        console.log("Session timed out due to inactivity.");
+
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         navigate('/login');

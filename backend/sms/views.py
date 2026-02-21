@@ -58,7 +58,7 @@ class StudentResultViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
-        queryset = StudentResult.objects.all()
+        queryset = StudentResult.objects.select_related('student', 'exam', 'subject').all()
         student_id = self.request.query_params.get('student_id')
         exam_id = self.request.query_params.get('exam_id')
         if student_id:

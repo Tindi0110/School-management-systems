@@ -23,9 +23,6 @@ class TermViewSet(viewsets.ModelViewSet):
     queryset = Term.objects.all()
     serializer_class = TermSerializer
 
-    def update(self, request, *args, **kwargs):
-        return super().update(request, *args, **kwargs)
-
 
 class SubjectGroupViewSet(viewsets.ModelViewSet):
     queryset = SubjectGroup.objects.all()
@@ -70,7 +67,7 @@ class StudentResultViewSet(viewsets.ModelViewSet):
         return super().get_permissions()
     
     def get_queryset(self):
-        queryset = StudentResult.objects.all()
+        queryset = StudentResult.objects.select_related('student', 'exam', 'subject').all()
         student_id = self.request.query_params.get('student_id')
         exam_id = self.request.query_params.get('exam_id')
         if student_id: queryset = queryset.filter(student_id=student_id)

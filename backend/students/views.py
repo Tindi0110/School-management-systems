@@ -60,9 +60,6 @@ class StudentViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     search_fields = ['full_name', 'admission_number', 'current_class__name']
 
-    permission_classes = [permissions.IsAuthenticated]
-    search_fields = ['full_name', 'admission_number', 'current_class__name']
-
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         # 1. Create Student (and trigger Hostel Allocation signal if Boarding)
@@ -112,33 +109,57 @@ class StudentViewSet(viewsets.ModelViewSet):
     def force_delete(self, request, pk=None):
         """
         Manually deletes a student and all related blocking records 
-        (Invoices, Allocations, Results) to bypass PROTECT constraints.
-        Use with caution.
+        strictly for ADMIN users only. This bypasses PROTECT constraints
+        by systematically clearing all linked data first.
         """
+        if request.user.role != 'ADMIN':
+            return Response({'error': 'Only administrators can perform force deletion of students.'}, status=403)
+
         student = self.get_object()
         try:
-            # 1. Unlink/Delete Finance Data
-            # Invoices are typically PROTECT'd by Year not Student, but Payments might be Issue.
-            # We want to CASCADE delete invoices.
-            student.invoices.all().delete() # This cascades to Payments/Items
-            
-            # 2. Unlink/Delete Hostel Allocations
-            if hasattr(student, 'hostel_allocation'):
-                student.hostel_allocation.delete()
-            
-            # 3. Unlink/Delete Transport Allocations
-            if hasattr(student, 'transport_allocation'):
-                student.transport_allocation.delete()
+            with transaction.atomic():
+                # 1. Finance Data Cleanup
+                # Invoices cascade to Items and Payments
+                student.invoices.all().delete()
+                
+                # 2. Hostel & Housing Cleanup
+                if hasattr(student, 'hostel_allocation'):
+                    student.hostel_allocation.delete()
+                # Use _set for models without explicit related_name
+                student.hostelattendance_set.all().delete()
+                student.hosteldiscipline_set.all().delete()
+                student.guestlog_set.all().delete()
+                
+                # 3. Transport Cleanup
+                if hasattr(student, 'transport_allocation'):
+                    student.transport_allocation.delete()
+                student.transportattendance_set.all().delete()
 
-            # 4. Unlink/Delete Academic Results/Subjects
-            student.results.all().delete()
-            student.enrolled_subjects.all().delete()
-            student.attendance_set.all().delete()
+                # 4. Academic Data Cleanup
+                student.results.all().delete()
+                student.enrolled_subjects.all().delete()
+                student.attendance_set.all().delete()
 
-            # 5. Delete Student (and cascaded profile data)
-            student.delete()
+                # 5. Library Records (Linked via User)
+                if student.user:
+                    user = student.user
+                    # Lending related_name='borrowed_books'
+                    user.borrowed_books.all().delete()
+                    user.bookreservation_set.all().delete()
+                    user.libraryfine_set.all().delete()
+
+                # 6. Final Deletion
+                linked_user = student.user
+                student.delete()
+                
+                # Optionally delete the user account if it was primarily for this student
+                if linked_user:
+                    linked_user.delete()
             
-            return Response({'status': 'deleted', 'message': 'Student and all related records permanently removed.'})
+            return Response({
+                'status': 'deleted', 
+                'message': f'Student {student.full_name} and all related records (Finance, Hostel, Library, Academics) have been permanently removed.'
+            })
         except Exception as e:
             return Response({'status': 'error', 'message': str(e)}, status=400)
 
@@ -173,48 +194,48 @@ class StudentAdmissionViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
 class StudentDocumentViewSet(viewsets.ModelViewSet):
-    queryset = StudentDocument.objects.all()
+    queryset = StudentDocument.objects.select_related('student').all()
     serializer_class = StudentDocumentSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        queryset = StudentDocument.objects.all()
+        queryset = StudentDocument.objects.select_related('student').all()
         student_id = self.request.query_params.get('student_id')
         if student_id:
             queryset = queryset.filter(student_id=student_id)
         return queryset
 
 class DisciplineRecordViewSet(viewsets.ModelViewSet):
-    queryset = DisciplineRecord.objects.all()
+    queryset = DisciplineRecord.objects.select_related('student').all()
     serializer_class = DisciplineRecordSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        queryset = DisciplineRecord.objects.all()
+        queryset = DisciplineRecord.objects.select_related('student').all()
         student_id = self.request.query_params.get('student_id')
         if student_id:
             queryset = queryset.filter(student_id=student_id)
         return queryset
 
 class HealthRecordViewSet(viewsets.ModelViewSet):
-    queryset = HealthRecord.objects.all()
+    queryset = HealthRecord.objects.select_related('student').all()
     serializer_class = HealthRecordSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        queryset = HealthRecord.objects.all()
+        queryset = HealthRecord.objects.select_related('student').all()
         student_id = self.request.query_params.get('student_id')
         if student_id:
             queryset = queryset.filter(student_id=student_id)
         return queryset
 
 class ActivityRecordViewSet(viewsets.ModelViewSet):
-    queryset = ActivityRecord.objects.all()
+    queryset = ActivityRecord.objects.select_related('student').all()
     serializer_class = ActivityRecordSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        queryset = ActivityRecord.objects.all()
+        queryset = ActivityRecord.objects.select_related('student').all()
         student_id = self.request.query_params.get('student_id')
         if student_id:
             queryset = queryset.filter(student_id=student_id)
