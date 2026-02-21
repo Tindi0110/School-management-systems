@@ -94,12 +94,12 @@
 }
 
 html,
-body {
+body,
+#root {
   width: 100%;
-  max-width: 100%;
+  max-width: 100vw;
   overflow-x: hidden;
   position: relative;
-  /* Prevent full-page horizontal scroll */
 }
 
 body {

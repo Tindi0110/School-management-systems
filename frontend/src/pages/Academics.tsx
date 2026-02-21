@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
-    Plus, Edit, Trash2, Users,
+    Plus, Edit, Trash2, Users, BookOpen, Award,
     School, Calendar, ClipboardCheck, BarChart3, FileText,
     Settings, CheckCircle2, Layers, Trophy, Printer, Square, CheckSquare, Download
 } from 'lucide-react';
@@ -40,19 +40,7 @@ const calculateGrade = (score: number, gradeSystems: any[], specificSystemId?: n
         }
     }
 
-    // Hardcoded fallback if absolutely no systems are defined in the backend
-    if (score >= 80) return 'A';
-    if (score >= 75) return 'A-';
-    if (score >= 70) return 'B+';
-    if (score >= 65) return 'B';
-    if (score >= 60) return 'B-';
-    if (score >= 55) return 'C+';
-    if (score >= 50) return 'C';
-    if (score >= 45) return 'C-';
-    if (score >= 40) return 'D+';
-    if (score >= 35) return 'D';
-    if (score >= 30) return 'D-';
-    return 'E';
+    return '-';
 };
 
 const StudentResultRow = React.memo(({ student, sClass, subjects, studentScores, onScoreChange, onDeleteResult, activeClassSubjects, resultContext, gradeSystems, examGradeSystemId }: any) => {
@@ -137,7 +125,7 @@ const Academics = () => {
     const [staff, setStaff] = useState<any[]>([]);
     const [students, setStudents] = useState<any[]>([]);
     const [syllabusData, setSyllabusData] = useState<any[]>([]);
-    const [meanGrade, setMeanGrade] = useState<string>('N/A');
+    const [meanGrade, setMeanGrade] = useState<string>('...');
 
     // Allocation State
     const [classAllocations, setClassAllocations] = useState<any[]>([]);
@@ -304,6 +292,13 @@ const Academics = () => {
             setStudents(dS(studentRes));
             setExams(dS(examsRes));
             setSyllabusData(dS(syllabusRes));
+
+            // Debug logs to trace why Summary cards show "No Data"
+            console.log("Academics Data Load Complete:");
+            console.log("- Classes:", dS(classesRes));
+            console.log("- Subject Groups:", dS(groupsRes));
+            console.log("- Exams:", dS(examsRes));
+
             // Use freshly fetched grade systems (not stale state) for accurate mean grade
             setMeanGrade(calculateMeanGrade(academicResults, freshGradeSystems));
         } catch (err) {
@@ -982,23 +977,38 @@ const Academics = () => {
     const studentOptions = students.map(s => ({ id: s.id, label: s.full_name, subLabel: `ADM: ${s.admission_number}` }));
 
     return (
-        <div className="fade-in overflow-x-hidden w-full">
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-12 no-print">
-                <div className="w-full lg:w-auto">
-                    <h1 className="text-3xl font-black tracking-tight">Academics Module</h1>
-                    <p className="text-secondary text-sm font-bold uppercase text-[10px] tracking-widest opacity-70">Institutional Management | {activeYear} • {activeTerm}</p>
+        <div className="fade-in max-w-full">
+            {/* Elegant Header - Pushed from Dashboard Style */}
+            <div className="relative overflow-hidden rounded-3xl bg-primary text-white p-6 lg:p-8 mb-8 shadow-2xl no-print">
+                <div className="relative z-10 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+                    <div>
+                        <div className="flex items-center gap-2 mb-2">
+                            <BookOpen size={16} className="text-info-light" />
+                            <span className="text-[10px] font-black uppercase tracking-widest opacity-80">Institutional Academics Module</span>
+                        </div>
+                        <h1 className="text-3xl font-black mb-1 capitalize text-white">Academic Records</h1>
+                        <div className="flex items-center gap-4 mt-2">
+                            <div className="flex items-center gap-1.5 px-3 py-1 bg-white/10 rounded-full border border-white/10">
+                                <Calendar size={12} className="text-info-light" />
+                                <span className="text-[10px] font-bold uppercase">{activeYear} • {activeTerm}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="flex flex-wrap gap-2 w-full lg:w-auto">
+                        {isReadOnly && (
+                            <Button variant="primary" size="sm" className="bg-white text-primary hover:bg-slate-100 border-none font-black px-6" onClick={() => { setIsAttendanceModalOpen(true); }} icon={<CheckCircle2 size={14} />}>
+                                Log Attendance
+                            </Button>
+                        )}
+                    </div>
                 </div>
-                <div className="flex flex-wrap gap-2 w-full lg:w-auto justify-start lg:justify-end no-print z-60">
-                    {isReadOnly && (
-                        <Button variant="primary" size="sm" className="flex-1 sm:flex-none" onClick={() => { setIsAttendanceModalOpen(true); }} icon={<CheckCircle2 size={14} />}>
-                            Log Attendance
-                        </Button>
-                    )}
+                <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+                    <Award size={160} />
                 </div>
             </div>
 
-            {/* Navigation Tabs */}
-            <div className="grid grid-cols-4 md:flex md:flex-row gap-2 mb-10 md:overflow-x-auto p-1.5 bg-bg-tertiary rounded-2xl no-print">
+            {/* Navigation Tabs - Consolidated */}
+            <div className="tabs flex-nowrap overflow-x-auto no-scrollbar pb-1 mb-10 grid grid-cols-4 md:flex md:flex-row gap-2 md:overflow-x-auto p-1.5 bg-bg-tertiary rounded-2xl no-print">
                 {(['SUMMARY', 'CLASSES', 'CURRICULUM', 'ALLOCATION', 'EXAMS', 'ATTENDANCE', 'RESOURCES', 'GRADING'] as const)
                     .filter(tab => !isReadOnly || ['SUMMARY', 'CURRICULUM', 'EXAMS', 'ATTENDANCE'].includes(tab))
                     .map(tab => (
@@ -1030,16 +1040,24 @@ const Academics = () => {
 
             {activeTab === 'SUMMARY' && (
                 <div className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-xl">
-                        <StatCard
-                            title="Total Capacity"
-                            value={classes.length > 0 ? `${classes.reduce((sum, c) => sum + (c.student_count || 0), 0)}/${classes.reduce((sum, c) => sum + (c.capacity || 40), 0)}` : "No Data"}
-                            icon={<Users />}
-                            gradient="var(--primary-gradient)"
-                        />
-                        <StatCard title="Departments" value={subjectGroups.length > 0 ? subjectGroups.length.toString() : "No Data"} icon={<Layers />} gradient="linear-gradient(135deg, var(--accent-slate), #708090)" />
-                        <StatCard title="Upcoming Exams" value={exams.length > 0 ? exams.filter(e => new Date(e.date_started) > new Date() || e.is_active).length.toString() : "No Data"} icon={<Calendar />} gradient="linear-gradient(135deg, var(--accent-amber), #cc8400)" />
-                        <StatCard title="Overall Mean" value={meanGrade || "No Data"} icon={<BarChart3 />} gradient="linear-gradient(135deg, var(--success), #1e5c3e)" />
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                        <div className="transform hover:-translate-y-1 transition-all">
+                            <StatCard
+                                title="Total Capacity"
+                                value={classes.length > 0 ? `${classes.reduce((sum, c) => sum + (c.student_count || 0), 0)}/${classes.reduce((sum, c) => sum + (c.capacity || 40), 0)}` : "No Data"}
+                                icon={<Users size={18} />}
+                                gradient="linear-gradient(135deg, #0f172a, #334155)"
+                            />
+                        </div>
+                        <div className="transform hover:-translate-y-1 transition-all">
+                            <StatCard title="Departments" value={subjectGroups.length > 0 ? subjectGroups.length.toString() : "No Data"} icon={<Layers size={18} />} gradient="linear-gradient(135deg, #1e3c72, #2a5298)" />
+                        </div>
+                        <div className="transform hover:-translate-y-1 transition-all">
+                            <StatCard title="Upcoming Exams" value={exams.length > 0 ? exams.filter(e => e.is_active || (e.date_started && new Date(e.date_started) > new Date())).length.toString() : "No Data"} icon={<Calendar size={18} />} gradient="linear-gradient(135deg, #f093fb, #f5576c)" />
+                        </div>
+                        <div className="transform hover:-translate-y-1 transition-all">
+                            <StatCard title="Overall Mean" value={meanGrade === '...' ? 'Calculating' : (meanGrade || "N/A")} icon={<BarChart3 size={18} />} gradient="linear-gradient(135deg, #5ee7df, #b490ca)" />
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-lg">
@@ -1285,21 +1303,7 @@ const Academics = () => {
                         </div>
                         <div className="md:col-span-3 min-w-0">
                             {selectedAllocationClass ? (
-                                <div className="card h-full flex flex-col">
-                                    <div className="relative overflow-hidden rounded-3xl bg-secondary text-white p-8 mb-8 shadow-2xl">
-                                        <div className="relative z-10 flex justify-between items-center">
-                                            <div>
-                                                <h1 className="text-3xl font-black mb-1 capitalize">Academic Management</h1>
-                                                <p className="text-xs opacity-70 font-medium">Manage curriculum, examinations, and institutional standards</p>
-                                            </div>
-                                            <div className="flex gap-4">
-                                                <div className="flex items-center gap-1.5 px-3 py-1 bg-white/10 rounded-full border border-white/10">
-                                                    <Calendar size={12} className="text-info-light" />
-                                                    <span className="text-[10px] font-bold uppercase">2024 • Term 1</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                <div className="card h-full flex flex-col min-w-0">
                                     <div className="card-header flex justify-between items-center py-3 border-bottom">
                                         <div>
                                             <h3 className="mb-0 text-sm font-black uppercase">Class Subjects</h3>
@@ -1400,8 +1404,8 @@ const Academics = () => {
                                             Add Boundary
                                         </Button>
                                     </div>
-                                    <div className="flex-1 overflow-x-auto p-0 w-full">
-                                        <table className="table table-sm min-w-full">
+                                    <div className="flex-1 table-wrapper p-0 w-full min-w-0">
+                                        <table className="table table-sm min-w-[600px]">
                                             <thead className="sticky top-0 bg-white z-10 shadow-sm text-[10px] uppercase">
                                                 <tr>
                                                     <th>Grade</th>
@@ -1511,14 +1515,14 @@ const Academics = () => {
                         </div>
                     </div>
 
-                    <div className="max-h-[60vh] overflow-y-auto">
+                    <div className="max-h-[60vh] overflow-y-auto table-wrapper">
                         {Object.keys(groupedResults).sort().map(groupKey => (
                             <div key={groupKey} className="mb-6">
                                 <div className="flex items-center gap-2 mb-2 pb-1 border-bottom">
                                     <h4 className="text-xs font-black uppercase text-secondary">{groupKey}</h4>
                                     <span className="badge badge-sm badge-ghost">{groupedResults[groupKey].length} Candidates</span>
                                 </div>
-                                <table className="table table-xs min-w-full">
+                                <table className="table table-xs min-w-[800px]">
                                     <thead>
                                         <tr>
                                             <th>Rank</th>
