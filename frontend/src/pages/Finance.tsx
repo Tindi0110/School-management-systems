@@ -61,13 +61,22 @@ const Finance = () => {
     // Invoice Filters
     const [invFilters, setInvFilters] = useState({ class_id: '', stream: '', year_id: '', term: '', status: '' });
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedInvoices, setSelectedInvoices] = useState<number[]>([]);
+    const [selectedInvoices, setSelectedInvoices] = useState<Set<number>>(new Set());
     const [showReminderModal, setShowReminderModal] = useState(false);
     const [reminderForm, setReminderForm] = useState({
         template: 'Dear Parent, this is a reminder regarding {student_name}\'s outstanding fee balance of KES {balance}. Please settle as soon as possible.',
         send_sms: true,
         send_email: true
     });
+
+    const filteredInvoices = React.useMemo(() => {
+        const lowerSearch = searchTerm.toLowerCase();
+        return invoices.filter((inv: any) =>
+        (!searchTerm ||
+            inv.student_name.toLowerCase().includes(lowerSearch) ||
+            inv.id.toString().includes(searchTerm))
+        );
+    }, [invoices, searchTerm]);
 
     const filteredPayments = React.useMemo(() => {
         const lowerSearch = searchTerm.toLowerCase();
@@ -326,9 +335,12 @@ const Finance = () => {
     };
 
     const toggleInvoiceSelection = (id: number) => {
-        setSelectedInvoices(prev =>
-            prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
-        );
+        setSelectedInvoices(prev => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id);
+            else next.add(id);
+            return next;
+        });
     };
 
     const handleSendReminders = async (e: React.FormEvent) => {
@@ -336,14 +348,14 @@ const Finance = () => {
         setIsSubmitting(true);
         try {
             const res = await financeAPI.invoices.sendReminders({
-                selected_ids: selectedInvoices,
+                selected_ids: Array.from(selectedInvoices),
                 message_template: reminderForm.template,
                 send_sms: reminderForm.send_sms,
                 send_email: reminderForm.send_email
             });
             success(res.data.message);
             setShowReminderModal(false);
-            setSelectedInvoices([]);
+            setSelectedInvoices(new Set());
         } catch (err: any) {
             toastError(err.message || 'Failed to send reminders');
         } finally {
@@ -374,9 +386,9 @@ const Finance = () => {
                         <Button variant="primary" icon={<FileText size={18} />} className="no-print flex-1 sm:flex-none" onClick={() => setShowInvoiceModal(true)}>
                             Invoices
                         </Button>
-                        {selectedInvoices.length > 0 && (
+                        {selectedInvoices.size > 0 && (
                             <Button variant="secondary" icon={<Bell size={18} />} className="no-print bg-orange-600 border-orange-600 hover:bg-orange-700 text-white flex-1 sm:flex-none" onClick={() => setShowReminderModal(true)}>
-                                Remind ({selectedInvoices.length})
+                                Remind ({selectedInvoices.size})
                             </Button>
                         )}
                     </div>
@@ -435,12 +447,12 @@ const Finance = () => {
                                                         onChange={(e) => {
                                                             if (e.target.checked) {
                                                                 const outstanding = invoices.filter(i => Number(i.balance) > 0).map(i => i.id);
-                                                                setSelectedInvoices(outstanding);
+                                                                setSelectedInvoices(new Set(outstanding));
                                                             } else {
-                                                                setSelectedInvoices([]);
+                                                                setSelectedInvoices(new Set());
                                                             }
                                                         }}
-                                                        checked={selectedInvoices.length > 0 && selectedInvoices.length === invoices.filter(i => Number(i.balance) > 0).length}
+                                                        checked={selectedInvoices.size > 0 && selectedInvoices.size === invoices.filter(i => Number(i.balance) > 0).length}
                                                     />
                                                 </th>
                                                 <th>Reference</th>
@@ -461,7 +473,7 @@ const Finance = () => {
                                                         <input
                                                             type="checkbox"
                                                             className="checkbox checkbox-xs"
-                                                            checked={selectedInvoices.includes(inv.id)}
+                                                            checked={selectedInvoices.has(inv.id)}
                                                             onChange={() => toggleInvoiceSelection(inv.id)}
                                                             disabled={Number(inv.balance) <= 0}
                                                         />
@@ -565,9 +577,17 @@ const Finance = () => {
                                                         ).map(i => i.id);
 
                                                         if (e.target.checked) {
-                                                            setSelectedInvoices(prev => Array.from(new Set([...prev, ...visibleOutstanding])));
+                                                            setSelectedInvoices(prev => {
+                                                                const next = new Set(prev);
+                                                                visibleOutstanding.forEach(id => next.add(id));
+                                                                return next;
+                                                            });
                                                         } else {
-                                                            setSelectedInvoices(prev => prev.filter(id => !visibleOutstanding.includes(id)));
+                                                            setSelectedInvoices(prev => {
+                                                                const next = new Set(prev);
+                                                                visibleOutstanding.forEach(id => next.delete(id));
+                                                                return next;
+                                                            });
                                                         }
                                                     }}
                                                 />
@@ -581,11 +601,7 @@ const Finance = () => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {invoices.filter((inv: any) =>
-                                            !searchTerm ||
-                                            inv.student_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                            inv.id.toString().includes(searchTerm)
-                                        ).map((inv: any) => (
+                                        {filteredInvoices.map((inv: any) => (
                                             <tr key={inv.id} className="hover:bg-gray-50 cursor-pointer" onClick={(e) => {
                                                 if ((e.target as HTMLElement).tagName === 'INPUT') return;
                                                 setSelectedInvoice(inv);
@@ -594,7 +610,7 @@ const Finance = () => {
                                                     <input
                                                         type="checkbox"
                                                         className="checkbox checkbox-xs"
-                                                        checked={selectedInvoices.includes(inv.id)}
+                                                        checked={selectedInvoices.has(inv.id)}
                                                         onChange={() => toggleInvoiceSelection(inv.id)}
                                                         disabled={Number(inv.balance) <= 0}
                                                     />
@@ -1041,9 +1057,9 @@ const Finance = () => {
                     <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 flex items-start gap-3">
                         <Bell className="text-blue-600 mt-1 shrink-0" size={20} />
                         <div>
-                            <h4 className="font-bold text-blue-900 text-sm">Target: {selectedInvoices.length} Parents</h4>
+                            <h4 className="font-bold text-blue-900 text-sm">Target: {selectedInvoices.size} Parents</h4>
                             <p className="text-xs text-blue-700 leading-relaxed">
-                                You are about to send automated reminders to {selectedInvoices.length} selected parents. The system will automatically fetch their contact information and insert the correct student name and balance.
+                                You are about to send automated reminders to {selectedInvoices.size} selected parents. The system will automatically fetch their contact information and insert the correct student name and balance.
                             </p>
                         </div>
                     </div>

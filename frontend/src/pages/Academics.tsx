@@ -184,6 +184,20 @@ const Academics = () => {
     const [isClassModalOpen, setIsClassModalOpen] = useState(false);
     const [isExamModalOpen, setIsExamModalOpen] = useState(false);
     const [isSyllabusModalOpen, setIsSyllabusModalOpen] = useState(false);
+    const [isBoundaryModalOpen, setIsBoundaryModalOpen] = useState(false);
+
+    // Results & Views State (CONSOLIDATED)
+    const [isResultModalOpen, setIsResultModalOpen] = useState(false);
+    const [isViewResultsModalOpen, setIsViewResultsModalOpen] = useState(false);
+    const [isBroadsheetModalOpen, setIsBroadsheetModalOpen] = useState(false);
+    const [viewResultsGroupBy, setViewResultsGroupBy] = useState<'STREAM' | 'ENTIRE_CLASS'>('STREAM');
+    const [resultContext, setResultContext] = useState({ level: '', classId: '', subjectId: '' });
+    const [selectedExam, setSelectedExam] = useState<any>(null);
+    const [examResults, setExamResults] = useState<any[]>([]);
+    const [studentScores, setStudentScores] = useState<any>({});
+    const [activeClassSubjects, setActiveClassSubjects] = useState<any[]>([]);
+    const [selectedClass, setSelectedClass] = useState<any>(null);
+    const [viewClassStudents, setViewClassStudents] = useState<any[]>([]);
 
     // Form States
     const [yearForm, setYearForm] = useState({ name: '', is_active: false });
@@ -196,14 +210,29 @@ const Academics = () => {
     const [classForm, setClassForm] = useState({ name: '', stream: '', year: new Date().getFullYear().toString(), class_teacher: '', capacity: 40 });
     const [examForm, setExamForm] = useState({ name: '', exam_type: 'END_TERM', term: '', grade_system: '', weighting: 100, date_started: '', is_active: true });
     const [syllabusForm, setSyllabusForm] = useState({ subject: '', class_grade: '', coverage_percentage: 0 });
+    const [boundaryForm, setBoundaryForm] = useState({ system: '', grade: '', min_score: 0, max_score: 100, points: 0, remarks: '' });
+
+    // Editing & Selection States (CONSOLIDATED)
     const [editingSyllabusId, setEditingSyllabusId] = useState<number | null>(null);
     const [editingYearId, setEditingYearId] = useState<number | null>(null);
-    const [bulkAttendanceList, setBulkAttendanceList] = useState<any[]>([]);
-    const [attendanceRecords, setAttendanceRecords] = useState<any[]>([]);
+    const [editingSubjectId, setEditingSubjectId] = useState<number | null>(null);
     const [editingAttendanceId, setEditingAttendanceId] = useState<number | null>(null);
     const [editingClassId, setEditingClassId] = useState<number | null>(null);
-    const [attendanceSort, setAttendanceSort] = useState({ field: 'date', direction: 'desc' });
+    const [editingExamId, setEditingExamId] = useState<number | null>(null);
+    const [editingGroupId, setEditingGroupId] = useState<number | null>(null);
+    const [editingBoundaryId, setEditingBoundaryId] = useState<number | null>(null);
+    const [editingSystemId, setEditingSystemId] = useState<number | null>(null);
+    const [selectedSystem, setSelectedSystem] = useState<any>(null);
+
+    // Other UI States
+    const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; type: string | null; id: number | null }>({ isOpen: false, type: null, id: null });
+    const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+    const [isViewClassModalOpen, setIsViewClassModalOpen] = useState(false);
     const [isExporting, setIsExporting] = useState(false);
+    const [attendanceSort, setAttendanceSort] = useState({ field: 'date', direction: 'desc' });
+    const [bulkAttendanceList, setBulkAttendanceList] = useState<any[]>([]);
+    const [attendanceRecords, setAttendanceRecords] = useState<any[]>([]);
+    const [activeDropdown, setActiveDropdown] = useState(false);
 
     // RBAC Helpers
     const userString = localStorage.getItem('user');
@@ -211,31 +240,6 @@ const Academics = () => {
     const isTeacher = user?.role === 'TEACHER';
     const isAdmin = ['ADMIN', 'PRINCIPAL', 'DOS', 'REGISTRAR'].includes(user?.role);
     const isReadOnly = isTeacher && !isAdmin;
-
-    const [isBoundaryModalOpen, setIsBoundaryModalOpen] = useState(false);
-    const [boundaryForm, setBoundaryForm] = useState({ system: '', grade: '', min_score: 0, max_score: 100, points: 0, remarks: '' });
-    const [selectedSystem, setSelectedSystem] = useState<any>(null);
-    const [editingGroupId, setEditingGroupId] = useState<number | null>(null);
-
-    // Results & Views State
-    const [viewResultsGroupBy, setViewResultsGroupBy] = useState<'STREAM' | 'ENTIRE_CLASS'>('STREAM');
-    const [resultContext, setResultContext] = useState({ level: '', classId: '', subjectId: '' });
-    const [editingBoundaryId, setEditingBoundaryId] = useState<number | null>(null);
-    const [editingSystemId] = useState<number | null>(null);
-    const [examResults, setExamResults] = useState<any[]>([]);
-    const [studentScores, setStudentScores] = useState<any>({});
-    const [activeClassSubjects, setActiveClassSubjects] = useState<any[]>([]);
-    const [selectedClass, setSelectedClass] = useState<any>(null);
-    const [viewClassStudents, setViewClassStudents] = useState<any[]>([]);
-    const [selectedExam, setSelectedExam] = useState<any>(null);
-    const [editingExamId, setEditingExamId] = useState<number | null>(null);
-    const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; type: string | null; id: number | null }>({ isOpen: false, type: null, id: null });
-
-    // Additional Modals
-    const [isReportModalOpen, setIsReportModalOpen] = useState(false);
-    const [isViewClassModalOpen, setIsViewClassModalOpen] = useState(false);
-    const [isResultModalOpen, setIsResultModalOpen] = useState(false);
-    const [isViewResultsModalOpen, setIsViewResultsModalOpen] = useState(false);
 
 
     useEffect(() => {
@@ -263,60 +267,6 @@ const Academics = () => {
         }).sort((a, b) => a.full_name.localeCompare(b.full_name));
     }, [students, resultContext.classId, resultContext.level, classes]);
 
-    const handleGradeSystemSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsSubmitting(true);
-        try {
-            if (editingSystemId) {
-                await academicsAPI.gradeSystems.update(editingSystemId, gradeForm);
-                success('Grade System Updated');
-            } else {
-                await academicsAPI.gradeSystems.create(gradeForm);
-                success('Grade System Created');
-            }
-            loadAllAcademicData();
-            setIsGradeModalOpen(false);
-            setGradeForm({ name: '', is_default: false });
-        } catch (err: any) { toastError(err.message || 'Error saving grade system'); }
-        finally { setIsSubmitting(false); }
-    };
-
-    const handleBoundarySubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsSubmitting(true);
-        try {
-            const payload = {
-                ...boundaryForm,
-                min_score: parseInt(boundaryForm.min_score.toString()),
-                max_score: parseInt(boundaryForm.max_score.toString()),
-                points: parseInt(boundaryForm.points.toString())
-            };
-
-            if (editingBoundaryId) {
-                await academicsAPI.gradeBoundaries.update(editingBoundaryId, payload);
-                success('Boundary updated');
-            } else {
-                const systemId = payload.system || selectedSystem?.id;
-                if (!systemId) { toastError("No grading system selected"); return; }
-                await academicsAPI.gradeBoundaries.create({ ...payload, system: systemId });
-                success('Boundary added');
-            }
-            loadAllAcademicData();
-            setIsBoundaryModalOpen(false);
-            setEditingBoundaryId(null);
-            setBoundaryForm({ system: selectedSystem?.id || '', grade: '', min_score: 0, max_score: 100, points: 0, remarks: '' });
-        } catch (err: any) { toastError(err.message || 'Error saving boundary'); }
-        finally { setIsSubmitting(false); }
-    };
-
-    const handleDeleteBoundary = async (id: number) => {
-        if (!await confirm('Delete this boundary?', { type: 'danger' })) return;
-        try {
-            await academicsAPI.gradeBoundaries.delete(id);
-            success('Boundary deleted');
-            loadAllAcademicData();
-        } catch (err: any) { toastError(err.message || 'Error deleting boundary'); }
-    };
 
 
     const openEditGroup = (group: any) => {
@@ -468,7 +418,6 @@ const Academics = () => {
         } catch (err: any) { toastError(err.message || 'Failed to save term'); }
         finally { setIsSubmitting(false); }
     };
-    const [editingSubjectId, setEditingSubjectId] = useState<number | null>(null);
 
     const handleSubjectSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -672,7 +621,6 @@ const Academics = () => {
     };
 
     // --- New Features: Class View & Results Entry ---
-    const [activeDropdown, setActiveDropdown] = useState(false);
 
     const openViewClass = (cls: any) => {
         setSelectedClass(cls);
@@ -780,6 +728,54 @@ const Academics = () => {
             setTimeout(() => loadAllAcademicData(), 500);
         } catch (err: any) {
             toastError(err.message || 'Failed to update term status');
+        }
+    };
+
+    const handleGradeSystemSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        try {
+            if (editingSystemId) {
+                await academicsAPI.gradeSystems.update(editingSystemId, gradeForm);
+                success('Grading system updated');
+            } else {
+                await academicsAPI.gradeSystems.create(gradeForm);
+                success('Grading system created');
+            }
+            loadAllAcademicData();
+            setIsGradeModalOpen(false);
+            setEditingSystemId(null);
+            setGradeForm({ name: '', is_default: false });
+        } catch (err: any) { toastError(err.message || 'Failed to save grading system'); }
+        finally { setIsSubmitting(false); }
+    };
+
+    const handleBoundarySubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        try {
+            if (editingBoundaryId) {
+                await academicsAPI.gradeBoundaries.update(editingBoundaryId, boundaryForm);
+                success('Boundary updated');
+            } else {
+                await academicsAPI.gradeBoundaries.create(boundaryForm);
+                success('Boundary added');
+            }
+            loadAllAcademicData();
+            setIsBoundaryModalOpen(false);
+            setEditingBoundaryId(null);
+            setBoundaryForm({ system: selectedSystem?.id || '', grade: '', min_score: 0, max_score: 100, points: 0, remarks: '' });
+        } catch (err: any) { toastError(err.message || 'Failed to save boundary'); }
+        finally { setIsSubmitting(false); }
+    };
+
+    const handleDeleteBoundary = async (id: number) => {
+        if (await confirm('Delete this grade boundary?', { type: 'danger' })) {
+            try {
+                await academicsAPI.gradeBoundaries.delete(id);
+                success('Boundary removed');
+                loadAllAcademicData();
+            } catch (err: any) { toastError(err.message || 'Failed to remove boundary'); }
         }
     };
 
@@ -1157,6 +1153,81 @@ const Academics = () => {
                                     )}
                                 </tbody>
                             </table>
+                        </div>
+                    </div>
+
+                    {/* Merged Syllabus Tracking */}
+                    <div className="md:col-span-4 space-y-6 md:space-y-8 fade-in mt-8">
+                        <div className="flex justify-between items-center">
+                            <h2 className="text-lg font-black text-primary uppercase">Syllabus Tracking</h2>
+                            {!isReadOnly && (
+                                <button className="btn btn-sm btn-primary font-black shadow-md" onClick={() => { setEditingSyllabusId(null); setIsSyllabusModalOpen(true); }}><Plus size={16} /> Record Coverage</button>
+                            )}
+                        </div>
+
+                        <div className="table-container shadow-lg">
+                            <div className="p-4 bg-secondary-light border-bottom">
+                                <h3 className="mb-0 text-xs font-black uppercase tracking-wider">Curriculum Progress</h3>
+                            </div>
+                            <div className="overflow-x-auto">
+                                <table className="table table-sm min-w-full">
+                                    <thead className="bg-secondary-light/30 text-secondary">
+                                        <tr>
+                                            <th className="min-w-[150px]">Subject</th>
+                                            <th className="min-w-[120px]">Class / Stream</th>
+                                            <th className="min-w-[80px]">Coverage</th>
+                                            <th className="min-w-[200px]">Progress</th>
+                                            <th className="text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {syllabusData.length === 0 ? (
+                                            <tr>
+                                                <td colSpan={5} className="text-center p-8 text-secondary text-xs uppercase font-bold italic">No syllabus records found</td>
+                                            </tr>
+                                        ) : (
+                                            syllabusData.map((s: any) => {
+                                                const cls = classes.find((c: any) => c.id === s.class_grade);
+                                                const sub = subjects.find((sub: any) => sub.id === s.subject);
+                                                return (
+                                                    <tr key={s.id} className="hover:bg-blue-50/50 transition-colors">
+                                                        <td className="font-bold text-xs">{sub?.name || 'Unknown'}</td>
+                                                        <td className="text-xs text-secondary-dark font-medium">{cls ? `${cls.name} ${cls.stream}` : 'Unknown'}</td>
+                                                        <td className="font-mono text-xs text-primary font-black">{s.coverage_percentage}%</td>
+                                                        <td>
+                                                            <progress className={`progress w-full h-2 ${s.coverage_percentage > 80 ? 'progress-success' : s.coverage_percentage > 40 ? 'progress-warning' : 'progress-error'}`} value={s.coverage_percentage} max="100"></progress>
+                                                        </td>
+                                                        <td className="text-right">
+                                                            {!isReadOnly && (
+                                                                <div className="flex justify-end gap-1">
+                                                                    <Button variant="ghost" size="sm" className="text-primary hover:bg-primary/10" onClick={() => {
+                                                                        setSyllabusForm({
+                                                                            subject: s.subject.toString(),
+                                                                            class_grade: s.class_grade.toString(),
+                                                                            coverage_percentage: s.coverage_percentage
+                                                                        });
+                                                                        setEditingSyllabusId(s.id);
+                                                                        setIsSyllabusModalOpen(true);
+                                                                    }} icon={<Edit size={12} />} />
+                                                                    <Button variant="ghost" size="sm" className="text-error hover:bg-error/10" onClick={async () => {
+                                                                        if (await confirm('Delete this syllabus record?', { type: 'danger' })) {
+                                                                            try {
+                                                                                await academicsAPI.syllabus.delete(s.id);
+                                                                                loadAllAcademicData();
+                                                                                success('Syllabus record deleted');
+                                                                            } catch (err: any) { toastError(err.message || 'Failed to delete record'); }
+                                                                        }
+                                                                    }} icon={<Trash2 size={12} />} />
+                                                                </div>
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1552,83 +1623,6 @@ const Academics = () => {
                 )
             }
 
-            {
-                activeTab === 'CURRICULUM' && (
-                    <div className="space-y-6 md:space-y-8 fade-in">
-                        <div className="flex justify-between items-center">
-                            <h2 className="text-lg font-black text-primary uppercase">Syllabus Tracking</h2>
-                            {!isReadOnly && (
-                                <button className="btn btn-sm btn-primary font-black shadow-md" onClick={() => { setEditingSyllabusId(null); setIsSyllabusModalOpen(true); }}><Plus size={16} /> Record Coverage</button>
-                            )}
-                        </div>
-
-                        <div className="table-container shadow-lg">
-                            <div className="p-4 bg-secondary-light border-bottom">
-                                <h3 className="mb-0 text-xs font-black uppercase tracking-wider">Curriculum Progress</h3>
-                            </div>
-                            <div className="overflow-x-auto">
-                                <table className="table table-sm min-w-full">
-                                    <thead className="bg-secondary-light/30 text-secondary">
-                                        <tr>
-                                            <th className="min-w-[150px]">Subject</th>
-                                            <th className="min-w-[120px]">Class / Stream</th>
-                                            <th className="min-w-[80px]">Coverage</th>
-                                            <th className="min-w-[200px]">Progress</th>
-                                            <th className="text-right">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {syllabusData.length === 0 ? (
-                                            <tr>
-                                                <td colSpan={5} className="text-center p-8 text-secondary text-xs uppercase font-bold italic">No syllabus records found</td>
-                                            </tr>
-                                        ) : (
-                                            syllabusData.map((s: any) => {
-                                                const cls = classes.find((c: any) => c.id === s.class_grade);
-                                                const sub = subjects.find((sub: any) => sub.id === s.subject);
-                                                return (
-                                                    <tr key={s.id} className="hover:bg-blue-50/50 transition-colors">
-                                                        <td className="font-bold text-xs">{sub?.name || 'Unknown'}</td>
-                                                        <td className="text-xs text-secondary-dark font-medium">{cls ? `${cls.name} ${cls.stream}` : 'Unknown'}</td>
-                                                        <td className="font-mono text-xs text-primary font-black">{s.coverage_percentage}%</td>
-                                                        <td>
-                                                            <progress className={`progress w-full h-2 ${s.coverage_percentage > 80 ? 'progress-success' : s.coverage_percentage > 40 ? 'progress-warning' : 'progress-error'}`} value={s.coverage_percentage} max="100"></progress>
-                                                        </td>
-                                                        <td className="text-right">
-                                                            {!isReadOnly && (
-                                                                <div className="flex justify-end gap-1">
-                                                                    <Button variant="ghost" size="sm" className="text-primary hover:bg-primary/10" onClick={() => {
-                                                                        setSyllabusForm({
-                                                                            subject: s.subject.toString(),
-                                                                            class_grade: s.class_grade.toString(),
-                                                                            coverage_percentage: s.coverage_percentage
-                                                                        });
-                                                                        setEditingSyllabusId(s.id);
-                                                                        setIsSyllabusModalOpen(true);
-                                                                    }} icon={<Edit size={12} />} />
-                                                                    <Button variant="ghost" size="sm" className="text-error hover:bg-error/10" onClick={async () => {
-                                                                        if (await confirm('Delete this syllabus record?', { type: 'danger' })) {
-                                                                            try {
-                                                                                await academicsAPI.syllabus.delete(s.id);
-                                                                                loadAllAcademicData();
-                                                                                success('Syllabus record deleted');
-                                                                            } catch (err: any) { toastError(err.message || 'Failed to delete record'); }
-                                                                        }
-                                                                    }} icon={<Trash2 size={12} />} />
-                                                                </div>
-                                                            )}
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                )
-            }
 
             {
                 activeTab === 'ATTENDANCE' && (
@@ -1997,19 +1991,9 @@ const Academics = () => {
                 </form>
             </Modal>
 
-            <Modal isOpen={isGradeModalOpen} onClose={() => setIsGradeModalOpen(false)} title="Configure Grading System">
-                <form onSubmit={async (e) => {
-                    e.preventDefault();
-                    try { await academicsAPI.gradeSystems.create(gradeForm); loadAllAcademicData(); setIsGradeModalOpen(false); success('Grading system created'); } catch (err: any) { toastError(err.message || 'Failed to save grading system'); }
-                }}>
-                    <div className="form-group"><label className="label text-[10px] font-black uppercase">System Name *</label><input type="text" className="input" value={gradeForm.name} onChange={(e) => setGradeForm({ ...gradeForm, name: e.target.value })} placeholder="e.g. KNEC Revised 2026" required /></div>
-                    <div className="form-group checkbox-group"><input type="checkbox" checked={gradeForm.is_default} onChange={(e) => setGradeForm({ ...gradeForm, is_default: e.target.checked })} /><label className="text-xs font-bold">Set as Default System</label></div>
-                    <Button type="submit" variant="primary" size="sm" className="w-full mt-2 font-black uppercase" loading={isSubmitting} loadingText="Saving...">Save Grading Logic</Button>
-                </form>
-            </Modal>
 
-            {/* View Results / Broadsheet Modal */}
-            <Modal isOpen={isViewResultsModalOpen} onClose={() => setIsViewResultsModalOpen(false)} title={`Exam Results: ${selectedExam?.name || ''}`}>
+            {/* Broadsheet Modal */}
+            <Modal isOpen={isBroadsheetModalOpen} onClose={() => setIsBroadsheetModalOpen(false)} title={`Broadsheet: ${selectedExam?.name || ''}`} size="full">
                 <div className="flex justify-between items-center mb-4">
                     <div className="flex gap-2">
                         <select className="select select-sm border-primary" value={viewResultsGroupBy} onChange={(e) => setViewResultsGroupBy(e.target.value as any)}>
@@ -2289,7 +2273,7 @@ const Academics = () => {
             </Modal >
 
             {/* Confirmation Modal */}
-            < Modal isOpen={deleteConfirm.isOpen} onClose={() => setDeleteConfirm({ ...deleteConfirm, isOpen: false })} title="Confirm Deletion" >
+            <Modal isOpen={deleteConfirm.isOpen} onClose={() => setDeleteConfirm({ ...deleteConfirm, isOpen: false })} title="Confirm Deletion" >
                 <div className="p-4">
                     <p className="mb-4 text-secondary">
                         Are you sure you want to delete this item? This action cannot be undone.
@@ -2302,7 +2286,7 @@ const Academics = () => {
             </Modal >
 
             {/* Reports Modal */}
-            < Modal isOpen={isReportModalOpen} onClose={() => setIsReportModalOpen(false)} title="Generate Reports" >
+            <Modal isOpen={isReportModalOpen} onClose={() => setIsReportModalOpen(false)} title="Generate Reports" >
                 <div className="p-4 space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                         <button className="flex flex-col items-center justify-center p-6 border rounded-lg hover:bg-secondary-light hover:border-primary transition-all gap-2" onClick={() => { window.print(); setIsReportModalOpen(false); }}>
