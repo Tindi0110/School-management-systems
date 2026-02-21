@@ -40,8 +40,12 @@ const PageLoader = () => (
 import ProtectedRoute from './components/ProtectedRoute'
 import { useSessionTimeout } from './hooks/useSessionTimeout'
 
+const SessionWatcher = () => {
+  useSessionTimeout();
+  return null;
+};
+
 function App() {
-  useSessionTimeout(); // Enable logout after 30 mins of inactivity
 
   return (
     <Provider store={store}>
@@ -49,6 +53,7 @@ function App() {
         <ToastProvider>
           <ConfirmProvider>
             <Router>
+              <SessionWatcher />
               <Suspense fallback={<PageLoader />}>
                 <ErrorBoundary name="Main Routing System">
                   <Routes>
