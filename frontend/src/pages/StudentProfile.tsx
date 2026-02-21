@@ -739,8 +739,8 @@ const StudentProfile = () => {
                                         </div>
                                     </div>
 
-                                    <div className="table-wrapper overflow-x-auto">
-                                        <table className="table w-full">
+                                    <div className="table-wrapper overflow-x-auto min-w-0">
+                                        <table className="table w-full min-w-[700px]">
                                             <thead>
                                                 <tr className="bg-slate-50">
                                                     <th className="py-4 px-6 text-[10px] font-black uppercase text-slate-400 min-w-[180px]">Subject Title</th>
@@ -878,8 +878,8 @@ const StudentProfile = () => {
                                                 </div>
                                             </div>
 
-                                            <div className="table-wrapper overflow-x-auto">
-                                                <table className="table table-lg w-full">
+                                            <div className="table-wrapper overflow-x-auto min-w-0">
+                                                <table className="table table-lg w-full min-w-[800px]">
                                                     <thead>
                                                         <tr className="bg-slate-50">
                                                             <th className="text-[10px] font-black uppercase text-slate-400 py-4 px-6 min-w-[120px]">Date</th>

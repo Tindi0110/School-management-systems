@@ -1515,7 +1515,7 @@ const Academics = () => {
                         </div>
                     </div>
 
-                    <div className="max-h-[60vh] overflow-y-auto table-wrapper">
+                    <div className="max-h-[60vh] table-wrapper overflow-x-auto min-w-0">
                         {Object.keys(groupedResults).sort().map(groupKey => (
                             <div key={groupKey} className="mb-6">
                                 <div className="flex items-center gap-2 mb-2 pb-1 border-bottom">
@@ -1781,7 +1781,7 @@ const Academics = () => {
 
             {/* Modals */}
             <Modal isOpen={isYearModalOpen} onClose={() => setIsYearModalOpen(false)} title="Add Academic Cycle">
-                <form onSubmit={handleYearSubmit}>
+                <form onSubmit={handleYearSubmit} className="space-y-4 form-container-sm mx-auto">
                     <div className="form-group"><label className="label text-[10px] font-black uppercase">Year Name (e.g. 2026) *</label><input type="text" className="input" value={yearForm.name} onChange={(e) => setYearForm({ ...yearForm, name: e.target.value })} required /></div>
                     <div className="form-group checkbox-group"><input type="checkbox" checked={yearForm.is_active} onChange={(e) => setYearForm({ ...yearForm, is_active: e.target.checked })} /><label className="text-xs font-bold">Set as Active Year</label></div>
                     <Button type="submit" variant="primary" size="sm" className="w-full mt-2 font-black uppercase" loading={isSubmitting} loadingText="Initializing...">Initialize Year Cycle</Button>
@@ -1789,7 +1789,7 @@ const Academics = () => {
             </Modal>
 
             <Modal isOpen={isTermModalOpen} onClose={() => setIsTermModalOpen(false)} title="Configure Academic Term">
-                <form onSubmit={handleTermSubmit}>
+                <form onSubmit={handleTermSubmit} className="space-y-4 form-container-md mx-auto">
                     <div className="form-group">
                         <label className="label text-[10px] font-black uppercase">Academic Year</label>
                         <select className="select" value={termForm.year} onChange={(e) => setTermForm({ ...termForm, year: e.target.value })} required>
@@ -1806,7 +1806,7 @@ const Academics = () => {
             </Modal>
 
             <Modal isOpen={isClassModalOpen} onClose={() => setIsClassModalOpen(false)} title="Create New Class Unit">
-                <div className="space-y-4">
+                <div className="space-y-4 form-container-md mx-auto">
                     <div className="grid grid-cols-2 gap-md">
                         <div className="form-group"><label className="label text-[10px] font-black uppercase">Class Level *</label><input type="text" className="input" value={classForm.name} onChange={(e) => setClassForm({ ...classForm, name: e.target.value })} placeholder="Form 4" required /></div>
                         <div className="form-group"><label className="label text-[10px] font-black uppercase">Stream *</label><input type="text" className="input" value={classForm.stream} onChange={(e) => setClassForm({ ...classForm, stream: e.target.value })} placeholder="North" required /></div>
@@ -1849,7 +1849,7 @@ const Academics = () => {
             </Modal>
 
             <Modal isOpen={isSubjectModalOpen} onClose={() => setIsSubjectModalOpen(false)} title="Add Curriculum Subject">
-                <form onSubmit={handleSubjectSubmit}>
+                <form onSubmit={handleSubjectSubmit} className="space-y-4 form-container-md mx-auto">
                     <div className="form-group"><label className="label text-[10px] font-black uppercase">Subject Name *</label><input type="text" className="input" value={subjectForm.name} onChange={(e) => setSubjectForm({ ...subjectForm, name: e.target.value })} required /></div>
                     <div className="grid grid-cols-2 gap-md">
                         <div className="form-group"><label className="label text-[10px] font-black uppercase">Unique Code *</label><input type="text" className="input" value={subjectForm.code} onChange={(e) => setSubjectForm({ ...subjectForm, code: e.target.value })} required /></div>
@@ -1987,7 +1987,7 @@ const Academics = () => {
             </Modal>
 
             <Modal isOpen={isExamModalOpen} onClose={() => setIsExamModalOpen(false)} title="Schedule Assessment/Exam">
-                <form onSubmit={handleExamSubmit}>
+                <form onSubmit={handleExamSubmit} className="form-container-md mx-auto">
                     <div className="grid grid-cols-2 gap-md mb-4">
                         <div className="form-group col-span-2"><label className="label text-[10px] font-black uppercase">Exam Title *</label><input type="text" className="input" value={examForm.name} onChange={(e) => setExamForm({ ...examForm, name: e.target.value })} placeholder="End of Term 1" required /></div>
 
@@ -2038,7 +2038,7 @@ const Academics = () => {
                     <Button variant="outline" size="sm" onClick={() => window.print()} icon={<Printer size={14} />}>Print Broadsheet</Button>
                 </div>
 
-                <div className="max-h-[70vh] overflow-auto border rounded bg-white relative">
+                <div className="table-wrapper max-h-[70vh] overflow-auto border rounded bg-white relative min-w-0">
                     {/* If Group By Stream, we might need multiple tables or just one big sorted table. 
                          For simplicity and "Matrix view", let's do one big table but filter/sort accordingly. 
                      */}

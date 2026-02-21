@@ -106,7 +106,7 @@ const Transport = () => {
                 const res = await apiCall;
                 setter(res.data?.results ?? res.data ?? []);
             } catch (err) {
-
+                console.error("Fetch failed for ", apiCall, err);
             }
         };
 
@@ -135,9 +135,9 @@ const Transport = () => {
             } catch (err) { /* non-critical */ }
 
         } catch (error) {
-
             toast.error("Failed to load some transport data. Please try again later.");
         } finally {
+            console.log("Transport Data Diagnostics:", { vehicles_count: vehicles.length, vehicles });
             setLoading(false);
         }
     };
