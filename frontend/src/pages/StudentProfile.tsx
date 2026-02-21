@@ -40,6 +40,8 @@ const StudentProfile = () => {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isClearanceModalOpen, setIsClearanceModalOpen] = useState(false);
     const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
+    const [isSuspendModalOpen, setIsSuspendModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [transferClassId, setTransferClassId] = useState('');
     const [classes, setClasses] = useState<any[]>([]);
 
@@ -392,32 +394,30 @@ const StudentProfile = () => {
     };
 
     const handleSuspend = async () => {
-        if (await confirm('Are you sure you want to SUSPEND this student? access will be restricted.')) {
-            try {
-                await studentsAPI.patch(Number(id), { status: 'SUSPENDED' });
-                toast.success('Student Suspended.');
-                loadStudentData();
-            } catch (error) { toast.error('Action failed.'); }
-        }
+        setIsSuspendModalOpen(false);
+        try {
+            await studentsAPI.patch(Number(id), { status: 'SUSPENDED' });
+            toast.success('Student Suspended.');
+            loadStudentData();
+        } catch (error) { toast.error('Action failed.'); }
     };
 
     const handleForceDelete = async () => {
-        if (await confirm('DANGER: This will PERMANENTLY DELETE the student and ALL linked records (Results, Hostels, Invoices). This action cannot be undone. Are you sure?')) {
-            try {
-                await studentsAPI.delete(Number(id)); // Try normal delete first
-                toast.success('Student deleted successfully.');
-                navigate('/students');
-            } catch (error: any) {
-                console.error(error);
-                // If normal delete fails, try force delete (custom endpoint)
-                if (await confirm('Standard delete failed due to linked records. Attempt FORCE DELETE?')) {
-                    try {
-                        await studentsAPI.forceDelete(Number(id));
-                        toast.success('Student FORCE DELETED successfully.');
-                        navigate('/students');
-                    } catch (forceErr) {
-                        toast.error('Force delete also failed. Please contact admin.');
-                    }
+        setIsDeleteModalOpen(false);
+        try {
+            await studentsAPI.delete(Number(id)); // Try normal delete first
+            toast.success('Student deleted successfully.');
+            navigate('/students');
+        } catch (error: any) {
+            console.error(error);
+            // If normal delete fails, try force delete (custom endpoint)
+            if (await confirm('Standard delete failed due to linked records. Attempt FORCE DELETE?')) {
+                try {
+                    await studentsAPI.forceDelete(Number(id));
+                    toast.success('Student FORCE DELETED successfully.');
+                    navigate('/students');
+                } catch (forceErr) {
+                    toast.error('Force delete also failed. Please contact admin.');
                 }
             }
         }
@@ -834,8 +834,8 @@ const StudentProfile = () => {
                                         </div>
                                         <div className="mt-8 space-y-2">
                                             <Button variant="outline" size="sm" className="w-full uppercase font-black py-2 tracking-widest" onClick={() => setIsTransferModalOpen(true)}>Transfer Unit</Button>
-                                            <Button variant="ghost" size="sm" className="text-error w-full uppercase font-black py-2 tracking-widest" onClick={handleSuspend}>Restrict / Suspend</Button>
-                                            <Button variant="danger" size="sm" className="w-full uppercase font-black py-2 tracking-widest mt-2" onClick={handleForceDelete}>PERMANENTLY DELETE</Button>
+                                            <Button variant="ghost" size="sm" className="text-error w-full uppercase font-black py-2 tracking-widest" onClick={() => setIsSuspendModalOpen(true)}>Restrict / Suspend</Button>
+                                            <Button variant="danger" size="sm" className="w-full uppercase font-black py-2 tracking-widest mt-2" onClick={() => setIsDeleteModalOpen(true)}>PERMANENTLY DELETE</Button>
                                         </div>
                                     </div>
 
@@ -1158,6 +1158,47 @@ const StudentProfile = () => {
                     </div>
                 </div>
             </div>
+
+            <Modal isOpen={isSuspendModalOpen} onClose={() => setIsSuspendModalOpen(false)} title="Restrict Student Access" size="sm">
+                <div className="space-y-4 text-center">
+                    <div className="mx-auto w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center text-amber-600 mb-2">
+                        <ShieldAlert size={32} />
+                    </div>
+                    <h3 className="text-lg font-black uppercase text-slate-800">Confirm Suspension</h3>
+                    <p className="text-slate-600 text-sm px-4">
+                        Are you sure you want to <strong>SUSPEND</strong> {student.full_name}? This will restrict their access to institutional services.
+                    </p>
+                    <div className="flex gap-3 pt-4">
+                        <Button variant="outline" className="flex-1 font-black uppercase" onClick={() => setIsSuspendModalOpen(false)}>Cancel</Button>
+                        <Button variant="primary" className="flex-1 font-black uppercase bg-amber-600 border-amber-600 hover:bg-amber-700" onClick={handleSuspend} loading={isSubmitting}>
+                            Restrict Access
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
+
+            <Modal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} title="Permanent Deletion" size="sm">
+                <div className="space-y-4 text-center">
+                    <div className="mx-auto w-16 h-16 bg-red-50 rounded-full flex items-center justify-center text-red-600 mb-2">
+                        <AlertTriangle size={32} />
+                    </div>
+                    <h3 className="text-lg font-black uppercase text-red-700">Irreversible Action</h3>
+                    <div className="bg-red-50 p-4 rounded-2xl border border-red-100 mx-1">
+                        <p className="text-red-600 text-xs font-bold leading-relaxed">
+                            DANGER: This will permanently delete <strong>{student.full_name}</strong> and ALL associated records including grades, finance, and attendance.
+                        </p>
+                    </div>
+                    <p className="text-slate-500 text-[10px] uppercase font-bold tracking-tight">This action cannot be undone.</p>
+                    <div className="flex flex-col gap-2 pt-2">
+                        <Button variant="danger" className="w-full font-black uppercase py-3 shadow-lg" onClick={handleForceDelete} loading={isSubmitting}>
+                            Confirm Permanent Delete
+                        </Button>
+                        <Button variant="ghost" className="w-full font-black uppercase text-slate-400" onClick={() => setIsDeleteModalOpen(false)}>
+                            Abort & Go Back
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
 
         </div>
     );
