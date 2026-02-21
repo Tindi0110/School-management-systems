@@ -15,19 +15,21 @@ import ResetPassword from './pages/ResetPassword'
 import DashboardLayout from './layouts/DashboardLayout'
 
 // Lazy load feature modules to prevent app-wide crash if one fails
-const Dashboard = React.lazy(() => import('./pages/Dashboard'))
-const Students = React.lazy(() => import('./pages/Students'))
-const StudentProfile = React.lazy(() => import('./pages/StudentProfile'))
-const Finance = React.lazy(() => import('./pages/Finance'))
-const Hostels = React.lazy(() => import('./pages/Hostels'))
-const Library = React.lazy(() => import('./pages/Library'))
-const Medical = React.lazy(() => import('./pages/Medical'))
-const Transport = React.lazy(() => import('./pages/Transport'))
-const Staff = React.lazy(() => import('./pages/Staff'))
-const Parents = React.lazy(() => import('./pages/Parents'))
-const Academics = React.lazy(() => import('./pages/Academics'))
-const Timetable = React.lazy(() => import('./pages/Timetable'))
-const SystemHealth = React.lazy(() => import('./pages/SystemHealth'))
+import { lazyWithRetry as lazy } from './utils/lazyWithRetry'
+
+const Dashboard = lazy(() => import('./pages/Dashboard'))
+const Students = lazy(() => import('./pages/Students'))
+const StudentProfile = lazy(() => import('./pages/StudentProfile'))
+const Finance = lazy(() => import('./pages/Finance'))
+const Hostels = lazy(() => import('./pages/Hostels'))
+const Library = lazy(() => import('./pages/Library'))
+const Medical = lazy(() => import('./pages/Medical'))
+const Transport = lazy(() => import('./pages/Transport'))
+const Staff = lazy(() => import('./pages/Staff'))
+const Parents = lazy(() => import('./pages/Parents'))
+const Academics = lazy(() => import('./pages/Academics'))
+const Timetable = lazy(() => import('./pages/Timetable'))
+const SystemHealth = lazy(() => import('./pages/SystemHealth'))
 
 // Loading Fallback
 const PageLoader = () => (

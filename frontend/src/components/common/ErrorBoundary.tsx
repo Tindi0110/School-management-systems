@@ -39,25 +39,33 @@ export class ErrorBoundary extends Component<Props, State> {
                 return this.props.fallback;
             }
 
+            const errorMsg = this.state.error?.toString() || '';
+            const isChunkError = errorMsg.includes('loading dynamically imported module') ||
+                errorMsg.includes('Failed to fetch dynamically imported module');
+
             // Default Error UI
             return (
                 <div className="p-4 m-4 border-l-4 border-red-500 bg-red-50 text-red-900 rounded shadow-sm">
                     <div className="flex items-center gap-2 mb-2">
                         <span className="text-xl">⚠️</span>
-                        <h2 className="text-lg font-bold">Something went wrong</h2>
+                        <h2 className="text-lg font-bold">
+                            {isChunkError ? 'New Update Available' : 'Something went wrong'}
+                        </h2>
                     </div>
                     <p className="mb-2 font-medium">
-                        {this.props.name ? `Error in ${this.props.name}` : 'A component failed to load.'}
+                        {isChunkError
+                            ? 'A new version of the application was deployed. Please refresh to load the latest changes.'
+                            : (this.props.name ? `Error in ${this.props.name}` : 'A component failed to load.')}
                     </p>
                     <details className="mb-4 text-xs font-mono bg-white p-2 rounded border border-red-100 opacity-80 cursor-pointer">
                         <summary>Error Details</summary>
                         {this.state.error && this.state.error.toString()}
                     </details>
                     <button
-                        onClick={this.handleRetry}
+                        onClick={isChunkError ? () => window.location.reload() : this.handleRetry}
                         className="px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded hover:bg-red-700 transition"
                     >
-                        Try Again
+                        {isChunkError ? 'Refresh Now' : 'Try Again'}
                     </button>
                 </div>
             );
