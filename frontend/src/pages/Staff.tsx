@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, Search, Edit, Trash2, Briefcase, Printer, Download, List, LayoutGrid } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Briefcase, Printer, Download, LayoutGrid } from 'lucide-react';
 import { staffAPI } from '../api/api';
 import { exportToCSV } from '../utils/export';
 import Modal from '../components/Modal';
@@ -213,28 +213,19 @@ const Staff = () => {
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    <div className="flex items-center gap-sm">
-                        <span className="text-sm font-semibold text-secondary">View By:</span>
-                        <div className="flex bg-secondary-light p-1 rounded-lg">
+                    <div className="flex gap-2 mb-10 overflow-x-auto p-1.5 bg-bg-tertiary rounded-2xl no-print">
+                        {(['NONE', 'DEPARTMENT', 'ROLE'] as const).map((mode) => (
                             <button
-                                className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all ${groupBy === 'NONE' ? 'bg-primary text-white shadow-sm' : 'text-secondary opacity-70 hover:opacity-100'}`}
-                                onClick={() => setGroupBy('NONE')}
+                                key={mode}
+                                className={`px-8 py-3 rounded-xl text-sm font-bold transition-all whitespace-nowrap ${groupBy === mode
+                                    ? 'bg-bg-primary text-primary shadow-md'
+                                    : 'text-text-secondary hover:text-primary hover:bg-bg-primary/60'
+                                    }`}
+                                onClick={() => setGroupBy(mode)}
                             >
-                                <List size={14} className="inline mr-1" /> General
+                                {mode === 'NONE' ? 'General Directory' : mode === 'DEPARTMENT' ? 'By Department' : 'By Role'}
                             </button>
-                            <button
-                                className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all ${groupBy === 'DEPARTMENT' ? 'bg-primary text-white shadow-sm' : 'text-secondary opacity-70 hover:opacity-100'}`}
-                                onClick={() => setGroupBy('DEPARTMENT')}
-                            >
-                                <LayoutGrid size={14} className="inline mr-1" /> Department
-                            </button>
-                            <button
-                                className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all ${groupBy === 'ROLE' ? 'bg-primary text-white shadow-sm' : 'text-secondary opacity-70 hover:opacity-100'}`}
-                                onClick={() => setGroupBy('ROLE')}
-                            >
-                                <Briefcase size={14} className="inline mr-1" /> Role
-                            </button>
-                        </div>
+                        ))}
                     </div>
                 </div>
             </div>

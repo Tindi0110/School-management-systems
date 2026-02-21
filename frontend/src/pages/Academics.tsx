@@ -14,18 +14,6 @@ import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 import Button from '../components/common/Button';
 
-// CSS to hide number input spinners
-const hideSpinnersStyle = `
-  input::-webkit-outer-spin-button,
-  input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-  input[type=number] {
-    -moz-appearance: textfield;
-  }
-`;
-
 const calculateGrade = (score: number, gradeSystems: any[], specificSystemId?: number | string | null) => {
     if (!score && score !== 0) return '-';
 
@@ -130,14 +118,6 @@ const StudentResultRow = React.memo(({ student, sClass, subjects, studentScores,
 });
 
 const Academics = () => {
-    // Add the style to document
-    useEffect(() => {
-        const style = document.createElement('style');
-        style.innerHTML = hideSpinnersStyle;
-        document.head.appendChild(style);
-        return () => { document.head.removeChild(style); };
-    }, []);
-
     const [activeTab, setActiveTab] = useState<'SUMMARY' | 'CLASSES' | 'CURRICULUM' | 'EXAMS' | 'GRADING' | 'ATTENDANCE' | 'RESOURCES' | 'ALLOCATION'>('SUMMARY');
     const [loading, setLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -970,20 +950,21 @@ const Academics = () => {
             </div>
 
             {/* Navigation Tabs */}
-            <div className="card mb-6 no-print p-1 bg-secondary-light">
-                <div className="flex flex-wrap gap-2 md:gap-xs scrollbar-hide p-1">
-                    {(['SUMMARY', 'CLASSES', 'CURRICULUM', 'ALLOCATION', 'EXAMS', 'ATTENDANCE', 'RESOURCES', 'GRADING'] as const)
-                        .filter(tab => !isReadOnly || ['SUMMARY', 'CURRICULUM', 'EXAMS', 'ATTENDANCE'].includes(tab))
-                        .map(tab => (
-                            <button
-                                key={tab}
-                                className={`px-4 py-2 rounded-md text-[10px] md:text-[11px] font-black transition-all whitespace-nowrap shadow-sm ${activeTab === tab ? 'bg-primary text-white shadow-md' : 'bg-white text-secondary hover:bg-gray-50'}`}
-                                onClick={() => setActiveTab(tab)}
-                            >
-                                {tab}
-                            </button>
-                        ))}
-                </div>
+            <div className="flex gap-2 mb-10 overflow-x-auto p-1.5 bg-bg-tertiary rounded-2xl no-print">
+                {(['SUMMARY', 'CLASSES', 'CURRICULUM', 'ALLOCATION', 'EXAMS', 'ATTENDANCE', 'RESOURCES', 'GRADING'] as const)
+                    .filter(tab => !isReadOnly || ['SUMMARY', 'CURRICULUM', 'EXAMS', 'ATTENDANCE'].includes(tab))
+                    .map(tab => (
+                        <button
+                            key={tab}
+                            className={`px-8 py-3 rounded-xl text-sm font-bold transition-all whitespace-nowrap ${activeTab === tab
+                                ? 'bg-bg-primary text-primary shadow-md'
+                                : 'text-text-secondary hover:text-primary hover:bg-bg-primary/60'
+                                }`}
+                            onClick={() => setActiveTab(tab)}
+                        >
+                            {tab.charAt(0) + tab.slice(1).toLowerCase()}
+                        </button>
+                    ))}
             </div>
 
             {/* Content per Tab */}
@@ -1001,16 +982,16 @@ const Academics = () => {
 
             {activeTab === 'SUMMARY' && (
                 <div className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-lg">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-xl">
                         <StatCard
                             title="Total Capacity"
                             value={`${classes.reduce((sum, c) => sum + (c.student_count || 0), 0)}/${classes.reduce((sum, c) => sum + (c.capacity || 40), 0)}`}
-                            icon={<Users size={16} />}
-                            gradient="linear-gradient(135deg, #667eea, #764ba2)"
+                            icon={<Users />}
+                            gradient="var(--primary-gradient)"
                         />
-                        <StatCard title="Departments/Groups" value={subjectGroups.length.toString()} icon={<Layers size={16} />} gradient="linear-gradient(135deg, #f5576c, #f093fb)" />
-                        <StatCard title="Pending Exams" value={exams.filter(e => new Date(e.date_started) > new Date() || e.is_active).length.toString()} icon={<Calendar size={16} />} gradient="linear-gradient(135deg, #ff0844, #ffb199)" />
-                        <StatCard title="System Grading Mean" value={meanGrade} icon={<BarChart3 size={16} />} gradient="linear-gradient(135deg, #0ba360, #3cba92)" />
+                        <StatCard title="Departments" value={subjectGroups.length.toString()} icon={<Layers />} gradient="linear-gradient(135deg, var(--accent-slate), #708090)" />
+                        <StatCard title="Upcoming Exams" value={exams.filter(e => new Date(e.date_started) > new Date() || e.is_active).length.toString()} icon={<Calendar />} gradient="linear-gradient(135deg, var(--accent-amber), #cc8400)" />
+                        <StatCard title="Overall Mean" value={meanGrade} icon={<BarChart3 />} gradient="linear-gradient(135deg, var(--success), #1e5c3e)" />
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-lg">

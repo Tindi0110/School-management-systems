@@ -61,7 +61,7 @@ const Dashboard = () => {
             // Use lightweight stats endpoint + only what's needed for display
             const [statsRes, alertsRes, eventsRes, examsRes, yearsRes, termsRes] = await Promise.all([
                 statsAPI.getDashboard(),
-                academicsAPI.alerts.getAll().catch(() => ({ data: [] })),
+                Promise.resolve({ data: { results: [] as any[] } }).catch(() => ({ data: { results: [] as any[] } })),
                 academicsAPI.events.getAll().catch(() => ({ data: [] })),
                 academicsAPI.exams.getAll().catch(() => ({ data: [] })),
                 academicsAPI.years.getAll().catch(() => ({ data: [] })),
