@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-User, BookOpen, CreditCard, ShieldAlert, Heart, FileText,
+import {
+    User, BookOpen, CreditCard, ShieldAlert, Heart, FileText,
     ArrowLeft, Printer, Edit, Phone, TrendingUp, AlertTriangle,
     Plus, MessageSquare, FilePlus, Users, Trash2, History as HistoryIcon, ShieldCheck,
     Mail, MessageCircle, Send
