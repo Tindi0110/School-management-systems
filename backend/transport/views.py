@@ -1,6 +1,7 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from django.db.models import Count, Q, OuterRef, Subquery, F
 from .models import (
     Vehicle, Route, PickupPoint, TransportAllocation, 
     TripLog, TransportAttendance, VehicleMaintenance, 
@@ -19,8 +20,17 @@ class TransportConfigViewSet(viewsets.ModelViewSet):
     serializer_class = TransportConfigSerializer
 
 class VehicleViewSet(viewsets.ModelViewSet):
-    queryset = Vehicle.objects.all()
     serializer_class = VehicleSerializer
+
+    def get_queryset(self):
+        # Annotate with the full name of the assigned driver to avoid N+1 in serializer
+        driver_name_subquery = DriverProfile.objects.filter(
+            assigned_vehicle=OuterRef('pk')
+        ).values('staff__full_name')[:1]
+        
+        return Vehicle.objects.annotate(
+            assigned_driver_name_annotated=Subquery(driver_name_subquery)
+        ).all()
 
     @action(detail=True, methods=['get'])
     def maintenance_history(self, request, pk=None):
@@ -34,8 +44,12 @@ class DriverProfileViewSet(viewsets.ModelViewSet):
     serializer_class = DriverProfileSerializer
 
 class RouteViewSet(viewsets.ModelViewSet):
-    queryset = Route.objects.all()
     serializer_class = RouteSerializer
+
+    def get_queryset(self):
+        return Route.objects.prefetch_related('pickup_points').annotate(
+            occupancy_count=Count('allocations', filter=Q(allocations__status='ACTIVE'))
+        ).all()
 
 class PickupPointViewSet(viewsets.ModelViewSet):
     queryset = PickupPoint.objects.all()
@@ -75,15 +89,15 @@ class TransportAttendanceViewSet(viewsets.ModelViewSet):
     serializer_class = TransportAttendanceSerializer
 
 class VehicleMaintenanceViewSet(viewsets.ModelViewSet):
-    queryset = VehicleMaintenance.objects.all()
+    queryset = VehicleMaintenance.objects.select_related('vehicle').all()
     serializer_class = VehicleMaintenanceSerializer
 
 class FuelRecordViewSet(viewsets.ModelViewSet):
-    queryset = FuelRecord.objects.all()
+    queryset = FuelRecord.objects.select_related('vehicle').all()
     serializer_class = FuelRecordSerializer
 
 class TransportIncidentViewSet(viewsets.ModelViewSet):
-    queryset = TransportIncident.objects.all()
+    queryset = TransportIncident.objects.select_related('vehicle', 'reported_by').all()
     serializer_class = TransportIncidentSerializer
 
     def perform_create(self, serializer):

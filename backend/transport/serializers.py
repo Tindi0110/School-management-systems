@@ -21,6 +21,9 @@ class VehicleSerializer(serializers.ModelSerializer):
         extra_fields = ['maintenance_count', 'assigned_driver_id', 'assigned_driver_name']
 
     def get_assigned_driver_name(self, obj):
+        # Use annotated field if available, otherwise fallback to query
+        if hasattr(obj, 'assigned_driver_name_annotated'):
+            return obj.assigned_driver_name_annotated
         driver = DriverProfile.objects.filter(assigned_vehicle=obj).first()
         return driver.staff.full_name if driver else None
 
@@ -74,6 +77,9 @@ class RouteSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def get_occupancy(self, obj):
+        # Use annotated field if available, otherwise fallback to query
+        if hasattr(obj, 'occupancy_count'):
+            return obj.occupancy_count
         return obj.allocations.filter(status='ACTIVE').count()
 
 class TransportAllocationSerializer(serializers.ModelSerializer):
