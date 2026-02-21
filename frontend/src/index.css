@@ -319,6 +319,7 @@ input[type=number] {
 /* ===== RESPONSIVE TABLES & FORMS ===== */
 .table-wrapper {
   width: 100%;
+  max-width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   position: relative;
@@ -349,6 +350,8 @@ table.table {
   margin-bottom: var(--spacing-lg);
   box-shadow: var(--shadow);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 .card:hover {
