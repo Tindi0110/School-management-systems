@@ -367,7 +367,6 @@ table.table {
   box-shadow: var(--shadow);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   max-width: 100%;
-  overflow-x: hidden;
 }
 
 .card:hover {

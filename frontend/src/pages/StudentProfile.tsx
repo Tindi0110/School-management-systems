@@ -800,7 +800,7 @@ const StudentProfile = () => {
                                                     statement.map((item, i) => (
                                                         <tr key={i} className="hover-bg-secondary">
                                                             <td className="text-[10px] font-bold whitespace-nowrap">{new Date(item.date).toLocaleDateString()}</td>
-                                                            <td className="text-[10px] font-bold uppercase text-secondary truncate max-w-[200px]">{item.description}</td>
+                                                            <td className="text-[10px] font-bold uppercase text-secondary">{item.description}</td>
                                                             <td className="text-[10px] font-black text-primary">{item.reference}</td>
                                                             <td className="text-[10px] font-black text-error text-right">{item.debit > 0 ? `KES ${item.debit.toLocaleString()}` : '-'}</td>
                                                             <td className="text-[10px] font-black text-success text-right">{item.credit > 0 ? `KES ${item.credit.toLocaleString()}` : '-'}</td>
