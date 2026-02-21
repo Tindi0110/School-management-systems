@@ -221,10 +221,6 @@ const Academics = () => {
     const isReadOnly = isTeacher && !isAdmin;
 
 
-    useEffect(() => {
-        loadAllAcademicData();
-    }, []);
-
     const handleScoreChange = useCallback((studentId: any, subjectId: any, val: string) => {
         setStudentScores((prev: any) => ({
             ...prev,
@@ -272,6 +268,51 @@ const Academics = () => {
         return calculateGrade(avg, gradeSystems, specificSystemId);
     };
 
+    const loadAllAcademicData = async () => {
+        setLoading(true);
+        try {
+            const dS = (r: PromiseSettledResult<any>) => r.status === 'fulfilled' ? (r.value.data?.results ?? r.value.data ?? []) : [];
+
+            // Fetch ALL data in one mega-parallel call to avoid sequential waterfalls
+            const [
+                yearsRes, termsRes, classesRes, subjectsRes, groupsRes,
+                gradesRes, staffRes, studentRes, resultsRes, examsRes, syllabusRes
+            ] = await Promise.allSettled([
+                academicsAPI.years.getAll(),
+                academicsAPI.terms.getAll(),
+                academicsAPI.classes.getAll(),
+                academicsAPI.subjects.getAll(),
+                academicsAPI.subjectGroups.getAll(),
+                academicsAPI.gradeSystems.getAll(),
+                staffAPI.getAll(),
+                studentsAPI.getAll({ page_size: 200 }),
+                academicsAPI.results.getAll({ page_size: 500 }),
+                academicsAPI.exams.getAll(),
+                academicsAPI.syllabus.getAll(),
+            ]);
+
+            const freshGradeSystems = dS(gradesRes);
+            const academicResults = dS(resultsRes);
+
+            setAcademicYears(dS(yearsRes));
+            setTerms(dS(termsRes));
+            setClasses(dS(classesRes));
+            setSubjects(dS(subjectsRes));
+            setSubjectGroups(dS(groupsRes));
+            setGradeSystems(freshGradeSystems);
+            setStaff(dS(staffRes));
+            setStudents(dS(studentRes));
+            setExams(dS(examsRes));
+            setSyllabusData(dS(syllabusRes));
+            // Use freshly fetched grade systems (not stale state) for accurate mean grade
+            setMeanGrade(calculateMeanGrade(academicResults, freshGradeSystems));
+        } catch (err) {
+            console.error('Error loading academic data:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const loadMetadata = async () => {
         setLoading(true);
         try {
@@ -304,18 +345,21 @@ const Academics = () => {
         const d = (res: any) => res.data?.results ?? res.data ?? [];
         try {
             if (activeTab === 'SUMMARY') {
-                // Load everything the summary needs in parallel
-                const [studentRes, resultsRes, examsRes, syllabusRes] = await Promise.all([
+                // Fetch grade systems fresh to avoid stale state race condition
+                const [studentRes, resultsRes, examsRes, syllabusRes, gradesRes] = await Promise.all([
                     studentsAPI.getAll({ page_size: 200 }),
                     academicsAPI.results.getAll({ page_size: 500 }),
                     academicsAPI.exams.getAll(),
-                    academicsAPI.syllabus.getAll()
+                    academicsAPI.syllabus.getAll(),
+                    academicsAPI.gradeSystems.getAll(),
                 ]);
+                const freshGradeSystems = d(gradesRes);
+                const results = d(resultsRes);
                 setStudents(d(studentRes));
                 setExams(d(examsRes));
                 setSyllabusData(d(syllabusRes));
-                const results = d(resultsRes);
-                setMeanGrade(calculateMeanGrade(results, gradeSystems));
+                setGradeSystems(freshGradeSystems);
+                setMeanGrade(calculateMeanGrade(results, freshGradeSystems));
             } else if (activeTab === 'EXAMS') {
                 const res = await academicsAPI.exams.getAll();
                 setExams(d(res));
@@ -333,26 +377,27 @@ const Academics = () => {
                 ]);
                 setSyllabusData(d(syllabusRes));
                 setStudents(d(studentRes));
-            } else if (activeTab === 'ALLOCATION' && !classAllocations.length) {
-                // allocations are often class-specific, but let's load initial if needed
             }
         } catch (err) {
             console.error(`Error loading data for tab ${activeTab}:`, err);
         }
     };
 
-    const loadAllAcademicData = async () => {
-        await loadMetadata();
-        await loadTabSpecificData();
-    };
-
+    // Single mount effect - loads everything at once to avoid race conditions
     useEffect(() => {
-        loadMetadata();
+        loadAllAcademicData();
     }, []);
 
+    // Tab-switch effect - only fires when tab changes AFTER initial load
+    const isFirstRender = React.useRef(true);
     useEffect(() => {
+        if (isFirstRender.current) {
+            isFirstRender.current = false;
+            return; // Skip on initial mount - loadAllAcademicData() handles this
+        }
         loadTabSpecificData();
     }, [activeTab]);
+
 
     // Allocation Handlers
     const fetchClassAllocations = async (classId: string) => {
