@@ -242,12 +242,12 @@ const Staff = () => {
                 <div className="space-y-10">
                     {Object.keys(groupedStaff).sort().map(groupKey => (
                         <div key={groupKey} className="table-container overflow-visible border-left-4 border-primary shadow-md">
-                            <div className="card-header bg-secondary-light py-3 px-6 flex justify-between items-center">
-                                <h3 className="mb-0 text-primary flex items-center gap-sm">
+                            <div className="card-header border-bottom py-4 px-6 flex justify-between items-center">
+                                <h3 className="mb-0 text-primary flex items-center gap-sm font-black uppercase tracking-wider text-sm">
                                     {groupBy === 'DEPARTMENT' ? <LayoutGrid size={18} /> : <Briefcase size={18} />}
                                     {groupKey}
                                 </h3>
-                                <span className="badge badge-primary">{groupedStaff[groupKey].length} Staff</span>
+                                <div className="badge badge-primary font-black uppercase tracking-widest text-[10px]">{groupedStaff[groupKey].length} Staff</div>
                             </div>
                             {renderStaffTable(groupedStaff[groupKey])}
                         </div>
@@ -257,7 +257,7 @@ const Staff = () => {
             )}
 
             <Modal isOpen={isModalOpen} onClose={closeModal} title={editingStaff ? 'Edit Staff Member' : 'Register New Staff Member'}>
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} className="form-container-md">
                     <div className="grid grid-cols-2 gap-md">
                         <div className="form-group">
                             <label className="label">Employee ID *</label>

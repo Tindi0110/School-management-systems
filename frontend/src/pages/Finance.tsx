@@ -180,13 +180,13 @@ const Finance = () => {
     }, [showInvoiceModal, showPaymentModal, showFeeModal, showMpesaModal]);
 
     const StatsCard = ({ title, value, icon, color }: any) => (
-        <div className="card flex flex-row items-center gap-6 p-6 transition-all">
-            <div className={`p-4 rounded-2xl bg-opacity-10 ${color.replace('text-', 'bg-')} ${color}`}>
+        <div className="card flex flex-row items-center gap-6 p-6 transition-all hover-scale border-left-4 border-primary">
+            <div className={`p-4 rounded-2xl bg-opacity-10 ${color.replace('text-', 'bg-')} ${color} shrink-0`}>
                 {React.cloneElement(icon, { size: 28 })}
             </div>
             <div>
-                <p className="text-text-muted text-xs font-bold uppercase tracking-wider mb-1">{title}</p>
-                <h3 className="text-2xl font-black text-primary m-0">{value}</h3>
+                <p className="text-text-muted text-[10px] font-black uppercase tracking-[0.2em] mb-1">{title}</p>
+                <h3 className="text-2xl font-black text-primary m-0 leading-tight">{value}</h3>
             </div>
         </div>
     );
@@ -747,7 +747,7 @@ const Finance = () => {
 
             {/* Invoices List / Bulk Gen Modal */}
             <Modal isOpen={showInvoiceModal} onClose={() => setShowInvoiceModal(false)} title="Bulk Invoice Generation">
-                <form onSubmit={handleGenerateInvoices} className="space-y-4">
+                <form onSubmit={handleGenerateInvoices} className="space-y-6 form-container-md">
                     <p className="text-xs text-gray-500 bg-blue-50 p-3 rounded-lg border border-blue-100">
                         This will generate invoices for ALL students in the selected class who don't already have an invoice for this period.
                     </p>
@@ -793,7 +793,7 @@ const Finance = () => {
 
             {/* Payment Modal */}
             <Modal isOpen={showPaymentModal} onClose={() => setShowPaymentModal(false)} title="Receive Payment">
-                <form onSubmit={handleReceivePayment} className="space-y-4">
+                <form onSubmit={handleReceivePayment} className="space-y-6 form-container-md">
                     <SearchableSelect
                         label="Student"
                         options={students.map((s: any) => ({ id: s.id, label: `${s.admission_number} - ${s.full_name}` }))}
@@ -854,7 +854,7 @@ const Finance = () => {
 
             {/* Fee Modal */}
             <Modal isOpen={showFeeModal} onClose={() => setShowFeeModal(false)} title={editingFeeId ? "Edit Fee Structure" : "New Fee Structure"}>
-                <form onSubmit={handleFeeSubmit} className="space-y-4">
+                <form onSubmit={handleFeeSubmit} className="space-y-6 form-container-md">
                     <div className="form-control">
                         <label className="label">Structure Name</label>
                         <input type="text" className="input input-bordered" placeholder="e.g. Tuition Fee" required
@@ -985,7 +985,7 @@ const Finance = () => {
 
             {/* Expense Modal */}
             <Modal isOpen={showExpenseModal} onClose={() => setShowExpenseModal(false)} title="Record New Expense">
-                <form onSubmit={handleExpenseSubmit} className="space-y-4">
+                <form onSubmit={handleExpenseSubmit} className="space-y-6 form-container-md">
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-control">
                             <label className="label">Category</label>
@@ -1018,7 +1018,7 @@ const Finance = () => {
             </Modal>
             {/* M-Pesa STK Push Modal */}
             <Modal isOpen={showMpesaModal} onClose={() => setShowMpesaModal(false)} title="M-Pesa STK Push Payment">
-                <form onSubmit={handleMpesaPush} className="space-y-4">
+                <form onSubmit={handleMpesaPush} className="space-y-6 form-container-md">
                     <p className="text-xs text-gray-500 bg-green-50 p-3 rounded-lg border border-green-100">
                         This will send a secure payment prompt to the parent's phone. Fees will be automatically updated once paid.
                     </p>
@@ -1050,7 +1050,7 @@ const Finance = () => {
 
             {/* Bulk Reminder Modal */}
             <Modal isOpen={showReminderModal} onClose={() => setShowReminderModal(false)} title="Send Automated Fee Reminders">
-                <form onSubmit={handleSendReminders} className="space-y-4">
+                <form onSubmit={handleSendReminders} className="space-y-6 form-container-md">
                     <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 flex items-start gap-3">
                         <Bell className="text-blue-600 mt-1 shrink-0" size={20} />
                         <div>

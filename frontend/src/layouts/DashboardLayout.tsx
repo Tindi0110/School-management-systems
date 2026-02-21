@@ -57,7 +57,7 @@ const DashboardLayout = () => {
         const dueToday = res.data?.results || res.data || [];
 
         if (dueToday.length > 0) {
-          dueToday.forEach((e: any) => {
+          dueToday.slice(0, 3).forEach((e: any) => {
             info(`📅 Event Due Today: ${e.title}`, { duration: 8000 });
           });
         }
@@ -244,7 +244,6 @@ const DashboardLayout = () => {
             right: 0;
             bottom: 0;
             background: rgba(0,0,0,0.4);
-            backdrop-filter: blur(4px);
             z-index: 90;
             opacity: 0;
             visibility: hidden;

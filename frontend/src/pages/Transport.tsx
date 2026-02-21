@@ -640,20 +640,19 @@ const Transport = () => {
             </div>
 
             {/* Navigation Tabs */}
-            <div className="tabs mb-6 no-print overflow-x-auto">
-                <button className={`tab-link ${activeTab === 'fleet' ? 'active' : ''}`} onClick={() => setActiveTab('fleet')}><Bus size={16} /> Fleet Registry</button>
-                <button className={`tab-link ${activeTab === 'routes' ? 'active' : ''}`} onClick={() => setActiveTab('routes')}><MapPin size={16} /> Routes & Zones</button>
-                <button className={`tab-link ${activeTab === 'allocations' ? 'active' : ''}`} onClick={() => setActiveTab('allocations')}><Users size={16} /> Allocations</button>
-                <button className={`tab-link ${activeTab === 'trips' ? 'active' : ''}`} onClick={() => setActiveTab('trips')}><ClipboardList size={16} /> Trip Logs</button>
-                <button className={`tab-link ${activeTab === 'maintenance' ? 'active' : ''}`} onClick={() => setActiveTab('maintenance')}><Wrench size={16} /> Repairs</button>
-                <button className={`tab-link ${activeTab === 'fuel' ? 'active' : ''}`} onClick={() => setActiveTab('fuel')}><Droplet size={16} /> Fuel Usage</button>
-                <button className={`tab-link ${activeTab === 'safety' ? 'active' : ''}`} onClick={() => setActiveTab('safety')}><ShieldAlert size={16} /> Safety</button>
-                <Button variant="outline" size="sm" className="ml-auto" onClick={() => {
-                    const dataToExport = activeTab === 'allocations' ? allocations : activeTab === 'routes' ? routes : activeTab === 'trips' ? trips : activeTab === 'maintenance' ? maintenanceRecords : fuelRecords;
-                    exportToCSV(dataToExport, `Transport_${activeTab}`);
-                }} icon={<Download size={14} />}>
-                    Export {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
-                </Button>
+            <div className="flex gap-2 mb-10 overflow-x-auto p-1.5 bg-bg-tertiary rounded-2xl no-print">
+                {['fleet', 'routes', 'allocations', 'trips', 'maintenance', 'fuel', 'safety'].map((tab) => (
+                    <button
+                        key={tab}
+                        onClick={() => setActiveTab(tab)}
+                        className={`px-8 py-3 rounded-xl text-sm font-bold transition-all whitespace-nowrap ${activeTab === tab
+                            ? 'bg-bg-primary text-primary shadow-md'
+                            : 'text-text-secondary hover:text-primary hover:bg-bg-primary/60'
+                            }`}
+                    >
+                        {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                    </button>
+                ))}
             </div>
 
             {/* Fleet Content */}
@@ -911,9 +910,9 @@ const Transport = () => {
                 </div>
             )}
 
-            {/* Modal Templates */}
-            <Modal isOpen={isAllocationModalOpen} onClose={() => setIsAllocationModalOpen(false)} title={enrollmentId ? "Edit Enrollment" : "New Transport Enrollment"}>
-                <form onSubmit={handleEnrollmentSubmit} className="space-y-4">
+            {/* Enrollment Modal */}
+            <Modal isOpen={isAllocationModalOpen} onClose={() => setIsAllocationModalOpen(false)} title={enrollmentId ? "Edit Enrollment" : "Transport Enrollment"}>
+                <form onSubmit={handleEnrollmentSubmit} className="space-y-6 form-container-md">
                     <SearchableSelect label="Select Student *" options={studentOptions} value={enrollmentForm.student} onChange={(val) => setEnrollmentForm({ ...enrollmentForm, student: val.toString() })} required />
                     <SearchableSelect label="Assign Route *" options={routeOptions} value={enrollmentForm.route} onChange={(val) => setEnrollmentForm({ ...enrollmentForm, route: val.toString() })} required />
                     <div className="form-group">
@@ -930,8 +929,9 @@ const Transport = () => {
                 </form>
             </Modal>
 
-            <Modal isOpen={isVehicleModalOpen} onClose={() => setIsVehicleModalOpen(false)} title="Fleet Management" size="md">
-                <form onSubmit={handleVehicleSubmit} className="space-y-4">
+            {/* Vehicle Modal */}
+            <Modal isOpen={isVehicleModalOpen} onClose={() => setIsVehicleModalOpen(false)} title={vehicleId ? "Edit Vehicle" : "Add New Vehicle"}>
+                <form onSubmit={handleVehicleSubmit} className="space-y-6 form-container-md">
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group"><label className="label">Registration No.</label><input type="text" className="input uppercase" value={vehicleForm.registration_number} onChange={e => setVehicleForm({ ...vehicleForm, registration_number: e.target.value })} required /></div>
                         <div className="form-group"><label className="label">Make / Model</label><input type="text" className="input" value={vehicleForm.make_model} onChange={e => setVehicleForm({ ...vehicleForm, make_model: e.target.value })} required /></div>
@@ -973,8 +973,9 @@ const Transport = () => {
                 </form>
             </Modal>
 
-            <Modal isOpen={isRouteModalOpen} onClose={() => setIsRouteModalOpen(false)} title={routeId ? "Edit Route" : "New Geographic Route"}>
-                <form onSubmit={handleRouteSubmit} className="space-y-4">
+            {/* Route Modal */}
+            <Modal isOpen={isRouteModalOpen} onClose={() => setIsRouteModalOpen(false)} title={routeId ? "Edit Route" : "Define New Route"}>
+                <form onSubmit={handleRouteSubmit} className="space-y-6 form-container-md">
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group"><label className="label">Route Code</label><input type="text" className="input uppercase" placeholder="e.g. RT-001" value={routeForm.route_code} onChange={e => setRouteForm({ ...routeForm, route_code: e.target.value })} required /></div>
                         <div className="form-group"><label className="label">Distance (KM)</label><input type="number" step="0.1" className="input" value={routeForm.distance_km} onChange={e => setRouteForm({ ...routeForm, distance_km: parseFloat(e.target.value) })} required /></div>
@@ -985,8 +986,9 @@ const Transport = () => {
                 </form>
             </Modal>
 
-            <Modal isOpen={isPointModalOpen} onClose={() => setIsPointModalOpen(false)} title={pointId ? "Edit Service Point" : "Add Service Point"}>
-                <form onSubmit={handlePointSubmit} className="space-y-4">
+            {/* Point Modal */}
+            <Modal isOpen={isPointModalOpen} onClose={() => setIsPointModalOpen(false)} title={pointId ? "Edit Pickup Point" : "Add Pickup Point"}>
+                <form onSubmit={handlePointSubmit} className="space-y-6 form-container-md">
                     <div className="form-group"><label className="label">Point Name / Landmark</label><input type="text" className="input" placeholder="e.g. Shell Station, Westlands" value={pointForm.point_name} onChange={e => setPointForm({ ...pointForm, point_name: e.target.value })} required /></div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group"><label className="label">Pickup Time</label><input type="time" className="input" value={pointForm.pickup_time} onChange={e => setPointForm({ ...pointForm, pickup_time: e.target.value })} required /></div>
@@ -1005,8 +1007,9 @@ const Transport = () => {
                 </form>
             </Modal>
 
+            {/* Trip Modal */}
             <Modal isOpen={isTripModalOpen} onClose={() => setIsTripModalOpen(false)} title={tripId ? "Edit Trip Log" : "Log New Trip"}>
-                <form onSubmit={handleTripSubmit} className="space-y-4">
+                <form onSubmit={handleTripSubmit} className="space-y-6 form-container-md">
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group"><label className="label">Date</label><input type="date" className="input" value={tripForm.date} onChange={e => setTripForm({ ...tripForm, date: e.target.value })} required /></div>
                         <div className="form-group">
@@ -1043,7 +1046,7 @@ const Transport = () => {
             </Modal>
 
             <Modal isOpen={isMaintenanceModalOpen} onClose={() => setIsMaintenanceModalOpen(false)} title={maintenanceId ? "Edit Maintenance Record" : "Log Maintenance"}>
-                <form onSubmit={handleMaintenanceSubmit} className="space-y-4">
+                <form onSubmit={handleMaintenanceSubmit} className="space-y-6 form-container-md">
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group"><label className="label">Date</label><input type="date" className="input" value={maintenanceForm.date} onChange={e => setMaintenanceForm({ ...maintenanceForm, date: e.target.value })} required /></div>
                         <div className="form-group"><label className="label">Cost (KES)</label><input type="number" className="input" value={maintenanceForm.cost} onChange={e => setMaintenanceForm({ ...maintenanceForm, cost: parseFloat(e.target.value) })} required /></div>
@@ -1067,7 +1070,7 @@ const Transport = () => {
             </Modal>
 
             <Modal isOpen={isSafetyModalOpen} onClose={() => setIsSafetyModalOpen(false)} title={incidentId ? "Edit Incident Report" : "Report Safety Incident"}>
-                <form onSubmit={handleSafetySubmit} className="space-y-4">
+                <form onSubmit={handleSafetySubmit} className="space-y-6 form-container-md">
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group"><label className="label">Date</label><input type="date" className="input" value={safetyForm.date} onChange={e => setSafetyForm({ ...safetyForm, date: e.target.value })} required /></div>
                         <div className="form-group"><label className="label">Severity</label>
@@ -1100,7 +1103,7 @@ const Transport = () => {
             </Modal>
 
             <Modal isOpen={isFuelModalOpen} onClose={() => setIsFuelModalOpen(false)} title="Log Fuel Consumption">
-                <form onSubmit={handleFuelSubmit} className="space-y-4">
+                <form onSubmit={handleFuelSubmit} className="space-y-6 form-container-md">
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group"><label className="label">Date</label><input type="date" className="input" value={fuelForm.date} onChange={e => setFuelForm({ ...fuelForm, date: e.target.value })} required /></div>
                         <div className="form-group"><label className="label">Vehicle</label>
@@ -1122,75 +1125,6 @@ const Transport = () => {
                 </form>
             </Modal>
 
-            <style>{`
-                .tab-link {
-                    display: flex;
-                    align-items: center;
-                    gap: 0.5rem;
-                    padding: 0.75rem 1.5rem;
-                    border-bottom: 2px solid transparent;
-                    color: var(--text-secondary);
-                    font-weight: 700;
-                    transition: all 0.2s;
-                    white-space: nowrap;
-                    background: none;
-                    border-top: none;
-                    border-left: none;
-                    border-right: none;
-                    cursor: pointer;
-                }
-                .tab-link.active { 
-                    border-bottom-color: var(--primary);
-                    color: var(--primary);
-                    background: rgba(30, 60, 114, 0.05);
-                }
-                .tab-link:hover:not(.active) { 
-                    background: var(--bg-secondary);
-                }
-                .status-badge.success { 
-                    background: var(--success-light);
-                    color: var(--success);
-                    padding: 2px 8px;
-                    border-radius: 4px;
-                    font-size: 10px;
-                    font-weight: 700;
-                    text-transform: uppercase;
-                }
-                .status-badge.secondary { 
-                    background: var(--bg-secondary);
-                    color: var(--text-secondary);
-                    padding: 2px 8px;
-                    border-radius: 4px;
-                    font-size: 10px;
-                    font-weight: 700;
-                    text-transform: uppercase;
-                }
-                .avatar-sm { 
-                    width: 2rem;
-                    height: 2rem;
-                    border-radius: 9999px;
-                    background: var(--primary);
-                    color: white;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-weight: 700;
-                    font-size: 0.75rem;
-                }
-                .hover-scale { transition: transform 0.2s; }
-                .hover-scale:hover { transform: translateY(-4px); }
-                .badge { 
-                    padding: 2px 6px;
-                    border-radius: 4px;
-                    font-size: 10px;
-                    font-weight: 700;
-                    text-transform: uppercase;
-                }
-                .badge-primary { 
-                    background: var(--primary);
-                    color: white;
-                }
-            `}</style>
         </div >
     );
 };
