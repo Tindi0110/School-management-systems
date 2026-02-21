@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Mail, Lock as LockIcon, Shield, ArrowRight, School, CheckCircle } from 'lucide-react';
+import { User, Mail, Lock as LockIcon, Shield, ArrowRight, School } from 'lucide-react';
 import { authAPI } from '../api/api';
 import { useToast } from '../context/ToastContext';
 
