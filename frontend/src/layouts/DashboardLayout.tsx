@@ -307,6 +307,7 @@ const DashboardLayout = () => {
           background: var(--error);
           color: white;
         }
+        .content-area {
           flex: 1;
           padding: var(--spacing-xl) var(--spacing-lg);
           overflow-y: auto;
