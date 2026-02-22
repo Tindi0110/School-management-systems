@@ -536,37 +536,40 @@ const StudentProfile = () => {
 
 
 
-            <div className="grid grid-cols-12 gap-8">
+            <div className="grid grid-cols-12 gap-8 max-w-[1400px] mx-auto">
                 <div className="col-span-12 lg:col-span-8 space-y-8 min-w-0">
                     {/* ... (SUMMARY tab remains same) ... */}
                     {activeTab === 'SUMMARY' && (
                         <>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div className="card flex flex-row items-center gap-6 p-6 transition-all hover-scale border-left-4 border-success card-mobile-flat">
-                                    <div className="p-4 rounded-2xl bg-success bg-opacity-10 text-success shrink-0">
+                                <div className="card flex flex-row items-center gap-6 p-6 transition-all hover-scale border-none bg-white shadow-xl hover:shadow-2xl card-mobile-flat relative overflow-hidden group">
+                                    <div className="absolute top-0 right-0 w-2 h-full bg-success/20"></div>
+                                    <div className="p-4 rounded-2xl bg-success/10 text-success shrink-0 border border-success/10 group-hover:scale-110 transition-transform">
                                         <TrendingUp size={28} />
                                     </div>
                                     <div>
-                                        <p className="text-text-muted text-[10px] font-black uppercase tracking-[0.2em] mb-1">Average Grade</p>
-                                        <h3 className="text-2xl font-black text-primary m-0 leading-tight">{student.average_grade || 'N/A'}</h3>
+                                        <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Average Grade</p>
+                                        <h3 className="text-2xl font-black text-slate-900 m-0 leading-tight">{student.average_grade || 'N/A'}</h3>
                                     </div>
                                 </div>
-                                <div className="card flex flex-row items-center gap-6 p-6 transition-all hover-scale border-left-4 border-info card-mobile-flat">
-                                    <div className="p-4 rounded-2xl bg-info bg-opacity-10 text-info shrink-0">
+                                <div className="card flex flex-row items-center gap-6 p-6 transition-all hover-scale border-none bg-white shadow-xl hover:shadow-2xl card-mobile-flat relative overflow-hidden group">
+                                    <div className="absolute top-0 right-0 w-2 h-full bg-info/20"></div>
+                                    <div className="p-4 rounded-2xl bg-info/10 text-info shrink-0 border border-info/10 group-hover:scale-110 transition-transform">
                                         <HistoryIcon size={28} />
                                     </div>
                                     <div>
-                                        <p className="text-text-muted text-[10px] font-black uppercase tracking-[0.2em] mb-1">Attendance</p>
-                                        <h3 className="text-2xl font-black text-primary m-0 leading-tight">{student.attendance_percentage}%</h3>
+                                        <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Attendance</p>
+                                        <h3 className="text-2xl font-black text-slate-900 m-0 leading-tight">{student.attendance_percentage}%</h3>
                                     </div>
                                 </div>
-                                <div className="card flex flex-row items-center gap-6 p-6 transition-all hover-scale border-left-4 border-error card-mobile-flat">
-                                    <div className="p-4 rounded-2xl bg-error bg-opacity-10 text-error shrink-0">
+                                <div className="card flex flex-row items-center gap-6 p-6 transition-all hover-scale border-none bg-white shadow-xl hover:shadow-2xl card-mobile-flat relative overflow-hidden group">
+                                    <div className="absolute top-0 right-0 w-2 h-full bg-error/20"></div>
+                                    <div className="p-4 rounded-2xl bg-error/10 text-error shrink-0 border border-error/10 group-hover:scale-110 transition-transform">
                                         <ShieldAlert size={28} />
                                     </div>
                                     <div>
-                                        <p className="text-text-muted text-[10px] font-black uppercase tracking-[0.2em] mb-1">Incident Rep.</p>
-                                        <h3 className="text-2xl font-black text-primary m-0 leading-tight">{discipline.length}</h3>
+                                        <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Incident Rep.</p>
+                                        <h3 className="text-2xl font-black text-slate-900 m-0 leading-tight">{discipline.length}</h3>
                                     </div>
                                 </div>
                             </div>
@@ -701,13 +704,14 @@ const StudentProfile = () => {
                         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             {/* Performance Analytics Dashboard */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div className="card flex flex-row items-center gap-6 p-6 transition-all hover-scale border-left-4 border-primary card-mobile-flat">
-                                    <div className="p-4 rounded-2xl bg-primary bg-opacity-10 text-primary shrink-0">
+                                <div className="card flex flex-row items-center gap-6 p-6 transition-all hover-scale border-none bg-white shadow-xl hover:shadow-2xl card-mobile-flat relative overflow-hidden group">
+                                    <div className="absolute top-0 right-0 w-2 h-full bg-primary/20"></div>
+                                    <div className="p-4 rounded-2xl bg-primary/10 text-primary shrink-0 border border-primary/10 group-hover:scale-110 transition-transform">
                                         <TrendingUp size={28} />
                                     </div>
                                     <div>
-                                        <p className="text-text-muted text-[10px] font-black uppercase tracking-[0.2em] mb-1">Mean Score</p>
-                                        <h3 className="text-2xl font-black text-primary m-0 leading-tight">
+                                        <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Mean Score</p>
+                                        <h3 className="text-2xl font-black text-slate-900 m-0 leading-tight">
                                             {(() => {
                                                 const validScores = results.map((r: any) => parseFloat(r.score || r.marks_attained || 0)).filter(s => !isNaN(s));
                                                 return validScores.length > 0 ? (validScores.reduce((a, b) => a + b, 0) / validScores.length).toFixed(1) : '0';
@@ -715,22 +719,24 @@ const StudentProfile = () => {
                                         </h3>
                                     </div>
                                 </div>
-                                <div className="card flex flex-row items-center gap-6 p-6 transition-all hover-scale border-left-4 border-success card-mobile-flat">
-                                    <div className="p-4 rounded-2xl bg-success bg-opacity-10 text-success shrink-0">
+                                <div className="card flex flex-row items-center gap-6 p-6 transition-all hover-scale border-none bg-white shadow-xl hover:shadow-2xl card-mobile-flat relative overflow-hidden group">
+                                    <div className="absolute top-0 right-0 w-2 h-full bg-success/20"></div>
+                                    <div className="p-4 rounded-2xl bg-success/10 text-success shrink-0 border border-success/10 group-hover:scale-110 transition-transform">
                                         <ShieldCheck size={28} />
                                     </div>
                                     <div>
-                                        <p className="text-text-muted text-[10px] font-black uppercase tracking-[0.2em] mb-1">Mean Grade</p>
-                                        <h3 className="text-2xl font-black text-primary m-0 leading-tight">{student.average_grade || '—'}</h3>
+                                        <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Mean Grade</p>
+                                        <h3 className="text-2xl font-black text-slate-900 m-0 leading-tight">{student.average_grade || '—'}</h3>
                                     </div>
                                 </div>
-                                <div className="card flex flex-row items-center gap-6 p-6 transition-all hover-scale border-left-4 border-info card-mobile-flat">
-                                    <div className="p-4 rounded-2xl bg-info bg-opacity-10 text-info shrink-0">
+                                <div className="card flex flex-row items-center gap-6 p-6 transition-all hover-scale border-none bg-white shadow-xl hover:shadow-2xl card-mobile-flat relative overflow-hidden group">
+                                    <div className="absolute top-0 right-0 w-2 h-full bg-info/20"></div>
+                                    <div className="p-4 rounded-2xl bg-info/10 text-info shrink-0 border border-info/10 group-hover:scale-110 transition-transform">
                                         <BookOpen size={28} />
                                     </div>
                                     <div>
-                                        <p className="text-text-muted text-[10px] font-black uppercase tracking-[0.2em] mb-1">Subjects Recorded</p>
-                                        <h3 className="text-2xl font-black text-primary m-0 leading-tight">{new Set(results.map(r => r.subject_name)).size}</h3>
+                                        <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Subjects Recorded</p>
+                                        <h3 className="text-2xl font-black text-slate-900 m-0 leading-tight">{new Set(results.map(r => r.subject_name)).size}</h3>
                                     </div>
                                 </div>
                             </div>
@@ -831,38 +837,41 @@ const StudentProfile = () => {
                         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             {/* Modern Financial Dashboard */}
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 no-print">
-                                <div className="md:col-span-2 card flex flex-row items-center gap-6 p-6 transition-all hover-scale border-left-4 border-slate-900 bg-slate-900 text-white shadow-2xl relative card-mobile-flat overflow-hidden">
-                                    <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/5 rounded-full blur-3xl"></div>
-                                    <div className="p-4 rounded-2xl bg-white bg-opacity-10 text-white shrink-0 relative z-10">
+                                <div className="md:col-span-2 card flex flex-row items-center gap-6 p-6 transition-all hover-scale border-none bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white shadow-2xl relative card-mobile-flat overflow-hidden group">
+                                    <div className="absolute -right-8 -top-8 w-40 h-40 bg-primary-accent/10 rounded-full blur-3xl group-hover:bg-primary-accent/20 transition-colors"></div>
+                                    <div className="absolute -left-10 -bottom-10 w-32 h-32 bg-white/5 rounded-full blur-2xl"></div>
+                                    <div className="p-4 rounded-2xl bg-white/10 text-white shrink-0 relative z-10 border border-white/10 backdrop-blur-sm">
                                         <CreditCard size={28} />
                                     </div>
                                     <div className="relative z-10">
                                         <p className="text-white/50 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Total Fee Liability</p>
                                         <h3 className="text-3xl font-black text-white m-0 leading-tight">KES {(student.fee_balance || 0).toLocaleString()}</h3>
                                         <div className="flex items-center gap-3 mt-2">
-                                            <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase ${Number(student.fee_balance || 0) <= 0 ? 'bg-success/20 text-success' : 'bg-white/10 text-white'}`}>
+                                            <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase ${Number(student.fee_balance || 0) <= 0 ? 'bg-success/20 text-success' : 'bg-error/20 text-error'}`}>
                                                 {Number(student.fee_balance || 0) <= 0 ? 'CLEARED' : 'OUTSTANDING'}
                                             </span>
                                             <span className="text-white/30 text-[9px] font-black uppercase tracking-widest">ADM: {student.admission_number}</span>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="card flex flex-row items-center gap-6 p-6 transition-all hover-scale border-left-4 border-blue-500 bg-blue-50/50 card-mobile-flat">
-                                    <div className="p-4 rounded-2xl bg-blue-500 bg-opacity-10 text-blue-600 shrink-0">
+                                <div className="card flex flex-row items-center gap-6 p-6 transition-all hover-scale border-none bg-white shadow-xl hover:shadow-2xl card-mobile-flat relative overflow-hidden group">
+                                    <div className="absolute top-0 right-0 w-2 h-full bg-blue-500/20"></div>
+                                    <div className="p-4 rounded-2xl bg-blue-50 text-blue-600 shrink-0 border border-blue-100 group-hover:scale-110 transition-transform">
                                         <TrendingUp size={28} />
                                     </div>
                                     <div>
-                                        <p className="text-text-muted text-[10px] font-black uppercase tracking-[0.2em] mb-1">Invoiced Sum</p>
-                                        <h3 className="text-2xl font-black text-primary m-0 leading-tight">KES {invoices.reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0).toLocaleString()}</h3>
+                                        <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Invoiced Sum</p>
+                                        <h3 className="text-2xl font-black text-slate-900 m-0 leading-tight">KES {invoices.reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0).toLocaleString()}</h3>
                                     </div>
                                 </div>
-                                <div className="card flex flex-row items-center gap-6 p-6 transition-all hover-scale border-left-4 border-emerald-500 bg-emerald-50/50 card-mobile-flat">
-                                    <div className="p-4 rounded-2xl bg-emerald-500 bg-opacity-10 text-emerald-600 shrink-0">
+                                <div className="card flex flex-row items-center gap-6 p-6 transition-all hover-scale border-none bg-white shadow-xl hover:shadow-2xl card-mobile-flat relative overflow-hidden group">
+                                    <div className="absolute top-0 right-0 w-2 h-full bg-emerald-500/20"></div>
+                                    <div className="p-4 rounded-2xl bg-emerald-50 text-emerald-600 shrink-0 border border-emerald-100 group-hover:scale-110 transition-transform">
                                         <ShieldCheck size={28} />
                                     </div>
                                     <div>
-                                        <p className="text-text-muted text-[10px] font-black uppercase tracking-[0.2em] mb-1">Total Receipts</p>
-                                        <h3 className="text-2xl font-black text-primary m-0 leading-tight">KES {payments.reduce((sum, pay) => sum + Number(pay.amount || 0), 0).toLocaleString()}</h3>
+                                        <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Total Receipts</p>
+                                        <h3 className="text-2xl font-black text-slate-900 m-0 leading-tight">KES {payments.reduce((sum, pay) => sum + Number(pay.amount || 0), 0).toLocaleString()}</h3>
                                     </div>
                                 </div>
                             </div>
