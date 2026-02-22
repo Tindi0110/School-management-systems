@@ -597,7 +597,7 @@ const Academics = () => {
             loadAllAcademicData();
             setIsSyllabusModalOpen(false);
             setEditingSyllabusId(null);
-            setSyllabusForm({ subject: '', class_grade: '', coverage_percentage: 0 });
+            setSyllabusForm({ subject: '', level: '', class_grade: '', coverage_percentage: 0 });
         } catch (err: any) { toastError(err.message || 'Failed to save syllabus data'); }
         finally { setIsSubmitting(false); }
     };
@@ -831,7 +831,7 @@ const Academics = () => {
 
     const handleSetActiveTerm = async (term: any) => {
         const newStatus = !term.is_active;
-        if (!await confirm(`${newStatus ? 'Activate' : 'Deactivate'} ${term.name}? This will update the system-wide active context.`, { type: 'info', confirmText: 'Proceed', cancelText: 'Cancel' })) return;
+        if (!await confirm(`${newStatus ? 'Activate' : 'Deactivate'} ${term.name}? This will update the system-wide active context.`, { type: 'info', confirmLabel: 'Proceed', cancelLabel: 'Cancel' })) return;
 
         const yearId = typeof term.year === 'object' && term.year ? term.year.id : term.year;
         const payload = { ...term, year: yearId, is_active: newStatus };
@@ -1187,7 +1187,17 @@ const Academics = () => {
                                         </div>
                                     )}
                                     {syllabusData.map(s => (
-                                        <div key={s.id} className="cursor-pointer group" onClick={() => { setSyllabusForm({ subject: s.subject.toString(), class_grade: s.class_grade.toString(), coverage_percentage: s.coverage_percentage }); setEditingSyllabusId(s.id); setIsSyllabusModalOpen(true); }}>
+                                        <div key={s.id} className="cursor-pointer group" onClick={() => {
+                                            const cls = classes.find(c => c.id === s.class_grade);
+                                            setSyllabusForm({
+                                                subject: s.subject.toString(),
+                                                level: cls?.name || '',
+                                                class_grade: s.class_grade.toString(),
+                                                coverage_percentage: s.coverage_percentage
+                                            });
+                                            setEditingSyllabusId(s.id);
+                                            setIsSyllabusModalOpen(true);
+                                        }}>
                                             <div className="flex justify-between text-[10px] font-black mb-2 uppercase tracking-tight">
                                                 <span className="text-slate-700">{s.subject_name} <span className="text-slate-400 ml-1">({s.class_name})</span></span>
                                                 <span className="text-primary">{s.coverage_percentage}%</span>
