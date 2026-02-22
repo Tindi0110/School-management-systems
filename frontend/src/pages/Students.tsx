@@ -370,7 +370,7 @@ const Students = () => {
 
             {/* Edit/Create Modal - Professional Form */}
             <Modal isOpen={isModalOpen} onClose={closeModal} title={editingStudent ? 'Update Student Record' : 'New Student Admission'} size="lg">
-                <form onSubmit={handleSubmit} className="form-container-lg mx-auto p-2">
+                <form onSubmit={handleSubmit} className="space-y-6 form-container-lg mx-auto">
                     <div className="bg-secondary-light p-4 rounded-lg border mb-6 flex justify-between items-center">
                         <div>
                             <h4 className="text-sm font-black text-primary uppercase mb-1">{editingStudent ? 'Editing Record' : 'New Enrollment'}</h4>

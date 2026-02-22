@@ -2396,8 +2396,8 @@ const Academics = () => {
             </Modal >
 
             {/* Confirmation Modal */}
-            <Modal isOpen={deleteConfirm.isOpen} onClose={() => setDeleteConfirm({ ...deleteConfirm, isOpen: false })} title="Confirm Deletion" >
-                <div className="p-4">
+            <Modal isOpen={deleteConfirm.isOpen} onClose={() => setDeleteConfirm({ ...deleteConfirm, isOpen: false })} title="Confirm Deletion" size="sm">
+                <div className="p-4 form-container-sm mx-auto">
                     <p className="mb-4 text-secondary">
                         Are you sure you want to delete this item? This action cannot be undone.
                     </p>
