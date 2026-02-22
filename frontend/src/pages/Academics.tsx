@@ -1139,7 +1139,7 @@ const Academics = () => {
             )}
 
             {activeTab === 'CURRICULUM' && (
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-lg overflow-hidden">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-lg">
                     <div className="md:col-span-1 space-y-4 min-w-0">
                         <div className="card">
                             <div className="card-header border-bottom py-3 flex justify-between items-center mb-4">
@@ -1159,13 +1159,13 @@ const Academics = () => {
                             </div>
                         </div>
                     </div>
-                    <div className="md:col-span-3 min-w-0 fade-in card p-0 overflow-hidden">
+                    <div className="md:col-span-3 min-w-0 fade-in card p-0">
                         <div className="card-header border-bottom py-3 px-4 flex justify-between items-center">
                             <h3 className="mb-0 text-sm font-black uppercase">Institutional Curriculum</h3>
                             {/* ... buttons ... */}
                             <Button variant="primary" size="sm" className="ml-auto-mobile" onClick={() => setIsSubjectModalOpen(true)} icon={<Plus size={14} />}>New Subject</Button>
                         </div>
-                        <div className="p-4 pt-0">
+                        <div className="p-0">
                             <div className="table-wrapper">
                                 <table className="table min-w-[800px] relative">
 
@@ -1206,18 +1206,18 @@ const Academics = () => {
 
                     {/* Merged Syllabus Tracking */}
                     <div className="md:col-span-4 space-y-6 md:space-y-8 fade-in mt-8">
-                        <div className="flex justify-between items-center">
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
                             <h3 className="text-lg font-black text-primary uppercase mb-0">Syllabus Tracking</h3>
                             {!isReadOnly && (
                                 <Button variant="primary" size="sm" className="w-full md:w-auto" onClick={() => { setEditingSyllabusId(null); setIsSyllabusModalOpen(true); }} icon={<Plus size={14} />}>Record Coverage</Button>
                             )}
                         </div>
 
-                        <div className="fade-in card p-0 overflow-hidden">
+                        <div className="fade-in card p-0">
                             <div className="card-header border-bottom py-3 px-4 flex justify-between items-center">
                                 <h3 className="mb-0 text-sm font-black uppercase">Curriculum Progress</h3>
                             </div>
-                            <div className="p-4 pt-0">
+                            <div className="p-0">
                                 <div className="table-wrapper">
                                     <table className="table table-sm min-w-[800px] relative">
                                         <thead className="bg-secondary-light/30 text-secondary">
