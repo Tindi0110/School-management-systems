@@ -1141,10 +1141,10 @@ const Academics = () => {
             {activeTab === 'CURRICULUM' && (
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-lg overflow-hidden">
                     <div className="md:col-span-1 space-y-4 min-w-0">
-                        <div className="card">
+                        <div>
                             <div className="flex justify-between items-center mb-4">
-                                <h4 className="text-[10px] font-black uppercase text-secondary mb-0">Subject Groups</h4>
-                                <Button variant="outline" size="sm" onClick={() => { setEditingGroupId(null); setGroupForm({ name: '' }); setIsGroupModalOpen(true); }} icon={<Plus size={10} />} />
+                                <h3>Subject Groups</h3>
+                                <Button variant="outline" size="sm" onClick={() => { setEditingGroupId(null); setGroupForm({ name: '' }); setIsGroupModalOpen(true); }} icon={<Plus size={14} />} />
                             </div>
                             <div className="space-y-1.5">
                                 {subjectGroups.map(g => (
@@ -1159,11 +1159,11 @@ const Academics = () => {
                             </div>
                         </div>
                     </div>
-                    <div className="md:col-span-3 overflow-hidden shadow-lg border rounded-2xl min-w-0">
-                        <div className="p-3 bg-secondary-light flex justify-between items-center border-bottom">
-                            <h3 className="mb-0 text-xs font-black uppercase">Institutional Curriculum</h3>
+                    <div className="md:col-span-3 min-w-0 fade-in">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3>Institutional Curriculum</h3>
                             {/* ... buttons ... */}
-                            <button className="btn btn-primary btn-xs ml-auto-mobile" onClick={() => setIsSubjectModalOpen(true)}><Plus size={12} /> New Subject</button>
+                            <Button variant="primary" size="sm" className="ml-auto-mobile" onClick={() => setIsSubjectModalOpen(true)} icon={<Plus size={14} />}>New Subject</Button>
                         </div>
                         <div className="table-wrapper">
                             <table className="table min-w-[800px] relative">
@@ -1205,15 +1205,15 @@ const Academics = () => {
                     {/* Merged Syllabus Tracking */}
                     <div className="md:col-span-4 space-y-6 md:space-y-8 fade-in mt-8">
                         <div className="flex justify-between items-center">
-                            <h2 className="text-lg font-black text-primary uppercase">Syllabus Tracking</h2>
+                            <h3>Syllabus Tracking</h3>
                             {!isReadOnly && (
-                                <button className="btn btn-sm btn-primary font-black shadow-md w-full md:w-auto" onClick={() => { setEditingSyllabusId(null); setIsSyllabusModalOpen(true); }}><Plus size={16} /> Record Coverage</button>
+                                <Button variant="primary" size="sm" className="w-full md:w-auto" onClick={() => { setEditingSyllabusId(null); setIsSyllabusModalOpen(true); }} icon={<Plus size={14} />}>Record Coverage</Button>
                             )}
                         </div>
 
-                        <div className="overflow-hidden shadow-lg border rounded-2xl">
-                            <div className="p-4 bg-secondary-light border-bottom flex justify-between items-center">
-                                <h3 className="mb-0 text-xs font-black uppercase tracking-wider">Curriculum Progress</h3>
+                        <div className="fade-in">
+                            <div className="flex justify-between items-center mb-4">
+                                <h3>Curriculum Progress</h3>
                             </div>
                             <div className="table-wrapper">
                                 <table className="table table-sm min-w-[800px] relative">
