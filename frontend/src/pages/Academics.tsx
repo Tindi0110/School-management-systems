@@ -305,12 +305,6 @@ const Academics = () => {
             setExams(dS(examsRes));
             setSyllabusData(dS(syllabusRes));
 
-            // Debug logs to trace why Summary cards show "No Data"
-            console.log("Academics Data Load Complete:");
-            console.log("- Classes:", dS(classesRes));
-            console.log("- Subject Groups:", dS(groupsRes));
-            console.log("- Exams:", dS(examsRes));
-
             // Use freshly fetched grade systems (not stale state) for accurate mean grade
             setMeanGrade(calculateMeanGrade(academicResults, freshGradeSystems));
         } catch (err) {

@@ -102,24 +102,14 @@ const Transport = () => {
 
     const loadData = async () => {
         setLoading(true);
-        const fetchData = async (apiCall: any, setter: any, name: string) => {
+        const fetchData = async (apiCall: any, setter: any) => {
             try {
                 const res = await apiCall;
-                console.log(`Diagnostic [${name}]:`, {
-                    status: res.status,
-                    hasData: !!res.data,
-                    dataType: typeof res.data,
-                    isDataArray: Array.isArray(res.data),
-                    resultsType: typeof res.data?.results,
-                    isResultsArray: Array.isArray(res.data?.results)
-                });
-
                 const data = res.data?.results ?? res.data ?? res ?? [];
                 const finalData = Array.isArray(data) ? data : [];
                 setter(finalData);
                 return finalData;
             } catch (err) {
-                console.error(`Fetch failed for ${name}:`, err);
                 setter([]);
                 return [];
             }
@@ -127,20 +117,20 @@ const Transport = () => {
 
         try {
             // Fetch core data in parallel
-            const [vData] = await Promise.all([
-                fetchData(transportAPI.vehicles.getAll(), setVehicles, 'Vehicles'),
-                fetchData(transportAPI.routes.getAll(), setRoutes, 'Routes'),
-                fetchData(transportAPI.pickupPoints.getAll(), setPickupPoints, 'Points'),
-                fetchData(transportAPI.allocations.getAll(), setAllocations, 'Allocations'),
-                fetchData(studentsAPI.getAll(), setStudents, 'Students')
+            await Promise.all([
+                fetchData(transportAPI.vehicles.getAll(), setVehicles),
+                fetchData(transportAPI.routes.getAll(), setRoutes),
+                fetchData(transportAPI.pickupPoints.getAll(), setPickupPoints),
+                fetchData(transportAPI.allocations.getAll(), setAllocations),
+                fetchData(studentsAPI.getAll({ page_size: 200 }), setStudents)
             ]);
 
             await Promise.all([
-                fetchData(transportAPI.fuel.getAll(), setFuelRecords, 'Fuel'),
-                fetchData(transportAPI.tripLogs.getAll(), setTrips, 'Trips'),
-                fetchData(transportAPI.maintenance.getAll(), setMaintenanceRecords, 'Maintenance'),
-                fetchData(transportAPI.incidents.getAll(), setIncidents, 'Incidents'),
-                fetchData(transportAPI.drivers.getAll(), setDrivers, 'Drivers')
+                fetchData(transportAPI.fuel.getAll(), setFuelRecords),
+                fetchData(transportAPI.tripLogs.getAll(), setTrips),
+                fetchData(transportAPI.maintenance.getAll(), setMaintenanceRecords),
+                fetchData(transportAPI.incidents.getAll(), setIncidents),
+                fetchData(transportAPI.drivers.getAll(), setDrivers)
             ]);
 
             // Load staff with DRIVER role for assignment
@@ -152,26 +142,12 @@ const Transport = () => {
                 ));
             } catch (err) { /* non-critical */ }
 
-            console.log("Transport State Synced:", {
-                vehicles: vData?.length,
-                routes: routes.length
-            });
-
-            if (vData?.length === 0) {
-                console.warn("WARNING: Vehicles list is EMPTY after fetch!");
-            }
-
         } catch (error) {
             toast.error("Failed to load some transport data.");
         } finally {
             setLoading(false);
         }
     };
-
-    // Watch state changes for diagnostics
-    useEffect(() => {
-        console.log("Vehicles State Changed:", { count: vehicles.length, data: vehicles });
-    }, [vehicles]);
 
     const handleEnrollmentSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
