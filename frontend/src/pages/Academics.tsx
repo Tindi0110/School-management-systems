@@ -62,13 +62,13 @@ const StudentResultRow = React.memo(({ student, sClass, subjects, studentScores,
                 const hasSavedResult = !!entry.id;
                 return (
                     <td key={sub.id} className="p-0 relative border-r group min-w-[120px]">
-                        <div className="flex flex-col items-center min-h-85 justify-center">
+                        <div className="flex flex-col items-center justify-center p-2 min-h-[80px]">
                             <input
                                 type="text"
                                 inputMode="decimal"
-                                className={`w-full text-center text-xl font-black bg-transparent border-none outline-none px-6 py-4 m-0
-                                    ${hasSavedResult ? 'text-primary' : 'text-slate-700'}
-                                    focus:bg-blue-50 focus:ring-2 focus:ring-primary/20 transition-all rounded-lg`}
+                                className={`w-20 text-center text-base font-black border outline-none px-2 py-2 m-0 rounded-xl shadow-inner
+                                    ${hasSavedResult ? 'text-primary border-primary/30 bg-primary/5' : 'text-slate-700 border-slate-200 bg-slate-50/50'}
+                                    focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all`}
                                 value={entry.score}
                                 placeholder="—"
                                 onChange={(e) => {
@@ -80,7 +80,7 @@ const StudentResultRow = React.memo(({ student, sClass, subjects, studentScores,
                                 title={`${sub.name}: ${entry.score || 'not entered'}`}
                             />
                             {/* Grade badge */}
-                            <span className={`text-[10px] font-black pb-1.5 ${grade === 'A' || grade === 'A-' ? 'text-green-600' :
+                            <span className={`text-[10px] font-black mt-1 ${grade === 'A' || grade === 'A-' ? 'text-green-600' :
                                 grade === 'E' || grade === 'D-' ? 'text-red-600' :
                                     grade ? 'text-slate-500' : 'text-slate-300'
                                 }`}>{grade || '•'}</span>
@@ -183,6 +183,7 @@ const Academics = () => {
     // Editing & Selection States (CONSOLIDATED)
     const [editingSyllabusId, setEditingSyllabusId] = useState<number | null>(null);
     const [editingYearId, setEditingYearId] = useState<number | null>(null);
+    const [editingTermId, setEditingTermId] = useState<number | null>(null);
     const [editingSubjectId, setEditingSubjectId] = useState<number | null>(null);
     const [editingAttendanceId, setEditingAttendanceId] = useState<number | null>(null);
     const [editingClassId, setEditingClassId] = useState<number | null>(null);
@@ -464,12 +465,32 @@ const Academics = () => {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            await academicsAPI.terms.create(termForm);
-            success('Term added');
+            if (editingTermId) {
+                await academicsAPI.terms.update(editingTermId, termForm);
+                success('Term updated');
+            } else {
+                await academicsAPI.terms.create(termForm);
+                success('Term added');
+            }
             loadAllAcademicData();
             setIsTermModalOpen(false);
+            setEditingTermId(null);
+            setTermForm({ year: '', name: '', start_date: '', end_date: '', is_active: false });
         } catch (err: any) { toastError(err.message || 'Failed to save term'); }
         finally { setIsSubmitting(false); }
+    };
+
+    const openEditTerm = (t: any) => {
+        const yearId = typeof t.year === 'object' && t.year ? t.year.id : t.year;
+        setTermForm({
+            year: yearId.toString(),
+            name: t.name,
+            start_date: t.start_date || '',
+            end_date: t.end_date || '',
+            is_active: t.is_active
+        });
+        setEditingTermId(t.id);
+        setIsTermModalOpen(true);
     };
 
     const handleSubjectSubmit = async (e: React.FormEvent) => {
@@ -765,11 +786,12 @@ const Academics = () => {
 
     const handleDeleteExam = (id: number) => setDeleteConfirm({ isOpen: true, type: 'EXAM', id });
     const handleDeleteTerm = (id: number) => setDeleteConfirm({ isOpen: true, type: 'TERM', id });
+    const handleDeleteYear = (id: number) => setDeleteConfirm({ isOpen: true, type: 'YEAR', id });
     const handleDeleteGradeSystem = (id: number) => setDeleteConfirm({ isOpen: true, type: 'POLICY', id });
 
     const handleSetActiveTerm = async (term: any) => {
         const newStatus = !term.is_active;
-        if (!await confirm(`Are you sure you want to ${newStatus ? 'ACTIVATE' : 'DEACTIVATE'} ${term.name}?`)) return;
+        if (!await confirm(`${newStatus ? 'Activate' : 'Deactivate'} ${term.name}? This will update the system-wide active context.`, { type: 'info', confirmText: 'Proceed', cancelText: 'Cancel' })) return;
 
         const yearId = typeof term.year === 'object' && term.year ? term.year.id : term.year;
         const payload = { ...term, year: yearId, is_active: newStatus };
@@ -777,10 +799,22 @@ const Academics = () => {
         try {
             await academicsAPI.terms.update(term.id, payload);
             success(`Term ${term.name} is now ${newStatus ? 'ACTIVE' : 'INACTIVE'}`);
-            setTerms(prev => prev.map(t => t.id === term.id ? { ...t, is_active: newStatus } : t));
-            setTimeout(() => loadAllAcademicData(), 500);
+            loadAllAcademicData();
         } catch (err: any) {
             toastError(err.message || 'Failed to update term status');
+        }
+    };
+
+    const handleSetActiveYear = async (year: any) => {
+        const newStatus = !year.is_active;
+        if (!await confirm(`${newStatus ? 'Activate' : 'Deactivate'} Academic Cycle ${year.name}?`, { type: 'info' })) return;
+
+        try {
+            await academicsAPI.years.update(year.id, { ...year, is_active: newStatus });
+            success(`Academic Cycle ${year.name} is now ${newStatus ? 'ACTIVE' : 'INACTIVE'}`);
+            loadAllAcademicData();
+        } catch (err: any) {
+            toastError(err.message || 'Failed to update cycle status');
         }
     };
 
@@ -842,6 +876,9 @@ const Academics = () => {
             } else if (deleteConfirm.type === 'TERM') {
                 await academicsAPI.terms.delete(deleteConfirm.id);
                 success('Term deleted');
+            } else if (deleteConfirm.type === 'YEAR') {
+                await academicsAPI.years.delete(deleteConfirm.id);
+                success('Academic Cycle deleted');
             } else if (deleteConfirm.type === 'POLICY') {
                 await academicsAPI.gradeSystems.delete(deleteConfirm.id);
                 success('Grading policy removed');
@@ -1174,9 +1211,9 @@ const Academics = () => {
                                 {subjectGroups.map(g => (
                                     <div key={g.id} className="flex justify-between items-center p-2 rounded hover:bg-secondary-light text-[11px] font-bold border border-transparent hover:border-secondary transition-all group">
                                         <span>{g.name}</span>
-                                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <button className="text-primary hover:bg-white rounded p-0.5" onClick={() => openEditGroup(g)} title="Edit"><Edit size={10} /></button>
-                                            <button className="text-error hover:bg-white rounded p-0.5" onClick={() => handleDeleteGroup(g.id)} title="Delete"><Trash2 size={10} /></button>
+                                        <div className="flex gap-1 opacity-30 group-hover:opacity-100 transition-opacity">
+                                            <Button variant="ghost" size="sm" className="text-primary p-1 h-6 w-6" onClick={() => openEditGroup(g)} title="Edit Subject Group" icon={<Edit size={12} />} />
+                                            <Button variant="ghost" size="sm" className="text-error p-1 h-6 w-6" onClick={() => handleDeleteGroup(g.id)} title="Delete Subject Group" icon={<Trash2 size={12} />} />
                                         </div>
                                     </div>
                                 ))}
@@ -1626,10 +1663,14 @@ const Academics = () => {
                                                     }} icon={<Trash2 size={12} />} />
                                                 </div>
                                             </div>
-                                            <div className="flex flex-wrap gap-1">
-                                                {gs.boundaries?.slice(0, 5).sort((a: any, b: any) => b.min_score - a.min_score).map((b: any) => (
-                                                    <span key={b.id} className={`text-[9px] font-black px-1.5 py-0.5 rounded ${selectedSystem?.id === gs.id ? 'bg-white/10 text-white' : 'bg-slate-50 text-slate-400'}`}>{b.grade}</span>
+                                            <div className="flex flex-wrap gap-2 mt-1">
+                                                {gs.boundaries?.slice(0, 6).sort((a: any, b: any) => b.min_score - a.min_score).map((b: any) => (
+                                                    <div key={b.id} className={`flex items-baseline gap-1 px-2 py-1 rounded-lg border ${selectedSystem?.id === gs.id ? 'bg-white/10 border-white/20' : 'bg-slate-50 border-slate-200'}`}>
+                                                        <span className={`text-[11px] font-black ${selectedSystem?.id === gs.id ? 'text-white' : 'text-slate-700'}`}>{b.grade}</span>
+                                                        <span className={`text-[9px] font-bold ${selectedSystem?.id === gs.id ? 'text-white/70' : 'text-slate-400'}`}>{b.min_score}+</span>
+                                                    </div>
                                                 ))}
+                                                {gs.boundaries?.length > 6 && <span className="text-[10px] font-black px-2 py-1 flex items-center text-slate-400">+{gs.boundaries.length - 6} more</span>}
                                             </div>
                                         </div>
                                     ))}
@@ -1703,12 +1744,17 @@ const Academics = () => {
                                         <div key={y.id} className="p-4 rounded-xl bg-slate-50/50 border border-slate-100 hover:bg-white transition-all group">
                                             <div className="flex items-center justify-between mb-4">
                                                 <div className="flex items-center gap-2">
-                                                    <div className={`w-2 h-2 rounded-full ${y.is_active ? 'bg-success shadow-[0_0_8px_rgba(34,197,94,0.5)]' : 'bg-slate-300'}`}></div>
+                                                    <button
+                                                        className={`w-3 h-3 rounded-full flex-shrink-0 transition-all ${y.is_active ? 'bg-success shadow-[0_0_8px_rgba(34,197,94,0.5)]' : 'bg-slate-300 hover:bg-success/50'}`}
+                                                        onClick={() => handleSetActiveYear(y)}
+                                                        title={y.is_active ? "Current Active Cycle" : "Click to Set as Active Cycle"}
+                                                    ></button>
                                                     <span className="font-black text-xs uppercase tracking-wider text-slate-800">CYCLE {y.name}</span>
                                                 </div>
                                                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <Button variant="ghost" size="sm" className="text-primary p-1" onClick={() => setIsTermModalOpen(true)} icon={<Plus size={12} />} />
-                                                    <Button variant="ghost" size="sm" className="p-1" onClick={() => openEditYear(y)} icon={<Edit size={12} />} />
+                                                    <Button variant="ghost" size="sm" className="text-primary p-1" onClick={() => { setTermForm({ year: y.id.toString(), name: '', start_date: '', end_date: '', is_active: false }); setEditingTermId(null); setIsTermModalOpen(true); }} icon={<Plus size={12} />} title="Add Term" />
+                                                    <Button variant="ghost" size="sm" className="p-1" onClick={() => openEditYear(y)} icon={<Edit size={12} />} title="Edit Year" />
+                                                    <Button variant="ghost" size="sm" className="text-error p-1" onClick={() => handleDeleteYear(y.id)} icon={<Trash2 size={12} />} title="Delete Year" />
                                                 </div>
                                             </div>
                                             <div className="space-y-2">
@@ -1725,9 +1771,9 @@ const Academics = () => {
                                                             <span className="font-bold text-slate-600 uppercase">{t.name}</span>
                                                         </div>
                                                         <div className="flex items-center gap-2">
-                                                            <span className="font-mono text-slate-400 bg-slate-50 px-2 py-0.5 rounded group-hover/term:opacity-0 transition-opacity">{t.start_date ? new Date(t.start_date).getFullYear() : ''}</span>
-                                                            <div className="absolute right-3 flex gap-1 opacity-0 group-hover/term:opacity-100 transition-opacity">
-                                                                <Button variant="ghost" size="sm" className="text-error p-1" onClick={() => handleDeleteTerm(t.id)} icon={<Trash2 size={12} />} />
+                                                            <div className="absolute right-3 flex gap-1 bg-white opacity-0 group-hover/term:opacity-100 transition-opacity pl-2 shadow-[-8px_0_8px_white]">
+                                                                <Button variant="ghost" size="sm" className="text-primary p-1" onClick={() => openEditTerm(t)} icon={<Edit size={12} />} title="Edit Term" />
+                                                                <Button variant="ghost" size="sm" className="text-error p-1" onClick={() => handleDeleteTerm(t.id)} icon={<Trash2 size={12} />} title="Delete Term" />
                                                             </div>
                                                         </div>
                                                     </div>
