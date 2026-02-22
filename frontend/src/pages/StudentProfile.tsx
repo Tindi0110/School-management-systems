@@ -689,7 +689,7 @@ const StudentProfile = () => {
                         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             {/* Performance Analytics Dashboard */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div className="card bg-white border-none shadow-xl p-6 flex items-center gap-6 group hover:shadow-2xl transition-all duration-300">
+                                <div className="card bg-white border-none shadow-xl p-6 flex items-center gap-6 group hover:shadow-2xl transition-all duration-300 card-mobile-flat">
                                     <div className="w-16 h-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
                                         <TrendingUp size={32} />
                                     </div>
@@ -703,7 +703,7 @@ const StudentProfile = () => {
                                         </h2>
                                     </div>
                                 </div>
-                                <div className="card bg-white border-none shadow-xl p-6 flex items-center gap-6 group hover:shadow-2xl transition-all duration-300">
+                                <div className="card bg-white border-none shadow-xl p-6 flex items-center gap-6 group hover:shadow-2xl transition-all duration-300 card-mobile-flat">
                                     <div className="w-16 h-16 rounded-2xl bg-success/10 text-success flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
                                         <ShieldCheck size={32} />
                                     </div>
@@ -712,7 +712,7 @@ const StudentProfile = () => {
                                         <h2 className="text-3xl font-black text-slate-900 mb-0">{student.average_grade || '—'}</h2>
                                     </div>
                                 </div>
-                                <div className="card bg-white border-none shadow-xl p-6 flex items-center gap-6 group hover:shadow-2xl transition-all duration-300">
+                                <div className="card bg-white border-none shadow-xl p-6 flex items-center gap-6 group hover:shadow-2xl transition-all duration-300 card-mobile-flat">
                                     <div className="w-16 h-16 rounded-2xl bg-info/10 text-info flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
                                         <BookOpen size={32} />
                                     </div>
@@ -739,8 +739,8 @@ const StudentProfile = () => {
                                         </div>
                                     </div>
 
-                                    <div className="table-wrapper overflow-x-auto min-w-0" style={{ maxWidth: 'calc(100vw - 2rem)', display: 'block' }}>
-                                        <table className="table w-full min-w-[700px]">
+                                    <div className="table-wrapper">
+                                        <table className="table table-sm w-full min-w-[700px]">
                                             <thead>
                                                 <tr className="bg-slate-50">
                                                     <th className="py-4 px-6 text-[10px] font-black uppercase text-slate-400 min-w-[180px]">Subject Title</th>
@@ -819,7 +819,7 @@ const StudentProfile = () => {
                         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             {/* Modern Financial Dashboard */}
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 no-print">
-                                <div className="md:col-span-2 card bg-gradient-to-br from-slate-900 to-slate-800 text-white border-none shadow-2xl relative overflow-hidden">
+                                <div className="md:col-span-2 card bg-gradient-to-br from-slate-900 to-slate-800 text-white border-none shadow-2xl relative overflow-hidden card-mobile-flat">
                                     <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/5 rounded-full blur-3xl"></div>
                                     <div className="absolute -left-8 -bottom-8 w-32 h-32 bg-primary/10 rounded-full blur-3xl"></div>
                                     <div className="relative z-10 p-2">
@@ -842,14 +842,14 @@ const StudentProfile = () => {
                                         </div>
                                     </div>
                                 </div>
-                                <div className="card border-none bg-blue-50/50 shadow-sm flex flex-col justify-center items-center text-center p-6 border-t-4 border-blue-500">
+                                <div className="card border-none bg-blue-50/50 shadow-sm flex flex-col justify-center items-center text-center p-6 border-t-4 border-blue-500 card-mobile-flat">
                                     <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mb-3">
                                         <TrendingUp size={24} />
                                     </div>
                                     <p className="text-[10px] font-black uppercase text-slate-500 mb-1">Invoiced Sum</p>
                                     <h3 className="text-xl font-black text-slate-900 mb-0">KES {invoices.reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0).toLocaleString()}</h3>
                                 </div>
-                                <div className="card border-none bg-emerald-50/50 shadow-sm flex flex-col justify-center items-center text-center p-6 border-t-4 border-emerald-500">
+                                <div className="card border-none bg-emerald-50/50 shadow-sm flex flex-col justify-center items-center text-center p-6 border-t-4 border-emerald-500 card-mobile-flat">
                                     <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-3">
                                         <ShieldCheck size={24} />
                                     </div>
@@ -878,8 +878,8 @@ const StudentProfile = () => {
                                                 </div>
                                             </div>
 
-                                            <div className="table-wrapper overflow-x-auto min-w-0" style={{ maxWidth: 'calc(100vw - 2rem)', display: 'block' }}>
-                                                <table className="table table-lg w-full min-w-[800px]">
+                                            <div className="table-wrapper">
+                                                <table className="table table-sm w-full min-w-[800px]">
                                                     <thead>
                                                         <tr className="bg-slate-50">
                                                             <th className="text-[10px] font-black uppercase text-slate-400 py-4 px-6 min-w-[120px]">Date</th>
@@ -1016,7 +1016,7 @@ const StudentProfile = () => {
                     {/* Only show these cards if NOT on the Finance tab, as we moved them to a scrollable row there */}
                     {activeTab !== 'FINANCE' && (
                         <>
-                            <div className="card border-top-4 border-primary">
+                            <div className="card border-top-4 border-primary card-mobile-flat">
                                 <h4 className="text-[10px] font-black uppercase text-primary border-bottom pb-2 mb-4 tracking-widest flex items-center gap-2">
                                     <ShieldCheck size={14} /> Administrative Control
                                 </h4>
