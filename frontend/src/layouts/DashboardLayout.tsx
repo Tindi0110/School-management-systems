@@ -174,9 +174,13 @@ const DashboardLayout = () => {
           max-width: 100vw;
           background: var(--bg-secondary);
           position: relative;
-          overflow-x: hidden;
+          overflow: hidden;
         }
-          overflow: visible;
+        .main-content {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
           width: 100%; 
           min-width: 0;
           max-width: 100%;
