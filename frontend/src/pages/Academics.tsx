@@ -166,6 +166,7 @@ const Academics = () => {
     const [activeClassSubjects, setActiveClassSubjects] = useState<any[]>([]);
     const [selectedClass, setSelectedClass] = useState<any>(null);
     const [viewClassStudents, setViewClassStudents] = useState<any[]>([]);
+    const [rankingFilter, setRankingFilter] = useState({ level: '', classId: '' });
 
     // Form States
     const [yearForm, setYearForm] = useState({ name: '', is_active: false });
@@ -177,7 +178,7 @@ const Academics = () => {
     const [attendanceFilter, setAttendanceFilter] = useState({ level: '', classId: '', isBulk: false });
     const [classForm, setClassForm] = useState({ name: '', stream: '', year: new Date().getFullYear().toString(), class_teacher: '', capacity: 40 });
     const [examForm, setExamForm] = useState({ name: '', exam_type: 'END_TERM', term: '', grade_system: '', weighting: 100, date_started: '', is_active: true });
-    const [syllabusForm, setSyllabusForm] = useState({ subject: '', class_grade: '', coverage_percentage: 0 });
+    const [syllabusForm, setSyllabusForm] = useState({ subject: '', level: '', class_grade: '', coverage_percentage: 0 });
     const [boundaryForm, setBoundaryForm] = useState({ system: '', grade: '', min_score: 0, max_score: 100, points: 0, remarks: '' });
 
     // Editing & Selection States (CONSOLIDATED)
@@ -736,6 +737,7 @@ const Academics = () => {
 
     const openViewResults = async (exam: any) => {
         setSelectedExam(exam);
+        setRankingFilter({ level: '', classId: '' }); // Reset filters on open
         setIsViewResultsModalOpen(true);
         setLoading(true);
         try {
@@ -762,12 +764,50 @@ const Academics = () => {
     };
 
     const getGroupedAndRankedResults = () => {
-        // 1. Sort by Score Descending
-        const sorted = [...examResults].sort((a, b) => parseFloat(b.score) - parseFloat(a.score));
+        // 1. Group by Student (Aggregate Scores)
+        const aggregated: { [key: number]: any } = {};
+        examResults.forEach(r => {
+            if (!aggregated[r.student]) {
+                aggregated[r.student] = {
+                    student: r.student,
+                    student_name: r.student_name,
+                    admission_number: r.admission_number,
+                    class_name: r.class_name,
+                    class_stream: r.class_stream,
+                    form_level: r.form_level,
+                    scores: {},
+                    totalScore: 0,
+                    subjectCount: 0,
+                    classId: r.class_id || students.find(st => st.id === r.student)?.current_class
+                };
+            }
+            aggregated[r.student].scores[r.subject] = r.score;
+            aggregated[r.student].totalScore += parseFloat(r.score);
+            aggregated[r.student].subjectCount += 1;
+        });
 
-        // 2. Group
+        // 2. Calculate Mean & Grade for each aggregated student
+        const rankedResults = Object.values(aggregated).map(s => {
+            const mean = s.subjectCount > 0 ? (s.totalScore / s.subjectCount) : 0;
+            return {
+                ...s,
+                meanScore: mean.toFixed(1),
+                meanGrade: calculateGrade(mean, gradeSystems, selectedExam?.grade_system)
+            };
+        });
+
+        // 3. Filter based on dropdowns
+        const filtered = rankedResults.filter(r => {
+            const matchesLevel = !rankingFilter.level || r.form_level === rankingFilter.level;
+            const matchesClass = !rankingFilter.classId || r.classId === parseInt(rankingFilter.classId);
+            return matchesLevel && matchesClass;
+        });
+
+        // 4. Sort by Total Score Descending (Ranking)
+        const sorted = filtered.sort((a, b) => b.totalScore - a.totalScore);
+
+        // 5. Group for display
         const groups: { [key: string]: any[] } = {};
-
         sorted.forEach(res => {
             let key = '';
             if (viewResultsGroupBy === 'STREAM') {
@@ -1310,8 +1350,10 @@ const Academics = () => {
                                                                 {!isReadOnly && (
                                                                     <div className="flex justify-end gap-1">
                                                                         <Button variant="ghost" size="sm" className="text-primary hover:bg-primary/10" onClick={() => {
+                                                                            const cls = classes.find(c => c.id === s.class_grade);
                                                                             setSyllabusForm({
                                                                                 subject: s.subject.toString(),
+                                                                                level: cls?.name || '',
                                                                                 class_grade: s.class_grade.toString(),
                                                                                 coverage_percentage: s.coverage_percentage
                                                                             });
@@ -1552,15 +1594,42 @@ const Academics = () => {
                             <h3 className="font-black text-sm uppercase text-slate-800 tracking-wider mb-0">{selectedExam?.name}</h3>
                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Performance Summary & Rankings</p>
                         </div>
-                        <div className="flex items-center gap-3 w-full sm:w-auto">
-                            <Button variant="outline" size="sm" className="no-print font-black uppercase text-[10px] tracking-widest bg-white" onClick={() => window.print()} title="Print Term Reports" icon={<Printer size={14} />}>
+                        <div className="flex items-center gap-3 w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0">
+                            <div className="flex flex-col">
+                                <span className="text-[9px] font-black uppercase text-slate-400 mb-1">Level</span>
+                                <select
+                                    className="select h-8 text-[10px] font-bold py-0 pr-8 min-w-[100px]"
+                                    value={rankingFilter.level}
+                                    onChange={(e) => setRankingFilter({ ...rankingFilter, level: e.target.value, classId: '' })}
+                                >
+                                    <option value="">All Levels</option>
+                                    {uniqueClassNames.map(name => <option key={name} value={name}>{name}</option>)}
+                                </select>
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-[9px] font-black uppercase text-slate-400 mb-1">Stream</span>
+                                <select
+                                    className="select h-8 text-[10px] font-bold py-0 pr-8 min-w-[120px]"
+                                    value={rankingFilter.classId}
+                                    onChange={(e) => setRankingFilter({ ...rankingFilter, classId: e.target.value })}
+                                    disabled={!rankingFilter.level}
+                                >
+                                    <option value="">All Streams</option>
+                                    {classes.filter(c => c.name === rankingFilter.level).map(c => (
+                                        <option key={c.id} value={c.id}>{c.stream}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-[9px] font-black uppercase text-slate-400 mb-1">Group By</span>
+                                <div className="flex bg-white rounded-lg p-0.5 border border-slate-200 h-8">
+                                    <button className={`px-2 py-0 text-[9px] font-black rounded-md transition-all ${viewResultsGroupBy === 'STREAM' ? 'bg-primary text-white shadow-sm' : 'text-slate-400 hover:bg-slate-50'}`} onClick={() => setViewResultsGroupBy('STREAM')}>STREAM</button>
+                                    <button className={`px-2 py-0 text-[9px] font-black rounded-md transition-all ${viewResultsGroupBy === 'ENTIRE_CLASS' ? 'bg-primary text-white shadow-sm' : 'text-slate-400 hover:bg-slate-50'}`} onClick={() => setViewResultsGroupBy('ENTIRE_CLASS')}>CLASS</button>
+                                </div>
+                            </div>
+                            <Button variant="outline" size="sm" className="no-print font-black uppercase text-[10px] h-8 mt-4 bg-white" onClick={() => window.print()} title="Print Ranking Report" icon={<Printer size={14} />}>
                                 PRINT
                             </Button>
-                            <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest ml-auto sm:ml-0">GROUP:</span>
-                            <div className="flex bg-white rounded-lg p-0.5 border border-slate-200">
-                                <button className={`px-3 py-1 text-[9px] font-black rounded-md transition-all ${viewResultsGroupBy === 'STREAM' ? 'bg-primary text-white shadow-md' : 'text-slate-400 hover:bg-slate-50'}`} onClick={() => setViewResultsGroupBy('STREAM')}>STREAM</button>
-                                <button className={`px-3 py-1 text-[9px] font-black rounded-md transition-all ${viewResultsGroupBy === 'ENTIRE_CLASS' ? 'bg-primary text-white shadow-md' : 'text-slate-400 hover:bg-slate-50'}`} onClick={() => setViewResultsGroupBy('ENTIRE_CLASS')}>CLASS</button>
-                            </div>
                         </div>
                     </div>
 
@@ -2476,13 +2545,32 @@ const Academics = () => {
             <Modal isOpen={isSyllabusModalOpen} onClose={() => setIsSyllabusModalOpen(false)} title="Track Syllabus Coverage" >
                 <form onSubmit={handleSyllabusSubmit} className="form-container-md mx-auto">
                     <div className="form-group">
-                        <label className="label text-[10px] font-black uppercase">Class Grade</label>
-                        <select className="select" value={syllabusForm.class_grade} onChange={(e) => setSyllabusForm({ ...syllabusForm, class_grade: e.target.value })} required>
-                            <option value="">Select Class...</option>
-                            {uniqueClassNames.map(name => {
-                                const cls = classes.find(c => c.name === name);
-                                return cls ? <option key={cls.id} value={cls.id}>{name}</option> : null;
-                            })}
+                        <label className="label text-[10px] font-black uppercase">Class Level</label>
+                        <select
+                            className="select"
+                            id="syllabus-level-select"
+                            value={syllabusForm.level}
+                            onChange={(e) => setSyllabusForm({ ...syllabusForm, level: e.target.value, class_grade: '' })}
+                            required
+                        >
+                            <option value="">Select Level...</option>
+                            {uniqueClassNames.map(name => <option key={name} value={name}>{name}</option>)}
+                        </select>
+                    </div>
+                    <div className="form-group">
+                        <label className="label text-[10px] font-black uppercase">Specific Stream</label>
+                        <select
+                            className="select"
+                            id="syllabus-stream-select"
+                            value={syllabusForm.class_grade}
+                            onChange={(e) => setSyllabusForm({ ...syllabusForm, class_grade: e.target.value })}
+                            required
+                            disabled={!syllabusForm.level}
+                        >
+                            <option value="">Select Stream...</option>
+                            {classes.filter(c => c.name === syllabusForm.level).map(c => (
+                                <option key={c.id} value={c.id.toString()}>{c.stream}</option>
+                            ))}
                         </select>
                     </div>
                     <div className="form-group">
