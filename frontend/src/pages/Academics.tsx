@@ -1141,9 +1141,9 @@ const Academics = () => {
             {activeTab === 'CURRICULUM' && (
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-lg overflow-hidden">
                     <div className="md:col-span-1 space-y-4 min-w-0">
-                        <div>
-                            <div className="flex justify-between items-center mb-4">
-                                <h3>Subject Groups</h3>
+                        <div className="card">
+                            <div className="card-header border-bottom py-3 flex justify-between items-center mb-4">
+                                <h3 className="mb-0 text-sm font-black uppercase">Subject Groups</h3>
                                 <Button variant="outline" size="sm" onClick={() => { setEditingGroupId(null); setGroupForm({ name: '' }); setIsGroupModalOpen(true); }} icon={<Plus size={14} />} />
                             </div>
                             <div className="space-y-1.5">
@@ -1159,120 +1159,124 @@ const Academics = () => {
                             </div>
                         </div>
                     </div>
-                    <div className="md:col-span-3 min-w-0 fade-in">
-                        <div className="flex justify-between items-center mb-4">
-                            <h3>Institutional Curriculum</h3>
+                    <div className="md:col-span-3 min-w-0 fade-in card p-0 overflow-hidden">
+                        <div className="card-header border-bottom py-3 px-4 flex justify-between items-center">
+                            <h3 className="mb-0 text-sm font-black uppercase">Institutional Curriculum</h3>
                             {/* ... buttons ... */}
                             <Button variant="primary" size="sm" className="ml-auto-mobile" onClick={() => setIsSubjectModalOpen(true)} icon={<Plus size={14} />}>New Subject</Button>
                         </div>
-                        <div className="table-wrapper">
-                            <table className="table min-w-[800px] relative">
+                        <div className="p-4 pt-0">
+                            <div className="table-wrapper">
+                                <table className="table min-w-[800px] relative">
 
-                                <thead className="sticky top-0 bg-white z-10 shadow-sm text-[10px] uppercase">
-                                    <tr>
-                                        <th className="min-w-[150px]">Subject Name</th>
-                                        <th className="min-w-[100px]">Code</th>
-                                        <th className="min-w-[150px]">Subject Group</th>
-                                        <th className="min-w-[100px]">Type</th>
-                                        <th className="min-w-[100px] text-right">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="bg-white">
-                                    {subjects.map((s: any) => (
-                                        <tr key={s.id} className="hover:bg-blue-50/50 text-xs border-b transition-colors group">
-                                            <td className="font-bold">{s.name}</td>
-                                            <td className="font-mono text-[10px]">{s.code}</td>
-                                            <td>{s.group_name || '-'}</td>
-                                            <td><span className={`badge badge-sm font-bold ${s.is_core ? 'badge-primary text-white' : 'badge-ghost text-secondary'}`}>{s.is_core ? 'CORE' : 'ELECTIVE'}</span></td>
-                                            <td className="text-right">
-                                                <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <Button variant="ghost" size="sm" className="text-primary hover:bg-white p-1 shadow-sm border border-transparent hover:border-primary/20" onClick={() => openEditSubject(s)} title="Edit Subject"><Edit size={12} /></Button>
-                                                    <Button variant="ghost" size="sm" className="text-error hover:bg-white p-1 shadow-sm border border-transparent hover:border-error/20" onClick={() => handleDeleteSubject(s.id)} title="Delete Subject"><Trash2 size={12} /></Button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                    {subjects.length === 0 && (
+                                    <thead className="sticky top-0 bg-white z-10 shadow-sm text-[10px] uppercase">
                                         <tr>
-                                            <td colSpan={5} className="text-center p-8 text-secondary italic">No subjects added. Select "New Subject" to manage the curriculum.</td>
+                                            <th className="min-w-[150px]">Subject Name</th>
+                                            <th className="min-w-[100px]">Code</th>
+                                            <th className="min-w-[150px]">Subject Group</th>
+                                            <th className="min-w-[100px]">Type</th>
+                                            <th className="min-w-[100px] text-right">Actions</th>
                                         </tr>
-                                    )}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody className="bg-white">
+                                        {subjects.map((s: any) => (
+                                            <tr key={s.id} className="hover:bg-blue-50/50 text-xs border-b transition-colors group">
+                                                <td className="font-bold">{s.name}</td>
+                                                <td className="font-mono text-[10px]">{s.code}</td>
+                                                <td>{s.group_name || '-'}</td>
+                                                <td><span className={`badge badge-sm font-bold ${s.is_core ? 'badge-primary text-white' : 'badge-ghost text-secondary'}`}>{s.is_core ? 'CORE' : 'ELECTIVE'}</span></td>
+                                                <td className="text-right">
+                                                    <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <Button variant="ghost" size="sm" className="text-primary hover:bg-white p-1 shadow-sm border border-transparent hover:border-primary/20" onClick={() => openEditSubject(s)} title="Edit Subject"><Edit size={12} /></Button>
+                                                        <Button variant="ghost" size="sm" className="text-error hover:bg-white p-1 shadow-sm border border-transparent hover:border-error/20" onClick={() => handleDeleteSubject(s.id)} title="Delete Subject"><Trash2 size={12} /></Button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        {subjects.length === 0 && (
+                                            <tr>
+                                                <td colSpan={5} className="text-center p-8 text-secondary italic">No subjects added. Select "New Subject" to manage the curriculum.</td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
 
                     {/* Merged Syllabus Tracking */}
                     <div className="md:col-span-4 space-y-6 md:space-y-8 fade-in mt-8">
                         <div className="flex justify-between items-center">
-                            <h3>Syllabus Tracking</h3>
+                            <h3 className="text-lg font-black text-primary uppercase mb-0">Syllabus Tracking</h3>
                             {!isReadOnly && (
                                 <Button variant="primary" size="sm" className="w-full md:w-auto" onClick={() => { setEditingSyllabusId(null); setIsSyllabusModalOpen(true); }} icon={<Plus size={14} />}>Record Coverage</Button>
                             )}
                         </div>
 
-                        <div className="fade-in">
-                            <div className="flex justify-between items-center mb-4">
-                                <h3>Curriculum Progress</h3>
+                        <div className="fade-in card p-0 overflow-hidden">
+                            <div className="card-header border-bottom py-3 px-4 flex justify-between items-center">
+                                <h3 className="mb-0 text-sm font-black uppercase">Curriculum Progress</h3>
                             </div>
-                            <div className="table-wrapper">
-                                <table className="table table-sm min-w-[800px] relative">
-                                    <thead className="bg-secondary-light/30 text-secondary">
-                                        <tr>
-                                            <th className="min-w-[150px]">Subject</th>
-                                            <th className="min-w-[120px]">Class / Stream</th>
-                                            <th className="min-w-[80px]">Coverage</th>
-                                            <th className="min-w-[200px]">Progress</th>
-                                            <th className="text-right">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {syllabusData.length === 0 ? (
+                            <div className="p-4 pt-0">
+                                <div className="table-wrapper">
+                                    <table className="table table-sm min-w-[800px] relative">
+                                        <thead className="bg-secondary-light/30 text-secondary">
                                             <tr>
-                                                <td colSpan={5} className="text-center p-8 text-secondary text-xs uppercase font-bold italic">No syllabus records found</td>
+                                                <th className="min-w-[150px]">Subject</th>
+                                                <th className="min-w-[120px]">Class / Stream</th>
+                                                <th className="min-w-[80px]">Coverage</th>
+                                                <th className="min-w-[200px]">Progress</th>
+                                                <th className="text-right">Actions</th>
                                             </tr>
-                                        ) : (
-                                            syllabusData.map((s: any) => {
-                                                const cls = classes.find((c: any) => c.id === s.class_grade);
-                                                const sub = subjects.find((sub: any) => sub.id === s.subject);
-                                                return (
-                                                    <tr key={s.id} className="hover:bg-blue-50/50 transition-colors">
-                                                        <td className="font-bold text-xs">{sub?.name || 'Unknown'}</td>
-                                                        <td className="text-xs text-secondary-dark font-medium">{cls ? `${cls.name} ${cls.stream}` : 'Unknown'}</td>
-                                                        <td className="font-mono text-xs text-primary font-black">{s.coverage_percentage}%</td>
-                                                        <td>
-                                                            <progress className={`progress w-full h-2 ${s.coverage_percentage > 80 ? 'progress-success' : s.coverage_percentage > 40 ? 'progress-warning' : 'progress-error'}`} value={s.coverage_percentage} max="100"></progress>
-                                                        </td>
-                                                        <td className="text-right">
-                                                            {!isReadOnly && (
-                                                                <div className="flex justify-end gap-1">
-                                                                    <Button variant="ghost" size="sm" className="text-primary hover:bg-primary/10" onClick={() => {
-                                                                        setSyllabusForm({
-                                                                            subject: s.subject.toString(),
-                                                                            class_grade: s.class_grade.toString(),
-                                                                            coverage_percentage: s.coverage_percentage
-                                                                        });
-                                                                        setEditingSyllabusId(s.id);
-                                                                        setIsSyllabusModalOpen(true);
-                                                                    }} icon={<Edit size={12} />} />
-                                                                    <Button variant="ghost" size="sm" className="text-error hover:bg-error/10" onClick={async () => {
-                                                                        if (await confirm('Delete this syllabus record?', { type: 'danger' })) {
-                                                                            try {
-                                                                                await academicsAPI.syllabus.delete(s.id);
-                                                                                loadAllAcademicData();
-                                                                                success('Syllabus record deleted');
-                                                                            } catch (err: any) { toastError(err.message || 'Failed to delete record'); }
-                                                                        }
-                                                                    }} icon={<Trash2 size={12} />} />
-                                                                </div>
-                                                            )}
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })
-                                        )}
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody>
+                                            {syllabusData.length === 0 ? (
+                                                <tr>
+                                                    <td colSpan={5} className="text-center p-8 text-secondary text-xs uppercase font-bold italic">No syllabus records found</td>
+                                                </tr>
+                                            ) : (
+                                                syllabusData.map((s: any) => {
+                                                    const cls = classes.find((c: any) => c.id === s.class_grade);
+                                                    const sub = subjects.find((sub: any) => sub.id === s.subject);
+                                                    return (
+                                                        <tr key={s.id} className="hover:bg-blue-50/50 transition-colors">
+                                                            <td className="font-bold text-xs">{sub?.name || 'Unknown'}</td>
+                                                            <td className="text-xs text-secondary-dark font-medium">{cls ? `${cls.name} ${cls.stream}` : 'Unknown'}</td>
+                                                            <td className="font-mono text-xs text-primary font-black">{s.coverage_percentage}%</td>
+                                                            <td>
+                                                                <progress className={`progress w-full h-2 ${s.coverage_percentage > 80 ? 'progress-success' : s.coverage_percentage > 40 ? 'progress-warning' : 'progress-error'}`} value={s.coverage_percentage} max="100"></progress>
+                                                            </td>
+                                                            <td className="text-right">
+                                                                {!isReadOnly && (
+                                                                    <div className="flex justify-end gap-1">
+                                                                        <Button variant="ghost" size="sm" className="text-primary hover:bg-primary/10" onClick={() => {
+                                                                            setSyllabusForm({
+                                                                                subject: s.subject.toString(),
+                                                                                class_grade: s.class_grade.toString(),
+                                                                                coverage_percentage: s.coverage_percentage
+                                                                            });
+                                                                            setEditingSyllabusId(s.id);
+                                                                            setIsSyllabusModalOpen(true);
+                                                                        }} icon={<Edit size={12} />} />
+                                                                        <Button variant="ghost" size="sm" className="text-error hover:bg-error/10" onClick={async () => {
+                                                                            if (await confirm('Delete this syllabus record?', { type: 'danger' })) {
+                                                                                try {
+                                                                                    await academicsAPI.syllabus.delete(s.id);
+                                                                                    loadAllAcademicData();
+                                                                                    success('Syllabus record deleted');
+                                                                                } catch (err: any) { toastError(err.message || 'Failed to delete record'); }
+                                                                            }
+                                                                        }} icon={<Trash2 size={12} />} />
+                                                                    </div>
+                                                                )}
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
