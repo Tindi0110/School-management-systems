@@ -15,7 +15,7 @@ import { useConfirm } from '../context/ConfirmContext';
 import Button from '../components/common/Button';
 
 const calculateGrade = (score: number, gradeSystems: any[], specificSystemId?: number | string | null) => {
-    if (!score && score !== 0) return '-';
+    if (score === undefined || score === null || isNaN(score)) return '-';
 
     // 1. Try specific system
     let system = gradeSystems.find(s => s.id === specificSystemId || s.id === parseInt(specificSystemId as string));
@@ -31,7 +31,6 @@ const calculateGrade = (score: number, gradeSystems: any[], specificSystemId?: n
     }
 
     if (system && system.boundaries && system.boundaries.length > 0) {
-        // Sort boundaries descending by min_score to find the right bracket
         const sortedBoundaries = [...system.boundaries].sort((a, b) => b.min_score - a.min_score);
         for (const b of sortedBoundaries) {
             if (score >= b.min_score && score <= b.max_score) {
@@ -171,7 +170,7 @@ const Academics = () => {
     const [yearForm, setYearForm] = useState({ name: '', is_active: false });
     const [termForm, setTermForm] = useState({ year: '', name: '', start_date: '', end_date: '', is_active: false });
     const [groupForm, setGroupForm] = useState({ name: '' });
-    const [subjectForm, setSubjectForm] = useState({ name: '', code: '', group: '', is_optional: false });
+    const [subjectForm, setSubjectForm] = useState({ name: '', code: '', short_name: '', group: '', is_optional: false });
     const [gradeForm, setGradeForm] = useState({ name: '', is_default: false });
     const [attendanceForm, setAttendanceForm] = useState({ student: '', status: 'PRESENT', remark: '', date: new Date().toISOString().split('T')[0] });
     const [attendanceFilter, setAttendanceFilter] = useState({ level: '', classId: '', isBulk: false });
@@ -507,7 +506,7 @@ const Academics = () => {
             loadAllAcademicData();
             setIsSubjectModalOpen(false);
             setEditingSubjectId(null);
-            setSubjectForm({ name: '', code: '', group: '', is_optional: false });
+            setSubjectForm({ name: '', code: '', short_name: '', group: '', is_optional: false });
         } catch (err: any) { toastError(err.message || 'Failed to save subject'); }
         finally { setIsSubmitting(false); }
     };
@@ -516,6 +515,7 @@ const Academics = () => {
         setSubjectForm({
             name: s.name,
             code: s.code,
+            short_name: s.short_name || '',
             group: s.group?.toString() || '',
             is_optional: !s.is_core
         });
@@ -815,6 +815,12 @@ const Academics = () => {
         }
 
         return groups;
+    };
+
+    const getSubjectAbbr = (sub: any) => {
+        if (sub.short_name) return sub.short_name.toUpperCase();
+        if (sub.code) return sub.code.toUpperCase();
+        return sub.name.substring(0, 3).toUpperCase();
     };
 
     return groups;
@@ -1649,16 +1655,17 @@ return (
                                             <th className="py-4 px-6 min-w-[200px] text-left">Student Name</th>
                                             <th className="py-4 px-6">ADM</th>
                                             {subjects.filter((sub: any) => groupedResults[groupKey].some((r: any) => r.scores && r.scores[sub.id])).map((sub: any) => (
-                                                <th key={sub.id} className="py-4 px-6 text-center">{sub.code || sub.name}</th>
+                                                <th key={sub.id} className="py-4 px-6 text-center" title={sub.name}>{getSubjectAbbr(sub)}</th>
                                             ))}
                                             <th className="py-4 px-6 text-right">Total</th>
                                             <th className="py-4 px-6 text-right">Mean</th>
                                             <th className="py-4 px-6 text-center">Grade</th>
+                                            <th className="py-4 px-6 text-right no-print">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-100">
                                         {groupedResults[groupKey].sort((a: any, b: any) => b.totalScore - a.totalScore).map((res: any, index: number) => (
-                                            <tr key={res.student} className={`hover:bg-slate-50 transition-colors ${index < 3 ? 'bg-amber-50/30' : ''}`}>
+                                            <tr key={res.student} className={`hover:bg-slate-50 transition-colors group ${index < 3 ? 'bg-amber-50/30' : ''}`}>
                                                 <td className="py-4 px-6">
                                                     <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black ${index === 0 ? 'bg-amber-400 text-white' : index === 1 ? 'bg-slate-300 text-white' : index === 2 ? 'bg-amber-700/50 text-white' : 'text-slate-400'}`}>
                                                         {index + 1}
@@ -1677,6 +1684,16 @@ return (
                                                 <td className="py-4 px-6 text-right font-black text-primary">{res.meanScore}%</td>
                                                 <td className="py-4 px-6 text-center">
                                                     <span className={`px-2 py-0.5 rounded text-[10px] font-black ${['A', 'A-'].includes(res.meanGrade) ? 'bg-success/20 text-success' : ['D', 'E'].includes(res.meanGrade) ? 'bg-error/20 text-error' : 'bg-slate-100 text-slate-400'}`}>{res.meanGrade || '-'}</span>
+                                                </td>
+                                                <td className="py-4 px-6 text-right no-print">
+                                                    <div className="flex justify-end gap-1 opacity-20 group-hover:opacity-100 transition-all">
+                                                        <Button variant="ghost" size="sm" className="p-1 h-7 w-7 text-primary hover:bg-primary/10" title="Edit Results" onClick={() => {
+                                                            setResultContext({ level: res.form_level, classId: res.classId.toString(), subjectId: 'all' });
+                                                            setIsViewResultsModalOpen(false);
+                                                            setIsResultModalOpen(true);
+                                                        }} icon={<Edit size={12} />} />
+                                                        <Button variant="ghost" size="sm" className="p-1 h-7 w-7 text-error hover:bg-error/10" title="Delete All Results" onClick={() => handleDeleteStudentResults(res.student)} icon={<Trash2 size={12} />} />
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))}
@@ -2061,15 +2078,19 @@ return (
 
         <Modal isOpen={isSubjectModalOpen} onClose={() => setIsSubjectModalOpen(false)} title="Add Curriculum Subject">
             <form onSubmit={handleSubjectSubmit} className="space-y-4 form-container-md mx-auto">
-                <div className="form-group"><label className="label text-[10px] font-black uppercase">Subject Name *</label><input type="text" className="input" value={subjectForm.name} onChange={(e) => setSubjectForm({ ...subjectForm, name: e.target.value })} required /></div>
-                <div className="grid grid-cols-2 gap-md">
-                    <div className="form-group"><label className="label text-[10px] font-black uppercase">Unique Code *</label><input type="text" className="input" value={subjectForm.code} onChange={(e) => setSubjectForm({ ...subjectForm, code: e.target.value })} required /></div>
-                    <div className="form-group">
-                        <label className="label text-[10px] font-black uppercase">Department Group</label>
-                        <select className="select" value={subjectForm.group} onChange={(e) => setSubjectForm({ ...subjectForm, group: e.target.value })}>
-                            <option value="">General</option>{subjectGroups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
-                        </select>
-                    </div>
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="form-group"><label className="label text-[10px] font-black uppercase">Subject Name *</label><input type="text" className="input" value={subjectForm.name} onChange={(e) => setSubjectForm({ ...subjectForm, name: e.target.value })} required /></div>
+                    <div className="form-group"><label className="label text-[10px] font-black uppercase">Subject Code *</label><input type="text" className="input" value={subjectForm.code} onChange={(e) => setSubjectForm({ ...subjectForm, code: e.target.value })} required /></div>
+                </div>
+                <div className="form-group">
+                    <label className="label text-[10px] font-black uppercase">Abbreviated Name (Optional)</label>
+                    <input type="text" className="input" placeholder="e.g. MATH" value={subjectForm.short_name} onChange={(e) => setSubjectForm({ ...subjectForm, short_name: e.target.value })} />
+                </div>
+                <div className="form-group">
+                    <label className="label text-[10px] font-black uppercase">Department Group</label>
+                    <select className="select" value={subjectForm.group} onChange={(e) => setSubjectForm({ ...subjectForm, group: e.target.value })}>
+                        <option value="">General</option>{subjectGroups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
+                    </select>
                 </div>
                 <Button type="submit" variant="primary" size="sm" className="w-full mt-2 font-black uppercase" loading={isSubmitting} loadingText="Registering...">Register Subject</Button>
             </form>
@@ -2606,6 +2627,7 @@ return (
                 <Button type="submit" variant="primary" className="w-full font-black uppercase" loading={isSubmitting} loadingText="Saving...">Save System</Button>
             </form>
         </Modal>
+
 
         {/* Grade Boundary Modal */}
         <Modal isOpen={isBoundaryModalOpen} onClose={() => setIsBoundaryModalOpen(false)} title={editingBoundaryId ? "Edit Grade Boundary" : "Add Grade Boundary"}>
