@@ -12,6 +12,9 @@ import { StatCard } from '../components/Card';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 import Button from '../components/common/Button';
+import { Student, Parent, DisciplineIncident, StudentDocument, Activity } from '../types/student.types';
+import { AcademicYear, Term, ClassUnit, Subject, Exam, StudentResult } from '../types/academic.types';
+import PremiumDateInput from '../components/common/DatePicker';
 
 type TabType = 'SUMMARY' | 'ACADEMIC' | 'FINANCE' | 'DISCIPLINE' | 'HEALTH' | 'ACTIVITIES' | 'DOCUMENTS';
 
@@ -19,15 +22,15 @@ const StudentProfile = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState<TabType>('SUMMARY');
-    const [student, setStudent] = useState<any>(null);
-    const [results, setResults] = useState<any[]>([]);
+    const [student, setStudent] = useState<Student | null>(null);
+    const [results, setResults] = useState<StudentResult[]>([]);
     const [payments, setPayments] = useState<any[]>([]);
     const [invoices, setInvoices] = useState<any[]>([]);
     const [adjustments, setAdjustments] = useState<any[]>([]);
-    const [discipline, setDiscipline] = useState<any[]>([]);
-    const [documents, setDocuments] = useState<any[]>([]);
-    const [activities, setActivities] = useState<any[]>([]);
-    const [parents, setParents] = useState<any[]>([]);
+    const [discipline, setDiscipline] = useState<DisciplineIncident[]>([]);
+    const [documents, setDocuments] = useState<StudentDocument[]>([]);
+    const [activities, setActivities] = useState<Activity[]>([]);
+    const [parents, setParents] = useState<Parent[]>([]);
     const [unreturnedBooks, setUnreturnedBooks] = useState<number>(0);
     const [loading, setLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -125,7 +128,7 @@ const StudentProfile = () => {
     const loadTabData = async () => {
         const d = (r: any) => r?.data?.results ?? r?.data ?? [];
         try {
-            if (activeTab === 'ACADEMIC') {
+            if (activeTab === 'ACADEMIC' && results.length === 0) { // Only fetch if not already loaded or empty
                 const resultsRes = await academicsAPI.results.getAll({ student_id: Number(id) });
                 setResults(d(resultsRes));
             } else if (activeTab === 'FINANCE') {
@@ -1073,7 +1076,14 @@ const StudentProfile = () => {
             <Modal isOpen={isDisciplineModalOpen} onClose={() => setIsDisciplineModalOpen(false)} title="New Discipline Intervention" size="md">
                 <form onSubmit={handleDisciplineSubmit} className="space-y-4 form-container-md mx-auto">
                     <div className="grid grid-cols-2 gap-md">
-                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Incident Date</label><input type="date" className="input" value={disciplineForm.incident_date} onChange={e => setDisciplineForm({ ...disciplineForm, incident_date: e.target.value })} required /></div>
+                        <div className="form-group">
+                            <PremiumDateInput
+                                label="Incident Date"
+                                value={disciplineForm.incident_date}
+                                onChange={val => setDisciplineForm({ ...disciplineForm, incident_date: val })}
+                                required
+                            />
+                        </div>
                         <div className="form-group"><label className="label text-[10px] font-black uppercase">Offence Category</label><input type="text" className="input" placeholder="e.g. Lateness, Theft" value={disciplineForm.offence_category} onChange={e => setDisciplineForm({ ...disciplineForm, offence_category: e.target.value })} required /></div>
                     </div>
                     <div className="form-group"><label className="label text-[10px] font-black uppercase">Detailed Description</label><textarea className="input" rows={3} value={disciplineForm.description} onChange={e => setDisciplineForm({ ...disciplineForm, description: e.target.value })} required></textarea></div>

@@ -13,34 +13,15 @@ import { StatCard } from '../components/Card';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 import Button from '../components/common/Button';
+import ShieldAlert from 'lucide-react/dist/esm/icons/shield-alert';
+import ExamBroadsheet from '../components/academics/ExamBroadsheet';
+import {
+    AcademicYear, Term, ClassUnit, Subject,
+    Exam, GradeSystem, GradeBoundary, StudentResult
+} from '../types/academic.types';
+import { Student } from '../types/student.types';
+import { calculateGrade, calculateMeanGrade } from '../utils/academicHelpers';
 
-const calculateGrade = (score: number, gradeSystems: any[], specificSystemId?: number | string | null) => {
-    if (score === undefined || score === null || isNaN(score)) return '-';
-
-    // 1. Try specific system
-    let system = gradeSystems.find(s => s.id === specificSystemId || s.id === parseInt(specificSystemId as string));
-
-    // 2. Try default system
-    if (!system) {
-        system = gradeSystems.find(s => s.is_default);
-    }
-
-    // 3. Fallback to first system
-    if (!system && gradeSystems.length > 0) {
-        system = gradeSystems[0];
-    }
-
-    if (system && system.boundaries && system.boundaries.length > 0) {
-        const sortedBoundaries = [...system.boundaries].sort((a, b) => b.min_score - a.min_score);
-        for (const b of sortedBoundaries) {
-            if (score >= b.min_score && score <= b.max_score) {
-                return b.grade;
-            }
-        }
-    }
-
-    return '-';
-};
 
 const StudentResultRow = React.memo(({ student, sClass, subjects, studentScores, onScoreChange, onDeleteResult, activeClassSubjects, resultContext, gradeSystems, examGradeSystemId }: any) => {
     return (
@@ -114,15 +95,15 @@ const Academics = () => {
 
 
     // Data States
-    const [academicYears, setAcademicYears] = useState<any[]>([]);
-    const [terms, setTerms] = useState<any[]>([]);
-    const [classes, setClasses] = useState<any[]>([]);
-    const [subjects, setSubjects] = useState<any[]>([]);
-    const [subjectGroups, setSubjectGroups] = useState<any[]>([]);
-    const [exams, setExams] = useState<any[]>([]);
-    const [gradeSystems, setGradeSystems] = useState<any[]>([]);
+    const [academicYears, setAcademicYears] = useState<AcademicYear[]>([]);
+    const [terms, setTerms] = useState<Term[]>([]);
+    const [classes, setClasses] = useState<ClassUnit[]>([]);
+    const [subjects, setSubjects] = useState<Subject[]>([]);
+    const [subjectGroups, setSubjectGroups] = useState<any[]>([]); // Subject groups type can be added later
+    const [exams, setExams] = useState<Exam[]>([]);
+    const [gradeSystems, setGradeSystems] = useState<GradeSystem[]>([]);
     const [staff, setStaff] = useState<any[]>([]);
-    const [students, setStudents] = useState<any[]>([]);
+    const [students, setStudents] = useState<Student[]>([]);
     const [syllabusData, setSyllabusData] = useState<any[]>([]);
     const [meanGrade, setMeanGrade] = useState<string>('...');
 
@@ -248,13 +229,6 @@ const Academics = () => {
             }
             catch (e: any) { toastError(e.message || 'Failed to delete group'); }
         }
-    };
-    const calculateMeanGrade = (results: any[], gradeSystems: any[], specificSystemId?: number | string | null) => {
-        if (!results || results.length === 0) return 'N/A';
-        const totalScore = results.reduce((sum, r) => sum + parseFloat(r.score), 0);
-        const avg = totalScore / results.length;
-
-        return calculateGrade(avg, gradeSystems, specificSystemId);
     };
 
     const loadAllAcademicData = async () => {
@@ -2075,8 +2049,18 @@ const Academics = () => {
                     </div>
                     <div className="form-group"><label className="label text-[10px] font-black uppercase">Term Name (e.g. Term 1)</label><input type="text" className="input" value={termForm.name} onChange={(e) => setTermForm({ ...termForm, name: e.target.value })} required /></div>
                     <div className="grid grid-cols-2 gap-md">
-                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Start Date</label><input type="date" className="input" value={termForm.start_date} onChange={(e) => setTermForm({ ...termForm, start_date: e.target.value })} required /></div>
-                        <div className="form-group"><label className="label text-[10px] font-black uppercase">End Date</label><input type="date" className="input" value={termForm.end_date} onChange={(e) => setTermForm({ ...termForm, end_date: e.target.value })} required /></div>
+                        <PremiumDateInput
+                            label="Start Date"
+                            value={termForm.start_date}
+                            onChange={(val) => setTermForm({ ...termForm, start_date: val })}
+                            required
+                        />
+                        <PremiumDateInput
+                            label="End Date"
+                            value={termForm.end_date}
+                            onChange={(val) => setTermForm({ ...termForm, end_date: val })}
+                            required
+                        />
                     </div>
                     <Button type="submit" variant="primary" size="sm" className="w-full mt-2 font-black uppercase" loading={isSubmitting} loadingText="Saving...">Save Term Configuration</Button>
                 </form>
@@ -2157,8 +2141,12 @@ const Academics = () => {
                             <button type="button" className={`px-3 py-1 text-[10px] font-black rounded ${attendanceFilter.isBulk ? 'bg-primary text-white' : 'text-secondary'}`} onClick={() => setAttendanceFilter({ ...attendanceFilter, isBulk: true })}>CLASS REGISTER (BULK)</button>
                         </div>
                         <div className="flex items-center gap-2">
-                            <label className="text-[9px] font-bold uppercase text-secondary">Date:</label>
-                            <input type="date" className="input input-xs w-32" value={attendanceForm.date} onChange={(e) => setAttendanceForm({ ...attendanceForm, date: e.target.value })} />
+                            <PremiumDateInput
+                                value={attendanceForm.date}
+                                onChange={(val) => setAttendanceForm({ ...attendanceForm, date: val })}
+                                placeholder="Date"
+                                required
+                            />
                         </div>
                     </div>
 
@@ -2295,7 +2283,14 @@ const Academics = () => {
                                 {gradeSystems.map(gs => <option key={gs.id} value={gs.id}>{gs.name}</option>)}
                             </select>
                         </div>
-                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Start Date</label><input type="date" className="input" value={examForm.date_started} onChange={(e) => setExamForm({ ...examForm, date_started: e.target.value })} required /></div>
+                        <div className="form-group col-span-2">
+                            <PremiumDateInput
+                                label="Assessment Start Date"
+                                value={examForm.date_started}
+                                onChange={(val) => setExamForm({ ...examForm, date_started: val })}
+                                required
+                            />
+                        </div>
 
                         <div className="form-group col-span-2"><label className="label text-[10px] font-black uppercase">Weighting (%)</label><input type="number" className="input" value={examForm.weighting} onChange={(e) => setExamForm({ ...examForm, weighting: parseInt(e.target.value) })} required /></div>
                     </div>
@@ -2305,109 +2300,17 @@ const Academics = () => {
 
 
             {/* Broadsheet Modal */}
-            <Modal isOpen={isBroadsheetModalOpen} onClose={() => setIsBroadsheetModalOpen(false)} title={`Broadsheet: ${selectedExam?.name || ''}`} size="full">
-                <div className="flex justify-between items-center mb-4">
-                    <div className="flex gap-2">
-                        <select className="select select-sm border-primary" value={viewResultsGroupBy} onChange={(e) => setViewResultsGroupBy(e.target.value as any)}>
-                            <option value="STREAM">Group by Stream</option>
-                            <option value="ENTIRE_CLASS">Entire Class Ranking</option>
-                        </select>
-                        <select className="select select-sm" value={resultContext.level} onChange={(e) => {
-                            setResultContext({ ...resultContext, level: e.target.value });
-                        }}>
-                            <option value="">Select Level (All)</option>
-                            {uniqueClassNames.map(name => <option key={name} value={name}>{name}</option>)}
-                        </select>
-                    </div>
-                    <Button variant="outline" size="sm" onClick={() => window.print()} icon={<Printer size={14} />}>Print Broadsheet</Button>
-                </div>
-
-                <div className="table-wrapper max-h-70vh overflow-auto border rounded bg-white relative min-w-0">
-                    {/* If Group By Stream, we might need multiple tables or just one big sorted table. 
-                         For simplicity and "Matrix view", let's do one big table but filter/sort accordingly. 
-                     */}
-                    <table className="table table-xs w-full border-collapse">
-                        <thead className="sticky top-0 bg-primary text-white z-20">
-                            <tr>
-                                <th className="bg-primary border-r w-12 text-center">#</th>
-                                <th className="bg-primary border-r min-w-[150px] sticky left-0 z-30">Student</th>
-                                {viewResultsGroupBy === 'ENTIRE_CLASS' && <th className="bg-primary border-r">Stream</th>}
-                                {subjects.map(sub => (
-                                    <th key={sub.id} className="text-center w-12 border-r text-[9px] vertical-text" title={sub.name}>{sub.code}</th>
-                                ))}
-                                <th className="text-center font-bold bg-primary border-r w-12">Total</th>
-                                <th className="text-center font-bold bg-primary border-r w-12">Mean</th>
-                                <th className="text-center font-bold bg-primary w-12">Grade</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {(() => {
-                                // 1. Filter students based on level selection
-                                let filteredStudents = students;
-                                if (resultContext.level) {
-                                    filteredStudents = students.filter(s => {
-                                        const c = classes.find(cl => cl.id === s.current_class);
-                                        return c?.name === resultContext.level;
-                                    });
-                                }
-
-                                // 2. Calculate scores for each student
-                                const studentRows = filteredStudents.map(student => {
-                                    // Find all results for this student in this exam
-                                    // We need to fetch ALL results first.
-                                    // Ideally `examResults` state should be populated when opening modal. 
-                                    // Let's assume we fetch them when opening.
-
-                                    const sResults = examResults.filter(r => r.student === student.id);
-                                    const total = sResults.reduce((sum, r) => sum + parseFloat(r.score), 0);
-                                    const avg = sResults.length > 0 ? total / sResults.length : 0;
-                                    const meanGrade = calculateMeanGrade(sResults, gradeSystems, selectedExam?.grade_system); // Use existing helper
-
-                                    return {
-                                        student,
-                                        results: sResults,
-                                        total,
-                                        avg,
-                                        meanGrade
-                                    };
-                                });
-
-                                // 3. Sort by Total (Highest to Lowest)
-                                studentRows.sort((a, b) => b.total - a.total);
-
-                                // 4. Render
-                                return studentRows.map((row, idx) => {
-                                    const cls = classes.find(c => c.id === row.student.current_class);
-                                    return (
-                                        <tr key={row.student.id} className="hover:bg-blue-50">
-                                            <td className="text-center font-bold bg-gray-50">{idx + 1}</td>
-                                            <td className="sticky left-0 bg-white z-10 font-bold text-xs py-1 px-2">
-                                                {row.student.full_name}
-                                                <div className="text-[9px] text-secondary font-mono">{row.student.admission_number}</div>
-                                            </td>
-                                            {viewResultsGroupBy === 'ENTIRE_CLASS' && <td className="text-center text-[10px]">{cls?.stream}</td>}
-
-                                            {subjects.map(sub => {
-                                                const res = row.results.find(r => r.subject === sub.id);
-                                                return (
-                                                    <td key={sub.id} className="text-center text-xs">
-                                                        {res ? <span className={res.score < 40 ? 'text-error font-bold' : ''}>{res.score}</span> : '-'}
-                                                    </td>
-                                                );
-                                            })}
-
-                                            <td className="text-center font-bold bg-gray-50">{row.total.toFixed(0)}</td>
-                                            <td className="text-center font-bold bg-gray-50">{row.avg.toFixed(1)}</td>
-                                            <td className="text-center font-black bg-gray-50">{row.meanGrade}</td>
-                                        </tr>
-                                    );
-                                });
-                            })()}
-                        </tbody>
-                    </table>
-                    {examResults.length === 0 && <div className="text-center p-8 text-secondary">Loading results or no results found...</div>}
-                </div>
-            </Modal>
+            <ExamBroadsheet
+                isOpen={isBroadsheetModalOpen}
+                onClose={() => setIsBroadsheetModalOpen(false)}
+                selectedExam={selectedExam}
+                students={students}
+                classes={classes}
+                subjects={subjects}
+                examResults={examResults}
+                gradeSystems={gradeSystems}
+                uniqueClassNames={uniqueClassNames}
+            />
 
             {/* View Class Modal */}
             <Modal isOpen={isViewClassModalOpen} onClose={() => setIsViewClassModalOpen(false)} title={`Class Details: ${selectedClass?.name || ''} ${selectedClass?.stream || ''}`}>
