@@ -977,7 +977,7 @@ const Academics = () => {
     const studentOptions = students.map(s => ({ id: s.id, label: s.full_name, subLabel: `ADM: ${s.admission_number}` }));
 
     return (
-        <div className="fade-in max-w-full">
+        <div className="fade-in max-w-full container mx-auto overflow-x-hidden">
             {/* Elegant Header with Multi-layer Background */}
             <div className="relative overflow-hidden rounded-3xl bg-primary text-white p-8 mb-8 shadow-2xl">
                 <div className="relative z-10 flex justify-between items-center">
@@ -1236,7 +1236,7 @@ const Academics = () => {
                             )}
                         </div>
 
-                        <div className="fade-in card card-mobile-flat p-0 overflow-hidden">
+                        <div className="fade-in card card-mobile-flat p-0 overflow-hidden min-w-0">
                             <div className="card-header">
                                 <h3 className="mb-0 text-sm font-black uppercase">Curriculum Progress</h3>
                             </div>

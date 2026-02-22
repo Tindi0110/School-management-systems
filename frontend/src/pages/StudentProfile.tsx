@@ -476,7 +476,7 @@ const StudentProfile = () => {
     // ... (keep existing modals)
 
     return (
-        <div className="fade-in pb-12 w-full max-w-full overflow-x-hidden">
+        <div className="fade-in pb-12 w-full max-w-full container mx-auto overflow-x-hidden">
             {/* Header ... (keep existing) */}
             <div className="flex justify-between items-center mb-6 no-print">
                 <Button variant="ghost" size="sm" onClick={() => navigate('/students')} icon={<ArrowLeft size={16} />} className="font-black text-secondary hover:text-primary">
@@ -537,7 +537,7 @@ const StudentProfile = () => {
 
 
 
-            <div className="grid grid-cols-12 gap-8 max-w-[1400px] mx-auto">
+            <div className="grid grid-cols-12 gap-8 max-w-[1280px] mx-auto">
                 <div className="col-span-12 lg:col-span-8 space-y-8 min-w-0">
                     {/* ... (SUMMARY tab remains same) ... */}
                     {activeTab === 'SUMMARY' && (
@@ -811,7 +811,7 @@ const StudentProfile = () => {
                     {activeTab === 'FINANCE' && (
                         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             {/* Modern Financial Dashboard */}
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 no-print">
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 no-print min-w-0">
                                 <div className="md:col-span-2 card flex flex-row items-center gap-6 p-6 transition-all hover-scale border-left-4 border-error">
                                     <div className="p-4 rounded-2xl bg-error/10 text-error shrink-0">
                                         <CreditCard size={28} strokeWidth={2.5} />
