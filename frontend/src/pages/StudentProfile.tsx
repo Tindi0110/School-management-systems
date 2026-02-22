@@ -1002,7 +1002,7 @@ const StudentProfile = () => {
                 </div>
 
                 {/* Sidebar Context */}
-                <div className="col-span-12 lg:col-span-4 space-y-8 no-print">
+                <div className="col-span-12 lg:col-span-4 space-y-8 min-w-0 no-print">
                     {/* Only show these cards if NOT on the Finance tab, as we moved them to a scrollable row there */}
                     {activeTab !== 'FINANCE' && (
                         <>
