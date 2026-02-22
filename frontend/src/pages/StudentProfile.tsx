@@ -811,7 +811,7 @@ const StudentProfile = () => {
                     {activeTab === 'FINANCE' && (
                         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             {/* Modern Financial Dashboard */}
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 no-print min-w-0">
+                            <div className="grid grid-cols-2 gap-6 no-print min-w-0">
                                 <div className="md:col-span-2 card flex flex-row items-center gap-6 p-6 transition-all hover-scale border-left-4 border-error">
                                     <div className="p-4 rounded-2xl bg-error/10 text-error shrink-0">
                                         <CreditCard size={28} strokeWidth={2.5} />

@@ -380,7 +380,7 @@ const Library = () => {
             </div>
 
             {/* Quick Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-2 gap-4 mb-8">
                 <div className="card flex items-center gap-4 border-l-4 border-info">
                     <Bookmark className="text-info" size={24} />
                     <div><p className="text-xs text-secondary font-bold uppercase">Out on Loan</p><h3>{stats.activeLendings}</h3></div>

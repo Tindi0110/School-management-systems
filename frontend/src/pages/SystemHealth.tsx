@@ -93,7 +93,7 @@ const SystemHealth = () => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-2 gap-6 mb-8">
                 {/* Overall Status */}
                 <div className={`card p-6 border-top-4 ${getStatusBg(healthData?.status)} shadow-lg`}>
                     <div className="flex items-center gap-4">

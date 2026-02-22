@@ -431,14 +431,14 @@ const Finance = () => {
                     )}
                     {activeTab === 'dashboard' && (
                         <div className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <div className="grid grid-cols-2 gap-6">
                                 <StatsCard title="Total Invoiced" value={`KES ${stats.totalInvoiced.toLocaleString()}`} icon={<FileText />} color="text-blue-500" />
                                 <StatsCard title="Total Collected" value={`KES ${stats.totalCollected.toLocaleString()}`} icon={<CheckCircle />} color="text-green-500" />
                                 <StatsCard title="Outstanding" value={`KES ${stats.totalOutstanding.toLocaleString()}`} icon={<CreditCard />} color="text-red-500" />
                                 <StatsCard title="Daily Collection" value={`KES ${stats.dailyCollection.toLocaleString()}`} icon={<TrendingUp />} color="text-purple-500" />
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <div className="grid grid-cols-2 gap-6">
                                 <StatsCard title="Enrolled Students" value={stats.enrolledStudents.toLocaleString()} icon={<TrendingUp />} color="text-cyan-500" />
                                 <StatsCard title="Total Capacity" value={stats.totalCapacity.toLocaleString()} icon={<CheckCircle />} color="text-indigo-500" />
                                 <StatsCard title="Revenue / Seat" value={`KES ${stats.revenuePerSeat.toLocaleString()}`} icon={<CreditCard />} color="text-orange-500" />
