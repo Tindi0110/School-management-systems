@@ -1,14 +1,15 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
-    Plus, Edit, Trash2, Users, BookOpen, Award,
+    Plus, Edit, Trash2, Users, Award, GraduationCap,
     School, Calendar, ClipboardCheck, BarChart3, FileText,
-    Settings, CheckCircle2, Layers, Trophy, Printer, Square, CheckSquare, Download
+    Settings, Layers, Trophy, Printer, Square, CheckSquare, Download
 } from 'lucide-react';
 import { academicsAPI, staffAPI, studentsAPI } from '../api/api';
 import { exportToCSV } from '../utils/export';
 
 import Modal from '../components/Modal';
 import SearchableSelect from '../components/SearchableSelect';
+import { StatCard } from '../components/Card';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 import Button from '../components/common/Button';
@@ -66,8 +67,8 @@ const StudentResultRow = React.memo(({ student, sClass, subjects, studentScores,
                                 type="text"
                                 inputMode="decimal"
                                 className={`w-full text-center text-xl font-black bg-transparent border-none outline-none px-6 py-4 m-0
-                                    ${hasSavedResult ? 'text-blue-700' : 'text-slate-700'}
-                                    focus:bg-blue-50 focus:ring-2 focus:ring-blue-400 transition-all rounded-lg`}
+                                    ${hasSavedResult ? 'text-primary' : 'text-slate-700'}
+                                    focus:bg-blue-50 focus:ring-2 focus:ring-primary/20 transition-all rounded-lg`}
                                 value={entry.score}
                                 placeholder="—"
                                 onChange={(e) => {
@@ -977,15 +978,15 @@ const Academics = () => {
 
     return (
         <div className="fade-in max-w-full">
-            {/* Elegant Header - Pushed from Dashboard Style */}
-            <div className="relative overflow-hidden rounded-3xl bg-primary text-white p-6 lg:p-8 mb-8 shadow-2xl no-print">
-                <div className="relative z-10 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+            {/* Elegant Header with Multi-layer Background */}
+            <div className="relative overflow-hidden rounded-3xl bg-primary text-white p-8 mb-8 shadow-2xl">
+                <div className="relative z-10 flex justify-between items-center">
                     <div>
                         <div className="flex items-center gap-2 mb-2">
-                            <BookOpen size={16} className="text-info-light" />
-                            <span className="text-[10px] font-black uppercase tracking-widest opacity-80">Institutional Academics Module</span>
+                            <GraduationCap size={16} className="text-info-light" />
+                            <span className="text-[10px] font-black uppercase tracking-widest opacity-80">Academic Operations</span>
                         </div>
-                        <h1 className="text-3xl font-black mb-1 capitalize text-white">Academic Records</h1>
+                        <h1 className="text-3xl font-black mb-1 capitalize text-white">Institution Academics</h1>
                         <div className="flex items-center gap-4 mt-2">
                             <div className="flex items-center gap-1.5 px-3 py-1 bg-white/10 rounded-full border border-white/10">
                                 <Calendar size={12} className="text-info-light" />
@@ -993,16 +994,9 @@ const Academics = () => {
                             </div>
                         </div>
                     </div>
-                    <div className="flex flex-wrap gap-2 w-full lg:w-auto">
-                        {isReadOnly && (
-                            <Button variant="primary" size="sm" className="bg-white text-primary hover:bg-slate-100 border-none font-black px-6" onClick={() => { setIsAttendanceModalOpen(true); }} icon={<CheckCircle2 size={14} />}>
-                                Log Attendance
-                            </Button>
-                        )}
-                    </div>
                 </div>
-                <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
-                    <Award size={160} />
+                <div className="absolute top-0 right-0 p-12 opacity-10 pointer-events-none">
+                    <Award size={200} />
                 </div>
             </div>
 
@@ -1038,49 +1032,42 @@ const Academics = () => {
                 <div className="space-y-8 fade-in">
                     <div className="grid grid-cols-12 gap-6 lg:gap-8">
                         <div className="col-span-12 sm:col-span-6 lg:col-span-3 min-w-0">
-                            <div className="card h-full flex flex-row items-center gap-6 p-6 transition-all hover-scale border-none bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white shadow-2xl relative overflow-hidden group">
-                                <div className="absolute -right-8 -top-8 w-32 h-32 bg-primary-accent/10 rounded-full blur-3xl group-hover:bg-primary-accent/20 transition-colors"></div>
-                                <div className="p-4 rounded-2xl bg-white/10 text-white shrink-0 border border-white/10 backdrop-blur-sm"><Users size={24} /></div>
-                                <div>
-                                    <p className="text-white/50 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Total Capacity</p>
-                                    <h3 className="text-2xl font-black text-white m-0 leading-tight">
-                                        {classes.length > 0 ? `${classes.reduce((sum, c) => sum + (c.student_count || 0), 0)}/${classes.reduce((sum, c) => sum + (c.capacity || 40), 0)}` : "0/0"}
-                                    </h3>
-                                </div>
-                            </div>
+                            <StatCard
+                                title="Total Capacity"
+                                value={classes.length > 0 ? `${classes.reduce((sum, c) => sum + (c.student_count || 0), 0)}/${classes.reduce((sum, c) => sum + (c.capacity || 40), 0)}` : "0/0"}
+                                icon={<Users size={18} />}
+                                gradient="linear-gradient(135deg, #1e3c72, #2a5298)"
+                            />
                         </div>
                         <div className="col-span-12 sm:col-span-6 lg:col-span-3 min-w-0">
-                            <div className="card h-full flex flex-row items-center gap-6 p-6 transition-all hover-scale border-none bg-white shadow-xl hover:shadow-2xl relative overflow-hidden group border-b-4 border-b-blue-500">
-                                <div className="p-4 rounded-2xl bg-blue-50 text-blue-600 shrink-0 border border-blue-100 group-hover:scale-110 transition-transform"><Layers size={24} /></div>
-                                <div>
-                                    <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Departments</p>
-                                    <h3 className="text-2xl font-black text-slate-900 m-0 leading-tight">{subjectGroups.length}</h3>
-                                </div>
-                            </div>
+                            <StatCard
+                                title="Departments"
+                                value={subjectGroups.length}
+                                icon={<Layers size={18} />}
+                                gradient="linear-gradient(135deg, #f093fb, #f5576c)"
+                            />
                         </div>
                         <div className="col-span-12 sm:col-span-6 lg:col-span-3 min-w-0">
-                            <div className="card h-full flex flex-row items-center gap-6 p-6 transition-all hover-scale border-none bg-white shadow-xl hover:shadow-2xl relative overflow-hidden group border-b-4 border-b-amber-500">
-                                <div className="p-4 rounded-2xl bg-amber-50 text-amber-600 shrink-0 border border-amber-100 group-hover:scale-110 transition-transform"><Calendar size={24} /></div>
-                                <div>
-                                    <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Active Exams</p>
-                                    <h3 className="text-2xl font-black text-slate-900 m-0 leading-tight">{exams.filter(e => e.is_active).length}</h3>
-                                </div>
-                            </div>
+                            <StatCard
+                                title="Active Exams"
+                                value={exams.filter(e => e.is_active).length}
+                                icon={<Calendar size={18} />}
+                                gradient="linear-gradient(135deg, #4facfe, #00f2fe)"
+                            />
                         </div>
                         <div className="col-span-12 sm:col-span-6 lg:col-span-3 min-w-0">
-                            <div className="card h-full flex flex-row items-center gap-6 p-6 transition-all hover-scale border-none bg-white shadow-xl hover:shadow-2xl relative overflow-hidden group border-b-4 border-b-emerald-500">
-                                <div className="p-4 rounded-2xl bg-emerald-50 text-emerald-600 shrink-0 border border-emerald-100 group-hover:scale-110 transition-transform"><BarChart3 size={24} /></div>
-                                <div>
-                                    <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Overall Mean</p>
-                                    <h3 className="text-2xl font-black text-slate-900 m-0 leading-tight">{meanGrade === '...' ? '—' : (meanGrade || "N/A")}</h3>
-                                </div>
-                            </div>
+                            <StatCard
+                                title="Overall Mean"
+                                value={meanGrade === '...' ? '—' : (meanGrade || "N/A")}
+                                icon={<Trophy size={18} />}
+                                gradient="linear-gradient(135deg, #667eea, #764ba2)"
+                            />
                         </div>
                     </div>
 
                     <div className="grid grid-cols-12 gap-6 lg:gap-8">
                         <div className="col-span-12 lg:col-span-6 min-w-0">
-                            <div className="card h-full flex flex-col p-0 overflow-hidden">
+                            <div className="card h-full flex flex-col p-0 overflow-hidden border-top-4 border-primary">
                                 <div className="card-header">
                                     <h3 className="mb-0 text-xs font-black uppercase">Exams Overview</h3>
                                     <Button variant="ghost" size="sm" className="text-primary font-black uppercase text-[10px]" onClick={() => setActiveTab('EXAMS')}>View All</Button>
@@ -1128,7 +1115,7 @@ const Academics = () => {
                                                 <span className="text-slate-700">{s.subject_name} <span className="text-slate-400 ml-1">({s.class_name})</span></span>
                                                 <span className="text-primary">{s.coverage_percentage}%</span>
                                             </div>
-                                            <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                                            <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden shadow-inner">
                                                 <div className={`h-full transition-all duration-1000 ${s.coverage_percentage > 80 ? 'bg-success' : s.coverage_percentage > 50 ? 'bg-primary' : 'bg-error'}`} style={{ width: `${s.coverage_percentage}%` }}></div>
                                             </div>
                                         </div>
