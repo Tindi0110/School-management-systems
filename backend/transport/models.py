@@ -99,7 +99,6 @@ class VehicleMaintenance(models.Model):
     service_date = models.DateField()
     description = models.TextField()
     cost = models.DecimalField(max_digits=10, decimal_places=2)
-    cost = models.DecimalField(max_digits=10, decimal_places=2)
     mileage_at_service = models.IntegerField(null=True, blank=True)
     next_service_due = models.DateField(null=True, blank=True)
     performed_by = models.CharField(max_length=200, blank=True)
@@ -116,8 +115,6 @@ class FuelRecord(models.Model):
 class TransportIncident(models.Model):
     SEVERITY = (('MINOR', 'Minor'), ('MAJOR', 'Major'), ('CRITICAL', 'Critical'))
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE)
-    date = models.DateField(default=timezone.now)
-    severity = models.CharField(max_length=10, choices=SEVERITY)
     date = models.DateField(default=timezone.now)
     severity = models.CharField(max_length=10, choices=SEVERITY)
     incident_type = models.CharField(max_length=20, default='ACCIDENT')

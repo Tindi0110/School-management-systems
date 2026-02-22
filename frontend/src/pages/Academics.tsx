@@ -1036,7 +1036,7 @@ const Academics = () => {
                                 title="Enrolled Capacity"
                                 value={classes.length > 0 ? `${classes.reduce((sum, c) => sum + (c.student_count || 0), 0)}/${classes.reduce((sum, c) => sum + (c.capacity || 40), 0)}` : "0/0"}
                                 icon={<Users size={18} />}
-                                gradient="linear-gradient(135deg, #1e3c72, #2a5298)"
+                                gradient="linear-gradient(135deg, #0f172a, #1e293b)"
                             />
                         </div>
                         <div className="col-span-12 sm:col-span-6 lg:col-span-3 min-w-0">
@@ -1044,7 +1044,7 @@ const Academics = () => {
                                 title="Departments"
                                 value={subjectGroups.length}
                                 icon={<Layers size={18} />}
-                                gradient="linear-gradient(135deg, #02aab0, #00cdac)"
+                                gradient="linear-gradient(135deg, #0f172a, #1e293b)"
                             />
                         </div>
                         <div className="col-span-12 sm:col-span-6 lg:col-span-3 min-w-0">

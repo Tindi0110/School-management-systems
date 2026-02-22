@@ -21,11 +21,12 @@ class VehicleSerializer(serializers.ModelSerializer):
         extra_fields = ['maintenance_count', 'assigned_driver_id', 'assigned_driver_name']
 
     def get_assigned_driver_name(self, obj):
-        # Use annotated field if available, otherwise fallback to query
-        if hasattr(obj, 'assigned_driver_name_annotated'):
+        if hasattr(obj, 'assigned_driver_name_annotated') and obj.assigned_driver_name_annotated:
             return obj.assigned_driver_name_annotated
-        driver = DriverProfile.objects.filter(assigned_vehicle=obj).first()
-        return driver.staff.full_name if driver else None
+        driver = DriverProfile.objects.filter(assigned_vehicle=obj).select_related('staff__user').first()
+        if driver and driver.staff and driver.staff.user:
+            return driver.staff.user.get_full_name()
+        return None
 
     def create(self, validated_data):
         driver_id = validated_data.pop('assigned_driver_id', None)
@@ -55,7 +56,7 @@ class VehicleSerializer(serializers.ModelSerializer):
         return vehicle
 
 class DriverProfileSerializer(serializers.ModelSerializer):
-    staff_name = serializers.CharField(source='staff.full_name', read_only=True)
+    staff_name = serializers.CharField(source='staff.user.get_full_name', read_only=True)
     staff_employee_id = serializers.CharField(source='staff.employee_id', read_only=True)
     vehicle_plate = serializers.CharField(source='assigned_vehicle.registration_number', read_only=True)
 

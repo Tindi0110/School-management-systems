@@ -1,7 +1,8 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django.db.models import Count, Q, OuterRef, Subquery, F
+from django.db.models import Count, Q, OuterRef, Subquery, F, Value
+from django.db.models.functions import Concat
 from .models import (
     Vehicle, Route, PickupPoint, TransportAllocation, 
     TripLog, TransportAttendance, VehicleMaintenance, 
@@ -26,7 +27,9 @@ class VehicleViewSet(viewsets.ModelViewSet):
         # Annotate with the full name of the assigned driver to avoid N+1 in serializer
         driver_name_subquery = DriverProfile.objects.filter(
             assigned_vehicle=OuterRef('pk')
-        ).values('staff__full_name')[:1]
+        ).annotate(
+            full_name=Concat('staff__user__first_name', Value(' '), 'staff__user__last_name')
+        ).values('full_name')[:1]
         
         return Vehicle.objects.annotate(
             assigned_driver_name_annotated=Subquery(driver_name_subquery)
