@@ -1209,7 +1209,7 @@ const Academics = () => {
                                                 <td className="py-4 px-6">{s.group_name || '-'}</td>
                                                 <td className="py-4 px-6"><span className={`badge badge-sm font-bold ${s.is_core ? 'bg-primary text-white' : 'bg-slate-100 text-slate-600'}`}>{s.is_core ? 'CORE' : 'ELECTIVE'}</span></td>
                                                 <td className="py-4 px-6 text-right">
-                                                    <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <div className="flex justify-end gap-1">
                                                         <Button variant="ghost" size="sm" className="text-primary hover:bg-white p-1" onClick={() => openEditSubject(s)} title="Edit Subject"><Edit size={12} /></Button>
                                                         <Button variant="ghost" size="sm" className="text-error hover:bg-white p-1" onClick={() => handleDeleteSubject(s.id)} title="Delete Subject"><Trash2 size={12} /></Button>
                                                     </div>
