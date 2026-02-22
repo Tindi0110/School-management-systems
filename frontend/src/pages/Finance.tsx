@@ -420,7 +420,7 @@ const Finance = () => {
                         </div>
                     )}
                     {activeTab === 'dashboard' && (
-                        <div className="space-y-6">
+                        <div className="space-y-12">
                             <div className="grid grid-cols-2 gap-6">
                                 <StatCard title="Total Invoiced" value={`KES ${stats.totalInvoiced.toLocaleString()}`} icon={<FileText size={18} />} gradient="linear-gradient(135deg, #3b82f6, #2563eb)" />
                                 <StatCard title="Total Collected" value={`KES ${stats.totalCollected.toLocaleString()}`} icon={<CheckCircle size={18} />} gradient="linear-gradient(135deg, #10b981, #059669)" />

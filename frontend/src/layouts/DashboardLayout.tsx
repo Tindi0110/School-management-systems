@@ -169,6 +169,7 @@ const DashboardLayout = () => {
       <style>{`
         .dashboard-layout {
           display: flex;
+          height: 100vh;
           height: 100dvh;
           width: 100%;
           max-width: 100vw;

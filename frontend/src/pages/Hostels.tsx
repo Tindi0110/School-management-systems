@@ -7,6 +7,7 @@ import { hostelAPI, studentsAPI, staffAPI } from '../api/api';
 import { exportToCSV } from '../utils/export';
 import Modal from '../components/Modal';
 import SearchableSelect from '../components/SearchableSelect';
+import { StatCard } from '../components/Card';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 import Button from '../components/common/Button';
@@ -506,23 +507,31 @@ const Hostels = () => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-md mb-8">
-                <div className="card flex items-center gap-md border-left-4 border-primary">
-                    <Building className="text-primary" size={24} />
-                    <div><p className="text-xs text-secondary font-bold uppercase">Hostels</p><h3>{stats.totalHostels}</h3></div>
-                </div>
-                <div className="card flex items-center gap-md border-left-4 border-success">
-                    <UsersIcon className="text-success" size={24} />
-                    <div><p className="text-xs text-secondary font-bold uppercase">Residents</p><h3>{stats.totalResidents}</h3></div>
-                </div>
-                <div className="card flex items-center gap-md border-left-4 border-warning">
-                    <Layout className="text-warning" size={24} />
-                    <div><p className="text-xs text-secondary font-bold uppercase">Occupancy</p><h3>{Math.round((stats.totalResidents / (stats.totalCapacity || 1)) * 100)}%</h3></div>
-                </div>
-                <div className="card flex items-center gap-md border-left-4 border-error">
-                    <Wrench className="text-error" size={24} />
-                    <div><p className="text-xs text-secondary font-bold uppercase">Maintenance</p><h3>{stats.maintenanceIssues}</h3></div>
-                </div>
+            <div className="grid grid-cols-2 gap-md mb-8">
+                <StatCard
+                    title="Hostels"
+                    value={stats.totalHostels}
+                    icon={<Building />}
+                    gradient="linear-gradient(135deg, #0f172a, #1e293b)"
+                />
+                <StatCard
+                    title="Residents"
+                    value={stats.totalResidents}
+                    icon={<UsersIcon />}
+                    gradient="linear-gradient(135deg, #10b981, #059669)"
+                />
+                <StatCard
+                    title="Occupancy"
+                    value={`${Math.round((stats.totalResidents / (stats.totalCapacity || 1)) * 100)}%`}
+                    icon={<Layout />}
+                    gradient="linear-gradient(135deg, #f59e0b, #d97706)"
+                />
+                <StatCard
+                    title="Maintenance"
+                    value={stats.maintenanceIssues}
+                    icon={<Wrench />}
+                    gradient="linear-gradient(135deg, #ef4444, #dc2626)"
+                />
             </div>
 
             {/* Tabs */}
