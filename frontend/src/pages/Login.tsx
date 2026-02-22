@@ -43,7 +43,7 @@ const Login = () => {
       <div className="auth-gradient-bg auth-gradient-1"></div>
       <div className="auth-gradient-bg auth-gradient-2"></div>
 
-      <div className="auth-card">
+      <div className="auth-card form-container-sm">
         <div className="auth-header">
           <div className="flex justify-center mb-6">
             <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center text-primary border border-primary/20">

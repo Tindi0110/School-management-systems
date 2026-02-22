@@ -208,7 +208,7 @@ const Medical = () => {
             </div>
 
             <Modal isOpen={isModalOpen} onClose={closeModal} title={editingRecord ? 'Edit Health Entry' : 'Log Infirmary Visit'}>
-                <form onSubmit={handleSubmit} className="space-y-4 form-container-md">
+                <form onSubmit={handleSubmit} className="space-y-4 form-container-md mx-auto">
                     <SearchableSelect
                         label="Student *"
                         options={studentOptions}

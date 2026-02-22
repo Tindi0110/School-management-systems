@@ -1921,20 +1921,23 @@ const Academics = () => {
             </Modal>
 
             <Modal isOpen={isGroupModalOpen} onClose={() => setIsGroupModalOpen(false)} title="Create Department Group">
-                <form onSubmit={async (e) => {
-                    e.preventDefault();
-                    try {
-                        if (editingGroupId) {
-                            await academicsAPI.subjectGroups.update(editingGroupId, groupForm);
-                        } else {
-                            await academicsAPI.subjectGroups.create(groupForm);
-                        }
-                        loadAllAcademicData();
-                        setIsGroupModalOpen(false);
-                        setEditingGroupId(null);
-                        setGroupForm({ name: '' });
-                    } catch (err: any) { toastError(err.message || 'Failed to save group'); }
-                }}>
+                <form
+                    onSubmit={async (e) => {
+                        e.preventDefault();
+                        try {
+                            if (editingGroupId) {
+                                await academicsAPI.subjectGroups.update(editingGroupId, groupForm);
+                            } else {
+                                await academicsAPI.subjectGroups.create(groupForm);
+                            }
+                            loadAllAcademicData();
+                            setIsGroupModalOpen(false);
+                            setEditingGroupId(null);
+                            setGroupForm({ name: '' });
+                        } catch (err: any) { toastError(err.message || 'Failed to save group'); }
+                    }}
+                    className="form-container-sm mx-auto space-y-4"
+                >
                     <div className="form-group"><label className="label text-[10px] font-black uppercase">Group Name *</label><input type="text" className="input" value={groupForm.name} onChange={(e) => setGroupForm({ ...groupForm, name: e.target.value })} placeholder="e.g. Sciences" required /></div>
                     <Button type="submit" variant="primary" size="sm" className="w-full mt-2 font-black uppercase" loading={isSubmitting} loadingText="Saving...">Save Group</Button>
                 </form>
@@ -2471,28 +2474,28 @@ const Academics = () => {
 
             {/* Grade Boundary Modal */}
             <Modal isOpen={isBoundaryModalOpen} onClose={() => setIsBoundaryModalOpen(false)} title={editingBoundaryId ? "Edit Grade Boundary" : "Add Grade Boundary"}>
-                <form onSubmit={handleBoundarySubmit} className="w-full max-w-full overflow-x-auto m-0 mx-auto px-1">
-                    <div className="grid grid-cols-2 gap-4 min-w-[300px]">
-                        <div className="form-group mb-4">
+                <form onSubmit={handleBoundarySubmit} className="form-container-md mx-auto space-y-4 px-1">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="form-group">
                             <label className="label text-[10px] font-black uppercase">Grade Symbol</label>
                             <input type="text" className="input" placeholder="e.g. A" value={boundaryForm.grade} onChange={(e) => setBoundaryForm({ ...boundaryForm, grade: e.target.value })} required />
                         </div>
-                        <div className="form-group mb-4">
+                        <div className="form-group">
                             <label className="label text-[10px] font-black uppercase">Points</label>
                             <input type="number" className="input" placeholder="12" value={boundaryForm.points} onChange={(e) => setBoundaryForm({ ...boundaryForm, points: parseInt(e.target.value) })} required />
                         </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4 min-w-[300px]">
-                        <div className="form-group mb-4">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="form-group">
                             <label className="label text-[10px] font-black uppercase">Min Score</label>
                             <input type="number" className="input" value={boundaryForm.min_score} onChange={(e) => setBoundaryForm({ ...boundaryForm, min_score: parseInt(e.target.value) })} required />
                         </div>
-                        <div className="form-group mb-4">
+                        <div className="form-group">
                             <label className="label text-[10px] font-black uppercase">Max Score</label>
                             <input type="number" className="input" value={boundaryForm.max_score} onChange={(e) => setBoundaryForm({ ...boundaryForm, max_score: parseInt(e.target.value) })} required />
                         </div>
                     </div>
-                    <div className="form-group mb-4">
+                    <div className="form-group">
                         <label className="label text-[10px] font-black uppercase">Remarks</label>
                         <input type="text" className="input" placeholder="Excellent" value={boundaryForm.remarks} onChange={(e) => setBoundaryForm({ ...boundaryForm, remarks: e.target.value })} />
                     </div>

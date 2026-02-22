@@ -212,7 +212,7 @@ const Parents = () => {
             </div>
 
             <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Guardian Enrollment" size="md">
-                <form onSubmit={handleSubmit} className="space-y-4 form-container-md">
+                <form onSubmit={handleSubmit} className="space-y-4 form-container-md mx-auto">
                     <div className="form-group">
                         <label className="label text-[10px] font-black uppercase">Full Name *</label>
                         <input type="text" className="input" value={formData.full_name} onChange={(e) => setFormData({ ...formData, full_name: e.target.value })} required />

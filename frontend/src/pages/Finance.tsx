@@ -751,28 +751,29 @@ const Finance = () => {
 
             {/* Invoices List / Bulk Gen Modal */}
             <Modal isOpen={showInvoiceModal} onClose={() => setShowInvoiceModal(false)} title="Bulk Invoice Generation">
-                <form onSubmit={handleGenerateInvoices} className="space-y-6 form-container-md">
-                    <p className="text-xs text-gray-500 bg-blue-50 p-3 rounded-lg border border-blue-100">
-                        This will generate invoices for ALL students in the selected class who don't already have an invoice for this period.
+                <form onSubmit={handleGenerateInvoices} className="form-container-md mx-auto space-y-6">
+                    <p className="text-xs text-secondary-soft bg-blue-50/50 p-4 rounded-xl border border-blue-100 flex items-start gap-3">
+                        <TrendingUp size={16} className="text-blue-500 mt-0.5 shrink-0" />
+                        <span>This will generate invoices for <strong>ALL students</strong> in the selected class who do not already have an invoice for this period.</span>
                     </p>
-                    <div className="form-control">
-                        <label className="label">Academic Year</label>
-                        <select className="select select-bordered" value={genForm.year_id} onChange={e => setGenForm({ ...genForm, year_id: e.target.value })} required>
+                    <div className="form-group">
+                        <label className="label">Academic Year *</label>
+                        <select className="select" value={genForm.year_id} onChange={e => setGenForm({ ...genForm, year_id: e.target.value })} required>
                             <option value="">-- Select Year --</option>
                             {years.map((y: any) => <option key={y.id} value={y.id}>{y.name}</option>)}
                         </select>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="form-control">
-                            <label className="label">Class Level</label>
-                            <select className="select select-bordered" value={genForm.level} onChange={e => setGenForm({ ...genForm, level: e.target.value, class_id: '' })} required>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="form-group">
+                            <label className="label">Class Level *</label>
+                            <select className="select" value={genForm.level} onChange={e => setGenForm({ ...genForm, level: e.target.value, class_id: '' })} required>
                                 <option value="">-- Select Level --</option>
                                 {uniqueClassNames.map(name => <option key={name} value={name}>{name}</option>)}
                             </select>
                         </div>
-                        <div className="form-control">
-                            <label className="label">Stream</label>
-                            <select className="select select-bordered" value={genForm.class_id} onChange={e => setGenForm({ ...genForm, class_id: e.target.value })} disabled={!genForm.level} required>
+                        <div className="form-group">
+                            <label className="label">Stream *</label>
+                            <select className="select" value={genForm.class_id} onChange={e => setGenForm({ ...genForm, class_id: e.target.value })} disabled={!genForm.level} required>
                                 <option value="">-- Select Stream --</option>
                                 {classes.filter((c: any) => c.name === genForm.level).map((c: any) => (
                                     <option key={c.id} value={c.id}>{c.stream}</option>
@@ -780,24 +781,26 @@ const Finance = () => {
                             </select>
                         </div>
                     </div>
-                    <div className="form-control">
-                        <label className="label">Term</label>
-                        <select className="select select-bordered" value={genForm.term} onChange={e => setGenForm({ ...genForm, term: e.target.value })}>
+                    <div className="form-group">
+                        <label className="label">Term *</label>
+                        <select className="select" value={genForm.term} onChange={e => setGenForm({ ...genForm, term: e.target.value })}>
                             <option value="1">Term 1</option>
                             <option value="2">Term 2</option>
                             <option value="3">Term 3</option>
                         </select>
                     </div>
-                    <div className="modal-action">
-                        <Button type="button" variant="ghost" onClick={() => setShowInvoiceModal(false)}>Cancel</Button>
-                        <Button type="submit" variant="primary" loading={isSubmitting} loadingText="Generating...">Process Invoices</Button>
+                    <div className="modal-footer pt-6 border-top mt-4 flex justify-end gap-3">
+                        <Button type="button" variant="outline" onClick={() => setShowInvoiceModal(false)}>Cancel</Button>
+                        <Button type="submit" variant="primary" className="px-8 font-black shadow-lg" loading={isSubmitting} loadingText="GENERATING...">
+                            GENERATE BATCH
+                        </Button>
                     </div>
                 </form>
             </Modal>
 
             {/* Payment Modal */}
             <Modal isOpen={showPaymentModal} onClose={() => setShowPaymentModal(false)} title="Receive Payment">
-                <form onSubmit={handleReceivePayment} className="space-y-6 form-container-md">
+                <form onSubmit={handleReceivePayment} className="form-container-md mx-auto space-y-6">
                     <SearchableSelect
                         label="Student"
                         options={students.map((s: any) => ({ id: s.id, label: `${s.admission_number} - ${s.full_name}` }))}
@@ -807,9 +810,9 @@ const Finance = () => {
                     />
 
                     {payForm.student_id && (
-                        <div className="form-control">
-                            <label className="label">Select Invoice</label>
-                            <select className="select select-bordered"
+                        <div className="form-group">
+                            <label className="label">Select Invoice *</label>
+                            <select className="select"
                                 value={payForm.invoice_id}
                                 onChange={e => setPayForm({ ...payForm, invoice_id: e.target.value })}
                                 required
@@ -826,80 +829,84 @@ const Finance = () => {
                         </div>
                     )}
 
-                    <div className="form-control">
-                        <label className="label">Amount (KES)</label>
-                        <input type="number" className="input input-bordered" required
+                    <div className="form-group">
+                        <label className="label">Amount (KES) *</label>
+                        <input type="number" className="input" required
                             value={payForm.amount} onChange={e => setPayForm({ ...payForm, amount: e.target.value })}
                         />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="form-control">
-                            <label className="label">Method</label>
-                            <select className="select select-bordered" value={payForm.method} onChange={e => setPayForm({ ...payForm, method: e.target.value })}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="form-group">
+                            <label className="label">Payment Method *</label>
+                            <select className="select" value={payForm.method} onChange={e => setPayForm({ ...payForm, method: e.target.value })}>
                                 <option value="CASH">Cash</option>
                                 <option value="MPESA">M-Pesa</option>
                                 <option value="BANK">Bank Transfer</option>
                             </select>
                         </div>
-                        <div className="form-control">
+                        <div className="form-group">
                             <label className="label">Reference No.</label>
-                            <input type="text" className="input input-bordered"
+                            <input type="text" className="input"
                                 placeholder="Ref..."
                                 value={payForm.reference} onChange={e => setPayForm({ ...payForm, reference: e.target.value })}
                             />
                         </div>
                     </div>
-                    <div className="modal-action">
-                        <Button type="button" variant="ghost" onClick={() => setShowPaymentModal(false)}>Cancel</Button>
-                        <Button type="submit" variant="primary" loading={isSubmitting} loadingText="Processing...">Process Payment</Button>
+                    <div className="modal-footer pt-6 border-top mt-4 flex justify-end gap-3">
+                        <Button type="button" variant="outline" onClick={() => setShowPaymentModal(false)}>Cancel</Button>
+                        <Button type="submit" variant="primary" className="px-8 font-black shadow-lg" loading={isSubmitting} loadingText="PROCESSING...">
+                            RECORD PAYMENT
+                        </Button>
                     </div>
                 </form>
             </Modal>
 
             {/* Fee Modal */}
             <Modal isOpen={showFeeModal} onClose={() => setShowFeeModal(false)} title={editingFeeId ? "Edit Fee Structure" : "New Fee Structure"}>
-                <form onSubmit={handleFeeSubmit} className="space-y-6 form-container-md">
-                    <div className="form-control">
-                        <label className="label">Structure Name</label>
-                        <input type="text" className="input input-bordered" placeholder="e.g. Tuition Fee" required
+                <form onSubmit={handleFeeSubmit} className="form-container-md mx-auto space-y-6">
+                    <div className="form-group">
+                        <label className="label">Structure Name *</label>
+                        <input type="text" className="input" placeholder="e.g. Tuition Fee" required
                             value={feeForm.name} onChange={e => setFeeForm({ ...feeForm, name: e.target.value })}
                         />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="form-control">
-                            <label className="label">Academic Year</label>
-                            <select className="select select-bordered" value={feeForm.year_id} onChange={e => setFeeForm({ ...feeForm, year_id: e.target.value })} required>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="form-group">
+                            <label className="label">Academic Year *</label>
+                            <select className="select" value={feeForm.year_id} onChange={e => setFeeForm({ ...feeForm, year_id: e.target.value })} required>
                                 <option value="">-- Select Year --</option>
                                 {years.map((y: any) => <option key={y.id} value={y.id}>{y.name}</option>)}
                             </select>
                         </div>
-                        <div className="form-control">
+                        <div className="form-group">
                             <label className="label">Class Level</label>
-                            <select className="select select-bordered" value={feeForm.class_id} onChange={e => setFeeForm({ ...feeForm, class_id: e.target.value })}>
+                            <select className="select" value={feeForm.class_id} onChange={e => setFeeForm({ ...feeForm, class_id: e.target.value })}>
                                 <option value="">-- All Levels --</option>
                                 {classes.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
                             </select>
                         </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="form-control">
-                            <label className="label">Amount (KES)</label>
-                            <input type="number" className="input input-bordered" required
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="form-group">
+                            <label className="label">Amount (KES) *</label>
+                            <input type="number" className="input" required
                                 value={feeForm.amount} onChange={e => setFeeForm({ ...feeForm, amount: e.target.value })}
                             />
                         </div>
-                        <div className="form-control">
-                            <label className="label">Term</label>
-                            <select className="select select-bordered" value={feeForm.term} onChange={e => setFeeForm({ ...feeForm, term: e.target.value })}>
+                        <div className="form-group">
+                            <label className="label">Term *</label>
+                            <select className="select" value={feeForm.term} onChange={e => setFeeForm({ ...feeForm, term: e.target.value })}>
                                 <option value="1">Term 1</option>
                                 <option value="2">Term 2</option>
                                 <option value="3">Term 3</option>
                             </select>
                         </div>
                     </div>
-                    <div className="modal-action">
-                        <Button type="button" variant="ghost" onClick={() => setShowFeeModal(false)}>Cancel</Button>
-                        <Button type="submit" variant="primary" loading={isSubmitting} loadingText="Saving...">Save Structure</Button>
+                    <div className="modal-footer pt-6 border-top mt-4 flex justify-end gap-3">
+                        <Button type="button" variant="outline" onClick={() => setShowFeeModal(false)}>Cancel</Button>
+                        <Button type="submit" variant="primary" className="px-8 font-black shadow-lg" loading={isSubmitting} loadingText="SAVING...">
+                            SAVE STRUCTURE
+                        </Button>
                     </div>
                 </form>
             </Modal>
@@ -989,11 +996,11 @@ const Finance = () => {
 
             {/* Expense Modal */}
             <Modal isOpen={showExpenseModal} onClose={() => setShowExpenseModal(false)} title="Record New Expense">
-                <form onSubmit={handleExpenseSubmit} className="space-y-6 form-container-md">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="form-control">
-                            <label className="label">Category</label>
-                            <select className="select select-bordered" value={expenseForm.category} onChange={e => setExpenseForm({ ...expenseForm, category: e.target.value })} required>
+                <form onSubmit={handleExpenseSubmit} className="form-container-md mx-auto space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="form-group">
+                            <label className="label">Category *</label>
+                            <select className="select" value={expenseForm.category} onChange={e => setExpenseForm({ ...expenseForm, category: e.target.value })} required>
                                 <option value="SUPPLIES">Supplies</option>
                                 <option value="UTILITIES">Utilities</option>
                                 <option value="SALARIES">Salaries</option>
@@ -1001,31 +1008,35 @@ const Finance = () => {
                                 <option value="OTHER">Other</option>
                             </select>
                         </div>
-                        <div className="form-control">
-                            <label className="label">Amount (KES)</label>
-                            <input type="number" className="input input-bordered" value={expenseForm.amount} onChange={e => setExpenseForm({ ...expenseForm, amount: e.target.value })} required />
+                        <div className="form-group">
+                            <label className="label">Amount (KES) *</label>
+                            <input type="number" className="input" value={expenseForm.amount} onChange={e => setExpenseForm({ ...expenseForm, amount: e.target.value })} required />
                         </div>
                     </div>
-                    <div className="form-control">
-                        <label className="label">Paid To / Recipient</label>
-                        <input type="text" className="input input-bordered" value={expenseForm.paid_to} onChange={e => setExpenseForm({ ...expenseForm, paid_to: e.target.value })} required />
+                    <div className="form-group">
+                        <label className="label">Paid To / Recipient *</label>
+                        <input type="text" className="input" value={expenseForm.paid_to} onChange={e => setExpenseForm({ ...expenseForm, paid_to: e.target.value })} required />
                     </div>
-                    <div className="form-control">
-                        <label className="label">Description</label>
-                        <textarea className="textarea textarea-bordered" value={expenseForm.description} onChange={e => setExpenseForm({ ...expenseForm, description: e.target.value })} required />
+                    <div className="form-group">
+                        <label className="label">Description *</label>
+                        <textarea className="textarea h-24" value={expenseForm.description} onChange={e => setExpenseForm({ ...expenseForm, description: e.target.value })} required />
                     </div>
-                    <div className="modal-action">
-                        <Button type="button" variant="ghost" onClick={() => setShowExpenseModal(false)}>Cancel</Button>
-                        <Button type="submit" variant="primary" loading={isSubmitting} loadingText="Saving...">Record Expense</Button>
+                    <div className="modal-footer pt-6 border-top mt-4 flex justify-end gap-3">
+                        <Button type="button" variant="outline" onClick={() => setShowExpenseModal(false)}>Cancel</Button>
+                        <Button type="submit" variant="primary" className="px-8 font-black shadow-lg" loading={isSubmitting} loadingText="SAVING...">
+                            RECORD EXPENSE
+                        </Button>
                     </div>
                 </form>
             </Modal>
-            {/* M-Pesa STK Push Modal */}
             <Modal isOpen={showMpesaModal} onClose={() => setShowMpesaModal(false)} title="M-Pesa STK Push Payment">
-                <form onSubmit={handleMpesaPush} className="space-y-6 form-container-md">
-                    <p className="text-xs text-gray-500 bg-green-50 p-3 rounded-lg border border-green-100">
-                        This will send a secure payment prompt to the parent's phone. Fees will be automatically updated once paid.
-                    </p>
+                <form onSubmit={handleMpesaPush} className="form-container-md mx-auto space-y-6">
+                    <div className="bg-green-50/50 p-4 rounded-xl border border-green-100 flex items-start gap-3">
+                        <CheckCircle size={16} className="text-green-500 mt-0.5 shrink-0" />
+                        <span className="text-xs text-secondary-soft">
+                            This will send a secure payment prompt to the parent's phone. Fees will be <strong>automatically updated</strong> once paid.
+                        </span>
+                    </div>
                     <SearchableSelect
                         label="Student (Admission Number)"
                         options={students.map((s: any) => ({ id: s.admission_number, label: `${s.admission_number} - ${s.full_name}` }))}
@@ -1033,21 +1044,23 @@ const Finance = () => {
                         onChange={(val) => setMpesaForm({ ...mpesaForm, admission_number: String(val) })}
                         required
                     />
-                    <div className="form-control">
-                        <label className="label">Phone Number (Safaricom)</label>
-                        <input type="text" className="input input-bordered" placeholder="e.g. 0712345678" required
+                    <div className="form-group">
+                        <label className="label">Phone Number (Safaricom) *</label>
+                        <input type="text" className="input" placeholder="e.g. 0712345678" required
                             value={mpesaForm.phone_number} onChange={e => setMpesaForm({ ...mpesaForm, phone_number: e.target.value })}
                         />
                     </div>
-                    <div className="form-control">
-                        <label className="label">Amount (KES)</label>
-                        <input type="number" className="input input-bordered" required
+                    <div className="form-group">
+                        <label className="label">Amount (KES) *</label>
+                        <input type="number" className="input font-bold" required
                             value={mpesaForm.amount} onChange={e => setMpesaForm({ ...mpesaForm, amount: e.target.value })}
                         />
                     </div>
-                    <div className="modal-action">
-                        <Button type="button" variant="ghost" onClick={() => setShowMpesaModal(false)}>Cancel</Button>
-                        <Button type="submit" variant="primary" className="bg-green-600 hover:bg-green-700 border-none" loading={isSubmitting} loadingText="Sending...">Send STK Push</Button>
+                    <div className="modal-footer pt-6 border-top mt-4 flex justify-end gap-3">
+                        <Button type="button" variant="outline" onClick={() => setShowMpesaModal(false)}>Cancel</Button>
+                        <Button type="submit" variant="primary" className="bg-green-600 hover:bg-green-700 border-none px-8 font-black shadow-lg" loading={isSubmitting} loadingText="SENDING...">
+                            SEND STK PUSH
+                        </Button>
                     </div>
                 </form>
             </Modal>

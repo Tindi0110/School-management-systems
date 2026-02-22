@@ -239,7 +239,7 @@ const Timetable = () => {
             )}
 
             <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingSlot ? "Edit Time Slot" : "Add Class Session"}>
-                <form onSubmit={handleSubmit} className="space-y-4 form-container-md">
+                <form onSubmit={handleSubmit} className="space-y-4 form-container-md mx-auto">
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group">
                             <label className="label text-[10px] uppercase font-black">Day</label>

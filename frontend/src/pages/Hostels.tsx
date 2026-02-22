@@ -856,7 +856,7 @@ const Hostels = () => {
             {/* Modals */}
             {/* Modals */}
             <Modal isOpen={isHostelModalOpen} onClose={() => setIsHostelModalOpen(false)} title={hostelId ? "Edit Hostel" : "Add New Hostel"}>
-                <form onSubmit={handleHostelSubmit} className="space-y-4 form-container-md">
+                <form onSubmit={handleHostelSubmit} className="space-y-4 form-container-md mx-auto">
                     <div className="form-group"><label className="label">Name</label><input type="text" className="input" value={hostelFormData.name} onChange={e => setHostelFormData({ ...hostelFormData, name: e.target.value })} required /></div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group"><label className="label">Type</label><select className="select" value={hostelFormData.hostel_type} onChange={e => setHostelFormData({ ...hostelFormData, hostel_type: e.target.value })}><option value="BOARDING">Boarding</option><option value="DAY">Day Scholar</option></select></div>
@@ -888,7 +888,7 @@ const Hostels = () => {
             </Modal>
 
             <Modal isOpen={isRoomModalOpen} onClose={() => setIsRoomModalOpen(false)} title={roomId ? "Edit Room" : "Add New Room"}>
-                <form onSubmit={handleRoomSubmit} className="space-y-4 form-container-md">
+                <form onSubmit={handleRoomSubmit} className="space-y-4 form-container-md mx-auto">
                     <div className="form-group"><label className="label">Hostel</label>
                         <select className="select" value={roomFormData.hostel} onChange={e => setRoomFormData({ ...roomFormData, hostel: e.target.value })} required>
                             <option value="">Select Hostel...</option>
@@ -917,7 +917,7 @@ const Hostels = () => {
             </Modal>
 
             <Modal isOpen={isAllocationModalOpen} onClose={() => setIsAllocationModalOpen(false)} title={isTransferMode ? "Transfer Student" : allocationId ? "Edit Allocation" : "Assign Student"}>
-                <form onSubmit={handleAllocationSubmit} className="space-y-4 form-container-md">
+                <form onSubmit={handleAllocationSubmit} className="space-y-4 form-container-md mx-auto">
                     {!isTransferMode && (
                         <SearchableSelect label="Select Student" options={students.map(s => ({ id: String(s.id), label: s.full_name, subLabel: s.admission_number }))} value={String(allocationFormData.student || '')} onChange={(val) => setAllocationFormData({ ...allocationFormData, student: val.toString() })} required />
                     )}
@@ -971,7 +971,7 @@ const Hostels = () => {
             </Modal >
 
             <Modal isOpen={isAssetModalOpen} onClose={() => setIsAssetModalOpen(false)} title={assetId ? "Edit Asset" : "Add Hostel Asset"}>
-                <form onSubmit={handleAssetSubmit} className="space-y-4">
+                <form onSubmit={handleAssetSubmit} className="space-y-4 form-container-md mx-auto">
                     <div className="form-group"><label className="label">Asset Code/Name</label><input type="text" className="input" value={assetFormData.asset_code} onChange={e => setAssetFormData({ ...assetFormData, asset_code: e.target.value })} placeholder="e.g. BED-001" /></div>
 
                     <div className="grid grid-cols-2 gap-4">
@@ -1015,7 +1015,7 @@ const Hostels = () => {
                 </div>
 
                 {attendanceMode === 'SINGLE' ? (
-                    <form onSubmit={handleAttendanceSubmit} className="space-y-4">
+                    <form onSubmit={handleAttendanceSubmit} className="space-y-4 form-container-md mx-auto">
                         <SearchableSelect label="Student" options={students.map(s => ({ id: String(s.id), label: s.full_name, subLabel: s.admission_number }))} value={String(attendanceFormData.student || '')} onChange={(val) => setAttendanceFormData({ ...attendanceFormData, student: val })} required />
 
                         <div className="grid grid-cols-2 gap-4">
@@ -1038,7 +1038,7 @@ const Hostels = () => {
                         </div>
                     </form>
                 ) : (
-                    <div className="space-y-4">
+                    <div className="space-y-4 form-container-md mx-auto">
                         <div className="grid grid-cols-2 gap-4">
                             {/* ... (Hostel/Room selects unchanged) ... */}
                             <div className="form-group">
@@ -1151,7 +1151,7 @@ const Hostels = () => {
             </Modal>
 
             <Modal isOpen={isDisciplineModalOpen} onClose={() => setIsDisciplineModalOpen(false)} title={disciplineId ? "Edit Discipline Record" : "Report Incident"}>
-                <form onSubmit={handleDisciplineSubmit} className="space-y-4">
+                <form onSubmit={handleDisciplineSubmit} className="space-y-4 form-container-md mx-auto">
                     <SearchableSelect label="Student" options={students.map(s => ({ id: String(s.id), label: s.full_name, subLabel: s.admission_number }))} value={String(disciplineFormData.student || '')} onChange={(val) => setDisciplineFormData({ ...disciplineFormData, student: String(val) })} required />
 
                     <div className="grid grid-cols-2 gap-4">
@@ -1176,7 +1176,7 @@ const Hostels = () => {
             </Modal>
 
             <Modal isOpen={isMaintenanceModalOpen} onClose={() => setIsMaintenanceModalOpen(false)} title={maintenanceId ? "Edit Repair Request" : "Log Maintenance"}>
-                <form onSubmit={handleMaintenanceSubmit} className="space-y-4">
+                <form onSubmit={handleMaintenanceSubmit} className="space-y-4 form-container-md mx-auto">
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group"><label className="label">Hostel</label><select className="select" value={maintenanceFormData.hostel} onChange={e => {
                             setMaintenanceFormData({ ...maintenanceFormData, hostel: e.target.value });

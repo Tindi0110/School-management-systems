@@ -301,7 +301,7 @@ const Dashboard = () => {
 
             {/* Faculty Modal */}
             <Modal isOpen={isStaffModalOpen} onClose={() => setIsStaffModalOpen(false)} title="Register New Faculty Member">
-                <form onSubmit={handleStaffSubmit} className="p-4 space-y-4">
+                <form onSubmit={handleStaffSubmit} className="p-4 space-y-4 form-container-md mx-auto">
                     <div>
                         <label className="text-[10px] font-black text-secondary uppercase mb-1 block">Staff / Employee ID</label>
                         <input className="input" placeholder="e.g. T-001" value={staffFormData.employee_id} onChange={e => setStaffFormData({ ...staffFormData, employee_id: e.target.value })} required />

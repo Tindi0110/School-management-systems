@@ -253,9 +253,9 @@ const Staff = () => {
                 </div>
             )}
 
-            <Modal isOpen={isModalOpen} onClose={closeModal} title={editingStaff ? 'Edit Staff Member' : 'Register New Staff Member'}>
-                <form onSubmit={handleSubmit} className="form-container-md">
-                    <div className="grid grid-cols-2 gap-md">
+            <Modal isOpen={isModalOpen} onClose={closeModal} title={editingStaff ? 'Edit Staff Member' : 'Register New Staff Member'} size="md">
+                <form onSubmit={handleSubmit} className="form-container-md mx-auto space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
                         <div className="form-group">
                             <label className="label">Employee ID *</label>
                             <input type="text" className="input" value={formData.employee_id} onChange={(e) => setFormData({ ...formData, employee_id: e.target.value })} required />
@@ -287,12 +287,12 @@ const Staff = () => {
                     </div>
                     <div className="form-group">
                         <label className="label">Qualifications</label>
-                        <textarea className="textarea" value={formData.qualifications} onChange={(e) => setFormData({ ...formData, qualifications: e.target.value })} rows={3} />
+                        <textarea className="textarea" placeholder="List degrees, certifications, etc." value={formData.qualifications} onChange={(e) => setFormData({ ...formData, qualifications: e.target.value })} rows={3} />
                     </div>
-                    <div className="modal-footer pt-4 border-top mt-4 flex justify-end gap-2">
+                    <div className="modal-footer pt-6 border-top mt-4 flex justify-end gap-3">
                         <Button type="button" variant="outline" onClick={closeModal}>Cancel</Button>
-                        <Button type="submit" variant="primary" loading={isSubmitting} loadingText={editingStaff ? 'Updating...' : 'Registering...'}>
-                            {editingStaff ? 'Update Record' : 'Register Staff'}
+                        <Button type="submit" variant="primary" className="px-8 font-black shadow-lg" loading={isSubmitting} loadingText={editingStaff ? 'UPDATING...' : 'REGISTERING...'}>
+                            {editingStaff ? 'SAVE CHANGES' : 'REGISTER STAFF'}
                         </Button>
                     </div>
                 </form>

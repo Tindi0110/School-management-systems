@@ -53,7 +53,7 @@ const ResetPassword = () => {
                         </div>
 
                         <div className="auth-content">
-                            <form onSubmit={handleSubmit} className="space-y-6">
+                            <form onSubmit={handleSubmit} className="space-y-6 form-container-sm mx-auto">
                                 <div className="auth-input-group">
                                     <label className="label uppercase text-[10px] font-black mb-1">New Password</label>
                                     <div className="auth-input-wrapper">

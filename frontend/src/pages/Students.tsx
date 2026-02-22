@@ -369,8 +369,8 @@ const Students = () => {
             </div>
 
             {/* Edit/Create Modal - Professional Form */}
-            <Modal isOpen={isModalOpen} onClose={closeModal} title={editingStudent ? 'Update Student Record' : 'New Student Admission'} size="md">
-                <form onSubmit={handleSubmit} className="p-2">
+            <Modal isOpen={isModalOpen} onClose={closeModal} title={editingStudent ? 'Update Student Record' : 'New Student Admission'} size="lg">
+                <form onSubmit={handleSubmit} className="form-container-lg mx-auto p-2">
                     <div className="bg-secondary-light p-4 rounded-lg border mb-6 flex justify-between items-center">
                         <div>
                             <h4 className="text-sm font-black text-primary uppercase mb-1">{editingStudent ? 'Editing Record' : 'New Enrollment'}</h4>
@@ -379,12 +379,12 @@ const Students = () => {
                         {/* Boarding Toggle Switch */}
                         <div className="flex bg-white p-1 rounded-lg border shadow-sm">
                             <button type="button"
-                                className={`px-4 py-2 rounded-md text-xs font-black transition-all ${formData.category === 'DAY' ? 'bg-primary text-white shadow-sm' : 'text-secondary'}`}
+                                className={`px-4 py-2 rounded-md text-[10px] font-black transition-all ${formData.category === 'DAY' ? 'bg-primary text-white shadow-sm' : 'text-secondary'}`}
                                 onClick={() => setFormData({ ...formData, category: 'DAY' })}>
                                 DAY SCHOLAR
                             </button>
                             <button type="button"
-                                className={`px-4 py-2 rounded-md text-xs font-black transition-all ${formData.category === 'BOARDING' ? 'bg-primary text-white shadow-sm' : 'text-secondary'}`}
+                                className={`px-4 py-2 rounded-md text-[10px] font-black transition-all ${formData.category === 'BOARDING' ? 'bg-primary text-white shadow-sm' : 'text-secondary'}`}
                                 onClick={() => setFormData({ ...formData, category: 'BOARDING' })}>
                                 BOARDING
                             </button>
@@ -392,10 +392,10 @@ const Students = () => {
                     </div>
                     {/* Auto-Hostel Assignment Option */}
                     {formData.category === 'BOARDING' && !editingStudent && (
-                        <div className="bg-info-light p-3 rounded-lg border border-info mb-6 flex items-center gap-3 animate-pulse-once">
+                        <div className="bg-info-light p-3 rounded-lg border border-info mb-6 flex items-center gap-3">
                             <input
                                 type="checkbox"
-                                className="checkbox checkbox-sm checkbox-primary"
+                                className="checkbox"
                                 checked={autoAssignHostel}
                                 onChange={(e) => setAutoAssignHostel(e.target.checked)}
                             />
@@ -406,34 +406,36 @@ const Students = () => {
                         </div>
                     )}
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {/* Column 1: Identity */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
+                        {/* Section 1: Identity */}
                         <div className="space-y-4">
-                            <h5 className="text-xs font-bold text-secondary uppercase border-bottom pb-2">Identity Details</h5>
+                            <h5 className="text-[10px] font-black text-secondary uppercase border-bottom pb-2 tracking-widest">Identity Details</h5>
                             <div className="form-group">
                                 <label className="label">Full Name *</label>
                                 <input type="text" className="input" value={formData.full_name} onChange={(e) => setFormData({ ...formData, full_name: e.target.value })} required placeholder="Surname, First Middle" />
                             </div>
-                            <div className="form-group">
-                                <label className="label">Admission Number</label>
-                                <input type="text" className="input font-mono" value={formData.admission_number} onChange={(e) => setFormData({ ...formData, admission_number: e.target.value })} placeholder="Auto-generated if empty" />
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="form-group">
+                                    <label className="label">ADM No.</label>
+                                    <input type="text" className="input font-mono" value={formData.admission_number} onChange={(e) => setFormData({ ...formData, admission_number: e.target.value })} placeholder="ADM-..." />
+                                </div>
+                                <div className="form-group">
+                                    <label className="label">Gender *</label>
+                                    <select className="select" value={formData.gender} onChange={(e) => setFormData({ ...formData, gender: e.target.value })} required>
+                                        <option value="M">Male</option>
+                                        <option value="F">Female</option>
+                                    </select>
+                                </div>
                             </div>
                             <div className="form-group">
                                 <label className="label">Date of Birth *</label>
                                 <input type="date" className="input" value={formData.date_of_birth} onChange={(e) => setFormData({ ...formData, date_of_birth: e.target.value })} required />
                             </div>
-                            <div className="form-group">
-                                <label className="label">Gender *</label>
-                                <select className="select" value={formData.gender} onChange={(e) => setFormData({ ...formData, gender: e.target.value })} required>
-                                    <option value="M">Male</option>
-                                    <option value="F">Female</option>
-                                </select>
-                            </div>
                         </div>
 
-                        {/* Column 2: Academic */}
+                        {/* Section 2: Academic & Status */}
                         <div className="space-y-4">
-                            <h5 className="text-xs font-bold text-secondary uppercase border-bottom pb-2">Academic Unit</h5>
+                            <h5 className="text-[10px] font-black text-secondary uppercase border-bottom pb-2 tracking-widest">Academic Placement</h5>
                             <div className="form-group">
                                 <label className="label">Class / Grade *</label>
                                 <select className="select" value={formData.current_class} onChange={(e) => setFormData({ ...formData, current_class: e.target.value })} required>
@@ -447,29 +449,26 @@ const Students = () => {
                                     <option value="ACTIVE">Active Student</option>
                                     <option value="SUSPENDED">Suspended</option>
                                     <option value="WITHDRAWN">Withdrawn</option>
-                                    <option value="ALUMNI">Alumni</option>
                                 </select>
-                            </div>
-                            <div className="card bg-info-light p-4 border-none mt-8">
-                                <p className="text-xs font-bold text-info mb-1">Note:</p>
-                                <p className="text-[10px] text-info opacity-80 mb-0">Assigning a class automatically links the student to the class subjects and fee structure.</p>
                             </div>
                         </div>
 
-                        {/* Column 3: Guardian */}
-                        <div className="space-y-4">
-                            <h5 className="text-xs font-bold text-secondary uppercase border-bottom pb-2">Guardian Contact</h5>
-                            <div className="form-group">
-                                <label className="label">Guardian Name *</label>
-                                <input type="text" className="input" value={formData.guardian_name} onChange={(e) => setFormData({ ...formData, guardian_name: e.target.value })} required />
-                            </div>
-                            <div className="form-group">
-                                <label className="label">Phone Contact *</label>
-                                <input type="tel" className="input" value={formData.guardian_phone} onChange={(e) => setFormData({ ...formData, guardian_phone: e.target.value })} required placeholder="+254..." />
-                            </div>
-                            <div className="form-group">
-                                <label className="label">Email Address</label>
-                                <input type="email" className="input" value={formData.guardian_email} onChange={(e) => setFormData({ ...formData, guardian_email: e.target.value })} placeholder="Optional" />
+                        {/* Section 3: Guardian */}
+                        <div className="space-y-4 col-span-1 md:col-span-2">
+                            <h5 className="text-[10px] font-black text-secondary uppercase border-bottom pb-2 tracking-widest">Guardian / Contact Info</h5>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div className="form-group">
+                                    <label className="label">Guardian Name *</label>
+                                    <input type="text" className="input" value={formData.guardian_name} onChange={(e) => setFormData({ ...formData, guardian_name: e.target.value })} required />
+                                </div>
+                                <div className="form-group">
+                                    <label className="label">Phone Contact *</label>
+                                    <input type="tel" className="input" value={formData.guardian_phone} onChange={(e) => setFormData({ ...formData, guardian_phone: e.target.value })} required placeholder="+254..." />
+                                </div>
+                                <div className="form-group">
+                                    <label className="label">Email Address</label>
+                                    <input type="email" className="input" value={formData.guardian_email} onChange={(e) => setFormData({ ...formData, guardian_email: e.target.value })} placeholder="Optional" />
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -478,7 +477,7 @@ const Students = () => {
                         <Button variant="outline" type="button" onClick={closeModal}>Cancel</Button>
                         <Button
                             type="submit"
-                            className="px-8 font-black shadow-lg"
+                            className="px-12 font-black shadow-lg"
                             loading={isSubmitting}
                             loadingText={editingStudent ? "UPDATING..." : "ADMITTING..."}
                         >

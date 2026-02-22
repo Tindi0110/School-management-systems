@@ -923,9 +923,8 @@ const Transport = () => {
                 </div>
             )}
 
-            {/* Enrollment Modal */}
             <Modal isOpen={isAllocationModalOpen} onClose={() => setIsAllocationModalOpen(false)} title={enrollmentId ? "Edit Enrollment" : "Transport Enrollment"}>
-                <form onSubmit={handleEnrollmentSubmit} className="space-y-6 form-container-md">
+                <form onSubmit={handleEnrollmentSubmit} className="form-container-md mx-auto space-y-6">
                     <SearchableSelect label="Select Student *" options={studentOptions} value={enrollmentForm.student} onChange={(val) => setEnrollmentForm({ ...enrollmentForm, student: val.toString() })} required />
                     <SearchableSelect label="Assign Route *" options={routeOptions} value={enrollmentForm.route} onChange={(val) => setEnrollmentForm({ ...enrollmentForm, route: val.toString() })} required />
                     <div className="form-group">
@@ -937,41 +936,64 @@ const Transport = () => {
                             ))}
                         </select>
                     </div>
-                    <div className="form-group"><label className="label">Start Date</label><input type="date" className="input" value={enrollmentForm.start_date} onChange={e => setEnrollmentForm({ ...enrollmentForm, start_date: e.target.value })} required /></div>
-                    <div className="modal-footer"><Button type="submit" variant="primary" className="w-full" loading={isSaving} loadingText={enrollmentId ? "Updating..." : "Enrolling..."}>{enrollmentId ? "Update Enrollment" : "Confirm Enrollment"}</Button></div>
+                    <div className="form-group">
+                        <label className="label">Start Date *</label>
+                        <input type="date" className="input" value={enrollmentForm.start_date} onChange={e => setEnrollmentForm({ ...enrollmentForm, start_date: e.target.value })} required />
+                    </div>
+                    <div className="modal-footer pt-6 border-top mt-4 flex justify-end gap-3">
+                        <Button type="button" variant="outline" onClick={() => setIsAllocationModalOpen(false)}>Cancel</Button>
+                        <Button type="submit" variant="primary" className="px-8 font-black shadow-lg" loading={isSaving} loadingText={enrollmentId ? "UPDATING..." : "ENROLLING..."}>
+                            {enrollmentId ? "SAVE CHANGES" : "CONFIRM ENROLLMENT"}
+                        </Button>
+                    </div>
                 </form>
             </Modal>
 
-            {/* Vehicle Modal */}
             <Modal isOpen={isVehicleModalOpen} onClose={() => setIsVehicleModalOpen(false)} title={vehicleId ? "Edit Vehicle" : "Add New Vehicle"}>
-                <form onSubmit={handleVehicleSubmit} className="space-y-6 form-container-md">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group"><label className="label">Registration No.</label><input type="text" className="input uppercase" value={vehicleForm.registration_number} onChange={e => setVehicleForm({ ...vehicleForm, registration_number: e.target.value })} required /></div>
-                        <div className="form-group"><label className="label">Make / Model</label><input type="text" className="input" value={vehicleForm.make_model} onChange={e => setVehicleForm({ ...vehicleForm, make_model: e.target.value })} required /></div>
+                <form onSubmit={handleVehicleSubmit} className="form-container-md mx-auto space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="form-group">
+                            <label className="label">Registration No. *</label>
+                            <input type="text" className="input uppercase" value={vehicleForm.registration_number} onChange={e => setVehicleForm({ ...vehicleForm, registration_number: e.target.value })} required />
+                        </div>
+                        <div className="form-group">
+                            <label className="label">Make / Model *</label>
+                            <input type="text" className="input" value={vehicleForm.make_model} onChange={e => setVehicleForm({ ...vehicleForm, make_model: e.target.value })} required />
+                        </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group"><label className="label">Type</label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="form-group">
+                            <label className="label">Vehicle Type *</label>
                             <select className="select" value={vehicleForm.vehicle_type} onChange={e => setVehicleForm({ ...vehicleForm, vehicle_type: e.target.value })}>
-                                <option value="BUS">Bus</option><option value="VAN">Van</option><option value="MINIBUS">Minibus</option><option value="OTHER">Other</option>
+                                <option value="BUS">Bus</option>
+                                <option value="VAN">Van</option>
+                                <option value="MINIBUS">Minibus</option>
+                                <option value="OTHER">Other</option>
                             </select>
                         </div>
-                        <div className="form-group"><label className="label">Capacity</label><input type="number" className="input" value={vehicleForm.seating_capacity} onChange={e => setVehicleForm({ ...vehicleForm, seating_capacity: parseInt(e.target.value) })} required /></div>
+                        <div className="form-group">
+                            <label className="label">Capacity *</label>
+                            <input type="number" className="input" value={vehicleForm.seating_capacity} onChange={e => setVehicleForm({ ...vehicleForm, seating_capacity: parseInt(e.target.value) })} required />
+                        </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group"><label className="label">Status</label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="form-group">
+                            <label className="label">Status *</label>
                             <select className="select" value={vehicleForm.status} onChange={e => setVehicleForm({ ...vehicleForm, status: e.target.value })}>
                                 <option value="ACTIVE">Active / Operational</option>
                                 <option value="MAINTENANCE">In Maintenance</option>
                                 <option value="SUSPENDED">Suspended / Grounded</option>
                             </select>
                         </div>
-                        <div className="form-group"><label className="label">Insurance Expiry</label><input type="date" className="input" value={vehicleForm.insurance_expiry} onChange={e => setVehicleForm({ ...vehicleForm, insurance_expiry: e.target.value })} /></div>
+                        <div className="form-group">
+                            <label className="label">Insurance Expiry</label>
+                            <input type="date" className="input" value={vehicleForm.insurance_expiry} onChange={e => setVehicleForm({ ...vehicleForm, insurance_expiry: e.target.value })} />
+                        </div>
                     </div>
                     <div className="form-group">
                         <label className="label">Assigned Driver</label>
                         <select className="select" value={vehicleForm.assigned_driver_id} onChange={e => setVehicleForm({ ...vehicleForm, assigned_driver_id: e.target.value })}>
                             <option value="">Select Primary Driver...</option>
-                            {/* Show staff with DRIVER role first, fall back to driver profiles */}
                             {driverStaff.length > 0
                                 ? driverStaff.map(s => (
                                     <option key={s.id} value={s.id}>{s.full_name} ({s.employee_id || s.user})</option>
@@ -982,54 +1004,91 @@ const Transport = () => {
                             }
                         </select>
                     </div>
-                    <div className="modal-footer pt-4"><Button type="submit" variant="primary" className="w-full uppercase font-black" loading={isSaving} loadingText={vehicleId ? "Updating..." : "Registering..."}>{vehicleId ? 'Update Vehicle' : 'Register Vehicle'}</Button></div>
-                </form>
-            </Modal>
-
-            {/* Route Modal */}
-            <Modal isOpen={isRouteModalOpen} onClose={() => setIsRouteModalOpen(false)} title={routeId ? "Edit Route" : "Define New Route"}>
-                <form onSubmit={handleRouteSubmit} className="space-y-6 form-container-md">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group"><label className="label">Route Code</label><input type="text" className="input uppercase" placeholder="e.g. RT-001" value={routeForm.route_code} onChange={e => setRouteForm({ ...routeForm, route_code: e.target.value })} required /></div>
-                        <div className="form-group"><label className="label">Distance (KM)</label><input type="number" step="0.1" className="input" value={routeForm.distance_km} onChange={e => setRouteForm({ ...routeForm, distance_km: parseFloat(e.target.value) })} required /></div>
-                    </div>
-                    <div className="form-group"><label className="label">Route Name / Destination</label><input type="text" className="input" placeholder="e.g. Westlands via Waiyaki Way" value={routeForm.name} onChange={e => setRouteForm({ ...routeForm, name: e.target.value })} required /></div>
-                    <div className="form-group"><label className="label">Base Fee (KES)</label><input type="number" className="input" value={routeForm.base_cost} onChange={e => setRouteForm({ ...routeForm, base_cost: parseFloat(e.target.value) })} required /></div>
-                    <div className="modal-footer pt-4"><Button type="submit" variant="primary" className="w-full uppercase font-black" loading={isSaving} loadingText={routeId ? "Updating..." : "Mapping..."}>{routeId ? "Update Route" : "Map Route"}</Button></div>
-                </form>
-            </Modal>
-
-            {/* Point Modal */}
-            <Modal isOpen={isPointModalOpen} onClose={() => setIsPointModalOpen(false)} title={pointId ? "Edit Pickup Point" : "Add Pickup Point"}>
-                <form onSubmit={handlePointSubmit} className="space-y-6 form-container-md">
-                    <div className="form-group"><label className="label">Point Name / Landmark</label><input type="text" className="input" placeholder="e.g. Shell Station, Westlands" value={pointForm.point_name} onChange={e => setPointForm({ ...pointForm, point_name: e.target.value })} required /></div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group"><label className="label">Pickup Time</label><input type="time" className="input" value={pointForm.pickup_time} onChange={e => setPointForm({ ...pointForm, pickup_time: e.target.value })} required /></div>
-                        <div className="form-group"><label className="label">Drop-off Time</label><input type="time" className="input" value={pointForm.dropoff_time} onChange={e => setPointForm({ ...pointForm, dropoff_time: e.target.value })} required /></div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4 bg-secondary-light p-4 rounded-lg">
-                        <div className="form-group"><label className="label">Dist. from School (KM)</label><input type="number" step="0.01" className="input" value={pointForm.distance_from_school} onChange={e => setPointForm({ ...pointForm, distance_from_school: parseFloat(e.target.value) })} required /></div>
-                        <div className="form-group"><label className="label">Fee (Auto-Calc)</label><input type="number" step="0.01" className="input" placeholder="0 = Auto" value={pointForm.additional_cost} onChange={e => setPointForm({ ...pointForm, additional_cost: parseFloat(e.target.value) })} /></div>
-                    </div>
-                    <p className="text-xs text-secondary mt-2">* Fee is automatically calculated based on distance if left as 0.</p>
-                    <div className="modal-footer pt-4">
-                        <Button type="submit" variant="primary" className="w-full uppercase font-black" loading={isSaving} loadingText={pointId ? "Updating..." : "Adding..."}>
-                            {pointId ? "Update Point" : "Add Point"}
+                    <div className="modal-footer pt-6 border-top mt-4 flex justify-end gap-3">
+                        <Button type="button" variant="outline" onClick={() => setIsVehicleModalOpen(false)}>Cancel</Button>
+                        <Button type="submit" variant="primary" className="px-8 font-black shadow-lg" loading={isSaving} loadingText={vehicleId ? "UPDATING..." : "REGISTERING..."}>
+                            {vehicleId ? 'SAVE CHANGES' : 'REGISTER VEHICLE'}
                         </Button>
                     </div>
                 </form>
             </Modal>
 
-            {/* Trip Modal */}
+            <Modal isOpen={isRouteModalOpen} onClose={() => setIsRouteModalOpen(false)} title={routeId ? "Edit Route" : "Define New Route"}>
+                <form onSubmit={handleRouteSubmit} className="form-container-md mx-auto space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="form-group">
+                            <label className="label">Route Code *</label>
+                            <input type="text" className="input uppercase font-mono" placeholder="e.g. RT-001" value={routeForm.route_code} onChange={e => setRouteForm({ ...routeForm, route_code: e.target.value })} required />
+                        </div>
+                        <div className="form-group">
+                            <label className="label">Distance (KM) *</label>
+                            <input type="number" step="0.1" className="input" value={routeForm.distance_km} onChange={e => setRouteForm({ ...routeForm, distance_km: parseFloat(e.target.value) })} required />
+                        </div>
+                    </div>
+                    <div className="form-group">
+                        <label className="label">Route Name / Destination *</label>
+                        <input type="text" className="input" placeholder="e.g. Westlands via Waiyaki Way" value={routeForm.name} onChange={e => setRouteForm({ ...routeForm, name: e.target.value })} required />
+                    </div>
+                    <div className="form-group">
+                        <label className="label">Base Fee (KES) *</label>
+                        <input type="number" className="input font-bold" value={routeForm.base_cost} onChange={e => setRouteForm({ ...routeForm, base_cost: parseFloat(e.target.value) })} required />
+                    </div>
+                    <div className="modal-footer pt-6 border-top mt-4 flex justify-end gap-3">
+                        <Button type="button" variant="outline" onClick={() => setIsRouteModalOpen(false)}>Cancel</Button>
+                        <Button type="submit" variant="primary" className="px-8 font-black shadow-lg" loading={isSaving} loadingText={routeId ? "UPDATING..." : "MAPPING..."}>
+                            {routeId ? "SAVE CHANGES" : "MAP ROUTE"}
+                        </Button>
+                    </div>
+                </form>
+            </Modal>
+
+            <Modal isOpen={isPointModalOpen} onClose={() => setIsPointModalOpen(false)} title={pointId ? "Edit Pickup Point" : "Add Pickup Point"}>
+                <form onSubmit={handlePointSubmit} className="form-container-md mx-auto space-y-6">
+                    <div className="form-group">
+                        <label className="label">Point Name / Landmark *</label>
+                        <input type="text" className="input" placeholder="e.g. Shell Station, Westlands" value={pointForm.point_name} onChange={e => setPointForm({ ...pointForm, point_name: e.target.value })} required />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="form-group">
+                            <label className="label">Pickup Time *</label>
+                            <input type="time" className="input" value={pointForm.pickup_time} onChange={e => setPointForm({ ...pointForm, pickup_time: e.target.value })} required />
+                        </div>
+                        <div className="form-group">
+                            <label className="label">Drop-off Time *</label>
+                            <input type="time" className="input" value={pointForm.dropoff_time} onChange={e => setPointForm({ ...pointForm, dropoff_time: e.target.value })} required />
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-secondary-light/30 p-5 rounded-xl border border-dashed">
+                        <div className="form-group">
+                            <label className="label">Dist. from School (KM) *</label>
+                            <input type="number" step="0.01" className="input" value={pointForm.distance_from_school} onChange={e => setPointForm({ ...pointForm, distance_from_school: parseFloat(e.target.value) })} required />
+                        </div>
+                        <div className="form-group">
+                            <label className="label">Fee (Auto-Calc)</label>
+                            <input type="number" step="0.01" className="input font-bold" placeholder="0 = Auto" value={pointForm.additional_cost} onChange={e => setPointForm({ ...pointForm, additional_cost: parseFloat(e.target.value) })} />
+                        </div>
+                    </div>
+                    <p className="text-[10px] text-secondary-soft text-center bg-gray-50 py-2 rounded-lg">* Fee is automatically calculated based on route distance if left as 0.</p>
+                    <div className="modal-footer pt-6 border-top mt-4 flex justify-end gap-3">
+                        <Button type="button" variant="outline" onClick={() => setIsPointModalOpen(false)}>Cancel</Button>
+                        <Button type="submit" variant="primary" className="px-8 font-black shadow-lg" loading={isSaving} loadingText={pointId ? "UPDATING..." : "ADDING..."}>
+                            {pointId ? "SAVE CHANGES" : "ADD POINT"}
+                        </Button>
+                    </div>
+                </form>
+            </Modal>
+
             <Modal isOpen={isTripModalOpen} onClose={() => setIsTripModalOpen(false)} title={tripId ? "Edit Trip Log" : "Log New Trip"}>
-                <form onSubmit={handleTripSubmit} className="space-y-6 form-container-md">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group"><label className="label">Date</label><input type="date" className="input" value={tripForm.date} onChange={e => setTripForm({ ...tripForm, date: e.target.value })} required /></div>
+                <form onSubmit={handleTripSubmit} className="form-container-md mx-auto space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="form-group">
+                            <label className="label">Date *</label>
+                            <input type="date" className="input" value={tripForm.date} onChange={e => setTripForm({ ...tripForm, date: e.target.value })} required />
+                        </div>
                         <div className="form-group">
                             <label className="label">Driver *</label>
                             <select className="select" value={tripForm.driver} onChange={e => setTripForm({ ...tripForm, driver: e.target.value })} required>
                                 <option value="">Select Driver...</option>
-                                {/* Show staff with DRIVER role first, fall back to driver profiles */}
                                 {driverStaff.length > 0
                                     ? driverStaff.map(s => (
                                         <option key={s.id} value={s.id}>{s.full_name} ({s.employee_id || s.user})</option>
@@ -1041,52 +1100,84 @@ const Transport = () => {
                             </select>
                         </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <SearchableSelect label="Route" options={routeOptions} value={String(tripForm.route)} onChange={(val) => setTripForm({ ...tripForm, route: val.toString() })} required />
-                        <div className="form-group"><label className="label">Vehicle</label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <SearchableSelect label="Route *" options={routeOptions} value={String(tripForm.route)} onChange={(val) => setTripForm({ ...tripForm, route: val.toString() })} required />
+                        <div className="form-group">
+                            <label className="label">Vehicle *</label>
                             <select className="select" value={tripForm.vehicle} onChange={e => setTripForm({ ...tripForm, vehicle: e.target.value })} required>
                                 <option value="">Select Vehicle...</option>
                                 {vehicles.map(v => <option key={v.id} value={v.id}>{v.registration_number}</option>)}
                             </select>
                         </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4 bg-secondary-light p-4 rounded text-sm">
-                        <div className="form-group"><label className="label">Start Time</label><input type="time" className="input" value={tripForm.start_time} onChange={e => setTripForm({ ...tripForm, start_time: e.target.value })} required /></div>
-                        <div className="form-group"><label className="label">End Time</label><input type="time" className="input" value={tripForm.end_time} onChange={e => setTripForm({ ...tripForm, end_time: e.target.value })} required /></div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-secondary-light/30 p-5 rounded-xl">
+                        <div className="form-group">
+                            <label className="label">Start Time *</label>
+                            <input type="time" className="input" value={tripForm.start_time} onChange={e => setTripForm({ ...tripForm, start_time: e.target.value })} required />
+                        </div>
+                        <div className="form-group">
+                            <label className="label">End Time *</label>
+                            <input type="time" className="input" value={tripForm.end_time} onChange={e => setTripForm({ ...tripForm, end_time: e.target.value })} required />
+                        </div>
                     </div>
-                    <div className="modal-footer pt-4"><Button type="submit" variant="primary" className="w-full" loading={isSaving} loadingText={tripId ? "Updating..." : "Saving..."}>{tripId ? "Update Trip Log" : "Save Trip Log"}</Button></div>
+                    <div className="modal-footer pt-6 border-top mt-4 flex justify-end gap-3">
+                        <Button type="button" variant="outline" onClick={() => setIsTripModalOpen(false)}>Cancel</Button>
+                        <Button type="submit" variant="primary" className="px-8 font-black shadow-lg" loading={isSaving} loadingText={tripId ? "UPDATING..." : "SAVING..."}>
+                            {tripId ? "SAVE CHANGES" : "SAVE TRIP LOG"}
+                        </Button>
+                    </div>
                 </form>
             </Modal>
 
             <Modal isOpen={isMaintenanceModalOpen} onClose={() => setIsMaintenanceModalOpen(false)} title={maintenanceId ? "Edit Maintenance Record" : "Log Maintenance"}>
-                <form onSubmit={handleMaintenanceSubmit} className="space-y-6 form-container-md">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group"><label className="label">Date</label><input type="date" className="input" value={maintenanceForm.date} onChange={e => setMaintenanceForm({ ...maintenanceForm, date: e.target.value })} required /></div>
-                        <div className="form-group"><label className="label">Cost (KES)</label><input type="number" className="input" value={maintenanceForm.cost} onChange={e => setMaintenanceForm({ ...maintenanceForm, cost: parseFloat(e.target.value) })} required /></div>
+                <form onSubmit={handleMaintenanceSubmit} className="form-container-md mx-auto space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="form-group">
+                            <label className="label">Date *</label>
+                            <input type="date" className="input" value={maintenanceForm.date} onChange={e => setMaintenanceForm({ ...maintenanceForm, date: e.target.value })} required />
+                        </div>
+                        <div className="form-group">
+                            <label className="label">Cost (KES) *</label>
+                            <input type="number" className="input font-bold" value={maintenanceForm.cost} onChange={e => setMaintenanceForm({ ...maintenanceForm, cost: parseFloat(e.target.value) })} required />
+                        </div>
                     </div>
-                    <div className="form-group"><label className="label">Affected Vehicle</label>
+                    <div className="form-group">
+                        <label className="label">Affected Vehicle *</label>
                         <select className="select" value={maintenanceForm.vehicle} onChange={e => setMaintenanceForm({ ...maintenanceForm, vehicle: e.target.value })} required>
                             <option value="">Select Vehicle...</option>
                             {vehicles.map(v => <option key={v.id} value={v.id}>{v.registration_number}</option>)}
                         </select>
                     </div>
-                    <div className="form-group"><label className="label">Issue / Service Description</label><textarea className="input" rows={3} value={maintenanceForm.description} onChange={e => setMaintenanceForm({ ...maintenanceForm, description: e.target.value })} required></textarea></div>
-                    <div className="form-group"><label className="label">Status</label>
+                    <div className="form-group">
+                        <label className="label">Issue / Service Description *</label>
+                        <textarea className="textarea h-24" value={maintenanceForm.description} onChange={e => setMaintenanceForm({ ...maintenanceForm, description: e.target.value })} required></textarea>
+                    </div>
+                    <div className="form-group">
+                        <label className="label">Status *</label>
                         <select className="select" value={maintenanceForm.status} onChange={e => setMaintenanceForm({ ...maintenanceForm, status: e.target.value })}>
                             <option value="PENDING">Pending Approval</option>
                             <option value="IN_PROGRESS">In Progress</option>
                             <option value="COMPLETED">Completed</option>
                         </select>
                     </div>
-                    <div className="modal-footer pt-4"><Button type="submit" variant="primary" className="w-full" loading={isSaving} loadingText={maintenanceId ? "Updating..." : "Logging..."}>{maintenanceId ? "Update Maintenance" : "Log Maintenance"}</Button></div>
+                    <div className="modal-footer pt-6 border-top mt-4 flex justify-end gap-3">
+                        <Button type="button" variant="outline" onClick={() => setIsMaintenanceModalOpen(false)}>Cancel</Button>
+                        <Button type="submit" variant="primary" className="px-8 font-black shadow-lg" loading={isSaving} loadingText={maintenanceId ? "UPDATING..." : "LOGGING..."}>
+                            {maintenanceId ? "SAVE CHANGES" : "LOG MAINTENANCE"}
+                        </Button>
+                    </div>
                 </form>
             </Modal>
 
             <Modal isOpen={isSafetyModalOpen} onClose={() => setIsSafetyModalOpen(false)} title={incidentId ? "Edit Incident Report" : "Report Safety Incident"}>
-                <form onSubmit={handleSafetySubmit} className="space-y-6 form-container-md">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group"><label className="label">Date</label><input type="date" className="input" value={safetyForm.date} onChange={e => setSafetyForm({ ...safetyForm, date: e.target.value })} required /></div>
-                        <div className="form-group"><label className="label">Severity</label>
+                <form onSubmit={handleSafetySubmit} className="form-container-md mx-auto space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="form-group">
+                            <label className="label">Date *</label>
+                            <input type="date" className="input" value={safetyForm.date} onChange={e => setSafetyForm({ ...safetyForm, date: e.target.value })} required />
+                        </div>
+                        <div className="form-group">
+                            <label className="label">Severity *</label>
                             <select className="select" value={safetyForm.severity} onChange={e => setSafetyForm({ ...safetyForm, severity: e.target.value })}>
                                 <option value="MINOR">Minor</option>
                                 <option value="MAJOR">Major</option>
@@ -1094,14 +1185,16 @@ const Transport = () => {
                             </select>
                         </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group"><label className="label">Vehicle Involved</label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="form-group">
+                            <label className="label">Vehicle Involved *</label>
                             <select className="select" value={safetyForm.vehicle} onChange={e => setSafetyForm({ ...safetyForm, vehicle: e.target.value })} required>
                                 <option value="">Select Vehicle...</option>
                                 {vehicles.map(v => <option key={v.id} value={v.id}>{v.registration_number}</option>)}
                             </select>
                         </div>
-                        <div className="form-group"><label className="label">Type</label>
+                        <div className="form-group">
+                            <label className="label">Incident Type *</label>
                             <select className="select" value={safetyForm.type} onChange={e => setSafetyForm({ ...safetyForm, type: e.target.value })}>
                                 <option value="ACCIDENT">Accident</option>
                                 <option value="BREAKDOWN">Breakdown</option>
@@ -1110,31 +1203,60 @@ const Transport = () => {
                             </select>
                         </div>
                     </div>
-                    <div className="form-group"><label className="label">Description of Incident</label><textarea className="input" rows={4} value={safetyForm.description} onChange={e => setSafetyForm({ ...safetyForm, description: e.target.value })} required></textarea></div>
-                    <div className="modal-footer pt-4"><Button type="submit" variant="danger" className="w-full" loading={isSaving} loadingText={incidentId ? "Updating..." : "Reporting..."}>{incidentId ? "Update Report" : "Submit Report"}</Button></div>
+                    <div className="form-group">
+                        <label className="label">Incident Description *</label>
+                        <textarea className="textarea h-24" value={safetyForm.description} onChange={e => setSafetyForm({ ...safetyForm, description: e.target.value })} required></textarea>
+                    </div>
+                    <div className="modal-footer pt-6 border-top mt-4 flex justify-end gap-3">
+                        <Button type="button" variant="outline" onClick={() => setIsSafetyModalOpen(false)}>Cancel</Button>
+                        <Button type="submit" variant="danger" className="px-8 font-black shadow-lg" loading={isSaving} loadingText={incidentId ? "UPDATING..." : "REPORTING..."}>
+                            {incidentId ? "SAVE CHANGES" : "SUBMIT REPORT"}
+                        </Button>
+                    </div>
                 </form>
             </Modal>
 
             <Modal isOpen={isFuelModalOpen} onClose={() => setIsFuelModalOpen(false)} title="Log Fuel Consumption">
-                <form onSubmit={handleFuelSubmit} className="space-y-6 form-container-md">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group"><label className="label">Date</label><input type="date" className="input" value={fuelForm.date} onChange={e => setFuelForm({ ...fuelForm, date: e.target.value })} required /></div>
-                        <div className="form-group"><label className="label">Vehicle</label>
+                <form onSubmit={handleFuelSubmit} className="form-container-md mx-auto space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="form-group">
+                            <label className="label">Date *</label>
+                            <input type="date" className="input" value={fuelForm.date} onChange={e => setFuelForm({ ...fuelForm, date: e.target.value })} required />
+                        </div>
+                        <div className="form-group">
+                            <label className="label">Vehicle *</label>
                             <select className="select" value={fuelForm.vehicle} onChange={e => setFuelForm({ ...fuelForm, vehicle: e.target.value })} required>
                                 <option value="">Select Vehicle...</option>
                                 {vehicles.map(v => <option key={v.id} value={v.id}>{v.registration_number}</option>)}
                             </select>
                         </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group"><label className="label">Liters</label><input type="number" step="0.01" className="input" value={fuelForm.liters} onChange={e => setFuelForm({ ...fuelForm, liters: parseFloat(e.target.value) })} required /></div>
-                        <div className="form-group"><label className="label">Total Cost (KES)</label><input type="number" className="input" value={fuelForm.amount} onChange={e => setFuelForm({ ...fuelForm, amount: parseFloat(e.target.value) })} required /></div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="form-group">
+                            <label className="label">Liters *</label>
+                            <input type="number" step="0.01" className="input" value={fuelForm.liters} onChange={e => setFuelForm({ ...fuelForm, liters: parseFloat(e.target.value) })} required />
+                        </div>
+                        <div className="form-group">
+                            <label className="label">Total Cost (KES) *</label>
+                            <input type="number" className="input font-bold" value={fuelForm.amount} onChange={e => setFuelForm({ ...fuelForm, amount: parseFloat(e.target.value) })} required />
+                        </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group"><label className="label">Mileage (Odometer)</label><input type="number" className="input" value={fuelForm.mileage} onChange={e => setFuelForm({ ...fuelForm, mileage: parseInt(e.target.value) })} required /></div>
-                        <div className="form-group"><label className="label">Receipt No.</label><input type="text" className="input" value={fuelForm.receipt_no} onChange={e => setFuelForm({ ...fuelForm, receipt_no: e.target.value })} /></div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-secondary-light/30 p-5 rounded-xl">
+                        <div className="form-group">
+                            <label className="label">Mileage (Odometer) *</label>
+                            <input type="number" className="input" value={fuelForm.mileage} onChange={e => setFuelForm({ ...fuelForm, mileage: parseInt(e.target.value) })} required />
+                        </div>
+                        <div className="form-group">
+                            <label className="label">Receipt No.</label>
+                            <input type="text" className="input" placeholder="Optional" value={fuelForm.receipt_no} onChange={e => setFuelForm({ ...fuelForm, receipt_no: e.target.value })} />
+                        </div>
                     </div>
-                    <div className="modal-footer pt-4"><Button type="submit" variant="primary" className="w-full" loading={isSaving} loadingText="Saving...">Save & Sync to Finance</Button></div>
+                    <div className="modal-footer pt-6 border-top mt-4 flex justify-end gap-3">
+                        <Button type="button" variant="outline" onClick={() => setIsFuelModalOpen(false)}>Cancel</Button>
+                        <Button type="submit" variant="primary" className="px-8 font-black shadow-lg" loading={isSaving} loadingText="SAVING...">
+                            SAVE & SYNC
+                        </Button>
+                    </div>
                 </form>
             </Modal>
 

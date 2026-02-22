@@ -94,7 +94,7 @@ const Register = () => {
                         </div>
                     )}
 
-                    <form onSubmit={handleSubmit} className="space-y-4">
+                    <form onSubmit={handleSubmit} className="space-y-4 form-container-md mx-auto">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="auth-input-group">
                                 <label className="label uppercase text-[10px] font-black mb-1">Full Name</label>
