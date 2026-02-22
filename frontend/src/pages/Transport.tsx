@@ -7,6 +7,7 @@ import { transportAPI, studentsAPI, staffAPI } from '../api/api';
 import { exportToCSV } from '../utils/export';
 import Modal from '../components/Modal';
 import SearchableSelect from '../components/SearchableSelect';
+import { StatCard } from '../components/Card';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 import Button from '../components/common/Button';
@@ -101,43 +102,56 @@ const Transport = () => {
 
     const loadData = async () => {
         setLoading(true);
-        const fetchData = async (apiCall: any, setter: any) => {
+        const fetchData = async (apiCall: any, setter: any, name: string) => {
             try {
                 const res = await apiCall;
-                setter(res.data?.results ?? res.data ?? []);
+                // Hardened parsing: handles {results: []}, {data: []}, or raw [] 
+                const data = res.data?.results ?? res.data ?? res ?? [];
+                const finalData = Array.isArray(data) ? data : [];
+                setter(finalData);
+                return finalData;
             } catch (err) {
-                console.error("Fetch failed for ", apiCall, err);
+                console.error(`Fetch failed for ${name}:`, err);
+                setter([]);
+                return [];
             }
         };
 
         try {
-            await Promise.all([
-                fetchData(transportAPI.vehicles.getAll(), setVehicles),
-                fetchData(transportAPI.routes.getAll(), setRoutes),
-                fetchData(transportAPI.pickupPoints.getAll(), setPickupPoints),
-                fetchData(transportAPI.allocations.getAll(), setAllocations),
-                fetchData(studentsAPI.getAll(), setStudents)
+            // Fetch core data in parallel
+            const [vData] = await Promise.all([
+                fetchData(transportAPI.vehicles.getAll(), setVehicles, 'Vehicles'),
+                fetchData(transportAPI.routes.getAll(), setRoutes, 'Routes'),
+                fetchData(transportAPI.pickupPoints.getAll(), setPickupPoints, 'Points'),
+                fetchData(transportAPI.allocations.getAll(), setAllocations, 'Allocations'),
+                fetchData(studentsAPI.getAll(), setStudents, 'Students')
             ]);
 
             await Promise.all([
-                fetchData(transportAPI.fuel.getAll(), setFuelRecords),
-                fetchData(transportAPI.tripLogs.getAll(), setTrips),
-                fetchData(transportAPI.maintenance.getAll(), setMaintenanceRecords),
-                fetchData(transportAPI.incidents.getAll(), setIncidents),
-                fetchData(transportAPI.drivers.getAll(), setDrivers)
+                fetchData(transportAPI.fuel.getAll(), setFuelRecords, 'Fuel'),
+                fetchData(transportAPI.tripLogs.getAll(), setTrips, 'Trips'),
+                fetchData(transportAPI.maintenance.getAll(), setMaintenanceRecords, 'Maintenance'),
+                fetchData(transportAPI.incidents.getAll(), setIncidents, 'Incidents'),
+                fetchData(transportAPI.drivers.getAll(), setDrivers, 'Drivers')
             ]);
 
             // Load staff with DRIVER role for assignment
             try {
                 const staffRes = await staffAPI.getAll();
                 const allStaff = staffRes.data?.results ?? staffRes.data ?? [];
-                setDriverStaff(allStaff.filter((s: any) => s.role === 'DRIVER' || s.role === 'driver' || (s.role || '').toUpperCase() === 'DRIVER'));
+                setDriverStaff(allStaff.filter((s: any) =>
+                    (s.role || '').toUpperCase() === 'DRIVER'
+                ));
             } catch (err) { /* non-critical */ }
 
+            console.log("Transport State Synced:", {
+                vehicles: vData?.length,
+                routes: routes.length
+            });
+
         } catch (error) {
-            toast.error("Failed to load some transport data. Please try again later.");
+            toast.error("Failed to load some transport data.");
         } finally {
-            console.log("Transport Data Diagnostics:", { vehicles_count: vehicles.length, vehicles });
             setLoading(false);
         }
     };
@@ -620,23 +634,31 @@ const Transport = () => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8 w-full">
-                <div className="card flex items-center gap-4 border-left-4 border-primary">
-                    <Bus className="text-primary" size={24} />
-                    <div><p className="text-xs text-secondary font-bold uppercase">Fleet Size</p><h3>{stats.totalFleet}</h3></div>
-                </div>
-                <div className="card flex items-center gap-4 border-left-4 border-success">
-                    <Navigation className="text-success" size={24} />
-                    <div><p className="text-xs text-secondary font-bold uppercase">Active Routes</p><h3>{stats.activeRoutes}</h3></div>
-                </div>
-                <div className="card flex items-center gap-4 border-left-4 border-info">
-                    <Users className="text-info" size={24} />
-                    <div><p className="text-xs text-secondary font-bold uppercase">Enrollments</p><h3>{stats.totalEnrolled}</h3></div>
-                </div>
-                <div className="card flex items-center gap-4 border-left-4 border-warning">
-                    <Droplet className="text-warning" size={24} />
-                    <div><p className="text-xs text-secondary font-bold uppercase">Fuel (KES)</p><h3>{stats.fuelCostTerm.toLocaleString()}</h3></div>
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <StatCard
+                    title="Fleet Size"
+                    value={stats.totalFleet}
+                    icon={<Bus size={18} />}
+                    gradient="linear-gradient(135deg, #1e3c72, #2a5298)"
+                />
+                <StatCard
+                    title="Active Routes"
+                    value={stats.activeRoutes}
+                    icon={<Navigation size={18} />}
+                    gradient="linear-gradient(135deg, #4facfe, #00f2fe)"
+                />
+                <StatCard
+                    title="Enrollments"
+                    value={stats.totalEnrolled}
+                    icon={<Users size={18} />}
+                    gradient="linear-gradient(135deg, #667eea, #764ba2)"
+                />
+                <StatCard
+                    title="Fuel (KES)"
+                    value={stats.fuelCostTerm.toLocaleString()}
+                    icon={<Droplet size={18} />}
+                    gradient="linear-gradient(135deg, #f093fb, #f5576c)"
+                />
             </div>
 
             {/* Navigation Tabs */}
