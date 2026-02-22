@@ -9,7 +9,6 @@ import { exportToCSV } from '../utils/export';
 
 import Modal from '../components/Modal';
 import SearchableSelect from '../components/SearchableSelect';
-import { StatCard } from '../components/Card';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 import Button from '../components/common/Button';
@@ -1036,71 +1035,105 @@ const Academics = () => {
             )}
 
             {activeTab === 'SUMMARY' && (
-                <div className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-                        <div className="transform hover:-translate-y-1 transition-all">
-                            <StatCard
-                                title="Total Capacity"
-                                value={classes.length > 0 ? `${classes.reduce((sum, c) => sum + (c.student_count || 0), 0)}/${classes.reduce((sum, c) => sum + (c.capacity || 40), 0)}` : "No Data"}
-                                icon={<Users size={18} />}
-                                gradient="linear-gradient(135deg, #0f172a, #334155)"
-                            />
+                <div className="space-y-8 fade-in">
+                    <div className="grid grid-cols-12 gap-6 lg:gap-8">
+                        <div className="col-span-12 sm:col-span-6 lg:col-span-3 min-w-0">
+                            <div className="card h-full flex flex-row items-center gap-6 p-6 transition-all hover-scale border-none bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white shadow-2xl relative overflow-hidden group">
+                                <div className="absolute -right-8 -top-8 w-32 h-32 bg-primary-accent/10 rounded-full blur-3xl group-hover:bg-primary-accent/20 transition-colors"></div>
+                                <div className="p-4 rounded-2xl bg-white/10 text-white shrink-0 border border-white/10 backdrop-blur-sm"><Users size={24} /></div>
+                                <div>
+                                    <p className="text-white/50 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Total Capacity</p>
+                                    <h3 className="text-2xl font-black text-white m-0 leading-tight">
+                                        {classes.length > 0 ? `${classes.reduce((sum, c) => sum + (c.student_count || 0), 0)}/${classes.reduce((sum, c) => sum + (c.capacity || 40), 0)}` : "0/0"}
+                                    </h3>
+                                </div>
+                            </div>
                         </div>
-                        <div className="transform hover:-translate-y-1 transition-all">
-                            <StatCard title="Departments" value={subjectGroups.length > 0 ? subjectGroups.length.toString() : "No Data"} icon={<Layers size={18} />} gradient="linear-gradient(135deg, #1e3c72, #2a5298)" />
+                        <div className="col-span-12 sm:col-span-6 lg:col-span-3 min-w-0">
+                            <div className="card h-full flex flex-row items-center gap-6 p-6 transition-all hover-scale border-none bg-white shadow-xl hover:shadow-2xl relative overflow-hidden group border-b-4 border-b-blue-500">
+                                <div className="p-4 rounded-2xl bg-blue-50 text-blue-600 shrink-0 border border-blue-100 group-hover:scale-110 transition-transform"><Layers size={24} /></div>
+                                <div>
+                                    <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Departments</p>
+                                    <h3 className="text-2xl font-black text-slate-900 m-0 leading-tight">{subjectGroups.length}</h3>
+                                </div>
+                            </div>
                         </div>
-                        <div className="transform hover:-translate-y-1 transition-all">
-                            <StatCard title="Upcoming Exams" value={exams.length > 0 ? exams.filter(e => e.is_active || (e.date_started && new Date(e.date_started) > new Date())).length.toString() : "No Data"} icon={<Calendar size={18} />} gradient="linear-gradient(135deg, #f093fb, #f5576c)" />
+                        <div className="col-span-12 sm:col-span-6 lg:col-span-3 min-w-0">
+                            <div className="card h-full flex flex-row items-center gap-6 p-6 transition-all hover-scale border-none bg-white shadow-xl hover:shadow-2xl relative overflow-hidden group border-b-4 border-b-amber-500">
+                                <div className="p-4 rounded-2xl bg-amber-50 text-amber-600 shrink-0 border border-amber-100 group-hover:scale-110 transition-transform"><Calendar size={24} /></div>
+                                <div>
+                                    <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Active Exams</p>
+                                    <h3 className="text-2xl font-black text-slate-900 m-0 leading-tight">{exams.filter(e => e.is_active).length}</h3>
+                                </div>
+                            </div>
                         </div>
-                        <div className="transform hover:-translate-y-1 transition-all">
-                            <StatCard title="Overall Mean" value={meanGrade === '...' ? 'Calculating' : (meanGrade || "N/A")} icon={<BarChart3 size={18} />} gradient="linear-gradient(135deg, #5ee7df, #b490ca)" />
+                        <div className="col-span-12 sm:col-span-6 lg:col-span-3 min-w-0">
+                            <div className="card h-full flex flex-row items-center gap-6 p-6 transition-all hover-scale border-none bg-white shadow-xl hover:shadow-2xl relative overflow-hidden group border-b-4 border-b-emerald-500">
+                                <div className="p-4 rounded-2xl bg-emerald-50 text-emerald-600 shrink-0 border border-emerald-100 group-hover:scale-110 transition-transform"><BarChart3 size={24} /></div>
+                                <div>
+                                    <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Overall Mean</p>
+                                    <h3 className="text-2xl font-black text-slate-900 m-0 leading-tight">{meanGrade === '...' ? '—' : (meanGrade || "N/A")}</h3>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-lg">
-                        <div className="card">
-                            <div className="card-header flex justify-between items-center py-2">
-                                <h3 className="mb-0 text-xs font-black uppercase">Exams Overview</h3>
-                                <Button variant="ghost" size="sm" onClick={() => setActiveTab('EXAMS')}>View All</Button>
-                            </div>
-                            <div className="p-4 space-y-3">
-                                {exams.slice(0, 3).map(e => (
-                                    <div key={e.id} className="flex items-center justify-between border-bottom pb-2 cursor-pointer hover:bg-gray-50 p-1 rounded transition-colors" onClick={() => { setActiveTab('EXAMS'); setTimeout(() => openViewResults(e), 100); }}>
-                                        <div className="flex items-center gap-md">
-                                            <div className="p-2 rounded bg-warning-light text-warning"><Calendar size={12} /></div>
-                                            <div>
-                                                <p className="font-bold text-[11px] mb-0 text-slate-900">{e.name}</p>
-                                                <p className="text-[9px] text-secondary mb-0">{e.term_name || 'Active Term'}</p>
-                                                <p className="text-[8px] text-secondary font-mono bg-slate-100 inline-block px-1 rounded mt-0.5">{e.date_started ? new Date(e.date_started + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'TBD'}{e.date_ended ? ` – ${new Date(e.date_ended + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}` : ''}</p>
+                    <div className="grid grid-cols-12 gap-6 lg:gap-8">
+                        <div className="col-span-12 lg:col-span-6 min-w-0">
+                            <div className="card h-full flex flex-col p-0 overflow-hidden">
+                                <div className="card-header">
+                                    <h3 className="mb-0 text-xs font-black uppercase">Exams Overview</h3>
+                                    <Button variant="ghost" size="sm" className="text-primary font-black uppercase text-[10px]" onClick={() => setActiveTab('EXAMS')}>View All</Button>
+                                </div>
+                                <div className="card-body p-4 space-y-3 flex-1">
+                                    {exams.slice(0, 4).map(e => (
+                                        <div key={e.id} className="flex items-center justify-between p-3 rounded-xl border border-slate-50 hover:border-primary/20 hover:bg-slate-50 transition-all cursor-pointer group" onClick={() => { setActiveTab('EXAMS'); setTimeout(() => openViewResults(e), 100); }}>
+                                            <div className="flex items-center gap-4">
+                                                <div className="p-2.5 rounded-lg bg-slate-100 text-slate-400 group-hover:bg-primary-light group-hover:text-white transition-colors"><Calendar size={14} /></div>
+                                                <div>
+                                                    <p className="font-black text-xs mb-0 text-slate-800">{e.name}</p>
+                                                    <div className="flex items-center gap-2 mt-1">
+                                                        <span className="text-[9px] font-bold text-slate-400 uppercase">{e.term_name || 'Active Term'}</span>
+                                                        <span className="w-1 h-1 rounded-full bg-slate-200"></span>
+                                                        <span className="text-[9px] font-mono text-slate-500">{e.date_started ? new Date(e.date_started + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : 'TBD'}</span>
+                                                    </div>
+                                                </div>
                                             </div>
+                                            <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase ${e.is_active ? 'bg-success/10 text-success' : 'bg-slate-100 text-slate-400'}`}>{e.is_active ? 'OPEN' : 'CLOSED'}</span>
                                         </div>
-                                        <span className={`badge ${e.is_active ? 'badge-success' : 'badge-error'} badge-xxs`}>{e.is_active ? 'OPEN' : 'CLOSED'}</span>
-                                    </div>
-                                ))}
+                                    ))}
+                                    {exams.length === 0 && <div className="py-12 text-center text-slate-300 font-black text-[10px] uppercase tracking-widest">No recent exams</div>}
+                                </div>
                             </div>
                         </div>
 
-                        <div className="card">
-                            <div className="card-header flex justify-between items-center py-2">
-                                <h3 className="mb-0 text-xs font-black uppercase">Syllabus Completion</h3>
-                                <div className="flex gap-2">
-                                    <Button variant="outline" size="sm" onClick={() => setIsSyllabusModalOpen(true)} icon={<Edit size={12} />} />
-                                    <BarChart3 size={14} className="text-secondary" />
-                                </div>
-                            </div>
-                            <div className="p-6 space-y-4 max-h-60 overflow-y-auto">
-                                {syllabusData.length === 0 && <p className="text-xs text-secondary text-center italic">No syllabus data tracked yet.</p>}
-                                {syllabusData.map(s => (
-                                    <div key={s.id} className="cursor-pointer" onClick={() => { setSyllabusForm({ subject: s.subject.toString(), class_grade: s.class_grade.toString(), coverage_percentage: s.coverage_percentage }); setEditingSyllabusId(s.id); setIsSyllabusModalOpen(true); }}>
-                                        <div className="flex justify-between text-[10px] font-black mb-1 uppercase">
-                                            <span>{s.subject_name} ({s.class_name})</span>
-                                            <span>{s.coverage_percentage}%</span>
-                                        </div>
-                                        <div className="w-full bg-secondary-light h-1 rounded-full">
-                                            <div className={`progress-fill ${s.coverage_percentage > 80 ? 'bg-success' : s.coverage_percentage > 50 ? 'bg-primary' : 'bg-error'}`} style={{ width: `${s.coverage_percentage}%` }}></div>
-                                        </div>
+                        <div className="col-span-12 lg:col-span-6 min-w-0">
+                            <div className="card h-full flex flex-col p-0 overflow-hidden">
+                                <div className="card-header">
+                                    <h3 className="mb-0 text-xs font-black uppercase">Syllabus Completion</h3>
+                                    <div className="flex items-center gap-2">
+                                        <Button variant="outline" size="sm" className="p-2" onClick={() => setIsSyllabusModalOpen(true)} icon={<Edit size={12} />} />
                                     </div>
-                                ))}
+                                </div>
+                                <div className="card-body p-6 space-y-6 max-h-[400px] overflow-y-auto">
+                                    {syllabusData.length === 0 && (
+                                        <div className="py-12 text-center text-slate-300">
+                                            <BarChart3 size={32} className="mx-auto mb-2 opacity-20" />
+                                            <p className="font-black text-[10px] uppercase tracking-widest">No tracking data</p>
+                                        </div>
+                                    )}
+                                    {syllabusData.map(s => (
+                                        <div key={s.id} className="cursor-pointer group" onClick={() => { setSyllabusForm({ subject: s.subject.toString(), class_grade: s.class_grade.toString(), coverage_percentage: s.coverage_percentage }); setEditingSyllabusId(s.id); setIsSyllabusModalOpen(true); }}>
+                                            <div className="flex justify-between text-[10px] font-black mb-2 uppercase tracking-tight">
+                                                <span className="text-slate-700">{s.subject_name} <span className="text-slate-400 ml-1">({s.class_name})</span></span>
+                                                <span className="text-primary">{s.coverage_percentage}%</span>
+                                            </div>
+                                            <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                                                <div className={`h-full transition-all duration-1000 ${s.coverage_percentage > 80 ? 'bg-success' : s.coverage_percentage > 50 ? 'bg-primary' : 'bg-error'}`} style={{ width: `${s.coverage_percentage}%` }}></div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1109,44 +1142,48 @@ const Academics = () => {
 
 
             {activeTab === 'CLASSES' && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-lg">
+                <div className="grid grid-cols-12 gap-6 lg:gap-8">
                     {classes.filter(cls =>
                         !searchTerm ||
                         cls.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                         cls.stream.toLowerCase().includes(searchTerm.toLowerCase())
                     ).map(cls => (
-                        <div key={cls.id} className="card hover-bg-secondary transition-all">
-                            <div className="flex justify-between items-start mb-4">
-                                <div className="p-2.5 rounded-lg bg-primary-light text-white"><School size={16} /></div>
-                                <span className="badge badge-info badge-xs">CAP: {cls.capacity}</span>
-                            </div>
-                            <h3 className="mb-1 text-sm font-black">{cls.name} <span className="text-secondary">{cls.stream}</span></h3>
-                            <p className="text-[10px] font-bold text-secondary mb-4 flex items-center gap-1 uppercase"><Users size={10} /> {cls.student_count} Students</p>
-                            <div className="flex justify-between items-center pt-2 border-top">
-                                <span className="text-[10px] font-black text-secondary uppercase">{cls.class_teacher_name || 'Unassigned TR'}</span>
-                                <div className="flex gap-1">
-                                    <Button variant="outline" size="sm" onClick={() => openEditClass(cls)} title="Edit Class Details" icon={<Edit size={10} />} />
-                                    <Button variant="ghost" size="sm" className="text-primary" onClick={() => openViewClass(cls)} title="View Students in Class" icon={<Users size={10} />} />
+                        <div key={cls.id} className="col-span-12 md:col-span-6 lg:col-span-4 min-w-0">
+                            <div className="card hover:shadow-2xl transition-all h-full flex flex-col p-6 overflow-hidden">
+                                <div className="flex justify-between items-start mb-4">
+                                    <div className="p-2.5 rounded-lg bg-primary-light text-white"><School size={16} /></div>
+                                    <span className="badge badge-info badge-xs">CAP: {cls.capacity}</span>
+                                </div>
+                                <h3 className="mb-1 text-sm font-black">{cls.name} <span className="text-secondary">{cls.stream}</span></h3>
+                                <p className="text-[10px] font-bold text-secondary mb-4 flex items-center gap-1 uppercase"><Users size={10} /> {cls.student_count} Students</p>
+                                <div className="mt-auto pt-4 border-t border-slate-100 flex justify-between items-center">
+                                    <span className="text-[10px] font-black text-secondary uppercase">{cls.class_teacher_name || 'Unassigned TR'}</span>
+                                    <div className="flex gap-1">
+                                        <Button variant="outline" size="sm" onClick={() => openEditClass(cls)} title="Edit Class Details" icon={<Edit size={10} />} />
+                                        <Button variant="ghost" size="sm" className="text-primary" onClick={() => openViewClass(cls)} title="View Students in Class" icon={<Users size={10} />} />
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     ))}
-                    <div className="card border-dashed flex flex-col items-center justify-center p-8 cursor-pointer hover:border-primary group" onClick={() => setIsClassModalOpen(true)}>
-                        <Plus size={32} className="text-secondary group-hover:text-primary transition-all mb-2" />
-                        <span className="text-xs font-black uppercase text-secondary">Add Class Unit</span>
+                    <div className="col-span-12 md:col-span-6 lg:col-span-4 min-w-0">
+                        <div className="card border-dashed flex flex-col items-center justify-center p-8 cursor-pointer hover:border-primary group h-full" onClick={() => setIsClassModalOpen(true)}>
+                            <Plus size={32} className="text-secondary group-hover:text-primary transition-all mb-2" />
+                            <span className="text-xs font-black uppercase text-secondary">Add Class Unit</span>
+                        </div>
                     </div>
                 </div>
             )}
 
             {activeTab === 'CURRICULUM' && (
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-lg">
-                    <div className="md:col-span-1 space-y-4 min-w-0">
-                        <div className="card card-mobile-flat p-0">
-                            <div className="card-header border-bottom py-3 flex justify-between items-center mb-4">
+                <div className="grid grid-cols-12 gap-6 lg:gap-8">
+                    <div className="col-span-12 lg:col-span-3 space-y-4 min-w-0">
+                        <div className="card card-mobile-flat p-0 overflow-hidden">
+                            <div className="card-header">
                                 <h3 className="mb-0 text-sm font-black uppercase">Subject Groups</h3>
-                                <Button variant="outline" size="sm" onClick={() => { setEditingGroupId(null); setGroupForm({ name: '' }); setIsGroupModalOpen(true); }} icon={<Plus size={14} />} />
+                                <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={() => { setEditingGroupId(null); setGroupForm({ name: '' }); setIsGroupModalOpen(true); }} icon={<Plus size={14} />} />
                             </div>
-                            <div className="space-y-1.5">
+                            <div className="card-body p-4">
                                 {subjectGroups.map(g => (
                                     <div key={g.id} className="flex justify-between items-center p-2 rounded hover:bg-secondary-light text-[11px] font-bold border border-transparent hover:border-secondary transition-all group">
                                         <span>{g.name}</span>
@@ -1159,36 +1196,35 @@ const Academics = () => {
                             </div>
                         </div>
                     </div>
-                    <div className="md:col-span-3 min-w-0 fade-in card card-mobile-flat p-0">
-                        <div className="card-header border-bottom py-3 px-4 flex justify-between items-center">
+                    <div className="col-span-12 lg:col-span-9 min-w-0 fade-in card card-mobile-flat p-0 overflow-hidden">
+                        <div className="card-header">
                             <h3 className="mb-0 text-sm font-black uppercase">Institutional Curriculum</h3>
                             {/* ... buttons ... */}
                             <Button variant="primary" size="sm" className="ml-auto-mobile" onClick={() => setIsSubjectModalOpen(true)} icon={<Plus size={14} />}>New Subject</Button>
                         </div>
                         <div className="p-0">
-                            <div className="table-wrapper">
+                            <div className="table-wrapper m-0">
                                 <table className="table min-w-[800px] relative">
-
-                                    <thead className="sticky top-0 bg-white z-10 shadow-sm text-[10px] uppercase">
+                                    <thead className="sticky top-0 bg-slate-50 z-10 shadow-sm text-[10px] uppercase">
                                         <tr>
-                                            <th className="min-w-[150px]">Subject Name</th>
-                                            <th className="min-w-[100px]">Code</th>
-                                            <th className="min-w-[150px]">Subject Group</th>
-                                            <th className="min-w-[100px]">Type</th>
-                                            <th className="min-w-[100px] text-right">Actions</th>
+                                            <th className="py-4 px-6 min-w-[150px]">Subject Name</th>
+                                            <th className="py-4 px-6 min-w-[100px]">Code</th>
+                                            <th className="py-4 px-6 min-w-[150px]">Subject Group</th>
+                                            <th className="py-4 px-6 min-w-[100px]">Type</th>
+                                            <th className="py-4 px-6 min-w-[100px] text-right">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody className="bg-white">
                                         {subjects.map((s: any) => (
-                                            <tr key={s.id} className="hover:bg-blue-50/50 text-xs border-b transition-colors group">
-                                                <td className="font-bold">{s.name}</td>
-                                                <td className="font-mono text-[10px]">{s.code}</td>
-                                                <td>{s.group_name || '-'}</td>
-                                                <td><span className={`badge badge-sm font-bold ${s.is_core ? 'badge-primary text-white' : 'badge-ghost text-secondary'}`}>{s.is_core ? 'CORE' : 'ELECTIVE'}</span></td>
-                                                <td className="text-right">
+                                            <tr key={s.id} className="hover:bg-slate-50 transition-colors group border-b border-slate-100">
+                                                <td className="py-4 px-6 font-bold">{s.name}</td>
+                                                <td className="py-4 px-6 font-mono text-[10px]">{s.code}</td>
+                                                <td className="py-4 px-6">{s.group_name || '-'}</td>
+                                                <td className="py-4 px-6"><span className={`badge badge-sm font-bold ${s.is_core ? 'bg-primary text-white' : 'bg-slate-100 text-slate-600'}`}>{s.is_core ? 'CORE' : 'ELECTIVE'}</span></td>
+                                                <td className="py-4 px-6 text-right">
                                                     <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                        <Button variant="ghost" size="sm" className="text-primary hover:bg-white p-1 shadow-sm border border-transparent hover:border-primary/20" onClick={() => openEditSubject(s)} title="Edit Subject"><Edit size={12} /></Button>
-                                                        <Button variant="ghost" size="sm" className="text-error hover:bg-white p-1 shadow-sm border border-transparent hover:border-error/20" onClick={() => handleDeleteSubject(s.id)} title="Delete Subject"><Trash2 size={12} /></Button>
+                                                        <Button variant="ghost" size="sm" className="text-primary hover:bg-white p-1" onClick={() => openEditSubject(s)} title="Edit Subject"><Edit size={12} /></Button>
+                                                        <Button variant="ghost" size="sm" className="text-error hover:bg-white p-1" onClick={() => handleDeleteSubject(s.id)} title="Delete Subject"><Trash2 size={12} /></Button>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -1205,16 +1241,16 @@ const Academics = () => {
                     </div>
 
                     {/* Merged Syllabus Tracking */}
-                    <div className="md:col-span-4 space-y-6 md:space-y-8 fade-in mt-8">
-                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-                            <h3 className="text-lg font-black text-primary uppercase mb-0">Syllabus Tracking</h3>
+                    <div className="col-span-12 space-y-6 lg:space-y-8 fade-in mt-8">
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4 px-2">
+                            <h3 className="text-lg font-black text-slate-800 uppercase mb-0 tracking-wider">Syllabus Tracking</h3>
                             {!isReadOnly && (
-                                <Button variant="primary" size="sm" className="w-full md:w-auto" onClick={() => { setEditingSyllabusId(null); setIsSyllabusModalOpen(true); }} icon={<Plus size={14} />}>Record Coverage</Button>
+                                <Button variant="primary" size="sm" className="w-full md:w-auto font-black shadow-lg" onClick={() => { setEditingSyllabusId(null); setIsSyllabusModalOpen(true); }} icon={<Plus size={14} />}>RECORD COVERAGE</Button>
                             )}
                         </div>
 
-                        <div className="fade-in card card-mobile-flat p-0">
-                            <div className="card-header border-bottom py-3 px-4 flex justify-between items-center">
+                        <div className="fade-in card card-mobile-flat p-0 overflow-hidden">
+                            <div className="card-header">
                                 <h3 className="mb-0 text-sm font-black uppercase">Curriculum Progress</h3>
                             </div>
                             <div className="p-0">
@@ -1242,8 +1278,8 @@ const Academics = () => {
                                                         <tr key={s.id} className="hover:bg-blue-50/50 transition-colors">
                                                             <td className="font-bold text-xs">{sub?.name || 'Unknown'}</td>
                                                             <td className="text-xs text-secondary-dark font-medium">{cls ? `${cls.name} ${cls.stream}` : 'Unknown'}</td>
-                                                            <td className="font-mono text-xs text-primary font-black">{s.coverage_percentage}%</td>
-                                                            <td>
+                                                            <td className="py-4 px-6 font-mono text-xs text-primary font-black">{s.coverage_percentage}%</td>
+                                                            <td className="py-4 px-6">
                                                                 <progress className={`progress w-full h-2 ${s.coverage_percentage > 80 ? 'progress-success' : s.coverage_percentage > 40 ? 'progress-warning' : 'progress-error'}`} value={s.coverage_percentage} max="100"></progress>
                                                             </td>
                                                             <td className="text-right">
@@ -1286,66 +1322,66 @@ const Academics = () => {
 
             {
                 activeTab === 'ALLOCATION' && (
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-lg h-[calc(100vh-200px)]">
-                        <div className="md:col-span-1 border-right pr-4">
-                            <h3 className="text-xs font-black uppercase mb-4">Select Class</h3>
+                    <div className="grid grid-cols-12 gap-6 lg:gap-8 h-[calc(100vh-250px)]">
+                        <div className="col-span-12 lg:col-span-3 min-w-0 flex flex-col gap-4 overflow-y-auto pr-2">
+                            <h3 className="text-xs font-black uppercase mb-0 tracking-widest text-slate-400">Select Class</h3>
                             <div className="space-y-2">
                                 {classes.map(c => (
                                     <div
                                         key={c.id}
-                                        className={`p-3 rounded-lg cursor-pointer border hover:border-primary transition-all ${selectedAllocationClass === c.id.toString() ? 'bg-primary-light border-primary' : 'bg-white'}`}
+                                        className={`p-4 rounded-xl cursor-pointer border transition-all ${selectedAllocationClass === c.id.toString() ? 'bg-slate-900 border-slate-900 text-white shadow-lg' : 'bg-white border-slate-100 hover:border-primary/30 text-slate-600'}`}
                                         onClick={() => { setSelectedAllocationClass(c.id.toString()); fetchClassAllocations(c.id.toString()); }}
                                     >
-                                        <div className="font-bold text-xs">{c.name} {c.stream}</div>
-                                        <div className="text-[10px] text-secondary">{c.student_count} Students</div>
+                                        <div className="font-black text-[11px] uppercase tracking-wider">{c.name} {c.stream}</div>
+                                        <div className={`text-[10px] font-bold mt-1 ${selectedAllocationClass === c.id.toString() ? 'text-white/60' : 'text-slate-400'}`}>{c.student_count} Students</div>
                                     </div>
                                 ))}
                             </div>
                         </div>
-                        <div className="md:col-span-3 min-w-0">
+                        <div className="col-span-12 lg:col-span-9 min-w-0 flex flex-col">
                             {selectedAllocationClass ? (
-                                <div className="card h-full flex flex-col min-w-0">
-                                    <div className="card-header flex justify-between items-center py-3 border-bottom">
+                                <div className="card h-full flex flex-col min-w-0 overflow-hidden">
+                                    <div className="card-header">
                                         <div>
                                             <h3 className="mb-0 text-sm font-black uppercase">Class Subjects</h3>
-                                            <p className="text-[10px] text-secondary">Manage subjects taught in this class</p>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight mt-1">Manage subjects taught in this class</p>
                                         </div>
-                                        <Button variant="primary" size="sm" onClick={syncClassSubjects} loading={isSyncing} loadingText="Syncing...">
+                                        <Button variant="primary" size="sm" className="font-black" onClick={syncClassSubjects} loading={isSyncing} loadingText="Syncing...">
                                             Sync to Students
                                         </Button>
                                     </div>
-                                    <div className="p-0 table-wrapper overflow-y-auto flex-1">
-                                        <table className="table table-striped min-w-[600px]">
-                                            <thead>
+                                    <div className="p-0 table-wrapper overflow-y-auto flex-1 m-0">
+                                        <table className="table min-w-[600px] border-collapse">
+                                            <thead className="sticky top-0 bg-slate-50 z-10 shadow-sm text-[10px] uppercase">
                                                 <tr>
-                                                    <th className="w-10">Active</th>
-                                                    <th>Subject Name</th>
-                                                    <th>Code</th>
-                                                    <th>Group</th>
-                                                    <th>Status</th>
+                                                    <th className="py-4 px-6 w-20">Active</th>
+                                                    <th className="py-4 px-6 text-left">Subject Name</th>
+                                                    <th className="py-4 px-6">Code</th>
+                                                    <th className="py-4 px-6">Group</th>
+                                                    <th className="py-4 px-6">Status</th>
                                                 </tr>
                                             </thead>
-                                            <tbody>
+                                            <tbody className="divide-y divide-slate-100">
                                                 {subjects.map(subject => {
                                                     const allocation = classAllocations.find(a => a.subject === subject.id);
                                                     const isAllocated = !!allocation;
                                                     return (
-                                                        <tr key={subject.id} className={isAllocated ? 'bg-green-50' : ''}>
-                                                            <td>
+                                                        <tr key={subject.id} className={`hover:bg-slate-50 transition-colors ${isAllocated ? 'bg-success/5' : ''}`}>
+                                                            <td className="py-4 px-6 text-center">
                                                                 <input
                                                                     type="checkbox"
-                                                                    className="checkbox checkbox-sm checkbox-primary"
+                                                                    className="checkbox checkbox-sm"
                                                                     checked={isAllocated}
                                                                     onChange={() => toggleClassSubject(subject.id, allocation?.id)}
                                                                 />
                                                             </td>
-                                                            <td className="font-bold text-xs">{subject.name}</td>
-                                                            <td><code>{subject.code}</code></td>
-                                                            <td className="text-[10px] uppercase text-secondary">{subject.group_name || '-'}</td>
-                                                            <td>
+                                                            <td className="py-4 px-6 font-bold text-xs">{subject.name}</td>
+                                                            <td className="py-4 px-6"><code className="bg-slate-100 px-2 py-1 rounded text-[10px]">{subject.code}</code></td>
+                                                            <td className="py-4 px-6 text-[10px] uppercase font-bold text-slate-400">{subject.group_name || '-'}</td>
+                                                            <td className="py-4 px-6">
                                                                 {isAllocated ?
-                                                                    <span className="badge badge-success text-[9px]">Allocated</span> :
-                                                                    <span className="badge badge-ghost text-[9px]">Available</span>
+                                                                    <span className="badge badge-success text-[9px] font-black">ALLOCATED</span> :
+                                                                    <span className="badge badge-ghost text-[9px] font-black opacity-40">AVAILABLE</span>
                                                                 }
                                                             </td>
                                                         </tr>
@@ -1356,9 +1392,9 @@ const Academics = () => {
                                     </div>
                                 </div>
                             ) : (
-                                <div className="h-full flex flex-col items-center justify-center text-secondary opacity-50">
-                                    <Layers size={48} className="mb-4" />
-                                    <p className="font-bold">Select a class to manage allocations</p>
+                                <div className="card h-full flex flex-col items-center justify-center text-slate-300">
+                                    <Layers size={48} className="mb-4 opacity-20" />
+                                    <p className="font-black uppercase tracking-widest text-[11px]">Select a class to manage allocations</p>
                                 </div>
                             )}
                         </div>
@@ -1449,203 +1485,271 @@ const Academics = () => {
 
             {
                 activeTab === 'EXAMS' && (
-                    <div className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-lg">
-                            {exams.filter(exam =>
-                                !searchTerm ||
-                                exam.name.toLowerCase().includes(searchTerm.toLowerCase())
-                            ).map(exam => (
-                                <div key={exam.id} className="card">
+                    <div className="grid grid-cols-12 gap-6 lg:gap-8">
+                        {exams.filter(exam =>
+                            !searchTerm ||
+                            exam.name.toLowerCase().includes(searchTerm.toLowerCase())
+                        ).map(exam => (
+                            <div key={exam.id} className="col-span-12 md:col-span-6 lg:col-span-4 min-w-0">
+                                <div className="card h-full flex flex-col p-6 overflow-hidden hover:shadow-2xl transition-all">
                                     <div className="flex justify-between items-start mb-4">
-                                        <div className="p-2.5 rounded-lg bg-warning-light text-warning"><ClipboardCheck size={16} /></div>
-                                        <span className={`badge ${exam.is_active ? 'badge-success' : 'badge-error'} badge-xs`}>{exam.is_active ? 'ACTIVE' : 'LOCKED'}</span>
+                                        <div className="p-2.5 rounded-lg bg-amber-100 text-amber-600"><ClipboardCheck size={16} /></div>
+                                        <span className={`badge ${exam.is_active ? 'bg-success/10 text-success' : 'bg-error/10 text-error'} text-[9px] font-black uppercase px-2 py-0.5 rounded`}>{exam.is_active ? 'ACTIVE' : 'LOCKED'}</span>
                                     </div>
-                                    <h3 className="mb-1 text-sm font-black">{exam.name}</h3>
-                                    <p className="text-[10px] font-bold text-secondary mb-3 uppercase">Wt: {exam.weighting}% | {exam.term_name || 'Term 1'}</p>
-                                    <div className="flex gap-1.5">
-                                        <Button variant="primary" size="sm" className="w-full shadow-sm" onClick={() => openEnterResults(exam)} title="Enter student marks">ENTER RESULTS</Button>
-                                        <Button variant="outline" size="sm" onClick={() => openViewResults(exam)} title="View Ranking" icon={<Trophy size={12} />} />
-                                        <Button variant="outline" size="sm" onClick={() => openEditExam(exam)} title="Exam Settings" icon={<Settings size={12} />} />
-                                        <Button variant="outline" size="sm" className="text-error" onClick={(e) => { e.stopPropagation(); handleDeleteExam(exam.id); }} title="Delete Exam" icon={<Trash2 size={14} />} />
+                                    <h3 className="mb-1 text-sm font-black text-slate-900">{exam.name}</h3>
+                                    <p className="text-[10px] font-bold text-slate-400 mb-6 uppercase tracking-wider">Wt: {exam.weighting}% | {exam.term_name || 'Active Term'}</p>
+                                    <div className="mt-auto grid grid-cols-2 gap-2">
+                                        <Button variant="primary" size="sm" className="col-span-2 font-black shadow-lg" onClick={() => openEnterResults(exam)} title="Enter student marks">ENTER RESULTS</Button>
+                                        <Button variant="outline" size="sm" className="font-black" onClick={() => openViewResults(exam)} title="View Ranking" icon={<Trophy size={12} />}>RANKING</Button>
+                                        <Button variant="outline" size="sm" className="font-black" onClick={() => openEditExam(exam)} title="Exam Settings" icon={<Settings size={12} />}>SETTING</Button>
+                                        <Button variant="ghost" size="sm" className="col-span-2 text-error font-black hover:bg-error/10 uppercase text-[9px]" onClick={(e) => { e.stopPropagation(); handleDeleteExam(exam.id); }} title="Delete Exam" icon={<Trash2 size={12} />}>Remove Schedule</Button>
                                     </div>
                                 </div>
-                            ))}
-                            {/* Schedule Exam card */}
-                            {!isReadOnly && (
-                                <div className="card border-dashed flex flex-col items-center justify-center p-8 cursor-pointer hover:border-warning group" onClick={openCreateExam}>
-                                    <Calendar size={28} className="text-secondary group-hover:text-warning transition-all mb-2" />
-                                    <span className="text-xs font-black uppercase text-secondary">Schedule Exam</span>
+                            </div>
+                        ))}
+                        {/* Schedule Exam card */}
+                        {!isReadOnly && (
+                            <div className="col-span-12 md:col-span-6 lg:col-span-4 min-w-0">
+                                <div className="card border-dashed flex flex-col items-center justify-center p-8 cursor-pointer hover:border-amber-500 group h-full transition-colors" onClick={openCreateExam}>
+                                    <Calendar size={28} className="text-slate-300 group-hover:text-amber-500 transition-all mb-2" />
+                                    <span className="text-xs font-black uppercase text-slate-400 group-hover:text-slate-600">Schedule Exam</span>
                                 </div>
-                            )}
-                            {/* Sync Grades card */}
-                            {!isReadOnly && (
-                                <div className="card border-dashed flex flex-col items-center justify-center p-8 cursor-pointer hover:border-success group" onClick={async () => {
-                                    if (!window.confirm('Re-calculate ALL exam grades using the default KNEC grading boundaries?\n\nThis will update grades for all results.')) return;
-                                    try {
-                                        const res = await academicsAPI.results.syncGrades();
-                                        success(`✓ ${res.data.message || 'Grades synced successfully!'}`);
-                                        loadAllAcademicData();
-                                    } catch (err: any) { toastError(err.message || 'Sync failed'); }
-                                }}>
-                                    <CheckCircle2 size={28} className="text-secondary group-hover:text-success transition-all mb-2" />
-                                    <span className="text-xs font-black uppercase text-secondary text-center">Sync Grades<br />(KNEC)</span>
-                                </div>
-                            )}
-                        </div>
+                            </div>
+                        )}
                     </div>
                 )
             }
 
             {/* View Results Modal */}
-            <Modal isOpen={isViewResultsModalOpen} onClose={() => setIsViewResultsModalOpen(false)} title="Examination Results &amp; Ranking" size="lg">
+            <Modal isOpen={isViewResultsModalOpen} onClose={() => setIsViewResultsModalOpen(false)} title="Examination Results & Ranking" size="lg">
                 <div className="space-y-4">
-                    <div className="flex justify-between items-center bg-secondary-light p-3 rounded">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-50 p-4 rounded-xl gap-4">
                         <div>
-                            <h3 className="font-black text-sm uppercase text-primary">{selectedExam?.name}</h3>
-                            <p className="text-xs text-secondary mb-0">Performance Overview</p>
+                            <h3 className="font-black text-sm uppercase text-slate-800 tracking-wider mb-0">{selectedExam?.name}</h3>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Performance Summary & Rankings</p>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <Button variant="outline" size="sm" className="no-print mr-4 text-primary border-primary hover:bg-primary-light" onClick={() => window.print()} title="Print Term Reports" icon={<Printer size={14} />}>
-                                Print
+                        <div className="flex items-center gap-3 w-full sm:w-auto">
+                            <Button variant="outline" size="sm" className="no-print font-black uppercase text-[10px] tracking-widest bg-white" onClick={() => window.print()} title="Print Term Reports" icon={<Printer size={14} />}>
+                                PRINT
                             </Button>
-                            <span className="text-[10px] font-bold uppercase text-secondary">Group By:</span>
-                            <div className="join">
-                                <button className={`btn btn-xs join-item ${viewResultsGroupBy === 'STREAM' ? 'btn-active btn-primary' : ''}`} onClick={() => setViewResultsGroupBy('STREAM')}>Stream</button>
-                                <button className={`btn btn-xs join-item ${viewResultsGroupBy === 'ENTIRE_CLASS' ? 'btn-active btn-primary' : ''}`} onClick={() => setViewResultsGroupBy('ENTIRE_CLASS')}>Entire Class</button>
+                            <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest ml-auto sm:ml-0">GROUP:</span>
+                            <div className="flex bg-white rounded-lg p-0.5 border border-slate-200">
+                                <button className={`px-3 py-1 text-[9px] font-black rounded-md transition-all ${viewResultsGroupBy === 'STREAM' ? 'bg-primary text-white shadow-md' : 'text-slate-400 hover:bg-slate-50'}`} onClick={() => setViewResultsGroupBy('STREAM')}>STREAM</button>
+                                <button className={`px-3 py-1 text-[9px] font-black rounded-md transition-all ${viewResultsGroupBy === 'ENTIRE_CLASS' ? 'bg-primary text-white shadow-md' : 'text-slate-400 hover:bg-slate-50'}`} onClick={() => setViewResultsGroupBy('ENTIRE_CLASS')}>CLASS</button>
                             </div>
                         </div>
                     </div>
 
-                    <div className="max-h-[60vh] table-wrapper overflow-x-auto min-w-0">
+                    <div className="max-h-[60vh] overflow-y-auto">
                         {Object.keys(groupedResults).sort().map(groupKey => (
-                            <div key={groupKey} className="mb-6">
-                                <div className="flex items-center gap-2 mb-2 pb-1 border-bottom">
-                                    <h4 className="text-xs font-black uppercase text-secondary">{groupKey}</h4>
-                                    <span className="badge badge-sm badge-ghost">{groupedResults[groupKey].length} Candidates</span>
+                            <div key={groupKey} className="mb-8 card p-0 overflow-hidden border-slate-100 shadow-sm">
+                                <div className="card-header bg-slate-50/50">
+                                    <h4 className="text-[10px] font-black uppercase text-slate-800 tracking-widest mb-0">{groupKey}</h4>
+                                    <span className="badge bg-slate-200 text-slate-600 text-[9px] font-black px-2 py-0.5 rounded-full">{groupedResults[groupKey].length} CANDIDATES</span>
                                 </div>
-                                <table className="table table-xs min-w-[800px]">
-                                    <thead>
-                                        <tr>
-                                            <th>Rank</th>
-                                            <th className="min-w-[150px]">Student Name</th>
-                                            <th>Admission</th>
-                                            {subjects.filter((sub: any) => groupedResults[groupKey].some((r: any) => r.scores && r.scores[sub.id])).map((sub: any) => (
-                                                <th key={sub.id} className="text-center">{sub.code || sub.name}</th>
-                                            ))}
-                                            <th className="text-right">Total Score</th>
-                                            <th className="text-right">Mean</th>
-                                            <th className="text-center">Grade</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {groupedResults[groupKey].sort((a: any, b: any) => b.totalScore - a.totalScore).map((res: any, index: number) => (
-                                            <tr key={res.student} className={index < 3 ? 'bg-warning-light/20' : ''}>
-                                                <td className="font-bold">{index + 1}</td>
-                                                <td className="whitespace-nowrap font-bold text-xs">{res.student_name}</td>
-                                                <td className="font-mono text-[10px]">{res.admission_number}</td>
+                                <div className="table-wrapper m-0">
+                                    <table className="table min-w-[800px]">
+                                        <thead className="bg-white text-[10px] uppercase font-black text-slate-400">
+                                            <tr>
+                                                <th className="py-4 px-6 w-16">Rank</th>
+                                                <th className="py-4 px-6 min-w-[200px] text-left">Student Name</th>
+                                                <th className="py-4 px-6">ADM</th>
                                                 {subjects.filter((sub: any) => groupedResults[groupKey].some((r: any) => r.scores && r.scores[sub.id])).map((sub: any) => (
-                                                    <td key={sub.id} className="text-center text-xs font-mono">
-                                                        {res.scores[sub.id] !== undefined ? `${res.scores[sub.id]}%` : '-'}
-                                                    </td>
+                                                    <th key={sub.id} className="py-4 px-6 text-center">{sub.code || sub.name}</th>
                                                 ))}
-                                                <td className="text-right font-black">{res.totalScore}</td>
-                                                <td className="text-right font-bold text-primary">{res.meanScore}%</td>
-                                                <td className="text-center">
-                                                    <span className={`badge badge-sm ${['A', 'A-'].includes(res.meanGrade) ? 'badge-success' : ['D', 'E'].includes(res.meanGrade) ? 'badge-error' : 'badge-ghost'}`}>{res.meanGrade || '-'}</span>
-                                                </td>
+                                                <th className="py-4 px-6 text-right">Total</th>
+                                                <th className="py-4 px-6 text-right">Mean</th>
+                                                <th className="py-4 px-6 text-center">Grade</th>
                                             </tr>
-
-                                        ))}
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-100">
+                                            {groupedResults[groupKey].sort((a: any, b: any) => b.totalScore - a.totalScore).map((res: any, index: number) => (
+                                                <tr key={res.student} className={`hover:bg-slate-50 transition-colors ${index < 3 ? 'bg-amber-50/30' : ''}`}>
+                                                    <td className="py-4 px-6">
+                                                        <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black ${index === 0 ? 'bg-amber-400 text-white' : index === 1 ? 'bg-slate-300 text-white' : index === 2 ? 'bg-amber-700/50 text-white' : 'text-slate-400'}`}>
+                                                            {index + 1}
+                                                        </span>
+                                                    </td>
+                                                    <td className="py-4 px-6">
+                                                        <div className="font-black text-xs text-slate-900">{res.student_name}</div>
+                                                    </td>
+                                                    <td className="py-4 px-6 font-mono text-[10px] text-slate-400">{res.admission_number}</td>
+                                                    {subjects.filter((sub: any) => groupedResults[groupKey].some((r: any) => r.scores && r.scores[sub.id])).map((sub: any) => (
+                                                        <td key={sub.id} className="py-4 px-6 text-center text-[11px] font-black text-slate-600">
+                                                            {res.scores[sub.id] !== undefined ? `${res.scores[sub.id]}%` : '—'}
+                                                        </td>
+                                                    ))}
+                                                    <td className="py-4 px-6 text-right font-black text-slate-900">{res.totalScore}</td>
+                                                    <td className="py-4 px-6 text-right font-black text-primary">{res.meanScore}%</td>
+                                                    <td className="py-4 px-6 text-center">
+                                                        <span className={`px-2 py-0.5 rounded text-[10px] font-black ${['A', 'A-'].includes(res.meanGrade) ? 'bg-success/20 text-success' : ['D', 'E'].includes(res.meanGrade) ? 'bg-error/20 text-error' : 'bg-slate-100 text-slate-400'}`}>{res.meanGrade || '-'}</span>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         ))}
-                        {Object.keys(groupedResults).length === 0 && <p className="text-center text-sm text-secondary italic py-8">No results recorded for this exam yet.</p>}
+                        {Object.keys(groupedResults).length === 0 && (
+                            <div className="py-20 flex flex-col items-center justify-center opacity-30">
+                                <Trophy size={64} className="mb-4" />
+                                <p className="font-black uppercase tracking-widest text-xs">No examination data available</p>
+                            </div>
+                        )}
                     </div>
                 </div>
-            </Modal >
+            </Modal>
 
             {
                 activeTab === 'RESOURCES' && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-lg overflow-hidden">
-                        <div className="overflow-hidden shadow-lg border rounded-2xl min-w-0">
-                            <div className="p-3 bg-secondary-light flex justify-between items-center border-bottom">
-                                <h3 className="mb-0 text-xs font-black uppercase">Grading Policies</h3>
-                                <Button variant="primary" size="sm" className="ml-auto-mobile" onClick={() => setIsGradeModalOpen(true)} icon={<Plus size={12} />}>New System</Button>
-                            </div>
-                            <div className="p-4 space-y-4">
-                                {gradeSystems.map(gs => (
-                                    <div key={gs.id} className="border rounded p-3 bg-secondary-light">
-                                        <div className="flex justify-between items-center mb-2">
-                                            <span className="font-black text-[10px] uppercase">{gs.name}</span>
-                                            <div className="flex gap-2 items-center justify-end-mobile">
-                                                {gs.is_default && <span className="badge badge-success badge-xxs">DEFAULT</span>}
-                                                <button className="text-secondary hover:text-primary transition-colors p-1" onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setSelectedSystem(gs);
-                                                    setBoundaryForm(prev => ({ ...prev, system: gs.id }));
-                                                    setIsBoundaryModalOpen(true);
-                                                }} title="Add Boundary"><Plus size={14} /></button>
-                                                <Button variant="ghost" size="sm" className="text-secondary hover:text-error p-1" onClick={(e) => { e.stopPropagation(); handleDeleteGradeSystem(gs.id); }} title="Delete Policy" icon={<Trash2 size={14} />} />
-                                            </div>
-                                        </div>
-                                        <div className="flex flex-wrap gap-1.5">
-                                            {gs.boundaries?.map((b: any) => (
-                                                <span key={b.id} className="text-[9px] font-black bg-white px-2 py-0.5 rounded border text-secondary">
-                                                    {b.grade}: {b.min_score}%
-                                                </span>
-                                            ))}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                        <div className="card">
-                            <div className="card-header py-2 flex justify-between items-center">
-                                <h3 className="mb-0 text-xs font-black uppercase">Academic timeline</h3>
-                                <Button variant="primary" size="sm" className="ml-auto-mobile" onClick={() => setIsYearModalOpen(true)} icon={<Plus size={12} />} />
-                            </div>
-                            <div className="p-2 space-y-2">
-                                {academicYears.map(y => (
-                                    <div key={y.id} className="border rounded p-2 bg-secondary-light hover:bg-white transition-all">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <div className="flex items-center gap-2">
-                                                <div className={`w-2 h-2 rounded-full ${y.is_active ? 'bg-success' : 'bg-secondary'}`}></div>
-                                                <span className="font-black text-[11px] uppercase">Cycle {y.name}</span>
-                                            </div>
-                                            {!isReadOnly && (
-                                                <div className="flex gap-1 items-center justify-end-mobile">
-                                                    <Button variant="ghost" size="sm" className="text-info" onClick={() => setIsTermModalOpen(true)} title="Add Term" icon={<Plus size={10} />} />
-                                                    <Button variant="ghost" size="sm" onClick={() => openEditYear(y)} title="Edit Year" icon={<Edit size={10} />} />
+                    <div className="grid grid-cols-12 gap-6 lg:gap-8">
+                        <div className="col-span-12 lg:col-span-8 min-w-0 flex flex-col gap-6">
+                            {/* Grading Systems Section */}
+                            <div className="card p-0 overflow-hidden shadow-xl border-none">
+                                <div className="card-header bg-slate-900 text-white">
+                                    <h3 className="mb-0 text-sm font-black uppercase tracking-wider">Institutional Grading</h3>
+                                    <Button variant="primary" size="sm" className="font-black px-4 bg-white text-slate-900 border-none hover:bg-slate-100" onClick={() => setIsGradeModalOpen(true)} icon={<Plus size={14} />}>NEW SYSTEM</Button>
+                                </div>
+                                <div className="card-body p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {gradeSystems.map(gs => (
+                                        <div
+                                            key={gs.id}
+                                            className={`p-4 rounded-xl border transition-all cursor-pointer group ${selectedSystem?.id === gs.id ? 'bg-primary border-primary text-white shadow-lg' : 'bg-white border-slate-100 hover:border-primary/30 text-slate-600'}`}
+                                            onClick={() => {
+                                                setSelectedSystem(gs);
+                                                setBoundaryForm(prev => ({ ...prev, system: gs.id }));
+                                            }}
+                                        >
+                                            <div className="flex justify-between items-center mb-3">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-black text-[11px] uppercase tracking-wider">{gs.name}</span>
+                                                    {gs.is_default && <span className={`text-[8px] font-black px-1.5 py-0.5 rounded ${selectedSystem?.id === gs.id ? 'bg-white/20 text-white' : 'bg-success/20 text-success'}`}>DEFAULT</span>}
                                                 </div>
+                                                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity items-center">
+                                                    <Button variant="ghost" size="sm" className={`p-1 ${selectedSystem?.id === gs.id ? 'text-white/60 hover:text-white' : 'text-slate-400 hover:text-primary'}`} title="Add Boundary" onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setSelectedSystem(gs);
+                                                        setBoundaryForm(prev => ({ ...prev, system: gs.id }));
+                                                        setIsBoundaryModalOpen(true);
+                                                    }} icon={<Plus size={14} />} />
+                                                    <Button variant="ghost" size="sm" className={`p-1 ${selectedSystem?.id === gs.id ? 'text-white/60 hover:text-error' : 'text-slate-400 hover:text-error'}`} title="Delete System" onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleDeleteGradeSystem(gs.id);
+                                                    }} icon={<Trash2 size={12} />} />
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-wrap gap-1">
+                                                {gs.boundaries?.slice(0, 5).sort((a: any, b: any) => b.min_score - a.min_score).map((b: any) => (
+                                                    <span key={b.id} className={`text-[9px] font-black px-1.5 py-0.5 rounded ${selectedSystem?.id === gs.id ? 'bg-white/10 text-white' : 'bg-slate-50 text-slate-400'}`}>{b.grade}</span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Boundaries Table (Shown when a system is selected) */}
+                            {selectedSystem && (
+                                <div className="card p-0 overflow-hidden shadow-2xl border-slate-100 fade-in">
+                                    <div className="card-header bg-slate-50 border-bottom">
+                                        <div>
+                                            <h3 className="mb-0 text-xs font-black uppercase text-slate-800 tracking-widest">{selectedSystem.name} Scale</h3>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            {!selectedSystem.is_default && (
+                                                <Button variant="outline" size="sm" className="font-black text-[10px]" onClick={async () => {
+                                                    try {
+                                                        await academicsAPI.gradeSystems.update(selectedSystem.id, { is_default: true });
+                                                        success('System set as default');
+                                                        loadAllAcademicData();
+                                                    } catch (err: any) { toastError(err.message); }
+                                                }}>SET AS DEFAULT</Button>
                                             )}
                                         </div>
-                                        <div className="pl-4 space-y-1">
-                                            {terms.filter(t => t.year === y.id).map(t => (
-                                                <div key={t.id} className="flex justify-between items-center text-[10px] bg-white p-1.5 rounded border">
-                                                    <span className="font-bold flex items-center gap-1">
-                                                        {t.name}
-                                                        <button
-                                                            className={`flex items-center gap-2 text-[9px] font-bold transition-all ${t.is_active ? 'text-success hover:text-error' : 'text-secondary hover:text-primary'}`}
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                handleSetActiveTerm(t);
-                                                            }}
-                                                            title={t.is_active ? "Click to Deactivate" : "Click to Activate"}
-                                                        >
-                                                            {t.is_active ? <CheckSquare size={14} /> : <Square size={14} />}
-                                                            {t.is_active ? 'Active' : 'Inactive'}
-                                                        </button>
-                                                    </span>
-                                                    {!isReadOnly && (
-                                                        <Button variant="ghost" size="sm" className="text-secondary hover:text-error p-1 ml-auto-mobile" onClick={(e) => { e.stopPropagation(); handleDeleteTerm(t.id); }} title="Delete Term" icon={<Trash2 size={12} />} />
-                                                    )}
-                                                </div>
-                                            ))}
-                                            {terms.filter(t => t.year === y.id).length === 0 && <p className="text-[9px] text-secondary italic">No terms configured.</p>}
-                                        </div>
                                     </div>
-                                ))}
+                                    <div className="table-wrapper m-0">
+                                        <table className="table min-w-[600px]">
+                                            <thead className="bg-slate-50/50 text-[10px] uppercase font-black text-slate-400">
+                                                <tr>
+                                                    <th className="py-4 px-6 text-left">Grade</th>
+                                                    <th className="py-4 px-6">Score Range</th>
+                                                    <th className="py-4 px-6 text-center">Points</th>
+                                                    <th className="py-4 px-6 text-right">Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-100">
+                                                {selectedSystem.boundaries?.sort((a: any, b: any) => b.min_score - a.min_score).map((b: any) => (
+                                                    <tr key={b.id} className="hover:bg-slate-50 transition-colors">
+                                                        <td className="py-4 px-6 font-black text-slate-900">{b.grade}</td>
+                                                        <td className="py-4 px-6">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="font-mono text-[11px] font-black px-2 py-1 bg-slate-100 rounded text-slate-600">{b.min_score}</span>
+                                                                <span className="text-slate-300">→</span>
+                                                                <span className="font-mono text-[11px] font-black px-2 py-1 bg-slate-100 rounded text-slate-600">{b.max_score}</span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="py-4 px-6 text-center font-black text-primary">{b.points}</td>
+                                                        <td className="py-4 px-6 text-right">
+                                                            <div className="flex justify-end gap-1">
+                                                                <Button variant="ghost" size="sm" className="text-primary" onClick={() => { setBoundaryForm({ ...b, system: selectedSystem.id }); setEditingBoundaryId(b.id); setIsBoundaryModalOpen(true); }} icon={<Edit size={14} />} />
+                                                                <Button variant="ghost" size="sm" className="text-error" onClick={() => handleDeleteBoundary(b.id)} icon={<Trash2 size={14} />} />
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="col-span-12 lg:col-span-4 min-w-0">
+                            <div className="card p-0 overflow-hidden shadow-xl border-slate-100 sticky top-4">
+                                <div className="card-header bg-slate-50 border-bottom">
+                                    <h3 className="mb-0 text-xs font-black uppercase tracking-widest text-slate-800">Cycles & Terms</h3>
+                                    <Button variant="outline" size="sm" className="p-2 border-slate-200" onClick={() => setIsYearModalOpen(true)} icon={<Plus size={14} />} />
+                                </div>
+                                <div className="card-body p-4 space-y-4 max-h-[70vh] overflow-y-auto">
+                                    {academicYears.map(y => (
+                                        <div key={y.id} className="p-4 rounded-xl bg-slate-50/50 border border-slate-100 hover:bg-white transition-all group">
+                                            <div className="flex items-center justify-between mb-4">
+                                                <div className="flex items-center gap-2">
+                                                    <div className={`w-2 h-2 rounded-full ${y.is_active ? 'bg-success shadow-[0_0_8px_rgba(34,197,94,0.5)]' : 'bg-slate-300'}`}></div>
+                                                    <span className="font-black text-xs uppercase tracking-wider text-slate-800">CYCLE {y.name}</span>
+                                                </div>
+                                                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <Button variant="ghost" size="sm" className="text-primary p-1" onClick={() => setIsTermModalOpen(true)} icon={<Plus size={12} />} />
+                                                    <Button variant="ghost" size="sm" className="p-1" onClick={() => openEditYear(y)} icon={<Edit size={12} />} />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                {terms.filter(t => t.year === y.id).map(t => (
+                                                    <div key={t.id} className="flex justify-between items-center text-[10px] bg-white p-3 rounded-lg border border-slate-100 shadow-sm hover:border-primary/20 transition-all group/term relative">
+                                                        <div className="flex items-center gap-2">
+                                                            <button
+                                                                className={`transition-colors ${t.is_active ? 'text-success' : 'text-slate-300 hover:text-primary'}`}
+                                                                onClick={() => handleSetActiveTerm(t)}
+                                                                title={t.is_active ? "Current Active Term" : "Set as Active"}
+                                                            >
+                                                                {t.is_active ? <CheckSquare size={14} /> : <Square size={14} />}
+                                                            </button>
+                                                            <span className="font-bold text-slate-600 uppercase">{t.name}</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="font-mono text-slate-400 bg-slate-50 px-2 py-0.5 rounded group-hover/term:opacity-0 transition-opacity">{t.start_date ? new Date(t.start_date).getFullYear() : ''}</span>
+                                                            <div className="absolute right-3 flex gap-1 opacity-0 group-hover/term:opacity-100 transition-opacity">
+                                                                <Button variant="ghost" size="sm" className="text-error p-1" onClick={() => handleDeleteTerm(t.id)} icon={<Trash2 size={12} />} />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                                {terms.filter(t => t.year === y.id).length === 0 && <p className="text-[10px] text-slate-400 italic text-center py-2 uppercase font-bold tracking-tighter">No terms defined</p>}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         </div>
                     </div>
