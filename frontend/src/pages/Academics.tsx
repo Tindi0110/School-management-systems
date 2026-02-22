@@ -1163,8 +1163,8 @@ const Academics = () => {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-12 gap-6 lg:gap-8">
-                        <div className="col-span-12 lg:col-span-6 min-w-0">
+                    <div className="grid grid-cols-12 gap-6 lg:gap-8 min-h-[60vh]">
+                        <div className="col-span-12 lg:col-span-4 min-w-0">
                             <div className="card h-full flex flex-col p-0 overflow-hidden border-top-4 border-primary">
                                 <div className="card-header">
                                     <h3 className="mb-0 text-xs font-black uppercase">Exams Overview</h3>
@@ -1419,7 +1419,7 @@ const Academics = () => {
 
             {
                 activeTab === 'ALLOCATION' && (
-                    <div className="grid grid-cols-12 gap-6 lg:gap-8 h-screen-250">
+                    <div className="grid grid-cols-12 gap-6 lg:gap-8 min-h-[60vh]">
                         <div className="col-span-12 lg:col-span-3 min-w-0 flex flex-col gap-4 overflow-y-auto pr-2">
                             <h3 className="text-xs font-black uppercase mb-0 tracking-widest text-slate-400">Select Class</h3>
                             <div className="space-y-2">
@@ -1918,6 +1918,7 @@ const Academics = () => {
                                         <option value="date">Sort by Date</option>
                                         <option value="student">Sort by Student</option>
                                         <option value="class">Sort by Class</option>
+                                        <option value="stream">Sort by Stream</option>
                                     </select>
                                     <select
                                         className="select select-sm bg-white min-w-[140px]"
@@ -1958,6 +1959,12 @@ const Academics = () => {
                                                 const sA = students.find(s => s.id === a.student);
                                                 const sB = students.find(s => s.id === b.student);
                                                 valA = sA?.full_name || ''; valB = sB?.full_name || '';
+                                            } else if (attendanceSort.field === 'stream') {
+                                                const sA = students.find(s => s.id === a.student);
+                                                const sB = students.find(s => s.id === b.student);
+                                                const cA = classes.find(c => c.id === sA?.current_class);
+                                                const cB = classes.find(c => c.id === sB?.current_class);
+                                                valA = cA?.stream || ''; valB = cB?.stream || '';
                                             } else {
                                                 const sA = students.find(s => s.id === a.student);
                                                 const sB = students.find(s => s.id === b.student);

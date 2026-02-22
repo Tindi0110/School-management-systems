@@ -87,15 +87,17 @@ const StudentProfile = () => {
     const loadCoreStudentData = async () => {
         setLoading(true);
         try {
-            const [studentRes, parentsRes, libRes] = await Promise.all([
+            const [studentRes, parentsRes, libRes, resRes] = await Promise.all([
                 studentsAPI.getOne(Number(id)),
                 studentsAPI.parents.getForStudent(Number(id)),
-                libraryAPI.lendings.getAll({ student: Number(id), status: 'BORROWED' })
+                libraryAPI.lendings.getAll({ student: Number(id), status: 'BORROWED' }),
+                academicsAPI.results.getAll({ student_id: Number(id) })
             ]);
 
             setStudent(studentRes.data);
             setParents(parentsRes.data?.results ?? parentsRes.data ?? []);
             setUnreturnedBooks((libRes.data?.results ?? libRes.data ?? []).length);
+            setResults(resRes.data?.results ?? resRes.data ?? []);
 
             setHealthForm({
                 blood_group: studentRes.data.health_record?.blood_group || '',
@@ -1229,7 +1231,18 @@ const StudentProfile = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
-                                <tr><td className="py-3 px-4 text-xs font-bold text-slate-700">Academics (Books/Exams)</td><td className="py-3 px-4 text-xs font-black text-primary">{unreturnedBooks > 0 ? `PENDING (${unreturnedBooks} Unreturned Books)` : 'CLEARED'}</td><td className="py-3 px-4"></td></tr>
+                                <tr>
+                                    <td className="py-3 px-4 text-xs font-bold text-slate-700">Academics (Books/Exams)</td>
+                                    <td className="py-3 px-4 text-xs font-black text-primary">
+                                        {unreturnedBooks > 0 || results.length === 0 ? (
+                                            <div className="flex flex-col gap-1">
+                                                {unreturnedBooks > 0 && <span>PENDING ({unreturnedBooks} UNRETURNED BOOKS)</span>}
+                                                {results.length === 0 && <span>PENDING (NO EXAM RESULTS RECORDED)</span>}
+                                            </div>
+                                        ) : 'CLEARED'}
+                                    </td>
+                                    <td className="py-3 px-4"></td>
+                                </tr>
                                 <tr><td className="py-3 px-4 text-xs font-bold text-slate-700">Boarding/Hostel</td><td className="py-3 px-4 text-xs font-black text-primary">{student.hostel_name ? `PENDING (Allocated to ${student.hostel_name})` : 'CLEARED'}</td><td className="py-3 px-4"></td></tr>
                                 <tr><td className="py-3 px-4 text-xs font-bold text-slate-700">Finance/Accounts</td><td className="py-3 px-4 text-xs font-black text-primary">{(student.fee_balance || 0) > 0 ? `OUTSTANDING BALANCE (KES ${student.fee_balance.toLocaleString()})` : 'CLEARED'}</td><td className="py-3 px-4"></td></tr>
                             </tbody>

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Plus, Search, Edit, Trash2, User as UserIcon,
-    UserCheck, MapPin, Printer, TrendingUp, Download
+    UserCheck, MapPin, Printer, TrendingUp, Download, ArrowRight
 } from 'lucide-react';
 import { studentsAPI, academicsAPI } from '../api/api';
 import { useSelector } from 'react-redux';
@@ -25,6 +25,7 @@ const Students = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingStudent, setEditingStudent] = useState<any>(null);
     const [groupBy, setGroupBy] = useState<'NONE' | 'CLASS' | 'CATEGORY' | 'STATUS'>('NONE');
+    const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
     const [autoAssignHostel, setAutoAssignHostel] = useState(true);
 
     // Consolidated Form Data
@@ -88,7 +89,7 @@ const Students = () => {
                 // Ensure class is sent as integer if selected, or null/undefined if empty
                 current_class: formData.current_class ? parseInt(formData.current_class.toString()) : null,
                 // Ensure Admission Number is present (Auto-gen if empty)
-                admission_number: formData.admission_number || `ADM-${Math.floor(10000 + Math.random() * 90000)}`
+                admission_number: formData.admission_number || `${Math.floor(100000 + Math.random() * 900000)}`
             };
 
 
@@ -165,7 +166,7 @@ const Students = () => {
         } else {
             setEditingStudent(null);
             setFormData({
-                admission_number: `ADM-${Math.floor(1000 + Math.random() * 9000)}`,
+                admission_number: `${Math.floor(100000 + Math.random() * 900000)}`,
                 full_name: '',
                 gender: 'M',
                 date_of_birth: '',
@@ -184,13 +185,17 @@ const Students = () => {
     const closeModal = () => { setIsModalOpen(false); setEditingStudent(null); };
 
     const filteredStudents = React.useMemo(() => {
+        let list = students;
+        if (selectedClassId) {
+            list = list.filter(s => s.current_class === selectedClassId);
+        }
         const lowerSearch = searchTerm.toLowerCase();
-        return students.filter(s =>
+        return list.filter(s =>
             (s.full_name || '').toLowerCase().includes(lowerSearch) ||
             (s.admission_number || '').toLowerCase().includes(lowerSearch) ||
             (s.class_name || '').toLowerCase().includes(lowerSearch)
         );
-    }, [students, searchTerm]);
+    }, [students, searchTerm, selectedClassId]);
 
     // Reusable Table Render
     const renderTable = (list: any[]) => (
@@ -348,22 +353,87 @@ const Students = () => {
 
             {/* Render Data */}
             <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
-                {groupBy === 'NONE' ? (
-                    <div className="table-container border-none shadow-none">
-                        {renderTable(filteredStudents)}
-                        {filteredStudents.length === 0 && <div className="text-center py-16 text-secondary font-bold uppercase text-xs">No matches found in institutional database</div>}
+                {!selectedClassId && groupBy === 'NONE' ? (
+                    <div className="p-8">
+                        <div className="flex justify-between items-center mb-8 pb-4 border-b">
+                            <div>
+                                <h3 className="text-sm font-black uppercase text-slate-800 mb-1">Student Registry Navigation</h3>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Select a class unit to view specific student records</p>
+                            </div>
+                            <div className="flex bg-slate-100 p-1 rounded-lg">
+                                <Button variant="ghost" size="xs" onClick={() => setGroupBy('CLASS')} className="text-[9px] font-black uppercase">Switch to Grouped View</Button>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                            {classes.sort((a, b) => `${a.name}${a.stream}`.localeCompare(`${b.name}${b.stream}`)).map(c => (
+                                <div
+                                    key={c.id}
+                                    className="group card hover:border-primary transition-all cursor-pointer p-0 overflow-hidden relative"
+                                    onClick={() => setSelectedClassId(c.id)}
+                                >
+                                    <div className="absolute top-0 left-0 w-1 h-full bg-primary opacity-20 group-hover:opacity-100 transition-opacity"></div>
+                                    <div className="p-5">
+                                        <div className="flex justify-between items-start mb-3">
+                                            <div className="flex flex-col">
+                                                <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">{c.name}</span>
+                                                <span className="text-sm font-black text-slate-800">{c.stream}</span>
+                                            </div>
+                                            <span className="badge badge-info text-[10px] font-black uppercase">{students.filter(s => s.current_class === c.id).length} Students</span>
+                                        </div>
+                                        <div className="flex items-center justify-between mt-4">
+                                            <span className="text-[9px] font-bold text-primary group-hover:translate-x-1 transition-transform flex items-center gap-1 uppercase">
+                                                Access Registry <ArrowRight size={12} />
+                                            </span>
+                                            <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                                                <UserIcon size={14} />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                            {classes.length === 0 && <div className="col-span-full py-20 text-center italic text-slate-400">No active classes found in system metadata.</div>}
+                        </div>
                     </div>
                 ) : (
-                    <div className="space-y-8 p-6">
-                        {Object.keys(groupedData).sort().map(groupKey => (
-                            <div key={groupKey} className="table-container shadow-md border border-primary">
-                                <div className="p-4 bg-secondary-light flex justify-between items-center border-bottom">
-                                    <h3 className="mb-0 text-xs font-black uppercase text-primary tracking-widest">{groupKey}</h3>
-                                    <span className="badge badge-info">{groupedData[groupKey].length} Students</span>
+                    <div className="fade-in">
+                        {(selectedClassId || groupBy !== 'NONE') && (
+                            <div className="p-4 bg-slate-50 border-b flex justify-between items-center px-6">
+                                <div className="flex items-center gap-4">
+                                    <Button variant="ghost" size="sm" onClick={() => { setSelectedClassId(null); setGroupBy('NONE'); }} className="text-[10px] font-black uppercase tracking-tighter">
+                                        ← Back to Navigator
+                                    </Button>
+                                    {selectedClassId && (
+                                        <div className="text-[10px] font-black uppercase text-slate-800 flex items-center gap-2">
+                                            <span className="text-slate-400">Current Unit:</span>
+                                            <span className="bg-primary text-white px-2 py-0.5 rounded">
+                                                {classes.find(c => c.id === selectedClassId)?.name} {classes.find(c => c.id === selectedClassId)?.stream}
+                                            </span>
+                                        </div>
+                                    )}
                                 </div>
-                                {renderTable(groupedData[groupKey])}
+                                <div className="badge badge-outline text-[10px] font-black uppercase tracking-widest">
+                                    {filteredStudents.length} Records Loaded
+                                </div>
                             </div>
-                        ))}
+                        )}
+                        {groupBy === 'NONE' ? (
+                            <div className="table-container border-none shadow-none">
+                                {renderTable(filteredStudents)}
+                                {filteredStudents.length === 0 && <div className="text-center py-16 text-secondary font-bold uppercase text-xs">No records associated with this unit</div>}
+                            </div>
+                        ) : (
+                            <div className="space-y-8 p-6">
+                                {Object.keys(groupedData).sort().map(groupKey => (
+                                    <div key={groupKey} className="table-container shadow-md border border-primary">
+                                        <div className="p-4 bg-secondary-light flex justify-between items-center border-bottom">
+                                            <h3 className="mb-0 text-xs font-black uppercase text-primary tracking-widest">{groupKey}</h3>
+                                            <span className="badge badge-info">{groupedData[groupKey].length} Students</span>
+                                        </div>
+                                        {renderTable(groupedData[groupKey])}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
