@@ -51,36 +51,34 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     return (
         <div className="modal-overlay" onClick={onCancel}>
             <div
-                className="modal max-w-md w-full animate-scaleIn"
+                className="modal-container max-w-sm w-full animate-scaleIn overflow-hidden !rounded-[2rem] shadow-2xl p-0 border-none"
                 onClick={(e) => e.stopPropagation()}
             >
-                <div className="p-6 flex gap-4">
-                    <div className={`shrink-0 w-12 h-12 rounded-full ${style.bg} flex items-center justify-center`}>
-                        <AlertCircle className={style.icon} size={24} />
-                    </div>
-                    <div className="flex-1">
-                        <h3 className={`text-xl font-black uppercase tracking-tight ${type === 'danger' ? 'text-red-700' : 'text-slate-900'}`}>{title}</h3>
-                        <div className="mt-4 p-5 bg-white border border-slate-200 rounded-2xl shadow-sm">
-                            <p className={`text-sm leading-relaxed font-bold ${type === 'danger' ? 'text-red-600' : 'text-slate-600'}`}>
-                                {message}
-                            </p>
+                <div className="bg-white p-8">
+                    <div className="flex flex-col items-center text-center">
+                        <div className={`w-16 h-16 rounded-3xl ${style.bg} flex items-center justify-center mb-6`}>
+                            <AlertCircle className={style.icon} size={32} />
                         </div>
+                        <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-3 px-4">{title}</h3>
+                        <p className="text-sm font-bold text-slate-500 leading-relaxed px-2">
+                            {message}
+                        </p>
                     </div>
                 </div>
-                <div className="modal-footer bg-gray-50 px-6 py-4 flex justify-end gap-3 rounded-b-lg">
+
+                <div className="flex border-t border-slate-100 h-14">
                     <button
-                        className="btn btn-secondary text-sm"
+                        className="flex-1 text-xs font-black uppercase text-slate-400 hover:bg-slate-50 transition-colors border-r border-slate-100"
                         onClick={onCancel}
                     >
                         {cancelLabel}
                     </button>
-                    <Button
-                        variant={style.btn}
-                        className="text-sm px-6"
+                    <button
+                        className={`flex-1 text-xs font-black uppercase transition-colors hover:bg-slate-50 ${type === 'danger' ? 'text-red-600' : 'text-primary'}`}
                         onClick={onConfirm}
                     >
                         {confirmLabel}
-                    </Button>
+                    </button>
                 </div>
             </div>
         </div>
