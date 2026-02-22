@@ -190,17 +190,6 @@ const Finance = () => {
         loadModalData();
     }, [showInvoiceModal, showPaymentModal, showFeeModal, showMpesaModal]);
 
-    const StatsCard = ({ title, value, icon, color }: any) => (
-        <div className="card flex flex-row items-center gap-6 p-6 transition-all hover-scale border-left-4 border-primary">
-            <div className={`p-4 rounded-2xl bg-opacity-10 ${color.replace('text-', 'bg-')} ${color} shrink-0`}>
-                {React.cloneElement(icon, { size: 28 })}
-            </div>
-            <div>
-                <p className="text-text-muted text-[10px] font-black uppercase tracking-[0.2em] mb-1">{title}</p>
-                <h3 className="text-2xl font-black text-primary m-0 leading-tight">{value}</h3>
-            </div>
-        </div>
-    );
 
     const handleReceivePayment = async (e: React.FormEvent) => {
         e.preventDefault();
