@@ -8,6 +8,7 @@ from .serializers import (
     AdjustmentSerializer, ExpenseSerializer
 )
 from students.models import Student
+from academics.models import Class
 from communication.utils import send_sms, send_email
 from django.db.models import Sum, Q
 from django.utils import timezone
@@ -60,11 +61,21 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         
         recent_data = InvoiceSerializer(recent_invoices, many=True).data
         
+        # Capacity metrics
+        total_capacity = Class.objects.aggregate(cap=Sum('capacity'))['cap'] or 0
+        enrolled_students = Student.objects.filter(status='ACTIVE').count()
+        revenue_per_seat = round(float(total_collected) / total_capacity, 2) if total_capacity > 0 else 0
+        collection_rate = round((float(total_collected) / float(total_invoiced) * 100), 1) if total_invoiced > 0 else 0
+
         return Response({
             'totalInvoiced': total_invoiced,
             'totalCollected': total_collected,
             'totalOutstanding': total_outstanding,
             'dailyCollection': daily_collection,
+            'totalCapacity': total_capacity,
+            'enrolledStudents': enrolled_students,
+            'revenuePerSeat': revenue_per_seat,
+            'collectionRate': collection_rate,
             'recentInvoices': recent_data
         })
 

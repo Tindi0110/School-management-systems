@@ -29,7 +29,8 @@ const Finance = () => {
     // Data State
     const [stats, setStats] = useState({
         totalInvoiced: 0, totalCollected: 0, totalOutstanding: 0,
-        collectionRate: 0, dailyCollection: 0
+        collectionRate: 0, dailyCollection: 0,
+        totalCapacity: 0, enrolledStudents: 0, revenuePerSeat: 0
     });
     const [invoices, setInvoices] = useState<any[]>([]);
     const [payments, setPayments] = useState<any[]>([]);
@@ -122,7 +123,16 @@ const Finance = () => {
             const d = (r: any) => r?.data?.results ?? r?.data ?? [];
             if (activeTab === 'dashboard') {
                 const res = await financeAPI.invoices.dashboardStats();
-                setStats(res.data);
+                setStats({
+                    totalInvoiced: res.data.totalInvoiced || 0,
+                    totalCollected: res.data.totalCollected || 0,
+                    totalOutstanding: res.data.totalOutstanding || 0,
+                    collectionRate: res.data.collectionRate || 0,
+                    dailyCollection: res.data.dailyCollection || 0,
+                    totalCapacity: res.data.totalCapacity || 0,
+                    enrolledStudents: res.data.enrolledStudents || 0,
+                    revenuePerSeat: res.data.revenuePerSeat || 0,
+                });
                 setInvoices(res.data.recentInvoices);
             } else if (activeTab === 'invoices') {
                 // Targeted fetch for invoices tab
@@ -426,6 +436,13 @@ const Finance = () => {
                                 <StatsCard title="Total Collected" value={`KES ${stats.totalCollected.toLocaleString()}`} icon={<CheckCircle />} color="text-green-500" />
                                 <StatsCard title="Outstanding" value={`KES ${stats.totalOutstanding.toLocaleString()}`} icon={<CreditCard />} color="text-red-500" />
                                 <StatsCard title="Daily Collection" value={`KES ${stats.dailyCollection.toLocaleString()}`} icon={<TrendingUp />} color="text-purple-500" />
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                <StatsCard title="Enrolled Students" value={stats.enrolledStudents.toLocaleString()} icon={<TrendingUp />} color="text-cyan-500" />
+                                <StatsCard title="Total Capacity" value={stats.totalCapacity.toLocaleString()} icon={<CheckCircle />} color="text-indigo-500" />
+                                <StatsCard title="Revenue / Seat" value={`KES ${stats.revenuePerSeat.toLocaleString()}`} icon={<CreditCard />} color="text-orange-500" />
+                                <StatsCard title="Collection Rate" value={`${stats.collectionRate}%`} icon={<FileText />} color="text-emerald-500" />
                             </div>
 
                             <div className="card">

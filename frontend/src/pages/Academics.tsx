@@ -9,10 +9,22 @@ import { exportToCSV } from '../utils/export';
 
 import Modal from '../components/Modal';
 import SearchableSelect from '../components/SearchableSelect';
-import { StatCard } from '../components/Card';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 import Button from '../components/common/Button';
+
+// Local stat card — mirrors Finance.tsx StatsCard styling exactly
+const AcadStatsCard = ({ title, value, icon, color }: any) => (
+    <div className="card flex flex-row items-center gap-6 p-6 transition-all hover-scale border-left-4 border-primary">
+        <div className={`p-4 rounded-2xl bg-opacity-10 ${color.replace('text-', 'bg-')} ${color} shrink-0`}>
+            {React.cloneElement(icon, { size: 28 })}
+        </div>
+        <div>
+            <p className="text-text-muted text-[10px] font-black uppercase tracking-[0.2em] mb-1">{title}</p>
+            <h3 className="text-2xl font-black text-primary m-0 leading-tight">{value}</h3>
+        </div>
+    </div>
+);
 
 const calculateGrade = (score: number, gradeSystems: any[], specificSystemId?: number | string | null) => {
     if (!score && score !== 0) return '-';
@@ -1030,39 +1042,31 @@ const Academics = () => {
 
             {activeTab === 'SUMMARY' && (
                 <div className="space-y-8 fade-in">
-                    <div className="grid grid-cols-12 gap-6 lg:gap-8">
-                        <div className="col-span-12 sm:col-span-6 lg:col-span-3 min-w-0">
-                            <StatCard
-                                title="Enrolled Capacity"
-                                value={classes.length > 0 ? `${classes.reduce((sum, c) => sum + (c.student_count || 0), 0)}/${classes.reduce((sum, c) => sum + (c.capacity || 40), 0)}` : "0/0"}
-                                icon={<Users size={18} />}
-                                gradient="linear-gradient(135deg, #0f172a, #1e293b)"
-                            />
-                        </div>
-                        <div className="col-span-12 sm:col-span-6 lg:col-span-3 min-w-0">
-                            <StatCard
-                                title="Departments"
-                                value={subjectGroups.length}
-                                icon={<Layers size={18} />}
-                                gradient="linear-gradient(135deg, #0f172a, #1e293b)"
-                            />
-                        </div>
-                        <div className="col-span-12 sm:col-span-6 lg:col-span-3 min-w-0">
-                            <StatCard
-                                title="Active Exams"
-                                value={exams.filter(e => e.is_active).length}
-                                icon={<Calendar size={18} />}
-                                gradient="linear-gradient(135deg, #4facfe, #00f2fe)"
-                            />
-                        </div>
-                        <div className="col-span-12 sm:col-span-6 lg:col-span-3 min-w-0">
-                            <StatCard
-                                title="Overall Mean"
-                                value={meanGrade === '...' ? '—' : (meanGrade || "N/A")}
-                                icon={<Trophy size={18} />}
-                                gradient="linear-gradient(135deg, #667eea, #764ba2)"
-                            />
-                        </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <AcadStatsCard
+                            title="Enrolled Capacity"
+                            value={classes.length > 0 ? `${classes.reduce((sum, c) => sum + (c.student_count || 0), 0)}/${classes.reduce((sum, c) => sum + (c.capacity || 40), 0)}` : "0/0"}
+                            icon={<Users />}
+                            color="text-blue-500"
+                        />
+                        <AcadStatsCard
+                            title="Departments"
+                            value={subjectGroups.length}
+                            icon={<Layers />}
+                            color="text-purple-500"
+                        />
+                        <AcadStatsCard
+                            title="Active Exams"
+                            value={exams.filter(e => e.is_active).length}
+                            icon={<Calendar />}
+                            color="text-green-500"
+                        />
+                        <AcadStatsCard
+                            title="Overall Mean"
+                            value={meanGrade === '...' ? '—' : (meanGrade || 'N/A')}
+                            icon={<Trophy />}
+                            color="text-yellow-500"
+                        />
                     </div>
 
                     <div className="grid grid-cols-12 gap-6 lg:gap-8">
