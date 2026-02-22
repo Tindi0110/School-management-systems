@@ -1393,7 +1393,7 @@ const Academics = () => {
                 activeTab === 'GRADING' && (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-lg h-[calc(100vh-200px)]">
                         {/* Left: Systems List */}
-                        <div className="card md:col-span-1 flex flex-col">
+                        <div className="card md:col-span-1 min-w-0 flex flex-col">
                             <div className="card-header flex justify-between items-center py-3 border-bottom">
                                 <h3 className="mb-0 text-sm font-black uppercase">Grading Systems</h3>
                                 <Button variant="primary" size="sm" onClick={() => setIsGradeModalOpen(true)} icon={<Plus size={12} />}>New System</Button>
@@ -1416,7 +1416,7 @@ const Academics = () => {
                         </div>
 
                         {/* Right: Boundaries Table */}
-                        <div className="card md:col-span-2 flex flex-col">
+                        <div className="card md:col-span-2 min-w-0 flex flex-col">
                             {selectedSystem ? (
                                 <>
                                     <div className="card-header flex justify-between items-center py-3 border-bottom bg-gray-50">
@@ -1775,8 +1775,8 @@ const Academics = () => {
                                 <Button variant="primary" size="sm" className="flex-1 sm:flex-none shadow-sm" onClick={() => { setEditingAttendanceId(null); setAttendanceForm({ student: '', status: 'PRESENT', remark: '', date: new Date().toISOString().split('T')[0] }); setIsAttendanceModalOpen(true); }} icon={<Plus size={14} />}>Log Status</Button>
                             </div>
                         </div>
-                        <div className="table-wrapper">
-                            <table className="table table-sm">
+                        <div className="table-wrapper overflow-x-auto w-full block m-0">
+                            <table className="table table-sm min-w-[800px]">
                                 <thead className="bg-secondary-light/30 text-secondary">
                                     <tr>
                                         <th>Date</th>
@@ -2328,7 +2328,7 @@ const Academics = () => {
                     </div>
 
                     {resultContext.classId && (
-                        <div className="table-wrapper max-h-[80vh] overflow-auto bg-white relative">
+                        <div className="table-wrapper max-h-[80vh] overflow-x-auto overflow-y-auto w-full max-w-full block bg-white relative m-0">
                             <table className="results-entry-table table w-full border-collapse text-xs">
                                 <thead className="sticky top-0 z-20 bg-white">
                                     <tr className="border-none">
