@@ -158,7 +158,6 @@ const Academics = () => {
     const [isResultModalOpen, setIsResultModalOpen] = useState(false);
     const [isViewResultsModalOpen, setIsViewResultsModalOpen] = useState(false);
     const [isBroadsheetModalOpen, setIsBroadsheetModalOpen] = useState(false);
-    const [viewResultsGroupBy, setViewResultsGroupBy] = useState<'STREAM' | 'ENTIRE_CLASS'>('STREAM');
     const [resultContext, setResultContext] = useState({ level: '', classId: '', subjectId: '' });
     const [selectedExam, setSelectedExam] = useState<any>(null);
     const [examResults, setExamResults] = useState<any[]>([]);
@@ -808,884 +807,992 @@ const Academics = () => {
 
         // 5. Group for display
         const groups: { [key: string]: any[] } = {};
-        sorted.forEach(res => {
-            let key = '';
-            if (viewResultsGroupBy === 'STREAM') {
-                key = `${res.class_name} ${res.class_stream}`;
-            } else {
-                key = `${res.class_name} (Combined)`;
-            }
-            if (!groups[key]) groups[key] = [];
-            groups[key].push(res);
-        });
+        if (sorted.length > 0) {
+            const label = rankingFilter.classId ?
+                classes.find(c => c.id === parseInt(rankingFilter.classId))?.stream + " Results" :
+                (rankingFilter.level || "Overall") + " Ranking";
+            groups[label] = sorted;
+        }
 
         return groups;
     };
 
-    const groupedResults = getGroupedAndRankedResults();
+    return groups;
+};
 
-    const handleDeleteExam = (id: number) => setDeleteConfirm({ isOpen: true, type: 'EXAM', id });
-    const handleDeleteTerm = (id: number) => setDeleteConfirm({ isOpen: true, type: 'TERM', id });
-    const handleDeleteYear = (id: number) => setDeleteConfirm({ isOpen: true, type: 'YEAR', id });
-    const handleDeleteGradeSystem = (id: number) => setDeleteConfirm({ isOpen: true, type: 'POLICY', id });
+const groupedResults = getGroupedAndRankedResults();
 
-    const handleSetActiveTerm = async (term: any) => {
-        const newStatus = !term.is_active;
-        if (!await confirm(`${newStatus ? 'Activate' : 'Deactivate'} ${term.name}? This will update the system-wide active context.`, { type: 'info', confirmLabel: 'Proceed', cancelLabel: 'Cancel' })) return;
+const handleDeleteExam = (id: number) => setDeleteConfirm({ isOpen: true, type: 'EXAM', id });
+const handleDeleteTerm = (id: number) => setDeleteConfirm({ isOpen: true, type: 'TERM', id });
+const handleDeleteYear = (id: number) => setDeleteConfirm({ isOpen: true, type: 'YEAR', id });
+const handleDeleteGradeSystem = (id: number) => setDeleteConfirm({ isOpen: true, type: 'POLICY', id });
 
-        const yearId = typeof term.year === 'object' && term.year ? term.year.id : term.year;
-        const payload = { ...term, year: yearId, is_active: newStatus };
+const handleSetActiveTerm = async (term: any) => {
+    const newStatus = !term.is_active;
+    if (!await confirm(`${newStatus ? 'Activate' : 'Deactivate'} ${term.name}? This will update the system-wide active context.`, { type: 'info', confirmLabel: 'Proceed', cancelLabel: 'Cancel' })) return;
 
-        try {
-            await academicsAPI.terms.update(term.id, payload);
-            success(`Term ${term.name} is now ${newStatus ? 'ACTIVE' : 'INACTIVE'}`);
-            loadAllAcademicData();
-        } catch (err: any) {
-            toastError(err.message || 'Failed to update term status');
+    const yearId = typeof term.year === 'object' && term.year ? term.year.id : term.year;
+    const payload = { ...term, year: yearId, is_active: newStatus };
+
+    try {
+        await academicsAPI.terms.update(term.id, payload);
+        success(`Term ${term.name} is now ${newStatus ? 'ACTIVE' : 'INACTIVE'}`);
+        loadAllAcademicData();
+    } catch (err: any) {
+        toastError(err.message || 'Failed to update term status');
+    }
+};
+
+const handleSetActiveYear = async (year: any) => {
+    const newStatus = !year.is_active;
+    if (!await confirm(`${newStatus ? 'Activate' : 'Deactivate'} Academic Cycle ${year.name}?`, { type: 'info' })) return;
+
+    try {
+        await academicsAPI.years.update(year.id, { ...year, is_active: newStatus });
+        success(`Academic Cycle ${year.name} is now ${newStatus ? 'ACTIVE' : 'INACTIVE'}`);
+        loadAllAcademicData();
+    } catch (err: any) {
+        toastError(err.message || 'Failed to update cycle status');
+    }
+};
+
+const handleGradeSystemSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+        if (editingSystemId) {
+            await academicsAPI.gradeSystems.update(editingSystemId, gradeForm);
+            success('Grading system updated');
+        } else {
+            await academicsAPI.gradeSystems.create(gradeForm);
+            success('Grading system created');
         }
-    };
+        loadAllAcademicData();
+        setIsGradeModalOpen(false);
+        setEditingSystemId(null);
+        setGradeForm({ name: '', is_default: false });
+    } catch (err: any) { toastError(err.message || 'Failed to save grading system'); }
+    finally { setIsSubmitting(false); }
+};
 
-    const handleSetActiveYear = async (year: any) => {
-        const newStatus = !year.is_active;
-        if (!await confirm(`${newStatus ? 'Activate' : 'Deactivate'} Academic Cycle ${year.name}?`, { type: 'info' })) return;
-
-        try {
-            await academicsAPI.years.update(year.id, { ...year, is_active: newStatus });
-            success(`Academic Cycle ${year.name} is now ${newStatus ? 'ACTIVE' : 'INACTIVE'}`);
-            loadAllAcademicData();
-        } catch (err: any) {
-            toastError(err.message || 'Failed to update cycle status');
+const handleBoundarySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+        if (editingBoundaryId) {
+            await academicsAPI.gradeBoundaries.update(editingBoundaryId, boundaryForm);
+            success('Boundary updated');
+        } else {
+            await academicsAPI.gradeBoundaries.create(boundaryForm);
+            success('Boundary added');
         }
-    };
+        loadAllAcademicData();
+        setIsBoundaryModalOpen(false);
+        setEditingBoundaryId(null);
+        setBoundaryForm({ system: selectedSystem?.id || '', grade: '', min_score: 0, max_score: 100, points: 0, remarks: '' });
+    } catch (err: any) { toastError(err.message || 'Failed to save boundary'); }
+    finally { setIsSubmitting(false); }
+};
 
-    const handleGradeSystemSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsSubmitting(true);
+const handleDeleteBoundary = async (id: number) => {
+    if (await confirm('Delete this grade boundary?', { type: 'danger' })) {
         try {
-            if (editingSystemId) {
-                await academicsAPI.gradeSystems.update(editingSystemId, gradeForm);
-                success('Grading system updated');
-            } else {
-                await academicsAPI.gradeSystems.create(gradeForm);
-                success('Grading system created');
-            }
+            await academicsAPI.gradeBoundaries.delete(id);
+            success('Boundary removed');
             loadAllAcademicData();
-            setIsGradeModalOpen(false);
-            setEditingSystemId(null);
-            setGradeForm({ name: '', is_default: false });
-        } catch (err: any) { toastError(err.message || 'Failed to save grading system'); }
-        finally { setIsSubmitting(false); }
-    };
+        } catch (err: any) { toastError(err.message || 'Failed to remove boundary'); }
+    }
+};
 
-    const handleBoundarySubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsSubmitting(true);
-        try {
-            if (editingBoundaryId) {
-                await academicsAPI.gradeBoundaries.update(editingBoundaryId, boundaryForm);
-                success('Boundary updated');
-            } else {
-                await academicsAPI.gradeBoundaries.create(boundaryForm);
-                success('Boundary added');
-            }
-            loadAllAcademicData();
-            setIsBoundaryModalOpen(false);
-            setEditingBoundaryId(null);
-            setBoundaryForm({ system: selectedSystem?.id || '', grade: '', min_score: 0, max_score: 100, points: 0, remarks: '' });
-        } catch (err: any) { toastError(err.message || 'Failed to save boundary'); }
-        finally { setIsSubmitting(false); }
-    };
-
-    const handleDeleteBoundary = async (id: number) => {
-        if (await confirm('Delete this grade boundary?', { type: 'danger' })) {
-            try {
-                await academicsAPI.gradeBoundaries.delete(id);
-                success('Boundary removed');
-                loadAllAcademicData();
-            } catch (err: any) { toastError(err.message || 'Failed to remove boundary'); }
+const executeDelete = async () => {
+    if (!deleteConfirm.id) return;
+    setIsSubmitting(true);
+    try {
+        if (deleteConfirm.type === 'EXAM') {
+            await academicsAPI.exams.delete(deleteConfirm.id);
+            success('Exam deleted');
+        } else if (deleteConfirm.type === 'TERM') {
+            await academicsAPI.terms.delete(deleteConfirm.id);
+            success('Term deleted');
+        } else if (deleteConfirm.type === 'YEAR') {
+            await academicsAPI.years.delete(deleteConfirm.id);
+            success('Academic Cycle deleted');
+        } else if (deleteConfirm.type === 'POLICY') {
+            await academicsAPI.gradeSystems.delete(deleteConfirm.id);
+            success('Grading policy removed');
         }
-    };
+        loadAllAcademicData();
+        setDeleteConfirm({ isOpen: false, type: null, id: null });
+    } catch (err: any) {
+        toastError(err.message || 'Delete failed');
+        setDeleteConfirm({ isOpen: false, type: null, id: null });
+    } finally {
+        setIsSubmitting(false);
+    }
+};
 
-    const executeDelete = async () => {
-        if (!deleteConfirm.id) return;
-        setIsSubmitting(true);
-        try {
-            if (deleteConfirm.type === 'EXAM') {
-                await academicsAPI.exams.delete(deleteConfirm.id);
-                success('Exam deleted');
-            } else if (deleteConfirm.type === 'TERM') {
-                await academicsAPI.terms.delete(deleteConfirm.id);
-                success('Term deleted');
-            } else if (deleteConfirm.type === 'YEAR') {
-                await academicsAPI.years.delete(deleteConfirm.id);
-                success('Academic Cycle deleted');
-            } else if (deleteConfirm.type === 'POLICY') {
-                await academicsAPI.gradeSystems.delete(deleteConfirm.id);
-                success('Grading policy removed');
-            }
-            loadAllAcademicData();
-            setDeleteConfirm({ isOpen: false, type: null, id: null });
-        } catch (err: any) {
-            toastError(err.message || 'Delete failed');
-            setDeleteConfirm({ isOpen: false, type: null, id: null });
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
+const handleBulkResultSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+        const promises: any[] = [];
+        Object.entries(studentScores).forEach(([studentId, subs]: any) => {
+            Object.entries(subs).forEach(([subjectId, data]: any) => {
+                const score = data.score;
+                const resultId = data.id;
 
-    const handleBulkResultSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsSubmitting(true);
-        try {
-            const promises: any[] = [];
-            Object.entries(studentScores).forEach(([studentId, subs]: any) => {
-                Object.entries(subs).forEach(([subjectId, data]: any) => {
-                    const score = data.score;
-                    const resultId = data.id;
-
-                    if (!score || score.trim() === '') {
-                        if (resultId) {
-                            promises.push((async () => {
-                                await academicsAPI.results.delete(resultId);
-                                return { studentId, subjectId, deleted: true };
-                            })());
-                        }
-                        return;
+                if (!score || score.trim() === '') {
+                    if (resultId) {
+                        promises.push((async () => {
+                            await academicsAPI.results.delete(resultId);
+                            return { studentId, subjectId, deleted: true };
+                        })());
                     }
+                    return;
+                }
 
-                    const payload = {
-                        student: parseInt(studentId),
-                        exam: selectedExam.id,
-                        subject: parseInt(subjectId),
-                        score: parseFloat(score),
-                        grade: calculateGrade(parseFloat(score), gradeSystems, selectedExam.grade_system), // Use the helper
-                        recorded_by: user?.id || 1
-                    };
+                const payload = {
+                    student: parseInt(studentId),
+                    exam: selectedExam.id,
+                    subject: parseInt(subjectId),
+                    score: parseFloat(score),
+                    grade: calculateGrade(parseFloat(score), gradeSystems, selectedExam.grade_system), // Use the helper
+                    recorded_by: user?.id || 1
+                };
 
-                    promises.push((async () => {
-                        let res;
-                        if (resultId) res = await academicsAPI.results.update(resultId, payload);
-                        else res = await academicsAPI.results.create(payload);
-                        return { studentId, subjectId, id: res.data?.id || res.data?.results?.id };
-                    })());
-                });
+                promises.push((async () => {
+                    let res;
+                    if (resultId) res = await academicsAPI.results.update(resultId, payload);
+                    else res = await academicsAPI.results.create(payload);
+                    return { studentId, subjectId, id: res.data?.id || res.data?.results?.id };
+                })());
             });
+        });
 
-            const saved = await Promise.all(promises);
-            // Update IDs in local state so next save is an update
-            setStudentScores((prev: any) => {
-                const next = { ...prev };
-                saved.forEach((item: any) => {
-                    if (item && item.studentId && item.subjectId) {
-                        if (item.deleted && next[item.studentId]?.[item.subjectId]) {
-                            // Clear the ID so a future edit does a POST instead of a PUT
-                            delete next[item.studentId][item.subjectId].id;
-                        } else if (item.id && next[item.studentId]?.[item.subjectId]) {
-                            next[item.studentId][item.subjectId].id = item.id;
-                        }
+        const saved = await Promise.all(promises);
+        // Update IDs in local state so next save is an update
+        setStudentScores((prev: any) => {
+            const next = { ...prev };
+            saved.forEach((item: any) => {
+                if (item && item.studentId && item.subjectId) {
+                    if (item.deleted && next[item.studentId]?.[item.subjectId]) {
+                        // Clear the ID so a future edit does a POST instead of a PUT
+                        delete next[item.studentId][item.subjectId].id;
+                    } else if (item.id && next[item.studentId]?.[item.subjectId]) {
+                        next[item.studentId][item.subjectId].id = item.id;
                     }
-                });
-                return next;
+                }
             });
+            return next;
+        });
 
-            success('Results saved successfully. You can continue editing.');
-            // Do NOT close modal
-            // setIsResultModalOpen(false); 
-            // Do NOT reload all data blindly
-            // loadAllAcademicData(); 
-        } catch (err: any) {
-            toastError(err.message || 'Failed to save some results');
-        } finally {
-            setIsSubmitting(false);
+        success('Results saved successfully. You can continue editing.');
+        // Do NOT close modal
+        // setIsResultModalOpen(false); 
+        // Do NOT reload all data blindly
+        // loadAllAcademicData(); 
+    } catch (err: any) {
+        toastError(err.message || 'Failed to save some results');
+    } finally {
+        setIsSubmitting(false);
+    }
+};
+
+const handleExportAcademics = () => {
+    setIsExporting(true);
+    try {
+        let dataToExport: any[] = [];
+        let fileName = 'Academics_Report';
+
+        if (activeTab === 'ATTENDANCE') {
+            dataToExport = attendanceRecords.map(att => {
+                const student = students.find(s => s.id === att.student);
+                const cls = classes.find(c => c.id === student?.current_class);
+                return {
+                    date: att.date,
+                    student_name: student?.full_name,
+                    admission: student?.admission_number,
+                    class: cls ? `${cls.name} ${cls.stream}` : 'N/A',
+                    status: att.status,
+                    remark: att.remark
+                };
+            });
+            fileName = `Attendance_Report`;
+        } else if (activeTab === 'CLASSES') {
+            dataToExport = classes.map(c => ({
+                name: c.name,
+                stream: c.stream,
+                teacher: c.class_teacher_name,
+                students: c.student_count,
+                capacity: c.capacity
+            }));
+            fileName = `Classes_Report`;
         }
-    };
 
-    const handleExportAcademics = () => {
-        setIsExporting(true);
-        try {
-            let dataToExport: any[] = [];
-            let fileName = 'Academics_Report';
-
-            if (activeTab === 'ATTENDANCE') {
-                dataToExport = attendanceRecords.map(att => {
-                    const student = students.find(s => s.id === att.student);
-                    const cls = classes.find(c => c.id === student?.current_class);
-                    return {
-                        date: att.date,
-                        student_name: student?.full_name,
-                        admission: student?.admission_number,
-                        class: cls ? `${cls.name} ${cls.stream}` : 'N/A',
-                        status: att.status,
-                        remark: att.remark
-                    };
-                });
-                fileName = `Attendance_Report`;
-            } else if (activeTab === 'CLASSES') {
-                dataToExport = classes.map(c => ({
-                    name: c.name,
-                    stream: c.stream,
-                    teacher: c.class_teacher_name,
-                    students: c.student_count,
-                    capacity: c.capacity
-                }));
-                fileName = `Classes_Report`;
-            }
-
-            if (dataToExport.length === 0) {
-                warning("No data available to export for this view.");
-                return;
-            }
-
-            exportToCSV(dataToExport, fileName);
-        } catch (err: any) {
-            toastError(err.message || "Failed to export report.");
-        } finally {
-            setIsExporting(false);
+        if (dataToExport.length === 0) {
+            warning("No data available to export for this view.");
+            return;
         }
-    };
+
+        exportToCSV(dataToExport, fileName);
+    } catch (err: any) {
+        toastError(err.message || "Failed to export report.");
+    } finally {
+        setIsExporting(false);
+    }
+};
 
 
-    if (loading) return <div className="flex items-center justify-center p-12 spinner-container"><div className="spinner"></div></div>;
+if (loading) return <div className="flex items-center justify-center p-12 spinner-container"><div className="spinner"></div></div>;
 
-    const activeYear = academicYears.find((y: any) => y.is_active)?.name || 'NO ACTIVE YEAR';
-    const activeTerm = terms.find((t: any) => t.is_active)?.name || 'NO ACTIVE TERM';
+const activeYear = academicYears.find((y: any) => y.is_active)?.name || 'NO ACTIVE YEAR';
+const activeTerm = terms.find((t: any) => t.is_active)?.name || 'NO ACTIVE TERM';
 
-    staff.map(s => ({ id: s.user || s.id, label: s.full_name || s.username, subLabel: `ID: ${s.employee_id}` }));
-    const studentOptions = students.map(s => ({ id: s.id, label: s.full_name, subLabel: `ADM: ${s.admission_number}` }));
+staff.map(s => ({ id: s.user || s.id, label: s.full_name || s.username, subLabel: `ID: ${s.employee_id}` }));
+const studentOptions = students.map(s => ({ id: s.id, label: s.full_name, subLabel: `ADM: ${s.admission_number}` }));
 
-    return (
-        <div className="fade-in w-full max-w-full overflow-x-hidden min-w-0">
-            {/* Elegant Header with Multi-layer Background */}
-            <div className="relative overflow-hidden rounded-3xl bg-primary text-white p-8 mb-8 shadow-2xl">
-                <div className="relative z-10 flex justify-between items-center">
-                    <div>
-                        <div className="flex items-center gap-2 mb-2">
-                            <GraduationCap size={16} className="text-info-light" />
-                            <span className="text-[10px] font-black uppercase tracking-widest opacity-80">Academic Operations</span>
+return (
+    <div className="fade-in w-full max-w-full overflow-x-hidden min-w-0">
+        {/* Elegant Header with Multi-layer Background */}
+        <div className="relative overflow-hidden rounded-3xl bg-primary text-white p-8 mb-8 shadow-2xl">
+            <div className="relative z-10 flex justify-between items-center">
+                <div>
+                    <div className="flex items-center gap-2 mb-2">
+                        <GraduationCap size={16} className="text-info-light" />
+                        <span className="text-[10px] font-black uppercase tracking-widest opacity-80">Academic Operations</span>
+                    </div>
+                    <h1 className="text-3xl font-black mb-1 capitalize text-white">Institution Academics</h1>
+                    <div className="flex items-center gap-4 mt-2">
+                        <div className="flex items-center gap-1.5 px-3 py-1 bg-white/10 rounded-full border border-white/10">
+                            <Calendar size={12} className="text-info-light" />
+                            <span className="text-[10px] font-bold uppercase">{activeYear} • {activeTerm}</span>
                         </div>
-                        <h1 className="text-3xl font-black mb-1 capitalize text-white">Institution Academics</h1>
-                        <div className="flex items-center gap-4 mt-2">
-                            <div className="flex items-center gap-1.5 px-3 py-1 bg-white/10 rounded-full border border-white/10">
-                                <Calendar size={12} className="text-info-light" />
-                                <span className="text-[10px] font-bold uppercase">{activeYear} • {activeTerm}</span>
+                    </div>
+                </div>
+            </div>
+            <div className="absolute top-0 right-0 p-12 opacity-10 pointer-events-none">
+                <Award size={200} />
+            </div>
+        </div>
+
+        {/* Navigation Tabs - Consolidated */}
+        <div className="nav-tab-container no-print">
+            {(['SUMMARY', 'CLASSES', 'CURRICULUM', 'ALLOCATION', 'EXAMS', 'ATTENDANCE', 'RESOURCES', 'GRADING'] as const)
+                .filter(tab => !isReadOnly || ['SUMMARY', 'CURRICULUM', 'EXAMS', 'ATTENDANCE'].includes(tab))
+                .map(tab => (
+                    <button
+                        key={tab}
+                        className={`nav-tab ${activeTab === tab ? 'active' : ''}`}
+                        onClick={() => setActiveTab(tab)}
+                    >
+                        {tab.charAt(0) + tab.slice(1).toLowerCase()}
+                    </button>
+                ))}
+        </div>
+
+        {/* Content per Tab */}
+        {activeTab !== 'SUMMARY' && activeTab !== 'ALLOCATION' && (
+            <div className="mb-4 no-print flex justify-end">
+                <input
+                    type="text"
+                    placeholder={`Search ${activeTab.toLowerCase()}...`}
+                    className="input input-sm w-64 shadow-sm"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+            </div>
+        )}
+
+        {activeTab === 'SUMMARY' && (
+            <div className="space-y-8 fade-in">
+                <div className="grid grid-cols-2 gap-6 lg:gap-8">
+                    <div className="min-w-0">
+                        <StatCard
+                            title="Enrolled Capacity"
+                            value={classes.length > 0 ? `${classes.reduce((sum, c) => sum + (c.student_count || 0), 0)}/${classes.reduce((sum, c) => sum + (c.capacity || 40), 0)}` : "0/0"}
+                            icon={<Users size={18} />}
+                            gradient="linear-gradient(135deg, #0f172a, #1e293b)"
+                        />
+                    </div>
+                    <div className="min-w-0">
+                        <StatCard
+                            title="Departments"
+                            value={subjectGroups.length}
+                            icon={<Layers size={18} />}
+                            gradient="linear-gradient(135deg, #0f172a, #1e293b)"
+                        />
+                    </div>
+                    <div className="min-w-0">
+                        <StatCard
+                            title="Active Exams"
+                            value={exams.filter(e => e.is_active).length}
+                            icon={<Calendar size={18} />}
+                            gradient="linear-gradient(135deg, #4facfe, #00f2fe)"
+                        />
+                    </div>
+                    <div className="min-w-0">
+                        <StatCard
+                            title="Overall Mean"
+                            value={meanGrade === '...' ? '—' : (meanGrade || "N/A")}
+                            icon={<Trophy size={18} />}
+                            gradient="linear-gradient(135deg, #667eea, #764ba2)"
+                        />
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-12 gap-6 lg:gap-8">
+                    <div className="col-span-12 lg:col-span-6 min-w-0">
+                        <div className="card h-full flex flex-col p-0 overflow-hidden border-top-4 border-primary">
+                            <div className="card-header">
+                                <h3 className="mb-0 text-xs font-black uppercase">Exams Overview</h3>
+                                <Button variant="ghost" size="sm" className="text-primary font-black uppercase text-[10px]" onClick={() => setActiveTab('EXAMS')}>View All</Button>
                             </div>
-                        </div>
-                    </div>
-                </div>
-                <div className="absolute top-0 right-0 p-12 opacity-10 pointer-events-none">
-                    <Award size={200} />
-                </div>
-            </div>
-
-            {/* Navigation Tabs - Consolidated */}
-            <div className="nav-tab-container no-print">
-                {(['SUMMARY', 'CLASSES', 'CURRICULUM', 'ALLOCATION', 'EXAMS', 'ATTENDANCE', 'RESOURCES', 'GRADING'] as const)
-                    .filter(tab => !isReadOnly || ['SUMMARY', 'CURRICULUM', 'EXAMS', 'ATTENDANCE'].includes(tab))
-                    .map(tab => (
-                        <button
-                            key={tab}
-                            className={`nav-tab ${activeTab === tab ? 'active' : ''}`}
-                            onClick={() => setActiveTab(tab)}
-                        >
-                            {tab.charAt(0) + tab.slice(1).toLowerCase()}
-                        </button>
-                    ))}
-            </div>
-
-            {/* Content per Tab */}
-            {activeTab !== 'SUMMARY' && activeTab !== 'ALLOCATION' && (
-                <div className="mb-4 no-print flex justify-end">
-                    <input
-                        type="text"
-                        placeholder={`Search ${activeTab.toLowerCase()}...`}
-                        className="input input-sm w-64 shadow-sm"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                </div>
-            )}
-
-            {activeTab === 'SUMMARY' && (
-                <div className="space-y-8 fade-in">
-                    <div className="grid grid-cols-2 gap-6 lg:gap-8">
-                        <div className="min-w-0">
-                            <StatCard
-                                title="Enrolled Capacity"
-                                value={classes.length > 0 ? `${classes.reduce((sum, c) => sum + (c.student_count || 0), 0)}/${classes.reduce((sum, c) => sum + (c.capacity || 40), 0)}` : "0/0"}
-                                icon={<Users size={18} />}
-                                gradient="linear-gradient(135deg, #0f172a, #1e293b)"
-                            />
-                        </div>
-                        <div className="min-w-0">
-                            <StatCard
-                                title="Departments"
-                                value={subjectGroups.length}
-                                icon={<Layers size={18} />}
-                                gradient="linear-gradient(135deg, #0f172a, #1e293b)"
-                            />
-                        </div>
-                        <div className="min-w-0">
-                            <StatCard
-                                title="Active Exams"
-                                value={exams.filter(e => e.is_active).length}
-                                icon={<Calendar size={18} />}
-                                gradient="linear-gradient(135deg, #4facfe, #00f2fe)"
-                            />
-                        </div>
-                        <div className="min-w-0">
-                            <StatCard
-                                title="Overall Mean"
-                                value={meanGrade === '...' ? '—' : (meanGrade || "N/A")}
-                                icon={<Trophy size={18} />}
-                                gradient="linear-gradient(135deg, #667eea, #764ba2)"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-12 gap-6 lg:gap-8">
-                        <div className="col-span-12 lg:col-span-6 min-w-0">
-                            <div className="card h-full flex flex-col p-0 overflow-hidden border-top-4 border-primary">
-                                <div className="card-header">
-                                    <h3 className="mb-0 text-xs font-black uppercase">Exams Overview</h3>
-                                    <Button variant="ghost" size="sm" className="text-primary font-black uppercase text-[10px]" onClick={() => setActiveTab('EXAMS')}>View All</Button>
-                                </div>
-                                <div className="card-body p-4 space-y-3 flex-1">
-                                    {exams.slice(0, 4).map(e => (
-                                        <div key={e.id} className="flex items-center justify-between p-3 rounded-xl border border-slate-50 hover:border-primary/20 hover:bg-slate-50 transition-all cursor-pointer group" onClick={() => { setActiveTab('EXAMS'); setTimeout(() => openViewResults(e), 100); }}>
-                                            <div className="flex items-center gap-4">
-                                                <div className="p-2.5 rounded-lg bg-slate-100 text-slate-400 group-hover:bg-primary-light group-hover:text-white transition-colors"><Calendar size={14} /></div>
-                                                <div>
-                                                    <p className="font-black text-xs mb-0 text-slate-800">{e.name}</p>
-                                                    <div className="flex items-center gap-2 mt-1">
-                                                        <span className="text-[9px] font-bold text-slate-400 uppercase">{e.term_name || 'Active Term'}</span>
-                                                        <span className="w-1 h-1 rounded-full bg-slate-200"></span>
-                                                        <span className="text-[9px] font-mono text-slate-500">{e.date_started ? new Date(e.date_started + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : 'TBD'}</span>
-                                                    </div>
+                            <div className="card-body p-4 space-y-3 flex-1">
+                                {exams.slice(0, 4).map(e => (
+                                    <div key={e.id} className="flex items-center justify-between p-3 rounded-xl border border-slate-50 hover:border-primary/20 hover:bg-slate-50 transition-all cursor-pointer group" onClick={() => { setActiveTab('EXAMS'); setTimeout(() => openViewResults(e), 100); }}>
+                                        <div className="flex items-center gap-4">
+                                            <div className="p-2.5 rounded-lg bg-slate-100 text-slate-400 group-hover:bg-primary-light group-hover:text-white transition-colors"><Calendar size={14} /></div>
+                                            <div>
+                                                <p className="font-black text-xs mb-0 text-slate-800">{e.name}</p>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <span className="text-[9px] font-bold text-slate-400 uppercase">{e.term_name || 'Active Term'}</span>
+                                                    <span className="w-1 h-1 rounded-full bg-slate-200"></span>
+                                                    <span className="text-[9px] font-mono text-slate-500">{e.date_started ? new Date(e.date_started + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : 'TBD'}</span>
                                                 </div>
                                             </div>
-                                            <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase ${e.is_active ? 'bg-success/10 text-success' : 'bg-slate-100 text-slate-400'}`}>{e.is_active ? 'OPEN' : 'CLOSED'}</span>
                                         </div>
-                                    ))}
-                                    {exams.length === 0 && <div className="py-12 text-center text-slate-300 font-black text-[10px] uppercase tracking-widest">No recent exams</div>}
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="col-span-12 lg:col-span-6 min-w-0">
-                            <div className="card h-full flex flex-col p-0 overflow-hidden">
-                                <div className="card-header">
-                                    <h3 className="mb-0 text-xs font-black uppercase">Syllabus Completion</h3>
-                                    <div className="flex items-center gap-2">
-                                        <Button variant="outline" size="sm" className="p-2" onClick={() => setIsSyllabusModalOpen(true)} icon={<Edit size={12} />} />
+                                        <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase ${e.is_active ? 'bg-success/10 text-success' : 'bg-slate-100 text-slate-400'}`}>{e.is_active ? 'OPEN' : 'CLOSED'}</span>
                                     </div>
-                                </div>
-                                <div className="card-body p-6 space-y-6 max-h-400 overflow-y-auto">
-                                    {syllabusData.length === 0 && (
-                                        <div className="py-12 text-center text-slate-300">
-                                            <BarChart3 size={32} className="mx-auto mb-2 opacity-20" />
-                                            <p className="font-black text-[10px] uppercase tracking-widest">No tracking data</p>
-                                        </div>
-                                    )}
-                                    {syllabusData.map(s => (
-                                        <div key={s.id} className="cursor-pointer group" onClick={() => {
-                                            const cls = classes.find(c => c.id === s.class_grade);
-                                            setSyllabusForm({
-                                                subject: s.subject.toString(),
-                                                level: cls?.name || '',
-                                                class_grade: s.class_grade.toString(),
-                                                coverage_percentage: s.coverage_percentage
-                                            });
-                                            setEditingSyllabusId(s.id);
-                                            setIsSyllabusModalOpen(true);
-                                        }}>
-                                            <div className="flex justify-between text-[10px] font-black mb-2 uppercase tracking-tight">
-                                                <span className="text-slate-700">{s.subject_name} <span className="text-slate-400 ml-1">({s.class_name})</span></span>
-                                                <span className="text-primary">{s.coverage_percentage}%</span>
-                                            </div>
-                                            <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden shadow-inner">
-                                                <div className={`h-full transition-all duration-1000 ${s.coverage_percentage > 80 ? 'bg-success' : s.coverage_percentage > 50 ? 'bg-primary' : 'bg-error'}`} style={{ width: `${s.coverage_percentage}%` }}></div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
+                                ))}
+                                {exams.length === 0 && <div className="py-12 text-center text-slate-300 font-black text-[10px] uppercase tracking-widest">No recent exams</div>}
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
 
-
-            {activeTab === 'CLASSES' && (
-                <div className="grid grid-cols-12 gap-6 lg:gap-8 min-w-0">
-                    {classes.filter(cls =>
-                        !searchTerm ||
-                        cls.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                        cls.stream.toLowerCase().includes(searchTerm.toLowerCase())
-                    ).map(cls => (
-                        <div key={cls.id} className="col-span-12 md:col-span-6 lg:col-span-4 min-w-0">
-                            <div className="card hover:shadow-2xl transition-all h-full flex flex-col p-6 overflow-hidden">
-                                <div className="flex justify-between items-start mb-4">
-                                    <div className="p-2.5 rounded-lg bg-primary-light text-white"><School size={16} /></div>
-                                    <span className="badge badge-info badge-xs">CAP: {cls.capacity}</span>
-                                </div>
-                                <h3 className="mb-1 text-sm font-black">{cls.name} <span className="text-secondary">{cls.stream}</span></h3>
-                                <p className="text-[10px] font-bold text-secondary mb-4 flex items-center gap-1 uppercase"><Users size={10} /> {cls.student_count} Students</p>
-                                <div className="mt-auto pt-4 border-t border-slate-100 flex justify-between items-center">
-                                    <span className="text-[10px] font-black text-secondary uppercase">{cls.class_teacher_name || 'Unassigned TR'}</span>
-                                    <div className="flex gap-1">
-                                        <Button variant="outline" size="sm" onClick={() => openEditClass(cls)} title="Edit Class Details" icon={<Edit size={10} />} />
-                                        <Button variant="ghost" size="sm" className="text-primary" onClick={() => openViewClass(cls)} title="View Students in Class" icon={<Users size={10} />} />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                    <div className="col-span-12 md:col-span-6 lg:col-span-4 min-w-0">
-                        <div className="card border-dashed flex flex-col items-center justify-center p-8 cursor-pointer hover:border-primary group h-full" onClick={() => setIsClassModalOpen(true)}>
-                            <Plus size={32} className="text-secondary group-hover:text-primary transition-all mb-2" />
-                            <span className="text-xs font-black uppercase text-secondary">Add Class Unit</span>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {activeTab === 'CURRICULUM' && (
-                <div className="grid grid-cols-12 gap-6 lg:gap-8 min-w-0">
-                    <div className="col-span-12 lg:col-span-3 space-y-4 min-w-0">
-                        <div className="card card-mobile-flat p-0 overflow-hidden">
+                    <div className="col-span-12 lg:col-span-6 min-w-0">
+                        <div className="card h-full flex flex-col p-0 overflow-hidden">
                             <div className="card-header">
-                                <h3 className="mb-0 text-sm font-black uppercase">Subject Groups</h3>
-                                <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={() => { setEditingGroupId(null); setGroupForm({ name: '' }); setIsGroupModalOpen(true); }} icon={<Plus size={14} />} />
+                                <h3 className="mb-0 text-xs font-black uppercase">Syllabus Completion</h3>
+                                <div className="flex items-center gap-2">
+                                    <Button variant="outline" size="sm" className="p-2" onClick={() => setIsSyllabusModalOpen(true)} icon={<Edit size={12} />} />
+                                </div>
                             </div>
-                            <div className="card-body p-4">
-                                {subjectGroups.map(g => (
-                                    <div key={g.id} className="flex justify-between items-center p-2 rounded hover:bg-secondary-light text-[11px] font-bold border border-transparent hover:border-secondary transition-all group">
-                                        <span>{g.name}</span>
-                                        <div className="flex gap-1 opacity-30 group-hover:opacity-100 transition-opacity">
-                                            <Button variant="ghost" size="sm" className="text-primary p-1 h-6 w-6" onClick={() => openEditGroup(g)} title="Edit Subject Group" icon={<Edit size={12} />} />
-                                            <Button variant="ghost" size="sm" className="text-error p-1 h-6 w-6" onClick={() => handleDeleteGroup(g.id)} title="Delete Subject Group" icon={<Trash2 size={12} />} />
+                            <div className="card-body p-6 space-y-6 max-h-400 overflow-y-auto">
+                                {syllabusData.length === 0 && (
+                                    <div className="py-12 text-center text-slate-300">
+                                        <BarChart3 size={32} className="mx-auto mb-2 opacity-20" />
+                                        <p className="font-black text-[10px] uppercase tracking-widest">No tracking data</p>
+                                    </div>
+                                )}
+                                {syllabusData.map(s => (
+                                    <div key={s.id} className="cursor-pointer group" onClick={() => {
+                                        const cls = classes.find(c => c.id === s.class_grade);
+                                        setSyllabusForm({
+                                            subject: s.subject.toString(),
+                                            level: cls?.name || '',
+                                            class_grade: s.class_grade.toString(),
+                                            coverage_percentage: s.coverage_percentage
+                                        });
+                                        setEditingSyllabusId(s.id);
+                                        setIsSyllabusModalOpen(true);
+                                    }}>
+                                        <div className="flex justify-between text-[10px] font-black mb-2 uppercase tracking-tight">
+                                            <span className="text-slate-700">{s.subject_name} <span className="text-slate-400 ml-1">({s.class_name})</span></span>
+                                            <span className="text-primary">{s.coverage_percentage}%</span>
+                                        </div>
+                                        <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden shadow-inner">
+                                            <div className={`h-full transition-all duration-1000 ${s.coverage_percentage > 80 ? 'bg-success' : s.coverage_percentage > 50 ? 'bg-primary' : 'bg-error'}`} style={{ width: `${s.coverage_percentage}%` }}></div>
                                         </div>
                                     </div>
                                 ))}
                             </div>
                         </div>
                     </div>
-                    <div className="col-span-12 lg:col-span-9 min-w-0 fade-in card card-mobile-flat p-0 overflow-hidden">
+                </div>
+            </div>
+        )}
+
+
+        {activeTab === 'CLASSES' && (
+            <div className="grid grid-cols-12 gap-6 lg:gap-8 min-w-0">
+                {classes.filter(cls =>
+                    !searchTerm ||
+                    cls.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    cls.stream.toLowerCase().includes(searchTerm.toLowerCase())
+                ).map(cls => (
+                    <div key={cls.id} className="col-span-12 md:col-span-6 lg:col-span-4 min-w-0">
+                        <div className="card hover:shadow-2xl transition-all h-full flex flex-col p-6 overflow-hidden">
+                            <div className="flex justify-between items-start mb-4">
+                                <div className="p-2.5 rounded-lg bg-primary-light text-white"><School size={16} /></div>
+                                <span className="badge badge-info badge-xs">CAP: {cls.capacity}</span>
+                            </div>
+                            <h3 className="mb-1 text-sm font-black">{cls.name} <span className="text-secondary">{cls.stream}</span></h3>
+                            <p className="text-[10px] font-bold text-secondary mb-4 flex items-center gap-1 uppercase"><Users size={10} /> {cls.student_count} Students</p>
+                            <div className="mt-auto pt-4 border-t border-slate-100 flex justify-between items-center">
+                                <span className="text-[10px] font-black text-secondary uppercase">{cls.class_teacher_name || 'Unassigned TR'}</span>
+                                <div className="flex gap-1">
+                                    <Button variant="outline" size="sm" onClick={() => openEditClass(cls)} title="Edit Class Details" icon={<Edit size={10} />} />
+                                    <Button variant="ghost" size="sm" className="text-primary" onClick={() => openViewClass(cls)} title="View Students in Class" icon={<Users size={10} />} />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+                <div className="col-span-12 md:col-span-6 lg:col-span-4 min-w-0">
+                    <div className="card border-dashed flex flex-col items-center justify-center p-8 cursor-pointer hover:border-primary group h-full" onClick={() => setIsClassModalOpen(true)}>
+                        <Plus size={32} className="text-secondary group-hover:text-primary transition-all mb-2" />
+                        <span className="text-xs font-black uppercase text-secondary">Add Class Unit</span>
+                    </div>
+                </div>
+            </div>
+        )}
+
+        {activeTab === 'CURRICULUM' && (
+            <div className="grid grid-cols-12 gap-6 lg:gap-8 min-w-0">
+                <div className="col-span-12 lg:col-span-3 space-y-4 min-w-0">
+                    <div className="card card-mobile-flat p-0 overflow-hidden">
                         <div className="card-header">
-                            <h3 className="mb-0 text-sm font-black uppercase">Institutional Curriculum</h3>
-                            {/* ... buttons ... */}
-                            <Button variant="primary" size="sm" className="ml-auto-mobile" onClick={() => setIsSubjectModalOpen(true)} icon={<Plus size={14} />}>New Subject</Button>
+                            <h3 className="mb-0 text-sm font-black uppercase">Subject Groups</h3>
+                            <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={() => { setEditingGroupId(null); setGroupForm({ name: '' }); setIsGroupModalOpen(true); }} icon={<Plus size={14} />} />
+                        </div>
+                        <div className="card-body p-4">
+                            {subjectGroups.map(g => (
+                                <div key={g.id} className="flex justify-between items-center p-2 rounded hover:bg-secondary-light text-[11px] font-bold border border-transparent hover:border-secondary transition-all group">
+                                    <span>{g.name}</span>
+                                    <div className="flex gap-1 opacity-30 group-hover:opacity-100 transition-opacity">
+                                        <Button variant="ghost" size="sm" className="text-primary p-1 h-6 w-6" onClick={() => openEditGroup(g)} title="Edit Subject Group" icon={<Edit size={12} />} />
+                                        <Button variant="ghost" size="sm" className="text-error p-1 h-6 w-6" onClick={() => handleDeleteGroup(g.id)} title="Delete Subject Group" icon={<Trash2 size={12} />} />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+                <div className="col-span-12 lg:col-span-9 min-w-0 fade-in card card-mobile-flat p-0 overflow-hidden">
+                    <div className="card-header">
+                        <h3 className="mb-0 text-sm font-black uppercase">Institutional Curriculum</h3>
+                        {/* ... buttons ... */}
+                        <Button variant="primary" size="sm" className="ml-auto-mobile" onClick={() => setIsSubjectModalOpen(true)} icon={<Plus size={14} />}>New Subject</Button>
+                    </div>
+                    <div className="p-0">
+                        <div className="table-wrapper overflow-x-auto w-full block m-0">
+                            <table className="table min-w-[800px] relative">
+                                <thead className="sticky top-0 bg-slate-50 z-10 shadow-sm text-[10px] uppercase">
+                                    <tr>
+                                        <th className="py-4 px-6 min-w-[150px]">Subject Name</th>
+                                        <th className="py-4 px-6 min-w-[100px]">Code</th>
+                                        <th className="py-4 px-6 min-w-[150px]">Subject Group</th>
+                                        <th className="py-4 px-6 min-w-[100px]">Type</th>
+                                        <th className="py-4 px-6 min-w-[100px] text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white">
+                                    {subjects.map((s: any) => (
+                                        <tr key={s.id} className="hover:bg-slate-50 transition-colors group border-b border-slate-100">
+                                            <td className="py-4 px-6 font-bold">{s.name}</td>
+                                            <td className="py-4 px-6 font-mono text-[10px]">{s.code}</td>
+                                            <td className="py-4 px-6">{s.group_name || '-'}</td>
+                                            <td className="py-4 px-6"><span className={`badge badge-sm font-bold ${s.is_core ? 'bg-primary text-white' : 'bg-slate-100 text-slate-600'}`}>{s.is_core ? 'CORE' : 'ELECTIVE'}</span></td>
+                                            <td className="py-4 px-6 text-right">
+                                                <div className="flex justify-end gap-1">
+                                                    <Button variant="ghost" size="sm" className="text-primary hover:bg-white p-1" onClick={() => openEditSubject(s)} title="Edit Subject"><Edit size={12} /></Button>
+                                                    <Button variant="ghost" size="sm" className="text-error hover:bg-white p-1" onClick={() => handleDeleteSubject(s.id)} title="Delete Subject"><Trash2 size={12} /></Button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {subjects.length === 0 && (
+                                        <tr>
+                                            <td colSpan={5} className="text-center p-8 text-secondary italic">No subjects added. Select "New Subject" to manage the curriculum.</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Merged Syllabus Tracking */}
+                <div className="col-span-12 space-y-6 lg:space-y-8 fade-in mt-8 min-w-0">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4 px-2">
+                        <h3 className="text-lg font-black text-slate-800 uppercase mb-0 tracking-wider">Syllabus Tracking</h3>
+                        {!isReadOnly && (
+                            <Button variant="primary" size="sm" className="w-full md:w-auto font-black shadow-lg" onClick={() => { setEditingSyllabusId(null); setIsSyllabusModalOpen(true); }} icon={<Plus size={14} />}>RECORD COVERAGE</Button>
+                        )}
+                    </div>
+
+                    <div className="fade-in card card-mobile-flat p-0 overflow-hidden min-w-0">
+                        <div className="card-header">
+                            <h3 className="mb-0 text-sm font-black uppercase">Curriculum Progress</h3>
                         </div>
                         <div className="p-0">
-                            <div className="table-wrapper overflow-x-auto w-full block m-0">
-                                <table className="table min-w-[800px] relative">
-                                    <thead className="sticky top-0 bg-slate-50 z-10 shadow-sm text-[10px] uppercase">
+                            <div className="table-wrapper overflow-x-auto w-full block">
+                                <table className="table table-sm min-w-[800px] relative">
+                                    <thead className="bg-secondary-light/30 text-secondary">
                                         <tr>
-                                            <th className="py-4 px-6 min-w-[150px]">Subject Name</th>
-                                            <th className="py-4 px-6 min-w-[100px]">Code</th>
-                                            <th className="py-4 px-6 min-w-[150px]">Subject Group</th>
-                                            <th className="py-4 px-6 min-w-[100px]">Type</th>
-                                            <th className="py-4 px-6 min-w-[100px] text-right">Actions</th>
+                                            <th className="min-w-[150px]">Subject</th>
+                                            <th className="min-w-[120px]">Class / Stream</th>
+                                            <th className="min-w-[80px]">Coverage</th>
+                                            <th className="min-w-[200px]">Progress</th>
+                                            <th className="text-right">Actions</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="bg-white">
-                                        {subjects.map((s: any) => (
-                                            <tr key={s.id} className="hover:bg-slate-50 transition-colors group border-b border-slate-100">
-                                                <td className="py-4 px-6 font-bold">{s.name}</td>
-                                                <td className="py-4 px-6 font-mono text-[10px]">{s.code}</td>
-                                                <td className="py-4 px-6">{s.group_name || '-'}</td>
-                                                <td className="py-4 px-6"><span className={`badge badge-sm font-bold ${s.is_core ? 'bg-primary text-white' : 'bg-slate-100 text-slate-600'}`}>{s.is_core ? 'CORE' : 'ELECTIVE'}</span></td>
-                                                <td className="py-4 px-6 text-right">
-                                                    <div className="flex justify-end gap-1">
-                                                        <Button variant="ghost" size="sm" className="text-primary hover:bg-white p-1" onClick={() => openEditSubject(s)} title="Edit Subject"><Edit size={12} /></Button>
-                                                        <Button variant="ghost" size="sm" className="text-error hover:bg-white p-1" onClick={() => handleDeleteSubject(s.id)} title="Delete Subject"><Trash2 size={12} /></Button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                        {subjects.length === 0 && (
+                                    <tbody>
+                                        {syllabusData.length === 0 ? (
                                             <tr>
-                                                <td colSpan={5} className="text-center p-8 text-secondary italic">No subjects added. Select "New Subject" to manage the curriculum.</td>
+                                                <td colSpan={5} className="text-center p-8 text-secondary text-xs uppercase font-bold italic">No syllabus records found</td>
                                             </tr>
+                                        ) : (
+                                            syllabusData.map((s: any) => {
+                                                const cls = classes.find((c: any) => c.id === s.class_grade);
+                                                const sub = subjects.find((sub: any) => sub.id === s.subject);
+                                                return (
+                                                    <tr key={s.id} className="hover:bg-blue-50/50 transition-colors">
+                                                        <td className="font-bold text-xs">{sub?.name || 'Unknown'}</td>
+                                                        <td className="text-xs text-secondary-dark font-medium">{cls ? `${cls.name} ${cls.stream}` : 'Unknown'}</td>
+                                                        <td className="py-4 px-6 font-mono text-xs text-primary font-black">{s.coverage_percentage}%</td>
+                                                        <td className="py-4 px-6">
+                                                            <progress className={`progress w-full h-2 ${s.coverage_percentage > 80 ? 'progress-success' : s.coverage_percentage > 40 ? 'progress-warning' : 'progress-error'}`} value={s.coverage_percentage} max="100"></progress>
+                                                        </td>
+                                                        <td className="text-right">
+                                                            {!isReadOnly && (
+                                                                <div className="flex justify-end gap-1">
+                                                                    <Button variant="ghost" size="sm" className="text-primary hover:bg-primary/10" onClick={() => {
+                                                                        const cls = classes.find(c => c.id === s.class_grade);
+                                                                        setSyllabusForm({
+                                                                            subject: s.subject.toString(),
+                                                                            level: cls?.name || '',
+                                                                            class_grade: s.class_grade.toString(),
+                                                                            coverage_percentage: s.coverage_percentage
+                                                                        });
+                                                                        setEditingSyllabusId(s.id);
+                                                                        setIsSyllabusModalOpen(true);
+                                                                    }} icon={<Edit size={12} />} />
+                                                                    <Button variant="ghost" size="sm" className="text-error hover:bg-error/10" onClick={async () => {
+                                                                        if (await confirm('Delete this syllabus record?', { type: 'danger' })) {
+                                                                            try {
+                                                                                await academicsAPI.syllabus.delete(s.id);
+                                                                                loadAllAcademicData();
+                                                                                success('Syllabus record deleted');
+                                                                            } catch (err: any) { toastError(err.message || 'Failed to delete record'); }
+                                                                        }
+                                                                    }} icon={<Trash2 size={12} />} />
+                                                                </div>
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })
                                         )}
                                     </tbody>
                                 </table>
                             </div>
                         </div>
                     </div>
+                </div>
+            </div >
+        )}
 
-                    {/* Merged Syllabus Tracking */}
-                    <div className="col-span-12 space-y-6 lg:space-y-8 fade-in mt-8 min-w-0">
-                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4 px-2">
-                            <h3 className="text-lg font-black text-slate-800 uppercase mb-0 tracking-wider">Syllabus Tracking</h3>
-                            {!isReadOnly && (
-                                <Button variant="primary" size="sm" className="w-full md:w-auto font-black shadow-lg" onClick={() => { setEditingSyllabusId(null); setIsSyllabusModalOpen(true); }} icon={<Plus size={14} />}>RECORD COVERAGE</Button>
-                            )}
+
+        {
+            activeTab === 'ALLOCATION' && (
+                <div className="grid grid-cols-12 gap-6 lg:gap-8 h-screen-250">
+                    <div className="col-span-12 lg:col-span-3 min-w-0 flex flex-col gap-4 overflow-y-auto pr-2">
+                        <h3 className="text-xs font-black uppercase mb-0 tracking-widest text-slate-400">Select Class</h3>
+                        <div className="space-y-2">
+                            {classes.map(c => (
+                                <div
+                                    key={c.id}
+                                    className={`p-4 rounded-xl cursor-pointer border transition-all ${selectedAllocationClass === c.id.toString() ? 'bg-slate-900 border-slate-900 text-white shadow-lg' : 'bg-white border-slate-100 hover:border-primary/30 text-slate-600'}`}
+                                    onClick={() => { setSelectedAllocationClass(c.id.toString()); fetchClassAllocations(c.id.toString()); }}
+                                >
+                                    <div className="font-black text-[11px] uppercase tracking-wider">{c.name} {c.stream}</div>
+                                    <div className={`text-[10px] font-bold mt-1 ${selectedAllocationClass === c.id.toString() ? 'text-white/60' : 'text-slate-400'}`}>{c.student_count} Students</div>
+                                </div>
+                            ))}
                         </div>
-
-                        <div className="fade-in card card-mobile-flat p-0 overflow-hidden min-w-0">
-                            <div className="card-header">
-                                <h3 className="mb-0 text-sm font-black uppercase">Curriculum Progress</h3>
-                            </div>
-                            <div className="p-0">
-                                <div className="table-wrapper overflow-x-auto w-full block">
-                                    <table className="table table-sm min-w-[800px] relative">
-                                        <thead className="bg-secondary-light/30 text-secondary">
+                    </div>
+                    <div className="col-span-12 lg:col-span-9 min-w-0 flex flex-col">
+                        {selectedAllocationClass ? (
+                            <div className="card h-full flex flex-col min-w-0 overflow-hidden">
+                                <div className="card-header">
+                                    <div>
+                                        <h3 className="mb-0 text-sm font-black uppercase">Class Subjects</h3>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight mt-1">Manage subjects taught in this class</p>
+                                    </div>
+                                    <Button variant="primary" size="sm" className="font-black" onClick={syncClassSubjects} loading={isSyncing} loadingText="Syncing...">
+                                        Sync to Students
+                                    </Button>
+                                </div>
+                                <div className="p-0 table-wrapper overflow-x-auto overflow-y-auto w-full block flex-1 m-0">
+                                    <table className="table min-w-[600px] border-collapse">
+                                        <thead className="sticky top-0 bg-slate-50 z-10 shadow-sm text-[10px] uppercase">
                                             <tr>
-                                                <th className="min-w-[150px]">Subject</th>
-                                                <th className="min-w-[120px]">Class / Stream</th>
-                                                <th className="min-w-[80px]">Coverage</th>
-                                                <th className="min-w-[200px]">Progress</th>
-                                                <th className="text-right">Actions</th>
+                                                <th className="py-4 px-6 w-20">Active</th>
+                                                <th className="py-4 px-6 text-left">Subject Name</th>
+                                                <th className="py-4 px-6">Code</th>
+                                                <th className="py-4 px-6">Group</th>
+                                                <th className="py-4 px-6">Status</th>
                                             </tr>
                                         </thead>
-                                        <tbody>
-                                            {syllabusData.length === 0 ? (
-                                                <tr>
-                                                    <td colSpan={5} className="text-center p-8 text-secondary text-xs uppercase font-bold italic">No syllabus records found</td>
-                                                </tr>
-                                            ) : (
-                                                syllabusData.map((s: any) => {
-                                                    const cls = classes.find((c: any) => c.id === s.class_grade);
-                                                    const sub = subjects.find((sub: any) => sub.id === s.subject);
-                                                    return (
-                                                        <tr key={s.id} className="hover:bg-blue-50/50 transition-colors">
-                                                            <td className="font-bold text-xs">{sub?.name || 'Unknown'}</td>
-                                                            <td className="text-xs text-secondary-dark font-medium">{cls ? `${cls.name} ${cls.stream}` : 'Unknown'}</td>
-                                                            <td className="py-4 px-6 font-mono text-xs text-primary font-black">{s.coverage_percentage}%</td>
-                                                            <td className="py-4 px-6">
-                                                                <progress className={`progress w-full h-2 ${s.coverage_percentage > 80 ? 'progress-success' : s.coverage_percentage > 40 ? 'progress-warning' : 'progress-error'}`} value={s.coverage_percentage} max="100"></progress>
-                                                            </td>
-                                                            <td className="text-right">
-                                                                {!isReadOnly && (
-                                                                    <div className="flex justify-end gap-1">
-                                                                        <Button variant="ghost" size="sm" className="text-primary hover:bg-primary/10" onClick={() => {
-                                                                            const cls = classes.find(c => c.id === s.class_grade);
-                                                                            setSyllabusForm({
-                                                                                subject: s.subject.toString(),
-                                                                                level: cls?.name || '',
-                                                                                class_grade: s.class_grade.toString(),
-                                                                                coverage_percentage: s.coverage_percentage
-                                                                            });
-                                                                            setEditingSyllabusId(s.id);
-                                                                            setIsSyllabusModalOpen(true);
-                                                                        }} icon={<Edit size={12} />} />
-                                                                        <Button variant="ghost" size="sm" className="text-error hover:bg-error/10" onClick={async () => {
-                                                                            if (await confirm('Delete this syllabus record?', { type: 'danger' })) {
-                                                                                try {
-                                                                                    await academicsAPI.syllabus.delete(s.id);
-                                                                                    loadAllAcademicData();
-                                                                                    success('Syllabus record deleted');
-                                                                                } catch (err: any) { toastError(err.message || 'Failed to delete record'); }
-                                                                            }
-                                                                        }} icon={<Trash2 size={12} />} />
-                                                                    </div>
-                                                                )}
-                                                            </td>
-                                                        </tr>
-                                                    );
-                                                })
-                                            )}
+                                        <tbody className="divide-y divide-slate-100">
+                                            {subjects.map(subject => {
+                                                const allocation = classAllocations.find(a => a.subject === subject.id);
+                                                const isAllocated = !!allocation;
+                                                return (
+                                                    <tr key={subject.id} className={`hover:bg-slate-50 transition-colors ${isAllocated ? 'bg-success/5' : ''}`}>
+                                                        <td className="py-4 px-6 text-center">
+                                                            <input
+                                                                type="checkbox"
+                                                                className="checkbox checkbox-sm"
+                                                                checked={isAllocated}
+                                                                onChange={() => toggleClassSubject(subject.id, allocation?.id)}
+                                                            />
+                                                        </td>
+                                                        <td className="py-4 px-6 font-bold text-xs">{subject.name}</td>
+                                                        <td className="py-4 px-6"><code className="bg-slate-100 px-2 py-1 rounded text-[10px]">{subject.code}</code></td>
+                                                        <td className="py-4 px-6 text-[10px] uppercase font-bold text-slate-400">{subject.group_name || '-'}</td>
+                                                        <td className="py-4 px-6">
+                                                            {isAllocated ?
+                                                                <span className="badge badge-success text-[9px] font-black">ALLOCATED</span> :
+                                                                <span className="badge badge-ghost text-[9px] font-black opacity-40">AVAILABLE</span>
+                                                            }
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
                                         </tbody>
                                     </table>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                </div >
-            )}
-
-
-            {
-                activeTab === 'ALLOCATION' && (
-                    <div className="grid grid-cols-12 gap-6 lg:gap-8 h-screen-250">
-                        <div className="col-span-12 lg:col-span-3 min-w-0 flex flex-col gap-4 overflow-y-auto pr-2">
-                            <h3 className="text-xs font-black uppercase mb-0 tracking-widest text-slate-400">Select Class</h3>
-                            <div className="space-y-2">
-                                {classes.map(c => (
-                                    <div
-                                        key={c.id}
-                                        className={`p-4 rounded-xl cursor-pointer border transition-all ${selectedAllocationClass === c.id.toString() ? 'bg-slate-900 border-slate-900 text-white shadow-lg' : 'bg-white border-slate-100 hover:border-primary/30 text-slate-600'}`}
-                                        onClick={() => { setSelectedAllocationClass(c.id.toString()); fetchClassAllocations(c.id.toString()); }}
-                                    >
-                                        <div className="font-black text-[11px] uppercase tracking-wider">{c.name} {c.stream}</div>
-                                        <div className={`text-[10px] font-bold mt-1 ${selectedAllocationClass === c.id.toString() ? 'text-white/60' : 'text-slate-400'}`}>{c.student_count} Students</div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                        <div className="col-span-12 lg:col-span-9 min-w-0 flex flex-col">
-                            {selectedAllocationClass ? (
-                                <div className="card h-full flex flex-col min-w-0 overflow-hidden">
-                                    <div className="card-header">
-                                        <div>
-                                            <h3 className="mb-0 text-sm font-black uppercase">Class Subjects</h3>
-                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight mt-1">Manage subjects taught in this class</p>
-                                        </div>
-                                        <Button variant="primary" size="sm" className="font-black" onClick={syncClassSubjects} loading={isSyncing} loadingText="Syncing...">
-                                            Sync to Students
-                                        </Button>
-                                    </div>
-                                    <div className="p-0 table-wrapper overflow-x-auto overflow-y-auto w-full block flex-1 m-0">
-                                        <table className="table min-w-[600px] border-collapse">
-                                            <thead className="sticky top-0 bg-slate-50 z-10 shadow-sm text-[10px] uppercase">
-                                                <tr>
-                                                    <th className="py-4 px-6 w-20">Active</th>
-                                                    <th className="py-4 px-6 text-left">Subject Name</th>
-                                                    <th className="py-4 px-6">Code</th>
-                                                    <th className="py-4 px-6">Group</th>
-                                                    <th className="py-4 px-6">Status</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="divide-y divide-slate-100">
-                                                {subjects.map(subject => {
-                                                    const allocation = classAllocations.find(a => a.subject === subject.id);
-                                                    const isAllocated = !!allocation;
-                                                    return (
-                                                        <tr key={subject.id} className={`hover:bg-slate-50 transition-colors ${isAllocated ? 'bg-success/5' : ''}`}>
-                                                            <td className="py-4 px-6 text-center">
-                                                                <input
-                                                                    type="checkbox"
-                                                                    className="checkbox checkbox-sm"
-                                                                    checked={isAllocated}
-                                                                    onChange={() => toggleClassSubject(subject.id, allocation?.id)}
-                                                                />
-                                                            </td>
-                                                            <td className="py-4 px-6 font-bold text-xs">{subject.name}</td>
-                                                            <td className="py-4 px-6"><code className="bg-slate-100 px-2 py-1 rounded text-[10px]">{subject.code}</code></td>
-                                                            <td className="py-4 px-6 text-[10px] uppercase font-bold text-slate-400">{subject.group_name || '-'}</td>
-                                                            <td className="py-4 px-6">
-                                                                {isAllocated ?
-                                                                    <span className="badge badge-success text-[9px] font-black">ALLOCATED</span> :
-                                                                    <span className="badge badge-ghost text-[9px] font-black opacity-40">AVAILABLE</span>
-                                                                }
-                                                            </td>
-                                                        </tr>
-                                                    );
-                                                })}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="card h-full flex flex-col items-center justify-center text-slate-300">
-                                    <Layers size={48} className="mb-4 opacity-20" />
-                                    <p className="font-black uppercase tracking-widest text-[11px]">Select a class to manage allocations</p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                )
-            }
-
-            {
-                activeTab === 'GRADING' && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-lg h-screen-200">
-                        {/* Left: Systems List */}
-                        <div className="card md:col-span-1 min-w-0 flex flex-col">
-                            <div className="card-header flex justify-between items-center py-3 border-bottom">
-                                <h3 className="mb-0 text-sm font-black uppercase">Grading Systems</h3>
-                                <Button variant="primary" size="sm" onClick={() => setIsGradeModalOpen(true)} icon={<Plus size={12} />}>New System</Button>
-                            </div>
-                            <div className="flex-1 overflow-y-auto p-2 space-y-2">
-                                {gradeSystems.map(sys => (
-                                    <div
-                                        key={sys.id}
-                                        onClick={() => { setSelectedSystem(sys); setBoundaryForm({ ...boundaryForm, system: sys.id }); }}
-                                        className={`p-3 rounded border cursor-pointer transition-all hover:shadow-md ${selectedSystem?.id === sys.id ? 'bg-primary-light border-primary' : 'bg-white hover:bg-gray-50'}`}
-                                    >
-                                        <div className="flex justify-between items-center">
-                                            <span className="font-bold text-xs">{sys.name}</span>
-                                            {sys.is_default && <span className="badge badge-success text-[8px]">DEFAULT</span>}
-                                        </div>
-                                        <div className="text-[10px] text-secondary mt-1">{sys.boundaries?.length || 0} Grade Boundaries</div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Right: Boundaries Table */}
-                        <div className="card md:col-span-2 min-w-0 flex flex-col">
-                            {selectedSystem ? (
-                                <>
-                                    <div className="card-header flex justify-between items-center py-3 border-bottom bg-gray-50">
-                                        <div>
-                                            <h3 className="mb-0 text-sm font-black uppercase">{selectedSystem.name}</h3>
-                                            <p className="text-[10px] text-secondary mb-0">Define grade ranges (High to Low)</p>
-                                        </div>
-                                        <Button variant="outline" size="sm" onClick={() => { setBoundaryForm({ system: selectedSystem.id, grade: '', min_score: 0, max_score: 100, points: 0, remarks: '' }); setEditingBoundaryId(null); setIsBoundaryModalOpen(true); }} icon={<Plus size={12} />}>
-                                            Add Boundary
-                                        </Button>
-                                    </div>
-                                    <div className="flex-1 table-wrapper overflow-x-auto w-full block p-0 min-w-0">
-                                        <table className="table table-sm min-w-[600px]">
-                                            <thead className="sticky top-0 bg-white z-10 shadow-sm text-[10px] uppercase">
-                                                <tr>
-                                                    <th>Grade</th>
-                                                    <th>Range (Min-Max)</th>
-                                                    <th>Points</th>
-                                                    <th>Remarks</th>
-                                                    <th className="text-right">Actions</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {selectedSystem.boundaries?.sort((a: any, b: any) => b.min_score - a.min_score).map((b: any) => (
-                                                    <tr key={b.id} className="hover:bg-gray-50 text-xs">
-                                                        <td className="font-black">{b.grade}</td>
-                                                        <td>{b.min_score} - {b.max_score}</td>
-                                                        <td>{b.points}</td>
-                                                        <td className="text-secondary">{b.remarks}</td>
-                                                        <td className="text-right flex justify-end gap-1">
-                                                            <Button variant="ghost" size="sm" className="p-1" onClick={() => { setBoundaryForm({ ...b, system: selectedSystem.id }); setEditingBoundaryId(b.id); setIsBoundaryModalOpen(true); }} icon={<Edit size={12} />} />
-                                                            <Button variant="ghost" size="sm" className="p-1 text-error" onClick={() => handleDeleteBoundary(b.id)} icon={<Trash2 size={12} />} />
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                                {(!selectedSystem.boundaries || selectedSystem.boundaries.length === 0) && (
-                                                    <tr><td colSpan={5} className="text-center p-8 text-secondary italic">No boundaries defined yet.</td></tr>
-                                                )}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </>
-                            ) : (
-                                <div className="flex flex-col items-center justify-center h-full text-secondary opacity-50">
-                                    <Layers size={48} className="mb-2" />
-                                    <p className="text-sm font-bold">Select a Grading System to view details</p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                )
-            }
-
-            {
-                activeTab === 'EXAMS' && (
-                    <div className="grid grid-cols-12 gap-6 lg:gap-8">
-                        {exams.filter(exam =>
-                            !searchTerm ||
-                            exam.name.toLowerCase().includes(searchTerm.toLowerCase())
-                        ).map(exam => (
-                            <div key={exam.id} className="col-span-12 md:col-span-6 lg:col-span-4 min-w-0">
-                                <div className="card h-full flex flex-col p-6 overflow-hidden hover:shadow-2xl transition-all">
-                                    <div className="flex justify-between items-start mb-4">
-                                        <div className="p-2.5 rounded-lg bg-amber-100 text-amber-600"><ClipboardCheck size={16} /></div>
-                                        <span className={`badge ${exam.is_active ? 'bg-success/10 text-success' : 'bg-error/10 text-error'} text-[9px] font-black uppercase px-2 py-0.5 rounded`}>{exam.is_active ? 'ACTIVE' : 'LOCKED'}</span>
-                                    </div>
-                                    <h3 className="mb-1 text-sm font-black text-slate-900">{exam.name}</h3>
-                                    <p className="text-[10px] font-bold text-slate-400 mb-6 uppercase tracking-wider">Wt: {exam.weighting}% | {exam.term_name || 'Active Term'}</p>
-                                    <div className="mt-auto grid grid-cols-2 gap-2">
-                                        <Button variant="primary" size="sm" className="col-span-2 font-black shadow-lg" onClick={() => openEnterResults(exam)} title="Enter student marks">ENTER RESULTS</Button>
-                                        <Button variant="outline" size="sm" className="font-black" onClick={() => openViewResults(exam)} title="View Ranking" icon={<Trophy size={12} />}>RANKING</Button>
-                                        <Button variant="outline" size="sm" className="font-black" onClick={() => openEditExam(exam)} title="Exam Settings" icon={<Settings size={12} />}>SETTING</Button>
-                                        <Button variant="ghost" size="sm" className="col-span-2 text-error font-black hover:bg-error/10 uppercase text-[9px]" onClick={(e) => { e.stopPropagation(); handleDeleteExam(exam.id); }} title="Delete Exam" icon={<Trash2 size={12} />}>Remove Schedule</Button>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                        {/* Schedule Exam card */}
-                        {!isReadOnly && (
-                            <div className="col-span-12 md:col-span-6 lg:col-span-4 min-w-0">
-                                <div className="card border-dashed flex flex-col items-center justify-center p-8 cursor-pointer hover:border-amber-500 group h-full transition-colors" onClick={openCreateExam}>
-                                    <Calendar size={28} className="text-slate-300 group-hover:text-amber-500 transition-all mb-2" />
-                                    <span className="text-xs font-black uppercase text-slate-400 group-hover:text-slate-600">Schedule Exam</span>
-                                </div>
+                        ) : (
+                            <div className="card h-full flex flex-col items-center justify-center text-slate-300">
+                                <Layers size={48} className="mb-4 opacity-20" />
+                                <p className="font-black uppercase tracking-widest text-[11px]">Select a class to manage allocations</p>
                             </div>
                         )}
                     </div>
-                )
-            }
+                </div>
+            )
+        }
 
-            {/* View Results Modal */}
-            <Modal isOpen={isViewResultsModalOpen} onClose={() => setIsViewResultsModalOpen(false)} title="Examination Results & Ranking" size="lg">
-                <div className="space-y-4">
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-50 p-4 rounded-xl gap-4">
-                        <div>
-                            <h3 className="font-black text-sm uppercase text-slate-800 tracking-wider mb-0">{selectedExam?.name}</h3>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Performance Summary & Rankings</p>
+        {
+            activeTab === 'GRADING' && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-lg h-screen-200">
+                    {/* Left: Systems List */}
+                    <div className="card md:col-span-1 min-w-0 flex flex-col">
+                        <div className="card-header flex justify-between items-center py-3 border-bottom">
+                            <h3 className="mb-0 text-sm font-black uppercase">Grading Systems</h3>
+                            <Button variant="primary" size="sm" onClick={() => setIsGradeModalOpen(true)} icon={<Plus size={12} />}>New System</Button>
                         </div>
-                        <div className="flex items-center gap-3 w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0">
-                            <div className="flex flex-col">
-                                <span className="text-[9px] font-black uppercase text-slate-400 mb-1">Level</span>
-                                <select
-                                    className="select h-8 text-[10px] font-bold py-0 pr-8 min-w-[100px]"
-                                    value={rankingFilter.level}
-                                    onChange={(e) => setRankingFilter({ ...rankingFilter, level: e.target.value, classId: '' })}
+                        <div className="flex-1 overflow-y-auto p-2 space-y-2">
+                            {gradeSystems.map(sys => (
+                                <div
+                                    key={sys.id}
+                                    onClick={() => { setSelectedSystem(sys); setBoundaryForm({ ...boundaryForm, system: sys.id }); }}
+                                    className={`p-3 rounded border cursor-pointer transition-all hover:shadow-md ${selectedSystem?.id === sys.id ? 'bg-primary-light border-primary' : 'bg-white hover:bg-gray-50'}`}
                                 >
-                                    <option value="">All Levels</option>
-                                    {uniqueClassNames.map(name => <option key={name} value={name}>{name}</option>)}
-                                </select>
-                            </div>
-                            <div className="flex flex-col">
-                                <span className="text-[9px] font-black uppercase text-slate-400 mb-1">Stream</span>
-                                <select
-                                    className="select h-8 text-[10px] font-bold py-0 pr-8 min-w-[120px]"
-                                    value={rankingFilter.classId}
-                                    onChange={(e) => setRankingFilter({ ...rankingFilter, classId: e.target.value })}
-                                    disabled={!rankingFilter.level}
-                                >
-                                    <option value="">All Streams</option>
-                                    {classes.filter(c => c.name === rankingFilter.level).map(c => (
-                                        <option key={c.id} value={c.id}>{c.stream}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div className="flex flex-col">
-                                <span className="text-[9px] font-black uppercase text-slate-400 mb-1">Group By</span>
-                                <div className="flex bg-white rounded-lg p-0.5 border border-slate-200 h-8">
-                                    <button className={`px-2 py-0 text-[9px] font-black rounded-md transition-all ${viewResultsGroupBy === 'STREAM' ? 'bg-primary text-white shadow-sm' : 'text-slate-400 hover:bg-slate-50'}`} onClick={() => setViewResultsGroupBy('STREAM')}>STREAM</button>
-                                    <button className={`px-2 py-0 text-[9px] font-black rounded-md transition-all ${viewResultsGroupBy === 'ENTIRE_CLASS' ? 'bg-primary text-white shadow-sm' : 'text-slate-400 hover:bg-slate-50'}`} onClick={() => setViewResultsGroupBy('ENTIRE_CLASS')}>CLASS</button>
+                                    <div className="flex justify-between items-center">
+                                        <span className="font-bold text-xs">{sys.name}</span>
+                                        {sys.is_default && <span className="badge badge-success text-[8px]">DEFAULT</span>}
+                                    </div>
+                                    <div className="text-[10px] text-secondary mt-1">{sys.boundaries?.length || 0} Grade Boundaries</div>
                                 </div>
-                            </div>
-                            <Button variant="outline" size="sm" className="no-print font-black uppercase text-[10px] h-8 mt-4 bg-white" onClick={() => window.print()} title="Print Ranking Report" icon={<Printer size={14} />}>
-                                PRINT
-                            </Button>
+                            ))}
                         </div>
                     </div>
 
-                    <div className="max-h-60vh overflow-y-auto">
-                        {Object.keys(groupedResults).sort().map(groupKey => (
-                            <div key={groupKey} className="mb-8 card p-0 overflow-hidden border-slate-100 shadow-sm">
-                                <div className="card-header bg-slate-50/50">
-                                    <h4 className="text-[10px] font-black uppercase text-slate-800 tracking-widest mb-0">{groupKey}</h4>
-                                    <span className="badge bg-slate-200 text-slate-600 text-[9px] font-black px-2 py-0.5 rounded-full">{groupedResults[groupKey].length} CANDIDATES</span>
+                    {/* Right: Boundaries Table */}
+                    <div className="card md:col-span-2 min-w-0 flex flex-col">
+                        {selectedSystem ? (
+                            <>
+                                <div className="card-header flex justify-between items-center py-3 border-bottom bg-gray-50">
+                                    <div>
+                                        <h3 className="mb-0 text-sm font-black uppercase">{selectedSystem.name}</h3>
+                                        <p className="text-[10px] text-secondary mb-0">Define grade ranges (High to Low)</p>
+                                    </div>
+                                    <Button variant="outline" size="sm" onClick={() => { setBoundaryForm({ system: selectedSystem.id, grade: '', min_score: 0, max_score: 100, points: 0, remarks: '' }); setEditingBoundaryId(null); setIsBoundaryModalOpen(true); }} icon={<Plus size={12} />}>
+                                        Add Boundary
+                                    </Button>
+                                </div>
+                                <div className="flex-1 table-wrapper overflow-x-auto w-full block p-0 min-w-0">
+                                    <table className="table table-sm min-w-[600px]">
+                                        <thead className="sticky top-0 bg-white z-10 shadow-sm text-[10px] uppercase">
+                                            <tr>
+                                                <th>Grade</th>
+                                                <th>Range (Min-Max)</th>
+                                                <th>Points</th>
+                                                <th>Remarks</th>
+                                                <th className="text-right">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {selectedSystem.boundaries?.sort((a: any, b: any) => b.min_score - a.min_score).map((b: any) => (
+                                                <tr key={b.id} className="hover:bg-gray-50 text-xs">
+                                                    <td className="font-black">{b.grade}</td>
+                                                    <td>{b.min_score} - {b.max_score}</td>
+                                                    <td>{b.points}</td>
+                                                    <td className="text-secondary">{b.remarks}</td>
+                                                    <td className="text-right flex justify-end gap-1">
+                                                        <Button variant="ghost" size="sm" className="p-1" onClick={() => { setBoundaryForm({ ...b, system: selectedSystem.id }); setEditingBoundaryId(b.id); setIsBoundaryModalOpen(true); }} icon={<Edit size={12} />} />
+                                                        <Button variant="ghost" size="sm" className="p-1 text-error" onClick={() => handleDeleteBoundary(b.id)} icon={<Trash2 size={12} />} />
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                            {(!selectedSystem.boundaries || selectedSystem.boundaries.length === 0) && (
+                                                <tr><td colSpan={5} className="text-center p-8 text-secondary italic">No boundaries defined yet.</td></tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </>
+                        ) : (
+                            <div className="flex flex-col items-center justify-center h-full text-secondary opacity-50">
+                                <Layers size={48} className="mb-2" />
+                                <p className="text-sm font-bold">Select a Grading System to view details</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )
+        }
+
+        {
+            activeTab === 'EXAMS' && (
+                <div className="grid grid-cols-12 gap-6 lg:gap-8">
+                    {exams.filter(exam =>
+                        !searchTerm ||
+                        exam.name.toLowerCase().includes(searchTerm.toLowerCase())
+                    ).map(exam => (
+                        <div key={exam.id} className="col-span-12 md:col-span-6 lg:col-span-4 min-w-0">
+                            <div className="card h-full flex flex-col p-6 overflow-hidden hover:shadow-2xl transition-all">
+                                <div className="flex justify-between items-start mb-4">
+                                    <div className="p-2.5 rounded-lg bg-amber-100 text-amber-600"><ClipboardCheck size={16} /></div>
+                                    <span className={`badge ${exam.is_active ? 'bg-success/10 text-success' : 'bg-error/10 text-error'} text-[9px] font-black uppercase px-2 py-0.5 rounded`}>{exam.is_active ? 'ACTIVE' : 'LOCKED'}</span>
+                                </div>
+                                <h3 className="mb-1 text-sm font-black text-slate-900">{exam.name}</h3>
+                                <p className="text-[10px] font-bold text-slate-400 mb-6 uppercase tracking-wider">Wt: {exam.weighting}% | {exam.term_name || 'Active Term'}</p>
+                                <div className="mt-auto grid grid-cols-2 gap-2">
+                                    <Button variant="primary" size="sm" className="col-span-2 font-black shadow-lg" onClick={() => openEnterResults(exam)} title="Enter student marks">ENTER RESULTS</Button>
+                                    <Button variant="outline" size="sm" className="font-black" onClick={() => openViewResults(exam)} title="View Ranking" icon={<Trophy size={12} />}>RANKING</Button>
+                                    <Button variant="outline" size="sm" className="font-black" onClick={() => openEditExam(exam)} title="Exam Settings" icon={<Settings size={12} />}>SETTING</Button>
+                                    <Button variant="ghost" size="sm" className="col-span-2 text-error font-black hover:bg-error/10 uppercase text-[9px]" onClick={(e) => { e.stopPropagation(); handleDeleteExam(exam.id); }} title="Delete Exam" icon={<Trash2 size={12} />}>Remove Schedule</Button>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                    {/* Schedule Exam card */}
+                    {!isReadOnly && (
+                        <div className="col-span-12 md:col-span-6 lg:col-span-4 min-w-0">
+                            <div className="card border-dashed flex flex-col items-center justify-center p-8 cursor-pointer hover:border-amber-500 group h-full transition-colors" onClick={openCreateExam}>
+                                <Calendar size={28} className="text-slate-300 group-hover:text-amber-500 transition-all mb-2" />
+                                <span className="text-xs font-black uppercase text-slate-400 group-hover:text-slate-600">Schedule Exam</span>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )
+        }
+
+        {/* View Results Modal */}
+        <Modal isOpen={isViewResultsModalOpen} onClose={() => setIsViewResultsModalOpen(false)} title="Examination Results & Ranking" size="lg">
+            <div className="space-y-4">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-50 p-4 rounded-xl gap-4">
+                    <div>
+                        <h3 className="font-black text-sm uppercase text-slate-800 tracking-wider mb-0">{selectedExam?.name}</h3>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Performance Summary & Rankings</p>
+                    </div>
+                    <div className="flex items-center gap-3 w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0">
+                        <div className="flex flex-col">
+                            <span className="text-[9px] font-black uppercase text-slate-400 mb-1">Level</span>
+                            <select
+                                className="select h-8 text-[10px] font-bold py-0 pr-8 min-w-[100px]"
+                                value={rankingFilter.level}
+                                onChange={(e) => setRankingFilter({ ...rankingFilter, level: e.target.value, classId: '' })}
+                            >
+                                <option value="">All Levels</option>
+                                {uniqueClassNames.map(name => <option key={name} value={name}>{name}</option>)}
+                            </select>
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="text-[9px] font-black uppercase text-slate-400 mb-1">Stream</span>
+                            <select
+                                className="select h-8 text-[10px] font-bold py-0 pr-8 min-w-[120px]"
+                                value={rankingFilter.classId}
+                                onChange={(e) => setRankingFilter({ ...rankingFilter, classId: e.target.value })}
+                                disabled={!rankingFilter.level}
+                            >
+                                <option value="">All Streams</option>
+                                {classes.filter(c => c.name === rankingFilter.level).map(c => (
+                                    <option key={c.id} value={c.id}>{c.stream}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <Button variant="outline" size="sm" className="no-print font-black uppercase text-[10px] h-8 mt-4 bg-white" onClick={() => window.print()} title="Print Ranking Report" icon={<Printer size={14} />}>
+                            PRINT
+                        </Button>
+                    </div>
+                </div>
+
+                <div className="max-h-60vh overflow-y-auto">
+                    {Object.keys(groupedResults).sort().map(groupKey => (
+                        <div key={groupKey} className="mb-8 card p-0 overflow-hidden border-slate-100 shadow-sm">
+                            <div className="card-header bg-slate-50/50">
+                                <h4 className="text-[10px] font-black uppercase text-slate-800 tracking-widest mb-0">{groupKey}</h4>
+                                <span className="badge bg-slate-200 text-slate-600 text-[9px] font-black px-2 py-0.5 rounded-full">{groupedResults[groupKey].length} CANDIDATES</span>
+                            </div>
+                            <div className="table-wrapper overflow-x-auto w-full block m-0">
+                                <table className="table min-w-[800px]">
+                                    <thead className="bg-white text-[10px] uppercase font-black text-slate-400">
+                                        <tr>
+                                            <th className="py-4 px-6 w-16">Rank</th>
+                                            <th className="py-4 px-6 min-w-[200px] text-left">Student Name</th>
+                                            <th className="py-4 px-6">ADM</th>
+                                            {subjects.filter((sub: any) => groupedResults[groupKey].some((r: any) => r.scores && r.scores[sub.id])).map((sub: any) => (
+                                                <th key={sub.id} className="py-4 px-6 text-center">{sub.code || sub.name}</th>
+                                            ))}
+                                            <th className="py-4 px-6 text-right">Total</th>
+                                            <th className="py-4 px-6 text-right">Mean</th>
+                                            <th className="py-4 px-6 text-center">Grade</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100">
+                                        {groupedResults[groupKey].sort((a: any, b: any) => b.totalScore - a.totalScore).map((res: any, index: number) => (
+                                            <tr key={res.student} className={`hover:bg-slate-50 transition-colors ${index < 3 ? 'bg-amber-50/30' : ''}`}>
+                                                <td className="py-4 px-6">
+                                                    <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black ${index === 0 ? 'bg-amber-400 text-white' : index === 1 ? 'bg-slate-300 text-white' : index === 2 ? 'bg-amber-700/50 text-white' : 'text-slate-400'}`}>
+                                                        {index + 1}
+                                                    </span>
+                                                </td>
+                                                <td className="py-4 px-6">
+                                                    <div className="font-black text-xs text-slate-900">{res.student_name}</div>
+                                                </td>
+                                                <td className="py-4 px-6 font-mono text-[10px] text-slate-400">{res.admission_number}</td>
+                                                {subjects.filter((sub: any) => groupedResults[groupKey].some((r: any) => r.scores && r.scores[sub.id])).map((sub: any) => (
+                                                    <td key={sub.id} className="py-4 px-6 text-center text-[11px] font-black text-slate-600">
+                                                        {res.scores[sub.id] !== undefined ? `${res.scores[sub.id]}%` : '—'}
+                                                    </td>
+                                                ))}
+                                                <td className="py-4 px-6 text-right font-black text-slate-900">{res.totalScore}</td>
+                                                <td className="py-4 px-6 text-right font-black text-primary">{res.meanScore}%</td>
+                                                <td className="py-4 px-6 text-center">
+                                                    <span className={`px-2 py-0.5 rounded text-[10px] font-black ${['A', 'A-'].includes(res.meanGrade) ? 'bg-success/20 text-success' : ['D', 'E'].includes(res.meanGrade) ? 'bg-error/20 text-error' : 'bg-slate-100 text-slate-400'}`}>{res.meanGrade || '-'}</span>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    ))}
+                    {Object.keys(groupedResults).length === 0 && (
+                        <div className="py-20 flex flex-col items-center justify-center opacity-30">
+                            <Trophy size={64} className="mb-4" />
+                            <p className="font-black uppercase tracking-widest text-xs">No examination data available</p>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </Modal>
+
+        {
+            activeTab === 'RESOURCES' && (
+                <div className="grid grid-cols-12 gap-6 lg:gap-8">
+                    <div className="col-span-12 lg:col-span-8 min-w-0 flex flex-col gap-6">
+                        {/* Grading Systems Section */}
+                        <div className="card p-0 overflow-hidden shadow-xl border-none">
+                            <div className="card-header bg-slate-900 text-white">
+                                <h3 className="mb-0 text-sm font-black uppercase tracking-wider">Institutional Grading</h3>
+                                <Button variant="primary" size="sm" className="font-black px-4 bg-white text-slate-900 border-none hover:bg-slate-100" onClick={() => setIsGradeModalOpen(true)} icon={<Plus size={14} />}>NEW SYSTEM</Button>
+                            </div>
+                            <div className="card-body p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {gradeSystems.map(gs => (
+                                    <div
+                                        key={gs.id}
+                                        className={`p-4 rounded-xl border transition-all cursor-pointer group ${selectedSystem?.id === gs.id ? 'bg-primary border-primary text-white shadow-lg' : 'bg-white border-slate-100 hover:border-primary/30 text-slate-600'}`}
+                                        onClick={() => {
+                                            setSelectedSystem(gs);
+                                            setBoundaryForm(prev => ({ ...prev, system: gs.id }));
+                                        }}
+                                    >
+                                        <div className="flex justify-between items-center mb-3">
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-black text-[11px] uppercase tracking-wider">{gs.name}</span>
+                                                {gs.is_default && <span className={`text-[8px] font-black px-1.5 py-0.5 rounded ${selectedSystem?.id === gs.id ? 'bg-white/20 text-white' : 'bg-success/20 text-success'}`}>DEFAULT</span>}
+                                            </div>
+                                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity items-center">
+                                                <Button variant="ghost" size="sm" className={`p-1 ${selectedSystem?.id === gs.id ? 'text-white/60 hover:text-white' : 'text-slate-400 hover:text-primary'}`} title="Add Boundary" onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setSelectedSystem(gs);
+                                                    setBoundaryForm(prev => ({ ...prev, system: gs.id }));
+                                                    setIsBoundaryModalOpen(true);
+                                                }} icon={<Plus size={14} />} />
+                                                <Button variant="ghost" size="sm" className={`p-1 ${selectedSystem?.id === gs.id ? 'text-white/60 hover:text-error' : 'text-slate-400 hover:text-error'}`} title="Delete System" onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDeleteGradeSystem(gs.id);
+                                                }} icon={<Trash2 size={12} />} />
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-wrap gap-2 mt-1">
+                                            {gs.boundaries?.slice(0, 6).sort((a: any, b: any) => b.min_score - a.min_score).map((b: any) => (
+                                                <div key={b.id} className={`flex items-baseline gap-1 px-2 py-1 rounded-lg border ${selectedSystem?.id === gs.id ? 'bg-white/10 border-white/20' : 'bg-slate-50 border-slate-200'}`}>
+                                                    <span className={`text-[11px] font-black ${selectedSystem?.id === gs.id ? 'text-white' : 'text-slate-700'}`}>{b.grade}</span>
+                                                    <span className={`text-[9px] font-bold ${selectedSystem?.id === gs.id ? 'text-white/70' : 'text-slate-400'}`}>{b.min_score}+</span>
+                                                </div>
+                                            ))}
+                                            {gs.boundaries?.length > 6 && <span className="text-[10px] font-black px-2 py-1 flex items-center text-slate-400">+{gs.boundaries.length - 6} more</span>}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Boundaries Table (Shown when a system is selected) */}
+                        {selectedSystem && (
+                            <div className="card p-0 overflow-hidden shadow-2xl border-slate-100 fade-in">
+                                <div className="card-header bg-slate-50 border-bottom">
+                                    <div>
+                                        <h3 className="mb-0 text-xs font-black uppercase text-slate-800 tracking-widest">{selectedSystem.name} Scale</h3>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        {!selectedSystem.is_default && (
+                                            <Button variant="outline" size="sm" className="font-black text-[10px]" onClick={async () => {
+                                                try {
+                                                    await academicsAPI.gradeSystems.update(selectedSystem.id, { is_default: true });
+                                                    success('System set as default');
+                                                    loadAllAcademicData();
+                                                } catch (err: any) { toastError(err.message); }
+                                            }}>SET AS DEFAULT</Button>
+                                        )}
+                                    </div>
                                 </div>
                                 <div className="table-wrapper overflow-x-auto w-full block m-0">
-                                    <table className="table min-w-[800px]">
-                                        <thead className="bg-white text-[10px] uppercase font-black text-slate-400">
+                                    <table className="table min-w-[600px]">
+                                        <thead className="bg-slate-50/50 text-[10px] uppercase font-black text-slate-400">
                                             <tr>
-                                                <th className="py-4 px-6 w-16">Rank</th>
-                                                <th className="py-4 px-6 min-w-[200px] text-left">Student Name</th>
-                                                <th className="py-4 px-6">ADM</th>
-                                                {subjects.filter((sub: any) => groupedResults[groupKey].some((r: any) => r.scores && r.scores[sub.id])).map((sub: any) => (
-                                                    <th key={sub.id} className="py-4 px-6 text-center">{sub.code || sub.name}</th>
-                                                ))}
-                                                <th className="py-4 px-6 text-right">Total</th>
-                                                <th className="py-4 px-6 text-right">Mean</th>
-                                                <th className="py-4 px-6 text-center">Grade</th>
+                                                <th className="py-4 px-6 text-left">Grade</th>
+                                                <th className="py-4 px-6">Score Range</th>
+                                                <th className="py-4 px-6 text-center">Points</th>
+                                                <th className="py-4 px-6 text-right">Actions</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-slate-100">
-                                            {groupedResults[groupKey].sort((a: any, b: any) => b.totalScore - a.totalScore).map((res: any, index: number) => (
-                                                <tr key={res.student} className={`hover:bg-slate-50 transition-colors ${index < 3 ? 'bg-amber-50/30' : ''}`}>
+                                            {selectedSystem.boundaries?.sort((a: any, b: any) => b.min_score - a.min_score).map((b: any) => (
+                                                <tr key={b.id} className="hover:bg-slate-50 transition-colors">
+                                                    <td className="py-4 px-6 font-black text-slate-900">{b.grade}</td>
                                                     <td className="py-4 px-6">
-                                                        <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black ${index === 0 ? 'bg-amber-400 text-white' : index === 1 ? 'bg-slate-300 text-white' : index === 2 ? 'bg-amber-700/50 text-white' : 'text-slate-400'}`}>
-                                                            {index + 1}
-                                                        </span>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="font-mono text-[11px] font-black px-2 py-1 bg-slate-100 rounded text-slate-600">{b.min_score}</span>
+                                                            <span className="text-slate-300">→</span>
+                                                            <span className="font-mono text-[11px] font-black px-2 py-1 bg-slate-100 rounded text-slate-600">{b.max_score}</span>
+                                                        </div>
                                                     </td>
-                                                    <td className="py-4 px-6">
-                                                        <div className="font-black text-xs text-slate-900">{res.student_name}</div>
-                                                    </td>
-                                                    <td className="py-4 px-6 font-mono text-[10px] text-slate-400">{res.admission_number}</td>
-                                                    {subjects.filter((sub: any) => groupedResults[groupKey].some((r: any) => r.scores && r.scores[sub.id])).map((sub: any) => (
-                                                        <td key={sub.id} className="py-4 px-6 text-center text-[11px] font-black text-slate-600">
-                                                            {res.scores[sub.id] !== undefined ? `${res.scores[sub.id]}%` : '—'}
-                                                        </td>
-                                                    ))}
-                                                    <td className="py-4 px-6 text-right font-black text-slate-900">{res.totalScore}</td>
-                                                    <td className="py-4 px-6 text-right font-black text-primary">{res.meanScore}%</td>
-                                                    <td className="py-4 px-6 text-center">
-                                                        <span className={`px-2 py-0.5 rounded text-[10px] font-black ${['A', 'A-'].includes(res.meanGrade) ? 'bg-success/20 text-success' : ['D', 'E'].includes(res.meanGrade) ? 'bg-error/20 text-error' : 'bg-slate-100 text-slate-400'}`}>{res.meanGrade || '-'}</span>
+                                                    <td className="py-4 px-6 text-center font-black text-primary">{b.points}</td>
+                                                    <td className="py-4 px-6 text-right">
+                                                        <div className="flex justify-end gap-1">
+                                                            <Button variant="ghost" size="sm" className="text-primary" onClick={() => { setBoundaryForm({ ...b, system: selectedSystem.id }); setEditingBoundaryId(b.id); setIsBoundaryModalOpen(true); }} icon={<Edit size={14} />} />
+                                                            <Button variant="ghost" size="sm" className="text-error" onClick={() => handleDeleteBoundary(b.id)} icon={<Trash2 size={14} />} />
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             ))}
@@ -1693,962 +1800,846 @@ const Academics = () => {
                                     </table>
                                 </div>
                             </div>
-                        ))}
-                        {Object.keys(groupedResults).length === 0 && (
-                            <div className="py-20 flex flex-col items-center justify-center opacity-30">
-                                <Trophy size={64} className="mb-4" />
-                                <p className="font-black uppercase tracking-widest text-xs">No examination data available</p>
-                            </div>
                         )}
                     </div>
+
+                    <div className="col-span-12 lg:col-span-4 min-w-0">
+                        <div className="card p-0 overflow-hidden shadow-xl border-slate-100 sticky top-4">
+                            <div className="card-header bg-slate-50 border-bottom">
+                                <h3 className="mb-0 text-xs font-black uppercase tracking-widest text-slate-800">Cycles & Terms</h3>
+                                <Button variant="outline" size="sm" className="p-2 border-slate-200" onClick={() => setIsYearModalOpen(true)} icon={<Plus size={14} />} />
+                            </div>
+                            <div className="card-body p-4 space-y-4 max-h-70vh overflow-y-auto">
+                                {academicYears.map(y => (
+                                    <div key={y.id} className="p-4 rounded-xl bg-slate-50/50 border border-slate-100 hover:bg-white transition-all group">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <div className="flex items-center gap-2">
+                                                <button
+                                                    className={`w-3 h-3 rounded-full flex-shrink-0 transition-all ${y.is_active ? 'bg-success shadow-[0_0_8px_rgba(34,197,94,0.5)]' : 'bg-slate-300 hover:bg-success/50'}`}
+                                                    onClick={() => handleSetActiveYear(y)}
+                                                    title={y.is_active ? "Current Active Cycle" : "Click to Set as Active Cycle"}
+                                                ></button>
+                                                <span className="font-black text-xs uppercase tracking-wider text-slate-800">CYCLE {y.name}</span>
+                                            </div>
+                                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <Button variant="ghost" size="sm" className="text-primary p-1" onClick={() => { setTermForm({ year: y.id.toString(), name: '', start_date: '', end_date: '', is_active: false }); setEditingTermId(null); setIsTermModalOpen(true); }} icon={<Plus size={12} />} title="Add Term" />
+                                                <Button variant="ghost" size="sm" className="p-1" onClick={() => openEditYear(y)} icon={<Edit size={12} />} title="Edit Year" />
+                                                <Button variant="ghost" size="sm" className="text-error p-1" onClick={() => handleDeleteYear(y.id)} icon={<Trash2 size={12} />} title="Delete Year" />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            {terms.filter(t => t.year === y.id).map(t => (
+                                                <div key={t.id} className="flex justify-between items-center text-[10px] bg-white p-3 rounded-lg border border-slate-100 shadow-sm hover:border-primary/20 transition-all group/term relative">
+                                                    <div className="flex items-center gap-2">
+                                                        <button
+                                                            className={`transition-colors ${t.is_active ? 'text-success' : 'text-slate-300 hover:text-primary'}`}
+                                                            onClick={() => handleSetActiveTerm(t)}
+                                                            title={t.is_active ? "Current Active Term" : "Set as Active"}
+                                                        >
+                                                            {t.is_active ? <CheckSquare size={14} /> : <Square size={14} />}
+                                                        </button>
+                                                        <span className="font-bold text-slate-600 uppercase">{t.name}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="absolute right-3 flex gap-1 bg-white opacity-0 group-hover/term:opacity-100 transition-opacity pl-2 shadow-[-8px_0_8px_white]">
+                                                            <Button variant="ghost" size="sm" className="text-primary p-1" onClick={() => openEditTerm(t)} icon={<Edit size={12} />} title="Edit Term" />
+                                                            <Button variant="ghost" size="sm" className="text-error p-1" onClick={() => handleDeleteTerm(t.id)} icon={<Trash2 size={12} />} title="Delete Term" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                            {terms.filter(t => t.year === y.id).length === 0 && <p className="text-[10px] text-slate-400 italic text-center py-2 uppercase font-bold tracking-tighter">No terms defined</p>}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </Modal>
+            )
+        }
 
-            {
-                activeTab === 'RESOURCES' && (
-                    <div className="grid grid-cols-12 gap-6 lg:gap-8">
-                        <div className="col-span-12 lg:col-span-8 min-w-0 flex flex-col gap-6">
-                            {/* Grading Systems Section */}
-                            <div className="card p-0 overflow-hidden shadow-xl border-none">
-                                <div className="card-header bg-slate-900 text-white">
-                                    <h3 className="mb-0 text-sm font-black uppercase tracking-wider">Institutional Grading</h3>
-                                    <Button variant="primary" size="sm" className="font-black px-4 bg-white text-slate-900 border-none hover:bg-slate-100" onClick={() => setIsGradeModalOpen(true)} icon={<Plus size={14} />}>NEW SYSTEM</Button>
-                                </div>
-                                <div className="card-body p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {gradeSystems.map(gs => (
-                                        <div
-                                            key={gs.id}
-                                            className={`p-4 rounded-xl border transition-all cursor-pointer group ${selectedSystem?.id === gs.id ? 'bg-primary border-primary text-white shadow-lg' : 'bg-white border-slate-100 hover:border-primary/30 text-slate-600'}`}
-                                            onClick={() => {
-                                                setSelectedSystem(gs);
-                                                setBoundaryForm(prev => ({ ...prev, system: gs.id }));
-                                            }}
-                                        >
-                                            <div className="flex justify-between items-center mb-3">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="font-black text-[11px] uppercase tracking-wider">{gs.name}</span>
-                                                    {gs.is_default && <span className={`text-[8px] font-black px-1.5 py-0.5 rounded ${selectedSystem?.id === gs.id ? 'bg-white/20 text-white' : 'bg-success/20 text-success'}`}>DEFAULT</span>}
-                                                </div>
-                                                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity items-center">
-                                                    <Button variant="ghost" size="sm" className={`p-1 ${selectedSystem?.id === gs.id ? 'text-white/60 hover:text-white' : 'text-slate-400 hover:text-primary'}`} title="Add Boundary" onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setSelectedSystem(gs);
-                                                        setBoundaryForm(prev => ({ ...prev, system: gs.id }));
-                                                        setIsBoundaryModalOpen(true);
-                                                    }} icon={<Plus size={14} />} />
-                                                    <Button variant="ghost" size="sm" className={`p-1 ${selectedSystem?.id === gs.id ? 'text-white/60 hover:text-error' : 'text-slate-400 hover:text-error'}`} title="Delete System" onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleDeleteGradeSystem(gs.id);
-                                                    }} icon={<Trash2 size={12} />} />
-                                                </div>
-                                            </div>
-                                            <div className="flex flex-wrap gap-2 mt-1">
-                                                {gs.boundaries?.slice(0, 6).sort((a: any, b: any) => b.min_score - a.min_score).map((b: any) => (
-                                                    <div key={b.id} className={`flex items-baseline gap-1 px-2 py-1 rounded-lg border ${selectedSystem?.id === gs.id ? 'bg-white/10 border-white/20' : 'bg-slate-50 border-slate-200'}`}>
-                                                        <span className={`text-[11px] font-black ${selectedSystem?.id === gs.id ? 'text-white' : 'text-slate-700'}`}>{b.grade}</span>
-                                                        <span className={`text-[9px] font-bold ${selectedSystem?.id === gs.id ? 'text-white/70' : 'text-slate-400'}`}>{b.min_score}+</span>
-                                                    </div>
-                                                ))}
-                                                {gs.boundaries?.length > 6 && <span className="text-[10px] font-black px-2 py-1 flex items-center text-slate-400">+{gs.boundaries.length - 6} more</span>}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
+
+        {
+            activeTab === 'ATTENDANCE' && (
+                <div className="overflow-hidden shadow-lg mb-8 border rounded-2xl">
+                    <div className="p-4 bg-secondary-light flex flex-col sm:flex-row justify-between items-start sm:items-center border-bottom gap-4">
+                        <div className="flex items-center gap-4">
+                            <h3 className="mb-0 text-xs font-black uppercase tracking-wider">Attendance Register</h3>
+                            <div className="flex gap-2">
+                                <select
+                                    className="select select-sm bg-white"
+                                    value={attendanceSort.field}
+                                    onChange={(e) => setAttendanceSort({ ...attendanceSort, field: e.target.value })}
+                                >
+                                    <option value="date">Sort by Date</option>
+                                    <option value="student">Sort by Student</option>
+                                    <option value="class">Sort by Class</option>
+                                </select>
+                                <select
+                                    className="select select-sm bg-white min-w-[140px]"
+                                    value={attendanceSort.direction}
+                                    onChange={(e) => setAttendanceSort({ ...attendanceSort, direction: e.target.value as 'asc' | 'desc' })}
+                                >
+                                    <option value="desc">Descending (Newest/Z-A)</option>
+                                    <option value="asc">Ascending (Oldest/A-Z)</option>
+                                </select>
                             </div>
-
-                            {/* Boundaries Table (Shown when a system is selected) */}
-                            {selectedSystem && (
-                                <div className="card p-0 overflow-hidden shadow-2xl border-slate-100 fade-in">
-                                    <div className="card-header bg-slate-50 border-bottom">
-                                        <div>
-                                            <h3 className="mb-0 text-xs font-black uppercase text-slate-800 tracking-widest">{selectedSystem.name} Scale</h3>
-                                        </div>
-                                        <div className="flex gap-2">
-                                            {!selectedSystem.is_default && (
-                                                <Button variant="outline" size="sm" className="font-black text-[10px]" onClick={async () => {
-                                                    try {
-                                                        await academicsAPI.gradeSystems.update(selectedSystem.id, { is_default: true });
-                                                        success('System set as default');
-                                                        loadAllAcademicData();
-                                                    } catch (err: any) { toastError(err.message); }
-                                                }}>SET AS DEFAULT</Button>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div className="table-wrapper overflow-x-auto w-full block m-0">
-                                        <table className="table min-w-[600px]">
-                                            <thead className="bg-slate-50/50 text-[10px] uppercase font-black text-slate-400">
-                                                <tr>
-                                                    <th className="py-4 px-6 text-left">Grade</th>
-                                                    <th className="py-4 px-6">Score Range</th>
-                                                    <th className="py-4 px-6 text-center">Points</th>
-                                                    <th className="py-4 px-6 text-right">Actions</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="divide-y divide-slate-100">
-                                                {selectedSystem.boundaries?.sort((a: any, b: any) => b.min_score - a.min_score).map((b: any) => (
-                                                    <tr key={b.id} className="hover:bg-slate-50 transition-colors">
-                                                        <td className="py-4 px-6 font-black text-slate-900">{b.grade}</td>
-                                                        <td className="py-4 px-6">
-                                                            <div className="flex items-center gap-2">
-                                                                <span className="font-mono text-[11px] font-black px-2 py-1 bg-slate-100 rounded text-slate-600">{b.min_score}</span>
-                                                                <span className="text-slate-300">→</span>
-                                                                <span className="font-mono text-[11px] font-black px-2 py-1 bg-slate-100 rounded text-slate-600">{b.max_score}</span>
-                                                            </div>
-                                                        </td>
-                                                        <td className="py-4 px-6 text-center font-black text-primary">{b.points}</td>
-                                                        <td className="py-4 px-6 text-right">
-                                                            <div className="flex justify-end gap-1">
-                                                                <Button variant="ghost" size="sm" className="text-primary" onClick={() => { setBoundaryForm({ ...b, system: selectedSystem.id }); setEditingBoundaryId(b.id); setIsBoundaryModalOpen(true); }} icon={<Edit size={14} />} />
-                                                                <Button variant="ghost" size="sm" className="text-error" onClick={() => handleDeleteBoundary(b.id)} icon={<Trash2 size={14} />} />
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            )}
                         </div>
-
-                        <div className="col-span-12 lg:col-span-4 min-w-0">
-                            <div className="card p-0 overflow-hidden shadow-xl border-slate-100 sticky top-4">
-                                <div className="card-header bg-slate-50 border-bottom">
-                                    <h3 className="mb-0 text-xs font-black uppercase tracking-widest text-slate-800">Cycles & Terms</h3>
-                                    <Button variant="outline" size="sm" className="p-2 border-slate-200" onClick={() => setIsYearModalOpen(true)} icon={<Plus size={14} />} />
-                                </div>
-                                <div className="card-body p-4 space-y-4 max-h-70vh overflow-y-auto">
-                                    {academicYears.map(y => (
-                                        <div key={y.id} className="p-4 rounded-xl bg-slate-50/50 border border-slate-100 hover:bg-white transition-all group">
-                                            <div className="flex items-center justify-between mb-4">
-                                                <div className="flex items-center gap-2">
-                                                    <button
-                                                        className={`w-3 h-3 rounded-full flex-shrink-0 transition-all ${y.is_active ? 'bg-success shadow-[0_0_8px_rgba(34,197,94,0.5)]' : 'bg-slate-300 hover:bg-success/50'}`}
-                                                        onClick={() => handleSetActiveYear(y)}
-                                                        title={y.is_active ? "Current Active Cycle" : "Click to Set as Active Cycle"}
-                                                    ></button>
-                                                    <span className="font-black text-xs uppercase tracking-wider text-slate-800">CYCLE {y.name}</span>
-                                                </div>
-                                                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <Button variant="ghost" size="sm" className="text-primary p-1" onClick={() => { setTermForm({ year: y.id.toString(), name: '', start_date: '', end_date: '', is_active: false }); setEditingTermId(null); setIsTermModalOpen(true); }} icon={<Plus size={12} />} title="Add Term" />
-                                                    <Button variant="ghost" size="sm" className="p-1" onClick={() => openEditYear(y)} icon={<Edit size={12} />} title="Edit Year" />
-                                                    <Button variant="ghost" size="sm" className="text-error p-1" onClick={() => handleDeleteYear(y.id)} icon={<Trash2 size={12} />} title="Delete Year" />
-                                                </div>
-                                            </div>
-                                            <div className="space-y-2">
-                                                {terms.filter(t => t.year === y.id).map(t => (
-                                                    <div key={t.id} className="flex justify-between items-center text-[10px] bg-white p-3 rounded-lg border border-slate-100 shadow-sm hover:border-primary/20 transition-all group/term relative">
-                                                        <div className="flex items-center gap-2">
-                                                            <button
-                                                                className={`transition-colors ${t.is_active ? 'text-success' : 'text-slate-300 hover:text-primary'}`}
-                                                                onClick={() => handleSetActiveTerm(t)}
-                                                                title={t.is_active ? "Current Active Term" : "Set as Active"}
-                                                            >
-                                                                {t.is_active ? <CheckSquare size={14} /> : <Square size={14} />}
-                                                            </button>
-                                                            <span className="font-bold text-slate-600 uppercase">{t.name}</span>
-                                                        </div>
-                                                        <div className="flex items-center gap-2">
-                                                            <div className="absolute right-3 flex gap-1 bg-white opacity-0 group-hover/term:opacity-100 transition-opacity pl-2 shadow-[-8px_0_8px_white]">
-                                                                <Button variant="ghost" size="sm" className="text-primary p-1" onClick={() => openEditTerm(t)} icon={<Edit size={12} />} title="Edit Term" />
-                                                                <Button variant="ghost" size="sm" className="text-error p-1" onClick={() => handleDeleteTerm(t.id)} icon={<Trash2 size={12} />} title="Delete Term" />
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                                {terms.filter(t => t.year === y.id).length === 0 && <p className="text-[10px] text-slate-400 italic text-center py-2 uppercase font-bold tracking-tighter">No terms defined</p>}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
+                        <div className="flex gap-2 w-full sm:w-auto">
+                            <Button variant="outline" size="sm" className="flex-1 sm:flex-none bg-white shadow-sm" onClick={handleExportAcademics} loading={isExporting} loadingText="Exporting...">Export CSV</Button>
+                            <Button variant="primary" size="sm" className="flex-1 sm:flex-none shadow-sm" onClick={() => { setEditingAttendanceId(null); setAttendanceForm({ student: '', status: 'PRESENT', remark: '', date: new Date().toISOString().split('T')[0] }); setIsAttendanceModalOpen(true); }} icon={<Plus size={14} />}>Log Status</Button>
                         </div>
                     </div>
-                )
-            }
-
-
-            {
-                activeTab === 'ATTENDANCE' && (
-                    <div className="overflow-hidden shadow-lg mb-8 border rounded-2xl">
-                        <div className="p-4 bg-secondary-light flex flex-col sm:flex-row justify-between items-start sm:items-center border-bottom gap-4">
-                            <div className="flex items-center gap-4">
-                                <h3 className="mb-0 text-xs font-black uppercase tracking-wider">Attendance Register</h3>
-                                <div className="flex gap-2">
-                                    <select
-                                        className="select select-sm bg-white"
-                                        value={attendanceSort.field}
-                                        onChange={(e) => setAttendanceSort({ ...attendanceSort, field: e.target.value })}
-                                    >
-                                        <option value="date">Sort by Date</option>
-                                        <option value="student">Sort by Student</option>
-                                        <option value="class">Sort by Class</option>
-                                    </select>
-                                    <select
-                                        className="select select-sm bg-white min-w-[140px]"
-                                        value={attendanceSort.direction}
-                                        onChange={(e) => setAttendanceSort({ ...attendanceSort, direction: e.target.value as 'asc' | 'desc' })}
-                                    >
-                                        <option value="desc">Descending (Newest/Z-A)</option>
-                                        <option value="asc">Ascending (Oldest/A-Z)</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div className="flex gap-2 w-full sm:w-auto">
-                                <Button variant="outline" size="sm" className="flex-1 sm:flex-none bg-white shadow-sm" onClick={handleExportAcademics} loading={isExporting} loadingText="Exporting...">Export CSV</Button>
-                                <Button variant="primary" size="sm" className="flex-1 sm:flex-none shadow-sm" onClick={() => { setEditingAttendanceId(null); setAttendanceForm({ student: '', status: 'PRESENT', remark: '', date: new Date().toISOString().split('T')[0] }); setIsAttendanceModalOpen(true); }} icon={<Plus size={14} />}>Log Status</Button>
-                            </div>
-                        </div>
-                        <div className="table-wrapper overflow-x-auto w-full block m-0">
-                            <table className="table table-sm min-w-[800px]">
-                                <thead className="bg-secondary-light/30 text-secondary">
-                                    <tr>
-                                        <th>Date</th>
-                                        <th>Student</th>
-                                        <th>Class / Section</th>
-                                        <th>Status</th>
-                                        <th>Remarks</th>
-                                        <th className="text-right sticky right-0 bg-white/90">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {attendanceRecords.length === 0 ? (
-                                        <tr><td colSpan={6} className="text-center p-8 text-secondary italic">No attendance records found. Use "Log Status" to add entries.</td></tr>
-                                    ) : (
-                                        [...attendanceRecords].sort((a, b) => {
-                                            let valA, valB;
-                                            if (attendanceSort.field === 'date') {
-                                                valA = a.date; valB = b.date;
-                                            } else if (attendanceSort.field === 'student') {
-                                                const sA = students.find(s => s.id === a.student);
-                                                const sB = students.find(s => s.id === b.student);
-                                                valA = sA?.full_name || ''; valB = sB?.full_name || '';
-                                            } else {
-                                                const sA = students.find(s => s.id === a.student);
-                                                const sB = students.find(s => s.id === b.student);
-                                                const cA = classes.find(c => c.id === sA?.current_class);
-                                                const cB = classes.find(c => c.id === sB?.current_class);
-                                                valA = `${cA?.name} ${cA?.stream}`; valB = `${cB?.name} ${cB?.stream}`;
-                                            }
-                                            return attendanceSort.direction === 'asc'
-                                                ? (valA > valB ? 1 : -1)
-                                                : (valA < valB ? 1 : -1);
-                                        }).map((att: any) => {
-                                            const student = students.find(s => s.id === att.student);
-                                            const cls = classes.find(c => c.id === student?.current_class);
-                                            return (
-                                                <tr key={att.id} className="hover:bg-blue-50/50">
-                                                    <td className="font-mono text-xs">{att.date}</td>
-                                                    <td>
-                                                        <div className="flex flex-col">
-                                                            <span className="font-bold text-xs">{student?.full_name || 'Unknown'}</span>
-                                                            <span className="text-[9px] text-secondary">{student?.admission_number}</span>
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <div className="flex flex-col">
-                                                            <span className="font-bold text-xs">{cls?.name || 'N/A'}</span>
-                                                            <span className="text-[9px] text-secondary font-black uppercase tracking-wider">{cls?.stream || 'General'}</span>
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <span className={`badge badge-sm font-bold ${att.status === 'PRESENT' ? 'badge-success text-white' : att.status === 'ABSENT' ? 'badge-error text-white' : 'badge-warning'}`}>
-                                                            {att.status}
-                                                        </span>
-                                                    </td>
-                                                    <td className="text-xs italic text-secondary">{att.remark || '-'}</td>
-                                                    <td className="text-right flex justify-end gap-1">
-                                                        {!isReadOnly && (
-                                                            <>
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    className="text-primary"
-                                                                    onClick={() => openEditAttendance(att)}
-                                                                    icon={<Edit size={12} />}
-                                                                />
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    className="text-error"
-                                                                    onClick={async () => {
-                                                                        if (await confirm('Delete this attendance record?', { type: 'danger' })) {
-                                                                            try {
-                                                                                await academicsAPI.attendance.delete(att.id);
-                                                                                loadAllAcademicData();
-                                                                                success('Attendance record deleted');
-                                                                            } catch (err: any) { toastError(err.message || 'Failed to delete record'); }
-                                                                        }
-                                                                    }}
-                                                                    icon={<Trash2 size={12} />}
-                                                                />
-                                                            </>
-                                                        )}
-                                                    </td>
-                                                </tr>
-                                            );
-                                        }))}
-                                </tbody>
-                            </table>
-                        </div>
+                    <div className="table-wrapper overflow-x-auto w-full block m-0">
+                        <table className="table table-sm min-w-[800px]">
+                            <thead className="bg-secondary-light/30 text-secondary">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Student</th>
+                                    <th>Class / Section</th>
+                                    <th>Status</th>
+                                    <th>Remarks</th>
+                                    <th className="text-right sticky right-0 bg-white/90">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {attendanceRecords.length === 0 ? (
+                                    <tr><td colSpan={6} className="text-center p-8 text-secondary italic">No attendance records found. Use "Log Status" to add entries.</td></tr>
+                                ) : (
+                                    [...attendanceRecords].sort((a, b) => {
+                                        let valA, valB;
+                                        if (attendanceSort.field === 'date') {
+                                            valA = a.date; valB = b.date;
+                                        } else if (attendanceSort.field === 'student') {
+                                            const sA = students.find(s => s.id === a.student);
+                                            const sB = students.find(s => s.id === b.student);
+                                            valA = sA?.full_name || ''; valB = sB?.full_name || '';
+                                        } else {
+                                            const sA = students.find(s => s.id === a.student);
+                                            const sB = students.find(s => s.id === b.student);
+                                            const cA = classes.find(c => c.id === sA?.current_class);
+                                            const cB = classes.find(c => c.id === sB?.current_class);
+                                            valA = `${cA?.name} ${cA?.stream}`; valB = `${cB?.name} ${cB?.stream}`;
+                                        }
+                                        return attendanceSort.direction === 'asc'
+                                            ? (valA > valB ? 1 : -1)
+                                            : (valA < valB ? 1 : -1);
+                                    }).map((att: any) => {
+                                        const student = students.find(s => s.id === att.student);
+                                        const cls = classes.find(c => c.id === student?.current_class);
+                                        return (
+                                            <tr key={att.id} className="hover:bg-blue-50/50">
+                                                <td className="font-mono text-xs">{att.date}</td>
+                                                <td>
+                                                    <div className="flex flex-col">
+                                                        <span className="font-bold text-xs">{student?.full_name || 'Unknown'}</span>
+                                                        <span className="text-[9px] text-secondary">{student?.admission_number}</span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div className="flex flex-col">
+                                                        <span className="font-bold text-xs">{cls?.name || 'N/A'}</span>
+                                                        <span className="text-[9px] text-secondary font-black uppercase tracking-wider">{cls?.stream || 'General'}</span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span className={`badge badge-sm font-bold ${att.status === 'PRESENT' ? 'badge-success text-white' : att.status === 'ABSENT' ? 'badge-error text-white' : 'badge-warning'}`}>
+                                                        {att.status}
+                                                    </span>
+                                                </td>
+                                                <td className="text-xs italic text-secondary">{att.remark || '-'}</td>
+                                                <td className="text-right flex justify-end gap-1">
+                                                    {!isReadOnly && (
+                                                        <>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="text-primary"
+                                                                onClick={() => openEditAttendance(att)}
+                                                                icon={<Edit size={12} />}
+                                                            />
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="text-error"
+                                                                onClick={async () => {
+                                                                    if (await confirm('Delete this attendance record?', { type: 'danger' })) {
+                                                                        try {
+                                                                            await academicsAPI.attendance.delete(att.id);
+                                                                            loadAllAcademicData();
+                                                                            success('Attendance record deleted');
+                                                                        } catch (err: any) { toastError(err.message || 'Failed to delete record'); }
+                                                                    }
+                                                                }}
+                                                                icon={<Trash2 size={12} />}
+                                                            />
+                                                        </>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        );
+                                    }))}
+                            </tbody>
+                        </table>
                     </div>
-                )
-            }
+                </div>
+            )
+        }
 
-            {/* Modals */}
-            <Modal isOpen={isYearModalOpen} onClose={() => setIsYearModalOpen(false)} title="Add Academic Cycle">
-                <form onSubmit={handleYearSubmit} className="space-y-4 form-container-sm mx-auto">
-                    <div className="form-group"><label className="label text-[10px] font-black uppercase">Year Name (e.g. 2026) *</label><input type="text" className="input" value={yearForm.name} onChange={(e) => setYearForm({ ...yearForm, name: e.target.value })} required /></div>
-                    <div className="form-group checkbox-group"><input type="checkbox" checked={yearForm.is_active} onChange={(e) => setYearForm({ ...yearForm, is_active: e.target.checked })} /><label className="text-xs font-bold">Set as Active Year</label></div>
-                    <Button type="submit" variant="primary" size="sm" className="w-full mt-2 font-black uppercase" loading={isSubmitting} loadingText="Initializing...">Initialize Year Cycle</Button>
-                </form>
-            </Modal>
+        {/* Modals */}
+        <Modal isOpen={isYearModalOpen} onClose={() => setIsYearModalOpen(false)} title="Add Academic Cycle">
+            <form onSubmit={handleYearSubmit} className="space-y-4 form-container-sm mx-auto">
+                <div className="form-group"><label className="label text-[10px] font-black uppercase">Year Name (e.g. 2026) *</label><input type="text" className="input" value={yearForm.name} onChange={(e) => setYearForm({ ...yearForm, name: e.target.value })} required /></div>
+                <div className="form-group checkbox-group"><input type="checkbox" checked={yearForm.is_active} onChange={(e) => setYearForm({ ...yearForm, is_active: e.target.checked })} /><label className="text-xs font-bold">Set as Active Year</label></div>
+                <Button type="submit" variant="primary" size="sm" className="w-full mt-2 font-black uppercase" loading={isSubmitting} loadingText="Initializing...">Initialize Year Cycle</Button>
+            </form>
+        </Modal>
 
-            <Modal isOpen={isTermModalOpen} onClose={() => setIsTermModalOpen(false)} title="Configure Academic Term">
-                <form onSubmit={handleTermSubmit} className="space-y-4 form-container-md mx-auto">
+        <Modal isOpen={isTermModalOpen} onClose={() => setIsTermModalOpen(false)} title="Configure Academic Term">
+            <form onSubmit={handleTermSubmit} className="space-y-4 form-container-md mx-auto">
+                <div className="form-group">
+                    <label className="label text-[10px] font-black uppercase">Academic Year</label>
+                    <select className="select" value={termForm.year} onChange={(e) => setTermForm({ ...termForm, year: e.target.value })} required>
+                        <option value="">Select Year</option>{academicYears.map(y => <option key={y.id} value={y.id}>{y.name}</option>)}
+                    </select>
+                </div>
+                <div className="form-group"><label className="label text-[10px] font-black uppercase">Term Name (e.g. Term 1)</label><input type="text" className="input" value={termForm.name} onChange={(e) => setTermForm({ ...termForm, name: e.target.value })} required /></div>
+                <div className="grid grid-cols-2 gap-md">
+                    <div className="form-group"><label className="label text-[10px] font-black uppercase">Start Date</label><input type="date" className="input" value={termForm.start_date} onChange={(e) => setTermForm({ ...termForm, start_date: e.target.value })} required /></div>
+                    <div className="form-group"><label className="label text-[10px] font-black uppercase">End Date</label><input type="date" className="input" value={termForm.end_date} onChange={(e) => setTermForm({ ...termForm, end_date: e.target.value })} required /></div>
+                </div>
+                <Button type="submit" variant="primary" size="sm" className="w-full mt-2 font-black uppercase" loading={isSubmitting} loadingText="Saving...">Save Term Configuration</Button>
+            </form>
+        </Modal>
+
+        <Modal isOpen={isClassModalOpen} onClose={() => setIsClassModalOpen(false)} title="Create New Class Unit">
+            <form onSubmit={handleClassSubmit} className="space-y-4 form-container-md mx-auto">
+                <div className="grid grid-cols-2 gap-md">
+                    <div className="form-group"><label className="label text-[10px] font-black uppercase">Class Level *</label><input type="text" className="input" value={classForm.name} onChange={(e) => setClassForm({ ...classForm, name: e.target.value })} placeholder="Form 4" required /></div>
+                    <div className="form-group"><label className="label text-[10px] font-black uppercase">Stream *</label><input type="text" className="input" value={classForm.stream} onChange={(e) => setClassForm({ ...classForm, stream: e.target.value })} placeholder="North" required /></div>
+                </div>
+                <div className="form-group mb-2">
+                    <label className="label text-[10px] font-black uppercase">Class Teacher</label>
+                    <select className="select" value={classForm.class_teacher} onChange={(e) => setClassForm({ ...classForm, class_teacher: e.target.value })}>
+                        <option value="">Select Teacher...</option>
+                        {staff.filter(s => s.role === 'TEACHER').map(s => (
+                            <option key={s.id} value={s.id}>{s.full_name} ({s.employee_id})</option>
+                        ))}
+                    </select>
+                </div>
+                <div className="grid grid-cols-2 gap-md">
+                    <div className="form-group"><label className="label text-[10px] font-black uppercase">Active Year</label><input type="number" className="input" value={classForm.year} readOnly /></div>
+                    <div className="form-group"><label className="label text-[10px] font-black uppercase">Max Capacity</label><input type="number" className="input" value={classForm.capacity || ''} onChange={(e) => setClassForm({ ...classForm, capacity: parseInt(e.target.value) || 0 })} /></div>
+                </div>
+                <Button type="button" onClick={(e) => { e.preventDefault(); handleClassSubmit(e); }} variant="primary" size="sm" className="w-full mt-2 font-black uppercase" loading={isSubmitting} loadingText={editingClassId ? "Updating..." : "Creating..."}>Confirm Unit Creation</Button>
+            </form>
+        </Modal>
+
+        <Modal isOpen={isGroupModalOpen} onClose={() => setIsGroupModalOpen(false)} title="Create Department Group">
+            <form
+                onSubmit={async (e) => {
+                    e.preventDefault();
+                    try {
+                        if (editingGroupId) {
+                            await academicsAPI.subjectGroups.update(editingGroupId, groupForm);
+                        } else {
+                            await academicsAPI.subjectGroups.create(groupForm);
+                        }
+                        loadAllAcademicData();
+                        setIsGroupModalOpen(false);
+                        setEditingGroupId(null);
+                        setGroupForm({ name: '' });
+                    } catch (err: any) { toastError(err.message || 'Failed to save group'); }
+                }}
+                className="form-container-sm mx-auto space-y-4"
+            >
+                <div className="form-group"><label className="label text-[10px] font-black uppercase">Group Name *</label><input type="text" className="input" value={groupForm.name} onChange={(e) => setGroupForm({ ...groupForm, name: e.target.value })} placeholder="e.g. Sciences" required /></div>
+                <Button type="submit" variant="primary" size="sm" className="w-full mt-2 font-black uppercase" loading={isSubmitting} loadingText="Saving...">Save Group</Button>
+            </form>
+        </Modal>
+
+        <Modal isOpen={isSubjectModalOpen} onClose={() => setIsSubjectModalOpen(false)} title="Add Curriculum Subject">
+            <form onSubmit={handleSubjectSubmit} className="space-y-4 form-container-md mx-auto">
+                <div className="form-group"><label className="label text-[10px] font-black uppercase">Subject Name *</label><input type="text" className="input" value={subjectForm.name} onChange={(e) => setSubjectForm({ ...subjectForm, name: e.target.value })} required /></div>
+                <div className="grid grid-cols-2 gap-md">
+                    <div className="form-group"><label className="label text-[10px] font-black uppercase">Unique Code *</label><input type="text" className="input" value={subjectForm.code} onChange={(e) => setSubjectForm({ ...subjectForm, code: e.target.value })} required /></div>
                     <div className="form-group">
-                        <label className="label text-[10px] font-black uppercase">Academic Year</label>
-                        <select className="select" value={termForm.year} onChange={(e) => setTermForm({ ...termForm, year: e.target.value })} required>
-                            <option value="">Select Year</option>{academicYears.map(y => <option key={y.id} value={y.id}>{y.name}</option>)}
+                        <label className="label text-[10px] font-black uppercase">Department Group</label>
+                        <select className="select" value={subjectForm.group} onChange={(e) => setSubjectForm({ ...subjectForm, group: e.target.value })}>
+                            <option value="">General</option>{subjectGroups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
                         </select>
                     </div>
-                    <div className="form-group"><label className="label text-[10px] font-black uppercase">Term Name (e.g. Term 1)</label><input type="text" className="input" value={termForm.name} onChange={(e) => setTermForm({ ...termForm, name: e.target.value })} required /></div>
-                    <div className="grid grid-cols-2 gap-md">
-                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Start Date</label><input type="date" className="input" value={termForm.start_date} onChange={(e) => setTermForm({ ...termForm, start_date: e.target.value })} required /></div>
-                        <div className="form-group"><label className="label text-[10px] font-black uppercase">End Date</label><input type="date" className="input" value={termForm.end_date} onChange={(e) => setTermForm({ ...termForm, end_date: e.target.value })} required /></div>
-                    </div>
-                    <Button type="submit" variant="primary" size="sm" className="w-full mt-2 font-black uppercase" loading={isSubmitting} loadingText="Saving...">Save Term Configuration</Button>
-                </form>
-            </Modal>
+                </div>
+                <Button type="submit" variant="primary" size="sm" className="w-full mt-2 font-black uppercase" loading={isSubmitting} loadingText="Registering...">Register Subject</Button>
+            </form>
+        </Modal>
 
-            <Modal isOpen={isClassModalOpen} onClose={() => setIsClassModalOpen(false)} title="Create New Class Unit">
-                <form onSubmit={handleClassSubmit} className="space-y-4 form-container-md mx-auto">
-                    <div className="grid grid-cols-2 gap-md">
-                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Class Level *</label><input type="text" className="input" value={classForm.name} onChange={(e) => setClassForm({ ...classForm, name: e.target.value })} placeholder="Form 4" required /></div>
-                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Stream *</label><input type="text" className="input" value={classForm.stream} onChange={(e) => setClassForm({ ...classForm, stream: e.target.value })} placeholder="North" required /></div>
+        <Modal isOpen={isAttendanceModalOpen} onClose={() => setIsAttendanceModalOpen(false)} title="Log Student Attendance" size="lg">
+            <form onSubmit={handleAttendanceSubmit} className="form-container-md mx-auto">
+                <div className="flex justify-between items-center mb-4 border-bottom pb-2">
+                    <span className="text-xs font-bold uppercase text-secondary">Recording Mode:</span>
+                    <div className="flex bg-secondary-light p-1 rounded-lg">
+                        <button type="button" className={`px-3 py-1 text-[10px] font-black rounded ${!attendanceFilter.isBulk ? 'bg-primary text-white' : 'text-secondary'}`} onClick={() => setAttendanceFilter({ ...attendanceFilter, isBulk: false })}>SINGLE STUDENT</button>
+                        <button type="button" className={`px-3 py-1 text-[10px] font-black rounded ${attendanceFilter.isBulk ? 'bg-primary text-white' : 'text-secondary'}`} onClick={() => setAttendanceFilter({ ...attendanceFilter, isBulk: true })}>CLASS REGISTER (BULK)</button>
                     </div>
-                    <div className="form-group mb-2">
-                        <label className="label text-[10px] font-black uppercase">Class Teacher</label>
-                        <select className="select" value={classForm.class_teacher} onChange={(e) => setClassForm({ ...classForm, class_teacher: e.target.value })}>
-                            <option value="">Select Teacher...</option>
-                            {staff.filter(s => s.role === 'TEACHER').map(s => (
-                                <option key={s.id} value={s.id}>{s.full_name} ({s.employee_id})</option>
-                            ))}
+                    <div className="flex items-center gap-2">
+                        <label className="text-[9px] font-bold uppercase text-secondary">Date:</label>
+                        <input type="date" className="input input-xs w-32" value={attendanceForm.date} onChange={(e) => setAttendanceForm({ ...attendanceForm, date: e.target.value })} />
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-md mb-4 bg-secondary-light/20 p-2 rounded border">
+                    <div>
+                        <label className="text-[9px] font-bold uppercase text-secondary">Filter Class</label>
+                        <select className="select text-xs" value={attendanceFilter.level} onChange={(e) => setAttendanceFilter({ ...attendanceFilter, level: e.target.value, classId: '' })}>
+                            <option value="">Level...</option>
+                            {uniqueClassNames.map(name => <option key={name} value={name}>{name}</option>)}
                         </select>
                     </div>
-                    <div className="grid grid-cols-2 gap-md">
-                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Active Year</label><input type="number" className="input" value={classForm.year} readOnly /></div>
-                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Max Capacity</label><input type="number" className="input" value={classForm.capacity || ''} onChange={(e) => setClassForm({ ...classForm, capacity: parseInt(e.target.value) || 0 })} /></div>
-                    </div>
-                    <Button type="button" onClick={(e) => { e.preventDefault(); handleClassSubmit(e); }} variant="primary" size="sm" className="w-full mt-2 font-black uppercase" loading={isSubmitting} loadingText={editingClassId ? "Updating..." : "Creating..."}>Confirm Unit Creation</Button>
-                </form>
-            </Modal>
-
-            <Modal isOpen={isGroupModalOpen} onClose={() => setIsGroupModalOpen(false)} title="Create Department Group">
-                <form
-                    onSubmit={async (e) => {
-                        e.preventDefault();
-                        try {
-                            if (editingGroupId) {
-                                await academicsAPI.subjectGroups.update(editingGroupId, groupForm);
-                            } else {
-                                await academicsAPI.subjectGroups.create(groupForm);
+                    <div>
+                        <label className="text-[9px] font-bold uppercase text-secondary">Stream</label>
+                        <select className="select text-xs" value={attendanceFilter.classId} onChange={(e) => {
+                            const newClassId = e.target.value;
+                            setAttendanceFilter({ ...attendanceFilter, classId: newClassId });
+                            if (attendanceFilter.isBulk && newClassId) {
+                                // Auto-populate bulk list
+                                const cid = parseInt(newClassId);
+                                const classStudents = students.filter(s => {
+                                    // Handle both direct ID match and nested object if serializer changes
+                                    const sClassId = typeof s.current_class === 'object' ? s.current_class?.id : s.current_class;
+                                    return Number(sClassId) === cid;
+                                });
+                                setBulkAttendanceList(classStudents.map(s => ({ student_id: s.id, status: 'PRESENT', remark: '' })));
                             }
-                            loadAllAcademicData();
-                            setIsGroupModalOpen(false);
-                            setEditingGroupId(null);
-                            setGroupForm({ name: '' });
-                        } catch (err: any) { toastError(err.message || 'Failed to save group'); }
-                    }}
-                    className="form-container-sm mx-auto space-y-4"
-                >
-                    <div className="form-group"><label className="label text-[10px] font-black uppercase">Group Name *</label><input type="text" className="input" value={groupForm.name} onChange={(e) => setGroupForm({ ...groupForm, name: e.target.value })} placeholder="e.g. Sciences" required /></div>
-                    <Button type="submit" variant="primary" size="sm" className="w-full mt-2 font-black uppercase" loading={isSubmitting} loadingText="Saving...">Save Group</Button>
-                </form>
-            </Modal>
+                        }} disabled={!attendanceFilter.level}>
+                            <option value="">Stream...</option>
+                            {classes.filter(c => c.name === attendanceFilter.level).map(c => <option key={c.id} value={c.id}>{c.stream}</option>)}
+                        </select>
+                    </div>
+                </div>
 
-            <Modal isOpen={isSubjectModalOpen} onClose={() => setIsSubjectModalOpen(false)} title="Add Curriculum Subject">
-                <form onSubmit={handleSubjectSubmit} className="space-y-4 form-container-md mx-auto">
-                    <div className="form-group"><label className="label text-[10px] font-black uppercase">Subject Name *</label><input type="text" className="input" value={subjectForm.name} onChange={(e) => setSubjectForm({ ...subjectForm, name: e.target.value })} required /></div>
-                    <div className="grid grid-cols-2 gap-md">
-                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Unique Code *</label><input type="text" className="input" value={subjectForm.code} onChange={(e) => setSubjectForm({ ...subjectForm, code: e.target.value })} required /></div>
-                        <div className="form-group">
-                            <label className="label text-[10px] font-black uppercase">Department Group</label>
-                            <select className="select" value={subjectForm.group} onChange={(e) => setSubjectForm({ ...subjectForm, group: e.target.value })}>
-                                <option value="">General</option>{subjectGroups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
+                {!attendanceFilter.isBulk ? (
+                    <>
+                        <SearchableSelect
+                            label="Student Name *"
+                            options={attendanceFilter.classId
+                                ? studentOptions.filter((opt: any) => {
+                                    const s = students.find(st => st.id.toString() === opt.value);
+                                    return s && s.current_class === parseInt(attendanceFilter.classId);
+                                })
+                                : studentOptions
+                            }
+                            value={attendanceForm.student}
+                            onChange={(v) => setAttendanceForm({ ...attendanceForm, student: v.toString() })}
+                            required
+                        />
+                        <div className="form-group mt-4">
+                            <label className="label text-[10px] font-black uppercase">Status</label>
+                            <select className="select" value={attendanceForm.status} onChange={(e) => setAttendanceForm({ ...attendanceForm, status: e.target.value })}>
+                                <option value="PRESENT">Present</option><option value="ABSENT">Absent</option><option value="LATE">Late / Tardy</option>
                             </select>
                         </div>
+                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Remarks</label><input type="text" className="input" value={attendanceForm.remark} onChange={(e) => setAttendanceForm({ ...attendanceForm, remark: e.target.value })} placeholder="Reason if absent..." /></div>
+                    </>
+                ) : (
+                    <div className="max-h-400 overflow-y-auto border rounded">
+                        <table className="table table-xs w-full">
+                            <thead className="sticky top-0 bg-white z-10">
+                                <tr>
+                                    <th>Student</th>
+                                    <th>Status</th>
+                                    <th>Remark</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {bulkAttendanceList.length === 0 && <tr><td colSpan={3} className="text-center p-4 text-xs italic text-secondary">Select a class to load students</td></tr>}
+                                {bulkAttendanceList.map((item, idx) => {
+                                    const student = students.find(s => s.id === item.student_id);
+                                    return (
+                                        <tr key={item.student_id}>
+                                            <td className="text-xs font-bold">{student?.full_name}</td>
+                                            <td>
+                                                <select className={`select select-xs w-full ${item.status === 'ABSENT' ? 'text-error font-bold' : ''}`}
+                                                    value={item.status}
+                                                    onChange={(e) => {
+                                                        const newList = [...bulkAttendanceList];
+                                                        newList[idx].status = e.target.value;
+                                                        setBulkAttendanceList(newList);
+                                                    }}
+                                                >
+                                                    <option value="PRESENT">Present</option>
+                                                    <option value="ABSENT">Absent</option>
+                                                    <option value="LATE">Late</option>
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <input type="text" className="input input-xs w-full" placeholder="..."
+                                                    value={item.remark}
+                                                    onChange={(e) => {
+                                                        const newList = [...bulkAttendanceList];
+                                                        newList[idx].remark = e.target.value;
+                                                        setBulkAttendanceList(newList);
+                                                    }}
+                                                />
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
                     </div>
-                    <Button type="submit" variant="primary" size="sm" className="w-full mt-2 font-black uppercase" loading={isSubmitting} loadingText="Registering...">Register Subject</Button>
-                </form>
-            </Modal>
+                )}
 
-            <Modal isOpen={isAttendanceModalOpen} onClose={() => setIsAttendanceModalOpen(false)} title="Log Student Attendance" size="lg">
-                <form onSubmit={handleAttendanceSubmit} className="form-container-md mx-auto">
-                    <div className="flex justify-between items-center mb-4 border-bottom pb-2">
-                        <span className="text-xs font-bold uppercase text-secondary">Recording Mode:</span>
-                        <div className="flex bg-secondary-light p-1 rounded-lg">
-                            <button type="button" className={`px-3 py-1 text-[10px] font-black rounded ${!attendanceFilter.isBulk ? 'bg-primary text-white' : 'text-secondary'}`} onClick={() => setAttendanceFilter({ ...attendanceFilter, isBulk: false })}>SINGLE STUDENT</button>
-                            <button type="button" className={`px-3 py-1 text-[10px] font-black rounded ${attendanceFilter.isBulk ? 'bg-primary text-white' : 'text-secondary'}`} onClick={() => setAttendanceFilter({ ...attendanceFilter, isBulk: true })}>CLASS REGISTER (BULK)</button>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <label className="text-[9px] font-bold uppercase text-secondary">Date:</label>
-                            <input type="date" className="input input-xs w-32" value={attendanceForm.date} onChange={(e) => setAttendanceForm({ ...attendanceForm, date: e.target.value })} />
-                        </div>
+                <Button type="submit" variant="primary" size="sm" className="bg-success border-success w-full mt-4 font-black uppercase text-white shadow-md" loading={isSubmitting} loadingText="Posting...">
+                    {attendanceFilter.isBulk ? `Submit Register (${bulkAttendanceList.length})` : 'Post Attendance Record'}
+                </Button>
+            </form>
+        </Modal>
+
+        <Modal isOpen={isExamModalOpen} onClose={() => setIsExamModalOpen(false)} title="Schedule Assessment/Exam">
+            <form onSubmit={handleExamSubmit} className="form-container-md mx-auto">
+                <div className="grid grid-cols-2 gap-md mb-4">
+                    <div className="form-group col-span-2"><label className="label text-[10px] font-black uppercase">Exam Title *</label><input type="text" className="input" value={examForm.name} onChange={(e) => setExamForm({ ...examForm, name: e.target.value })} placeholder="End of Term 1" required /></div>
+
+                    <div className="form-group">
+                        <label className="label text-[10px] font-black uppercase">Assessment Type</label>
+                        <select className="select" value={examForm.exam_type} onChange={(e) => setExamForm({ ...examForm, exam_type: e.target.value })}>
+                            <option value="CAT">Continuous Assessment (CAT)</option><option value="MID_TERM">Mid-Term Exam</option><option value="END_TERM">End-Term Exam</option>
+                        </select>
+                    </div>
+                    <div className="form-group">
+                        <label className="label text-[10px] font-black uppercase">Active Term *</label>
+                        <select className="select" value={examForm.term} onChange={(e) => setExamForm({ ...examForm, term: e.target.value })} required>
+                            <option value="">Select Term</option>{terms.map(t => <option key={t.id} value={t.id}>{t.name} ({t.year_name})</option>)}
+                        </select>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-md mb-4 bg-secondary-light/20 p-2 rounded border">
+                    <div className="form-group">
+                        <label className="label text-[10px] font-black uppercase">Grading System</label>
+                        <select className="select" value={examForm.grade_system} onChange={(e) => setExamForm({ ...examForm, grade_system: e.target.value })}>
+                            <option value="">Default Grading System</option>
+                            {gradeSystems.map(gs => <option key={gs.id} value={gs.id}>{gs.name}</option>)}
+                        </select>
+                    </div>
+                    <div className="form-group"><label className="label text-[10px] font-black uppercase">Start Date</label><input type="date" className="input" value={examForm.date_started} onChange={(e) => setExamForm({ ...examForm, date_started: e.target.value })} required /></div>
+
+                    <div className="form-group col-span-2"><label className="label text-[10px] font-black uppercase">Weighting (%)</label><input type="number" className="input" value={examForm.weighting} onChange={(e) => setExamForm({ ...examForm, weighting: parseInt(e.target.value) })} required /></div>
+                </div>
+                <Button type="submit" variant="primary" size="sm" className="w-full mt-2 font-black uppercase" loading={isSubmitting} loadingText="Confirming...">Confirm Exam Schedule</Button>
+            </form>
+        </Modal>
+
+
+        {/* Broadsheet Modal */}
+        <Modal isOpen={isBroadsheetModalOpen} onClose={() => setIsBroadsheetModalOpen(false)} title={`Broadsheet: ${selectedExam?.name || ''}`} size="full">
+            <div className="flex justify-between items-center mb-4">
+                <div className="flex gap-2">
+                    <select className="select select-sm border-primary" value={viewResultsGroupBy} onChange={(e) => setViewResultsGroupBy(e.target.value as any)}>
+                        <option value="STREAM">Group by Stream</option>
+                        <option value="ENTIRE_CLASS">Entire Class Ranking</option>
+                    </select>
+                    <select className="select select-sm" value={resultContext.level} onChange={(e) => {
+                        setResultContext({ ...resultContext, level: e.target.value });
+                    }}>
+                        <option value="">Select Level (All)</option>
+                        {uniqueClassNames.map(name => <option key={name} value={name}>{name}</option>)}
+                    </select>
+                </div>
+                <Button variant="outline" size="sm" onClick={() => window.print()} icon={<Printer size={14} />}>Print Broadsheet</Button>
+            </div>
+
+            <div className="table-wrapper max-h-70vh overflow-auto border rounded bg-white relative min-w-0">
+                {/* If Group By Stream, we might need multiple tables or just one big sorted table. 
+                         For simplicity and "Matrix view", let's do one big table but filter/sort accordingly. 
+                     */}
+                <table className="table table-xs w-full border-collapse">
+                    <thead className="sticky top-0 bg-primary text-white z-20">
+                        <tr>
+                            <th className="bg-primary border-r w-12 text-center">#</th>
+                            <th className="bg-primary border-r min-w-[150px] sticky left-0 z-30">Student</th>
+                            {viewResultsGroupBy === 'ENTIRE_CLASS' && <th className="bg-primary border-r">Stream</th>}
+                            {subjects.map(sub => (
+                                <th key={sub.id} className="text-center w-12 border-r text-[9px] vertical-text" title={sub.name}>{sub.code}</th>
+                            ))}
+                            <th className="text-center font-bold bg-primary border-r w-12">Total</th>
+                            <th className="text-center font-bold bg-primary border-r w-12">Mean</th>
+                            <th className="text-center font-bold bg-primary w-12">Grade</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {(() => {
+                            // 1. Filter students based on level selection
+                            let filteredStudents = students;
+                            if (resultContext.level) {
+                                filteredStudents = students.filter(s => {
+                                    const c = classes.find(cl => cl.id === s.current_class);
+                                    return c?.name === resultContext.level;
+                                });
+                            }
+
+                            // 2. Calculate scores for each student
+                            const studentRows = filteredStudents.map(student => {
+                                // Find all results for this student in this exam
+                                // We need to fetch ALL results first.
+                                // Ideally `examResults` state should be populated when opening modal. 
+                                // Let's assume we fetch them when opening.
+
+                                const sResults = examResults.filter(r => r.student === student.id);
+                                const total = sResults.reduce((sum, r) => sum + parseFloat(r.score), 0);
+                                const avg = sResults.length > 0 ? total / sResults.length : 0;
+                                const meanGrade = calculateMeanGrade(sResults, gradeSystems, selectedExam?.grade_system); // Use existing helper
+
+                                return {
+                                    student,
+                                    results: sResults,
+                                    total,
+                                    avg,
+                                    meanGrade
+                                };
+                            });
+
+                            // 3. Sort by Total (Highest to Lowest)
+                            studentRows.sort((a, b) => b.total - a.total);
+
+                            // 4. Render
+                            return studentRows.map((row, idx) => {
+                                const cls = classes.find(c => c.id === row.student.current_class);
+                                return (
+                                    <tr key={row.student.id} className="hover:bg-blue-50">
+                                        <td className="text-center font-bold bg-gray-50">{idx + 1}</td>
+                                        <td className="sticky left-0 bg-white z-10 font-bold text-xs py-1 px-2">
+                                            {row.student.full_name}
+                                            <div className="text-[9px] text-secondary font-mono">{row.student.admission_number}</div>
+                                        </td>
+                                        {viewResultsGroupBy === 'ENTIRE_CLASS' && <td className="text-center text-[10px]">{cls?.stream}</td>}
+
+                                        {subjects.map(sub => {
+                                            const res = row.results.find(r => r.subject === sub.id);
+                                            return (
+                                                <td key={sub.id} className="text-center text-xs">
+                                                    {res ? <span className={res.score < 40 ? 'text-error font-bold' : ''}>{res.score}</span> : '-'}
+                                                </td>
+                                            );
+                                        })}
+
+                                        <td className="text-center font-bold bg-gray-50">{row.total.toFixed(0)}</td>
+                                        <td className="text-center font-bold bg-gray-50">{row.avg.toFixed(1)}</td>
+                                        <td className="text-center font-black bg-gray-50">{row.meanGrade}</td>
+                                    </tr>
+                                );
+                            });
+                        })()}
+                    </tbody>
+                </table>
+                {examResults.length === 0 && <div className="text-center p-8 text-secondary">Loading results or no results found...</div>}
+            </div>
+        </Modal>
+
+        {/* View Class Modal */}
+        <Modal isOpen={isViewClassModalOpen} onClose={() => setIsViewClassModalOpen(false)} title={`Class Details: ${selectedClass?.name || ''} ${selectedClass?.stream || ''}`}>
+            <div className="flex justify-end gap-2 mb-4 no-print">
+                <Button variant="outline" size="sm" onClick={() => {
+                    const exportData = viewClassStudents.map(s => ({
+                        'Student Name': s.full_name,
+                        'Admission Number': s.admission_number,
+                        'Gender': s.gender || 'N/A'
+                    }));
+                    exportToCSV(exportData, `Class_List_${selectedClass?.name}_${selectedClass?.stream}`);
+                }} icon={<Download size={16} />}>
+                    Export CSV
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => {
+                    // Temporarily add print-modal class to the modal content wrapper before triggering print
+                    const modalContent = document.querySelector('.modal-content');
+                    if (modalContent) modalContent.classList.add('print-modal');
+                    window.print();
+                    if (modalContent) setTimeout(() => modalContent.classList.remove('print-modal'), 1000);
+                }} className="border-primary text-primary hover:bg-primary hover:text-white" icon={<Printer size={16} />}>
+                    Print List
+                </Button>
+            </div>
+            <div className="table-wrapper">
+                <table className="table">
+                    <thead><tr><th>Student Name</th><th>ADM No</th></tr></thead>
+                    <tbody>
+                        {viewClassStudents.length > 0 ? viewClassStudents.map(s => (
+                            <tr key={s.id}>
+                                <td className="font-bold text-xs">{s.full_name}</td>
+                                <td className="text-xs text-secondary">{s.admission_number}</td>
+                            </tr>
+                        )) : <tr><td colSpan={2} className="text-center p-4 text-xs">No students found in this class.</td></tr>}
+                    </tbody>
+                </table>
+            </div>
+        </Modal>
+
+        {/* Enter Results Modal */}
+        <Modal isOpen={isResultModalOpen} onClose={() => setIsResultModalOpen(false)} title={`Enter Results: ${selectedExam?.name || ''}`} size="full">
+            <form onSubmit={handleBulkResultSubmit}>
+                {/* Cascading Class Selector */}
+                <div className="form-group p-3 mb-4 bg-gray-50">
+                    <label className="label text-[10px] font-black uppercase mb-2">Select Class to Enter Marks</label>
+                    <div className="grid grid-cols-2 gap-md">
                         <div>
-                            <label className="text-[9px] font-bold uppercase text-secondary">Filter Class</label>
-                            <select className="select text-xs" value={attendanceFilter.level} onChange={(e) => setAttendanceFilter({ ...attendanceFilter, level: e.target.value, classId: '' })}>
-                                <option value="">Level...</option>
+                            <label className="text-[9px] font-bold uppercase text-secondary">Class Level</label>
+                            <select className="select text-xs" value={resultContext.level} onChange={(e) => {
+                                setResultContext({ ...resultContext, level: e.target.value, classId: '' });
+                            }}>
+                                <option value="">Select Level...</option>
                                 {uniqueClassNames.map(name => <option key={name} value={name}>{name}</option>)}
                             </select>
                         </div>
                         <div>
                             <label className="text-[9px] font-bold uppercase text-secondary">Stream</label>
-                            <select className="select text-xs" value={attendanceFilter.classId} onChange={(e) => {
-                                const newClassId = e.target.value;
-                                setAttendanceFilter({ ...attendanceFilter, classId: newClassId });
-                                if (attendanceFilter.isBulk && newClassId) {
-                                    // Auto-populate bulk list
-                                    const cid = parseInt(newClassId);
-                                    const classStudents = students.filter(s => {
-                                        // Handle both direct ID match and nested object if serializer changes
-                                        const sClassId = typeof s.current_class === 'object' ? s.current_class?.id : s.current_class;
-                                        return Number(sClassId) === cid;
-                                    });
-                                    setBulkAttendanceList(classStudents.map(s => ({ student_id: s.id, status: 'PRESENT', remark: '' })));
-                                }
-                            }} disabled={!attendanceFilter.level}>
-                                <option value="">Stream...</option>
-                                {classes.filter(c => c.name === attendanceFilter.level).map(c => <option key={c.id} value={c.id}>{c.stream}</option>)}
-                            </select>
-                        </div>
-                    </div>
+                            <select className="select text-xs" value={resultContext.classId} onChange={async (e) => {
+                                const cid = e.target.value;
+                                setResultContext({ ...resultContext, classId: cid });
 
-                    {!attendanceFilter.isBulk ? (
-                        <>
-                            <SearchableSelect
-                                label="Student Name *"
-                                options={attendanceFilter.classId
-                                    ? studentOptions.filter((opt: any) => {
-                                        const s = students.find(st => st.id.toString() === opt.value);
-                                        return s && s.current_class === parseInt(attendanceFilter.classId);
-                                    })
-                                    : studentOptions
-                                }
-                                value={attendanceForm.student}
-                                onChange={(v) => setAttendanceForm({ ...attendanceForm, student: v.toString() })}
-                                required
-                            />
-                            <div className="form-group mt-4">
-                                <label className="label text-[10px] font-black uppercase">Status</label>
-                                <select className="select" value={attendanceForm.status} onChange={(e) => setAttendanceForm({ ...attendanceForm, status: e.target.value })}>
-                                    <option value="PRESENT">Present</option><option value="ABSENT">Absent</option><option value="LATE">Late / Tardy</option>
-                                </select>
-                            </div>
-                            <div className="form-group"><label className="label text-[10px] font-black uppercase">Remarks</label><input type="text" className="input" value={attendanceForm.remark} onChange={(e) => setAttendanceForm({ ...attendanceForm, remark: e.target.value })} placeholder="Reason if absent..." /></div>
-                        </>
-                    ) : (
-                        <div className="max-h-400 overflow-y-auto border rounded">
-                            <table className="table table-xs w-full">
-                                <thead className="sticky top-0 bg-white z-10">
-                                    <tr>
-                                        <th>Student</th>
-                                        <th>Status</th>
-                                        <th>Remark</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {bulkAttendanceList.length === 0 && <tr><td colSpan={3} className="text-center p-4 text-xs italic text-secondary">Select a class to load students</td></tr>}
-                                    {bulkAttendanceList.map((item, idx) => {
-                                        const student = students.find(s => s.id === item.student_id);
-                                        return (
-                                            <tr key={item.student_id}>
-                                                <td className="text-xs font-bold">{student?.full_name}</td>
-                                                <td>
-                                                    <select className={`select select-xs w-full ${item.status === 'ABSENT' ? 'text-error font-bold' : ''}`}
-                                                        value={item.status}
-                                                        onChange={(e) => {
-                                                            const newList = [...bulkAttendanceList];
-                                                            newList[idx].status = e.target.value;
-                                                            setBulkAttendanceList(newList);
-                                                        }}
-                                                    >
-                                                        <option value="PRESENT">Present</option>
-                                                        <option value="ABSENT">Absent</option>
-                                                        <option value="LATE">Late</option>
-                                                    </select>
-                                                </td>
-                                                <td>
-                                                    <input type="text" className="input input-xs w-full" placeholder="..."
-                                                        value={item.remark}
-                                                        onChange={(e) => {
-                                                            const newList = [...bulkAttendanceList];
-                                                            newList[idx].remark = e.target.value;
-                                                            setBulkAttendanceList(newList);
-                                                        }}
-                                                    />
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-
-                    <Button type="submit" variant="primary" size="sm" className="bg-success border-success w-full mt-4 font-black uppercase text-white shadow-md" loading={isSubmitting} loadingText="Posting...">
-                        {attendanceFilter.isBulk ? `Submit Register (${bulkAttendanceList.length})` : 'Post Attendance Record'}
-                    </Button>
-                </form>
-            </Modal>
-
-            <Modal isOpen={isExamModalOpen} onClose={() => setIsExamModalOpen(false)} title="Schedule Assessment/Exam">
-                <form onSubmit={handleExamSubmit} className="form-container-md mx-auto">
-                    <div className="grid grid-cols-2 gap-md mb-4">
-                        <div className="form-group col-span-2"><label className="label text-[10px] font-black uppercase">Exam Title *</label><input type="text" className="input" value={examForm.name} onChange={(e) => setExamForm({ ...examForm, name: e.target.value })} placeholder="End of Term 1" required /></div>
-
-                        <div className="form-group">
-                            <label className="label text-[10px] font-black uppercase">Assessment Type</label>
-                            <select className="select" value={examForm.exam_type} onChange={(e) => setExamForm({ ...examForm, exam_type: e.target.value })}>
-                                <option value="CAT">Continuous Assessment (CAT)</option><option value="MID_TERM">Mid-Term Exam</option><option value="END_TERM">End-Term Exam</option>
-                            </select>
-                        </div>
-                        <div className="form-group">
-                            <label className="label text-[10px] font-black uppercase">Active Term *</label>
-                            <select className="select" value={examForm.term} onChange={(e) => setExamForm({ ...examForm, term: e.target.value })} required>
-                                <option value="">Select Term</option>{terms.map(t => <option key={t.id} value={t.id}>{t.name} ({t.year_name})</option>)}
-                            </select>
-                        </div>
-
-                        <div className="form-group">
-                            <label className="label text-[10px] font-black uppercase">Grading System</label>
-                            <select className="select" value={examForm.grade_system} onChange={(e) => setExamForm({ ...examForm, grade_system: e.target.value })}>
-                                <option value="">Default Grading System</option>
-                                {gradeSystems.map(gs => <option key={gs.id} value={gs.id}>{gs.name}</option>)}
-                            </select>
-                        </div>
-                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Start Date</label><input type="date" className="input" value={examForm.date_started} onChange={(e) => setExamForm({ ...examForm, date_started: e.target.value })} required /></div>
-
-                        <div className="form-group col-span-2"><label className="label text-[10px] font-black uppercase">Weighting (%)</label><input type="number" className="input" value={examForm.weighting} onChange={(e) => setExamForm({ ...examForm, weighting: parseInt(e.target.value) })} required /></div>
-                    </div>
-                    <Button type="submit" variant="primary" size="sm" className="w-full mt-2 font-black uppercase" loading={isSubmitting} loadingText="Confirming...">Confirm Exam Schedule</Button>
-                </form>
-            </Modal>
-
-
-            {/* Broadsheet Modal */}
-            <Modal isOpen={isBroadsheetModalOpen} onClose={() => setIsBroadsheetModalOpen(false)} title={`Broadsheet: ${selectedExam?.name || ''}`} size="full">
-                <div className="flex justify-between items-center mb-4">
-                    <div className="flex gap-2">
-                        <select className="select select-sm border-primary" value={viewResultsGroupBy} onChange={(e) => setViewResultsGroupBy(e.target.value as any)}>
-                            <option value="STREAM">Group by Stream</option>
-                            <option value="ENTIRE_CLASS">Entire Class Ranking</option>
-                        </select>
-                        <select className="select select-sm" value={resultContext.level} onChange={(e) => {
-                            setResultContext({ ...resultContext, level: e.target.value });
-                        }}>
-                            <option value="">Select Level (All)</option>
-                            {uniqueClassNames.map(name => <option key={name} value={name}>{name}</option>)}
-                        </select>
-                    </div>
-                    <Button variant="outline" size="sm" onClick={() => window.print()} icon={<Printer size={14} />}>Print Broadsheet</Button>
-                </div>
-
-                <div className="table-wrapper max-h-70vh overflow-auto border rounded bg-white relative min-w-0">
-                    {/* If Group By Stream, we might need multiple tables or just one big sorted table. 
-                         For simplicity and "Matrix view", let's do one big table but filter/sort accordingly. 
-                     */}
-                    <table className="table table-xs w-full border-collapse">
-                        <thead className="sticky top-0 bg-primary text-white z-20">
-                            <tr>
-                                <th className="bg-primary border-r w-12 text-center">#</th>
-                                <th className="bg-primary border-r min-w-[150px] sticky left-0 z-30">Student</th>
-                                {viewResultsGroupBy === 'ENTIRE_CLASS' && <th className="bg-primary border-r">Stream</th>}
-                                {subjects.map(sub => (
-                                    <th key={sub.id} className="text-center w-12 border-r text-[9px] vertical-text" title={sub.name}>{sub.code}</th>
-                                ))}
-                                <th className="text-center font-bold bg-primary border-r w-12">Total</th>
-                                <th className="text-center font-bold bg-primary border-r w-12">Mean</th>
-                                <th className="text-center font-bold bg-primary w-12">Grade</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {(() => {
-                                // 1. Filter students based on level selection
-                                let filteredStudents = students;
-                                if (resultContext.level) {
-                                    filteredStudents = students.filter(s => {
-                                        const c = classes.find(cl => cl.id === s.current_class);
-                                        return c?.name === resultContext.level;
-                                    });
-                                }
-
-                                // 2. Calculate scores for each student
-                                const studentRows = filteredStudents.map(student => {
-                                    // Find all results for this student in this exam
-                                    // We need to fetch ALL results first.
-                                    // Ideally `examResults` state should be populated when opening modal. 
-                                    // Let's assume we fetch them when opening.
-
-                                    const sResults = examResults.filter(r => r.student === student.id);
-                                    const total = sResults.reduce((sum, r) => sum + parseFloat(r.score), 0);
-                                    const avg = sResults.length > 0 ? total / sResults.length : 0;
-                                    const meanGrade = calculateMeanGrade(sResults, gradeSystems, selectedExam?.grade_system); // Use existing helper
-
-                                    return {
-                                        student,
-                                        results: sResults,
-                                        total,
-                                        avg,
-                                        meanGrade
-                                    };
-                                });
-
-                                // 3. Sort by Total (Highest to Lowest)
-                                studentRows.sort((a, b) => b.total - a.total);
-
-                                // 4. Render
-                                return studentRows.map((row, idx) => {
-                                    const cls = classes.find(c => c.id === row.student.current_class);
-                                    return (
-                                        <tr key={row.student.id} className="hover:bg-blue-50">
-                                            <td className="text-center font-bold bg-gray-50">{idx + 1}</td>
-                                            <td className="sticky left-0 bg-white z-10 font-bold text-xs py-1 px-2">
-                                                {row.student.full_name}
-                                                <div className="text-[9px] text-secondary font-mono">{row.student.admission_number}</div>
-                                            </td>
-                                            {viewResultsGroupBy === 'ENTIRE_CLASS' && <td className="text-center text-[10px]">{cls?.stream}</td>}
-
-                                            {subjects.map(sub => {
-                                                const res = row.results.find(r => r.subject === sub.id);
-                                                return (
-                                                    <td key={sub.id} className="text-center text-xs">
-                                                        {res ? <span className={res.score < 40 ? 'text-error font-bold' : ''}>{res.score}</span> : '-'}
-                                                    </td>
-                                                );
-                                            })}
-
-                                            <td className="text-center font-bold bg-gray-50">{row.total.toFixed(0)}</td>
-                                            <td className="text-center font-bold bg-gray-50">{row.avg.toFixed(1)}</td>
-                                            <td className="text-center font-black bg-gray-50">{row.meanGrade}</td>
-                                        </tr>
-                                    );
-                                });
-                            })()}
-                        </tbody>
-                    </table>
-                    {examResults.length === 0 && <div className="text-center p-8 text-secondary">Loading results or no results found...</div>}
-                </div>
-            </Modal>
-
-            {/* View Class Modal */}
-            <Modal isOpen={isViewClassModalOpen} onClose={() => setIsViewClassModalOpen(false)} title={`Class Details: ${selectedClass?.name || ''} ${selectedClass?.stream || ''}`}>
-                <div className="flex justify-end gap-2 mb-4 no-print">
-                    <Button variant="outline" size="sm" onClick={() => {
-                        const exportData = viewClassStudents.map(s => ({
-                            'Student Name': s.full_name,
-                            'Admission Number': s.admission_number,
-                            'Gender': s.gender || 'N/A'
-                        }));
-                        exportToCSV(exportData, `Class_List_${selectedClass?.name}_${selectedClass?.stream}`);
-                    }} icon={<Download size={16} />}>
-                        Export CSV
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => {
-                        // Temporarily add print-modal class to the modal content wrapper before triggering print
-                        const modalContent = document.querySelector('.modal-content');
-                        if (modalContent) modalContent.classList.add('print-modal');
-                        window.print();
-                        if (modalContent) setTimeout(() => modalContent.classList.remove('print-modal'), 1000);
-                    }} className="border-primary text-primary hover:bg-primary hover:text-white" icon={<Printer size={16} />}>
-                        Print List
-                    </Button>
-                </div>
-                <div className="table-wrapper">
-                    <table className="table">
-                        <thead><tr><th>Student Name</th><th>ADM No</th></tr></thead>
-                        <tbody>
-                            {viewClassStudents.length > 0 ? viewClassStudents.map(s => (
-                                <tr key={s.id}>
-                                    <td className="font-bold text-xs">{s.full_name}</td>
-                                    <td className="text-xs text-secondary">{s.admission_number}</td>
-                                </tr>
-                            )) : <tr><td colSpan={2} className="text-center p-4 text-xs">No students found in this class.</td></tr>}
-                        </tbody>
-                    </table>
-                </div>
-            </Modal>
-
-            {/* Enter Results Modal */}
-            <Modal isOpen={isResultModalOpen} onClose={() => setIsResultModalOpen(false)} title={`Enter Results: ${selectedExam?.name || ''}`} size="full">
-                <form onSubmit={handleBulkResultSubmit}>
-                    {/* Cascading Class Selector */}
-                    <div className="form-group p-3 mb-4 bg-gray-50">
-                        <label className="label text-[10px] font-black uppercase mb-2">Select Class to Enter Marks</label>
-                        <div className="grid grid-cols-2 gap-md">
-                            <div>
-                                <label className="text-[9px] font-bold uppercase text-secondary">Class Level</label>
-                                <select className="select text-xs" value={resultContext.level} onChange={(e) => {
-                                    setResultContext({ ...resultContext, level: e.target.value, classId: '' });
-                                }}>
-                                    <option value="">Select Level...</option>
-                                    {uniqueClassNames.map(name => <option key={name} value={name}>{name}</option>)}
-                                </select>
-                            </div>
-                            <div>
-                                <label className="text-[9px] font-bold uppercase text-secondary">Stream</label>
-                                <select className="select text-xs" value={resultContext.classId} onChange={async (e) => {
-                                    const cid = e.target.value;
-                                    setResultContext({ ...resultContext, classId: cid });
-
-                                    // Load existing results for this exam + class/level
-                                    if (cid) {
-                                        setLoading(true);
-                                        try {
-                                            const res = await academicsAPI.results.getAll({ exam_id: selectedExam.id });
-                                            const rawResults = res.data?.results ?? res.data ?? [];
-                                            // Filter results based on selection (Specific Stream or ALL in Level)
-                                            const relevantResults = rawResults.filter((r: any) => {
-                                                const s = students.find(st => st.id === r.student);
-                                                if (!s) return false;
-                                                // If 'all', match by Level name. If specific ID, match by current_class ID.
-                                                if (cid === 'all') {
-                                                    // Find class object for student
-                                                    const sClass = classes.find(c => c.id === s.current_class);
-                                                    return sClass && sClass.name === resultContext.level;
-                                                }
-                                                return s.current_class === parseInt(cid);
-                                            });
-
-                                            // Map to nested matrix state
-                                            const matrix: any = {};
-                                            relevantResults.forEach((r: any) => {
-                                                if (!matrix[r.student]) matrix[r.student] = {};
-                                                matrix[r.student][r.subject] = { score: r.score.toString(), id: r.id };
-                                            });
-                                            setStudentScores(matrix);
-
-                                            // Also load the specific subjects allocated to this class
-                                            if (cid !== 'all') {
-                                                const classSubRes = await academicsAPI.classSubjects.list({ class_id: cid });
-                                                const classSubData = classSubRes.data?.results ?? classSubRes.data ?? [];
-                                                setActiveClassSubjects(Array.isArray(classSubData) ? classSubData : []);
-                                            } else {
-                                                setActiveClassSubjects([]);
+                                // Load existing results for this exam + class/level
+                                if (cid) {
+                                    setLoading(true);
+                                    try {
+                                        const res = await academicsAPI.results.getAll({ exam_id: selectedExam.id });
+                                        const rawResults = res.data?.results ?? res.data ?? [];
+                                        // Filter results based on selection (Specific Stream or ALL in Level)
+                                        const relevantResults = rawResults.filter((r: any) => {
+                                            const s = students.find(st => st.id === r.student);
+                                            if (!s) return false;
+                                            // If 'all', match by Level name. If specific ID, match by current_class ID.
+                                            if (cid === 'all') {
+                                                // Find class object for student
+                                                const sClass = classes.find(c => c.id === s.current_class);
+                                                return sClass && sClass.name === resultContext.level;
                                             }
+                                            return s.current_class === parseInt(cid);
+                                        });
 
-                                        } catch (err) { console.error(err); }
-                                        setLoading(false);
-                                    } else {
-                                        setActiveClassSubjects([]);
-                                    }
-                                }} disabled={!resultContext.level}>
-                                    <option value="">Select Stream...</option>
-                                    <option value="all" className="font-bold">ALL STREAMS (Combined)</option>
-                                    {classes.filter(c => c.name === resultContext.level).map(c => <option key={c.id} value={c.id}>{c.stream}</option>)}
-                                </select>
-                            </div>
-                        </div>
-                    </div>
+                                        // Map to nested matrix state
+                                        const matrix: any = {};
+                                        relevantResults.forEach((r: any) => {
+                                            if (!matrix[r.student]) matrix[r.student] = {};
+                                            matrix[r.student][r.subject] = { score: r.score.toString(), id: r.id };
+                                        });
+                                        setStudentScores(matrix);
 
-                    {resultContext.classId && (
-                        <div className="table-wrapper max-h-75vh w-full block bg-white relative m-0 mt-4 border rounded-xl overflow-auto shadow-sm">
-                            <table className="results-entry-table table w-full border-collapse text-xs">
-                                <thead className="sticky top-0 z-20 bg-white">
-                                    <tr className="border-none">
-                                        <th className="sticky left-0 z-30 bg-white min-w-[160px] p-3 text-left">
-                                            <span className="text-[10px] font-black uppercase text-slate-800">Student Name</span>
-                                        </th>
-                                        {subjects.filter(sub => {
-                                            // 1. If 'All Streams' selected, show all subjects
-                                            if (resultContext.classId === 'all') return true;
-                                            // 2. Otherwise, only show if it's allocated to the selected class
-                                            return activeClassSubjects.some(cs => cs.subject === sub.id);
-                                        }).map(sub => (
-                                            <th key={sub.id} className="text-center min-w-[110px] p-2 bg-white" title={`${sub.name} (${sub.code})`}>
-                                                <div className="text-[11px] font-black uppercase text-slate-800">{sub.name.substring(0, 3)}</div>
-                                            </th>
-                                        ))}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {filteredResultStudents.map((student) => {
-                                        const sClass = classes.find(c => c.id === student.current_class);
-                                        return (
-                                            <StudentResultRow
-                                                key={student.id}
-                                                student={student}
-                                                sClass={sClass}
-                                                subjects={subjects}
-                                                studentScores={studentScores[student.id]}
-                                                onScoreChange={handleScoreChange}
-                                                onDeleteResult={handleDeleteSingleResult}
-                                                activeClassSubjects={activeClassSubjects}
-                                                resultContext={resultContext.classId}
-                                                gradeSystems={gradeSystems}
-                                                examGradeSystemId={selectedExam?.grade_system}
-                                            />
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                            {students.filter(s => {
-                                if (resultContext.classId === 'all') {
-                                    const sClass = classes.find(c => c.id === s.current_class);
-                                    return sClass && sClass.name === resultContext.level;
+                                        // Also load the specific subjects allocated to this class
+                                        if (cid !== 'all') {
+                                            const classSubRes = await academicsAPI.classSubjects.list({ class_id: cid });
+                                            const classSubData = classSubRes.data?.results ?? classSubRes.data ?? [];
+                                            setActiveClassSubjects(Array.isArray(classSubData) ? classSubData : []);
+                                        } else {
+                                            setActiveClassSubjects([]);
+                                        }
+
+                                    } catch (err) { console.error(err); }
+                                    setLoading(false);
+                                } else {
+                                    setActiveClassSubjects([]);
                                 }
-                                return s.current_class === parseInt(resultContext.classId);
-                            }).length === 0 && (
-                                    <div className="p-12 text-center text-gray-400 italic">No students found for {resultContext.level} {resultContext.classId === 'all' ? '(All Streams)' : ''}</div>
-                                )}
-                        </div>
-                    )}
-
-                    <div className="mt-4 pt-4 border-top flex justify-between items-center">
-                        <p className="text-[10px] text-secondary">
-                            <span className="font-bold text-primary">Tip:</span> Existing marks are shown in <span className="font-bold text-primary">blue</span>. Enter new marks and click Save.
-                        </p>
-                        <div className="flex gap-2">
-                            <Button variant="ghost" size="sm" onClick={() => setIsResultModalOpen(false)}>Cancel</Button>
-                            <Button type="submit" variant="primary" size="sm" className="font-black uppercase shadow-md px-6" loading={isSubmitting} loadingText="Saving Matrix...">Save Matrix Payload</Button>
+                            }} disabled={!resultContext.level}>
+                                <option value="">Select Stream...</option>
+                                <option value="all" className="font-bold">ALL STREAMS (Combined)</option>
+                                {classes.filter(c => c.name === resultContext.level).map(c => <option key={c.id} value={c.id}>{c.stream}</option>)}
+                            </select>
                         </div>
                     </div>
-                </form>
-            </Modal >
+                </div>
 
-            {/* Confirmation Modal */}
-            <Modal isOpen={deleteConfirm.isOpen} onClose={() => setDeleteConfirm({ ...deleteConfirm, isOpen: false })} title="Confirm Deletion" size="sm">
-                <div className="p-4 form-container-sm mx-auto">
-                    <p className="mb-4 text-secondary">
-                        Are you sure you want to delete this item? This action cannot be undone.
+                {resultContext.classId && (
+                    <div className="table-wrapper max-h-75vh w-full block bg-white relative m-0 mt-4 border rounded-xl overflow-auto shadow-sm">
+                        <table className="results-entry-table table w-full border-collapse text-xs">
+                            <thead className="sticky top-0 z-20 bg-white">
+                                <tr className="border-none">
+                                    <th className="sticky left-0 z-30 bg-white min-w-[160px] p-3 text-left">
+                                        <span className="text-[10px] font-black uppercase text-slate-800">Student Name</span>
+                                    </th>
+                                    {subjects.filter(sub => {
+                                        // 1. If 'All Streams' selected, show all subjects
+                                        if (resultContext.classId === 'all') return true;
+                                        // 2. Otherwise, only show if it's allocated to the selected class
+                                        return activeClassSubjects.some(cs => cs.subject === sub.id);
+                                    }).map(sub => (
+                                        <th key={sub.id} className="text-center min-w-[110px] p-2 bg-white" title={`${sub.name} (${sub.code})`}>
+                                            <div className="text-[11px] font-black uppercase text-slate-800">{sub.name.substring(0, 3)}</div>
+                                        </th>
+                                    ))}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filteredResultStudents.map((student) => {
+                                    const sClass = classes.find(c => c.id === student.current_class);
+                                    return (
+                                        <StudentResultRow
+                                            key={student.id}
+                                            student={student}
+                                            sClass={sClass}
+                                            subjects={subjects}
+                                            studentScores={studentScores[student.id]}
+                                            onScoreChange={handleScoreChange}
+                                            onDeleteResult={handleDeleteSingleResult}
+                                            activeClassSubjects={activeClassSubjects}
+                                            resultContext={resultContext.classId}
+                                            gradeSystems={gradeSystems}
+                                            examGradeSystemId={selectedExam?.grade_system}
+                                        />
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                        {students.filter(s => {
+                            if (resultContext.classId === 'all') {
+                                const sClass = classes.find(c => c.id === s.current_class);
+                                return sClass && sClass.name === resultContext.level;
+                            }
+                            return s.current_class === parseInt(resultContext.classId);
+                        }).length === 0 && (
+                                <div className="p-12 text-center text-gray-400 italic">No students found for {resultContext.level} {resultContext.classId === 'all' ? '(All Streams)' : ''}</div>
+                            )}
+                    </div>
+                )}
+
+                <div className="mt-4 pt-4 border-top flex justify-between items-center">
+                    <p className="text-[10px] text-secondary">
+                        <span className="font-bold text-primary">Tip:</span> Existing marks are shown in <span className="font-bold text-primary">blue</span>. Enter new marks and click Save.
                     </p>
-                    <div className="flex justify-end gap-2">
-                        <Button variant="secondary" onClick={() => setDeleteConfirm({ ...deleteConfirm, isOpen: false })}>Cancel</Button>
-                        <Button variant="primary" className="bg-error border-error text-white" onClick={executeDelete} loading={isSubmitting} loadingText="Deleting...">Confirm Delete</Button>
+                    <div className="flex gap-2">
+                        <Button variant="ghost" size="sm" onClick={() => setIsResultModalOpen(false)}>Cancel</Button>
+                        <Button type="submit" variant="primary" size="sm" className="font-black uppercase shadow-md px-6" loading={isSubmitting} loadingText="Saving Matrix...">Save Matrix Payload</Button>
                     </div>
                 </div>
-            </Modal >
+            </form>
+        </Modal >
 
-            {/* Reports Modal */}
-            <Modal isOpen={isReportModalOpen} onClose={() => setIsReportModalOpen(false)} title="Generate Reports" >
-                <div className="p-4 space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                        <button className="flex flex-col items-center justify-center p-6 border rounded-lg hover:bg-secondary-light hover:border-primary transition-all gap-2" onClick={() => { window.print(); setIsReportModalOpen(false); }}>
-                            <div className="p-3 rounded-full bg-primary-light text-primary mb-2"><FileText size={24} /></div>
-                            <span className="font-bold text-sm">Print Current View</span>
-                            <span className="text-[10px] text-center text-secondary">Print the current dashboard/list</span>
-                        </button>
-                        <button className="flex flex-col items-center justify-center p-6 border rounded-lg hover:bg-secondary-light hover:border-primary transition-all gap-2" onClick={() => alert('Feature coming soon: Export to CSV')}>
-                            <div className="p-3 rounded-full bg-success-light text-success mb-2"><BarChart3 size={24} /></div>
-                            <span className="font-bold text-sm">Export Data (CSV)</span>
-                            <span className="text-[10px] text-center text-secondary">Download raw data</span>
-                        </button>
+        {/* Confirmation Modal */}
+        <Modal isOpen={deleteConfirm.isOpen} onClose={() => setDeleteConfirm({ ...deleteConfirm, isOpen: false })} title="Confirm Deletion" size="sm">
+            <div className="p-4 form-container-sm mx-auto">
+                <p className="mb-4 text-secondary">
+                    Are you sure you want to delete this item? This action cannot be undone.
+                </p>
+                <div className="flex justify-end gap-2">
+                    <Button variant="secondary" onClick={() => setDeleteConfirm({ ...deleteConfirm, isOpen: false })}>Cancel</Button>
+                    <Button variant="primary" className="bg-error border-error text-white" onClick={executeDelete} loading={isSubmitting} loadingText="Deleting...">Confirm Delete</Button>
+                </div>
+            </div>
+        </Modal >
+
+        {/* Reports Modal */}
+        <Modal isOpen={isReportModalOpen} onClose={() => setIsReportModalOpen(false)} title="Generate Reports" >
+            <div className="p-4 space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                    <button className="flex flex-col items-center justify-center p-6 border rounded-lg hover:bg-secondary-light hover:border-primary transition-all gap-2" onClick={() => { window.print(); setIsReportModalOpen(false); }}>
+                        <div className="p-3 rounded-full bg-primary-light text-primary mb-2"><FileText size={24} /></div>
+                        <span className="font-bold text-sm">Print Current View</span>
+                        <span className="text-[10px] text-center text-secondary">Print the current dashboard/list</span>
+                    </button>
+                    <button className="flex flex-col items-center justify-center p-6 border rounded-lg hover:bg-secondary-light hover:border-primary transition-all gap-2" onClick={() => alert('Feature coming soon: Export to CSV')}>
+                        <div className="p-3 rounded-full bg-success-light text-success mb-2"><BarChart3 size={24} /></div>
+                        <span className="font-bold text-sm">Export Data (CSV)</span>
+                        <span className="text-[10px] text-center text-secondary">Download raw data</span>
+                    </button>
+                </div>
+            </div>
+        </Modal >
+
+        {/* Syllabus Modal */}
+        <Modal isOpen={isSyllabusModalOpen} onClose={() => setIsSyllabusModalOpen(false)} title="Track Syllabus Coverage" >
+            <form onSubmit={handleSyllabusSubmit} className="form-container-md mx-auto">
+                <div className="form-group">
+                    <label className="label text-[10px] font-black uppercase">Class Level</label>
+                    <select
+                        className="select"
+                        id="syllabus-level-select"
+                        value={syllabusForm.level}
+                        onChange={(e) => setSyllabusForm({ ...syllabusForm, level: e.target.value, class_grade: '' })}
+                        required
+                    >
+                        <option value="">Select Level...</option>
+                        {uniqueClassNames.map(name => <option key={name} value={name}>{name}</option>)}
+                    </select>
+                </div>
+                <div className="form-group">
+                    <label className="label text-[10px] font-black uppercase">Specific Stream</label>
+                    <select
+                        className="select"
+                        id="syllabus-stream-select"
+                        value={syllabusForm.class_grade}
+                        onChange={(e) => setSyllabusForm({ ...syllabusForm, class_grade: e.target.value })}
+                        required
+                        disabled={!syllabusForm.level}
+                    >
+                        <option value="">Select Stream...</option>
+                        {classes.filter(c => c.name === syllabusForm.level).map(c => (
+                            <option key={c.id} value={c.id.toString()}>{c.stream}</option>
+                        ))}
+                    </select>
+                </div>
+                <div className="form-group">
+                    <label className="label text-[10px] font-black uppercase">Subject</label>
+                    <select className="select" value={syllabusForm.subject} onChange={(e) => setSyllabusForm({ ...syllabusForm, subject: e.target.value })} required>
+                        <option value="">Select Subject...</option>
+                        {subjects.map(s => <option key={s.id} value={s.id}>{s.name} ({s.code})</option>)}
+                    </select>
+                </div>
+                <div className="form-group">
+                    <label className="label text-[10px] font-black uppercase">Start Pct</label>
+                    <div className="flex items-center gap-2">
+                        <input type="range" min="0" max="100" className="range range-xs range-primary" value={syllabusForm.coverage_percentage} onChange={(e) => setSyllabusForm({ ...syllabusForm, coverage_percentage: parseInt(e.target.value) })} />
+                        <span className="font-bold text-xs w-12 text-right">{syllabusForm.coverage_percentage}%</span>
                     </div>
                 </div>
-            </Modal >
+                <Button type="submit" variant="primary" size="sm" className="w-full mt-2 font-black uppercase" loading={isSubmitting} loadingText="Saving...">Save Coverage</Button>
+            </form>
+        </Modal>
 
-            {/* Syllabus Modal */}
-            <Modal isOpen={isSyllabusModalOpen} onClose={() => setIsSyllabusModalOpen(false)} title="Track Syllabus Coverage" >
-                <form onSubmit={handleSyllabusSubmit} className="form-container-md mx-auto">
-                    <div className="form-group">
-                        <label className="label text-[10px] font-black uppercase">Class Level</label>
-                        <select
-                            className="select"
-                            id="syllabus-level-select"
-                            value={syllabusForm.level}
-                            onChange={(e) => setSyllabusForm({ ...syllabusForm, level: e.target.value, class_grade: '' })}
-                            required
-                        >
-                            <option value="">Select Level...</option>
-                            {uniqueClassNames.map(name => <option key={name} value={name}>{name}</option>)}
-                        </select>
-                    </div>
-                    <div className="form-group">
-                        <label className="label text-[10px] font-black uppercase">Specific Stream</label>
-                        <select
-                            className="select"
-                            id="syllabus-stream-select"
-                            value={syllabusForm.class_grade}
-                            onChange={(e) => setSyllabusForm({ ...syllabusForm, class_grade: e.target.value })}
-                            required
-                            disabled={!syllabusForm.level}
-                        >
-                            <option value="">Select Stream...</option>
-                            {classes.filter(c => c.name === syllabusForm.level).map(c => (
-                                <option key={c.id} value={c.id.toString()}>{c.stream}</option>
-                            ))}
-                        </select>
-                    </div>
-                    <div className="form-group">
-                        <label className="label text-[10px] font-black uppercase">Subject</label>
-                        <select className="select" value={syllabusForm.subject} onChange={(e) => setSyllabusForm({ ...syllabusForm, subject: e.target.value })} required>
-                            <option value="">Select Subject...</option>
-                            {subjects.map(s => <option key={s.id} value={s.id}>{s.name} ({s.code})</option>)}
-                        </select>
-                    </div>
-                    <div className="form-group">
-                        <label className="label text-[10px] font-black uppercase">Start Pct</label>
-                        <div className="flex items-center gap-2">
-                            <input type="range" min="0" max="100" className="range range-xs range-primary" value={syllabusForm.coverage_percentage} onChange={(e) => setSyllabusForm({ ...syllabusForm, coverage_percentage: parseInt(e.target.value) })} />
-                            <span className="font-bold text-xs w-12 text-right">{syllabusForm.coverage_percentage}%</span>
-                        </div>
-                    </div>
-                    <Button type="submit" variant="primary" size="sm" className="w-full mt-2 font-black uppercase" loading={isSubmitting} loadingText="Saving...">Save Coverage</Button>
-                </form>
-            </Modal>
+        {/* Grade System Modal */}
+        <Modal isOpen={isGradeModalOpen} onClose={() => setIsGradeModalOpen(false)} title={editingSystemId ? "Edit Grading System" : "New Grading System"}>
+            <form onSubmit={handleGradeSystemSubmit} className="form-container-md mx-auto">
+                <div className="form-group mb-4">
+                    <label className="label text-[10px] font-black uppercase">System Name</label>
+                    <input type="text" className="input" placeholder="e.g. KNEC Standard" value={gradeForm.name} onChange={(e) => setGradeForm({ ...gradeForm, name: e.target.value })} required />
+                </div>
+                <div className="form-group mb-4 flex items-center gap-2">
+                    <input type="checkbox" className="checkbox checkbox-sm checkbox-primary" checked={gradeForm.is_default} onChange={(e) => setGradeForm({ ...gradeForm, is_default: e.target.checked })} />
+                    <label className="label text-[10px] font-black uppercase mb-0">Set as Default System</label>
+                </div>
+                <Button type="submit" variant="primary" className="w-full font-black uppercase" loading={isSubmitting} loadingText="Saving...">Save System</Button>
+            </form>
+        </Modal>
 
-            {/* Grade System Modal */}
-            <Modal isOpen={isGradeModalOpen} onClose={() => setIsGradeModalOpen(false)} title={editingSystemId ? "Edit Grading System" : "New Grading System"}>
-                <form onSubmit={handleGradeSystemSubmit} className="form-container-md mx-auto">
-                    <div className="form-group mb-4">
-                        <label className="label text-[10px] font-black uppercase">System Name</label>
-                        <input type="text" className="input" placeholder="e.g. KNEC Standard" value={gradeForm.name} onChange={(e) => setGradeForm({ ...gradeForm, name: e.target.value })} required />
-                    </div>
-                    <div className="form-group mb-4 flex items-center gap-2">
-                        <input type="checkbox" className="checkbox checkbox-sm checkbox-primary" checked={gradeForm.is_default} onChange={(e) => setGradeForm({ ...gradeForm, is_default: e.target.checked })} />
-                        <label className="label text-[10px] font-black uppercase mb-0">Set as Default System</label>
-                    </div>
-                    <Button type="submit" variant="primary" className="w-full font-black uppercase" loading={isSubmitting} loadingText="Saving...">Save System</Button>
-                </form>
-            </Modal>
-
-            {/* Grade Boundary Modal */}
-            <Modal isOpen={isBoundaryModalOpen} onClose={() => setIsBoundaryModalOpen(false)} title={editingBoundaryId ? "Edit Grade Boundary" : "Add Grade Boundary"}>
-                <form onSubmit={handleBoundarySubmit} className="form-container-md mx-auto space-y-4 px-1">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group">
-                            <label className="label text-[10px] font-black uppercase">Grade Symbol</label>
-                            <input type="text" className="input" placeholder="e.g. A" value={boundaryForm.grade} onChange={(e) => setBoundaryForm({ ...boundaryForm, grade: e.target.value })} required />
-                        </div>
-                        <div className="form-group">
-                            <label className="label text-[10px] font-black uppercase">Points</label>
-                            <input type="number" className="input" placeholder="12" value={boundaryForm.points} onChange={(e) => setBoundaryForm({ ...boundaryForm, points: parseInt(e.target.value) })} required />
-                        </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group">
-                            <label className="label text-[10px] font-black uppercase">Min Score</label>
-                            <input type="number" className="input" value={boundaryForm.min_score} onChange={(e) => setBoundaryForm({ ...boundaryForm, min_score: parseInt(e.target.value) })} required />
-                        </div>
-                        <div className="form-group">
-                            <label className="label text-[10px] font-black uppercase">Max Score</label>
-                            <input type="number" className="input" value={boundaryForm.max_score} onChange={(e) => setBoundaryForm({ ...boundaryForm, max_score: parseInt(e.target.value) })} required />
-                        </div>
+        {/* Grade Boundary Modal */}
+        <Modal isOpen={isBoundaryModalOpen} onClose={() => setIsBoundaryModalOpen(false)} title={editingBoundaryId ? "Edit Grade Boundary" : "Add Grade Boundary"}>
+            <form onSubmit={handleBoundarySubmit} className="form-container-md mx-auto space-y-4 px-1">
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="form-group">
+                        <label className="label text-[10px] font-black uppercase">Grade Symbol</label>
+                        <input type="text" className="input" placeholder="e.g. A" value={boundaryForm.grade} onChange={(e) => setBoundaryForm({ ...boundaryForm, grade: e.target.value })} required />
                     </div>
                     <div className="form-group">
-                        <label className="label text-[10px] font-black uppercase">Remarks</label>
-                        <input type="text" className="input" placeholder="Excellent" value={boundaryForm.remarks} onChange={(e) => setBoundaryForm({ ...boundaryForm, remarks: e.target.value })} />
+                        <label className="label text-[10px] font-black uppercase">Points</label>
+                        <input type="number" className="input" placeholder="12" value={boundaryForm.points} onChange={(e) => setBoundaryForm({ ...boundaryForm, points: parseInt(e.target.value) })} required />
                     </div>
-                    <Button type="submit" variant="primary" className="w-full font-black uppercase" loading={isSubmitting} loadingText="Saving...">Save Boundary</Button>
-                </form>
-            </Modal>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="form-group">
+                        <label className="label text-[10px] font-black uppercase">Min Score</label>
+                        <input type="number" className="input" value={boundaryForm.min_score} onChange={(e) => setBoundaryForm({ ...boundaryForm, min_score: parseInt(e.target.value) })} required />
+                    </div>
+                    <div className="form-group">
+                        <label className="label text-[10px] font-black uppercase">Max Score</label>
+                        <input type="number" className="input" value={boundaryForm.max_score} onChange={(e) => setBoundaryForm({ ...boundaryForm, max_score: parseInt(e.target.value) })} required />
+                    </div>
+                </div>
+                <div className="form-group">
+                    <label className="label text-[10px] font-black uppercase">Remarks</label>
+                    <input type="text" className="input" placeholder="Excellent" value={boundaryForm.remarks} onChange={(e) => setBoundaryForm({ ...boundaryForm, remarks: e.target.value })} />
+                </div>
+                <Button type="submit" variant="primary" className="w-full font-black uppercase" loading={isSubmitting} loadingText="Saving...">Save Boundary</Button>
+            </form>
+        </Modal>
 
-        </div >
-    );
+    </div >
+);
 };
 
 export default Academics;
