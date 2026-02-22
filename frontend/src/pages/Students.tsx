@@ -24,7 +24,6 @@ const Students = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingStudent, setEditingStudent] = useState<any>(null);
-    const [groupBy, setGroupBy] = useState<'NONE' | 'CLASS' | 'CATEGORY' | 'STATUS'>('NONE');
     const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
     const [autoAssignHostel, setAutoAssignHostel] = useState(true);
 
@@ -275,16 +274,7 @@ const Students = () => {
         </div>
     );
 
-    const groupedData = filteredStudents.reduce((groups: any, s) => {
-        let key = 'ALL RECORDS';
-        if (groupBy === 'CLASS') key = s.class_name ? `Class: ${s.class_name} - ${s.class_stream || 'General'}` : 'Unassigned Units';
-        else if (groupBy === 'CATEGORY') key = s.category === 'BOARDING' ? 'Boarding Students' : 'Day Scholars';
-        else if (groupBy === 'STATUS') key = `Status: ${s.status}`;
-
-        if (!groups[key]) groups[key] = [];
-        groups[key].push(s);
-        return groups;
-    }, {});
+    const groupedData = {}; // Placeholder for safety, but will be removed
 
     if (loading) return <div className="flex items-center justify-center p-12 spinner-container"><div className="spinner"></div></div>;
 
@@ -330,62 +320,46 @@ const Students = () => {
             {/* Content & Filters */}
             <div className="card mb-6 no-print p-6">
                 <div className="flex flex-wrap gap-lg items-center">
-                    <div className="search-container flex-grow min-w-[300px]">
+                    <div className="search-container flex-grow max-w-md">
                         <Search className="search-icon" size={18} />
                         <input type="text" className="input search-input" placeholder="Search by name, identity, or unit..."
                             value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-                    </div>
-                    <div className="flex items-center gap-sm">
-                        <span className="text-xs font-black text-secondary uppercase mr-2">Group By:</span>
-                        <div className="flex bg-secondary-light p-1 rounded-lg border">
-                            {(['NONE', 'CLASS', 'CATEGORY', 'STATUS'] as const).map(g => (
-                                <button key={g}
-                                    className={`px-4 py-2 rounded-md text-[10px] font-black transition-all ${groupBy === g ? 'bg-primary text-white shadow-sm' : 'text-secondary hover:bg-white'}`}
-                                    onClick={() => setGroupBy(g)}
-                                >
-                                    {g}
-                                </button>
-                            ))}
-                        </div>
                     </div>
                 </div>
             </div>
 
             {/* Render Data */}
             <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
-                {!selectedClassId && groupBy === 'NONE' ? (
-                    <div className="p-8">
-                        <div className="flex justify-between items-center mb-8 pb-4 border-b">
+                {!selectedClassId ? (
+                    <div className="p-10">
+                        <div className="flex justify-between items-center mb-10 pb-6 border-b">
                             <div>
-                                <h3 className="text-sm font-black uppercase text-slate-800 mb-1">Student Registry Navigation</h3>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Select a class unit to view specific student records</p>
-                            </div>
-                            <div className="flex bg-slate-100 p-1 rounded-lg">
-                                <Button variant="ghost" size="sm" onClick={() => setGroupBy('CLASS')} className="text-[9px] font-black uppercase">Switch to Grouped View</Button>
+                                <h3 className="text-lg font-black uppercase text-slate-800 mb-1">Student Registry Navigator</h3>
+                                <p className="text-xs font-bold text-slate-400 uppercase tracking-tight">Select a class unit to access student records</p>
                             </div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                             {classes.sort((a, b) => `${a.name}${a.stream}`.localeCompare(`${b.name}${b.stream}`)).map(c => (
                                 <div
                                     key={c.id}
-                                    className="group card hover:border-primary transition-all cursor-pointer p-0 overflow-hidden relative"
+                                    className="group card hover:border-primary transition-all cursor-pointer p-0 overflow-hidden relative rounded-2xl border-2"
                                     onClick={() => setSelectedClassId(c.id)}
                                 >
-                                    <div className="absolute top-0 left-0 w-1 h-full bg-primary opacity-20 group-hover:opacity-100 transition-opacity"></div>
-                                    <div className="p-5">
-                                        <div className="flex justify-between items-start mb-3">
-                                            <div className="flex flex-col">
-                                                <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">{c.name}</span>
-                                                <span className="text-sm font-black text-slate-800">{c.stream}</span>
+                                    <div className="absolute top-0 left-0 w-1.5 h-full bg-primary opacity-20 group-hover:opacity-100 transition-opacity"></div>
+                                    <div className="p-7">
+                                        <div className="flex justify-between items-start mb-4">
+                                            <div className="flex flex-col gap-1">
+                                                <span className="text-[11px] font-black uppercase text-slate-400 tracking-widest">{c.name}</span>
+                                                <span className="text-base font-black text-slate-800">{c.stream}</span>
                                             </div>
-                                            <span className="badge badge-info text-[10px] font-black uppercase">{students.filter(s => s.current_class === c.id).length} Students</span>
+                                            <span className="badge badge-info text-[10px] font-black uppercase py-3 px-3 rounded-lg shadow-sm">{students.filter(s => s.current_class === c.id).length} Students</span>
                                         </div>
-                                        <div className="flex items-center justify-between mt-4">
-                                            <span className="text-[9px] font-bold text-primary group-hover:translate-x-1 transition-transform flex items-center gap-1 uppercase">
-                                                Access Registry <ArrowRight size={12} />
+                                        <div className="flex items-center justify-between mt-6">
+                                            <span className="text-[10px] font-black text-primary group-hover:translate-x-1 transition-transform flex items-center gap-1.5 uppercase">
+                                                Access Registry <ArrowRight size={14} />
                                             </span>
-                                            <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-                                                <UserIcon size={14} />
+                                            <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-primary/10 group-hover:text-primary transition-colors border border-slate-100">
+                                                <UserIcon size={16} />
                                             </div>
                                         </div>
                                     </div>
@@ -396,44 +370,28 @@ const Students = () => {
                     </div>
                 ) : (
                     <div className="fade-in">
-                        {(selectedClassId || groupBy !== 'NONE') && (
+                        {selectedClassId && (
                             <div className="p-4 bg-slate-50 border-b flex justify-between items-center px-6">
                                 <div className="flex items-center gap-4">
-                                    <Button variant="ghost" size="sm" onClick={() => { setSelectedClassId(null); setGroupBy('NONE'); }} className="text-[10px] font-black uppercase tracking-tighter">
+                                    <Button variant="ghost" size="sm" onClick={() => setSelectedClassId(null)} className="text-[10px] font-black uppercase tracking-tighter">
                                         ← Back to Navigator
                                     </Button>
-                                    {selectedClassId && (
-                                        <div className="text-[10px] font-black uppercase text-slate-800 flex items-center gap-2">
-                                            <span className="text-slate-400">Current Unit:</span>
-                                            <span className="bg-primary text-white px-2 py-0.5 rounded">
-                                                {classes.find(c => c.id === selectedClassId)?.name} {classes.find(c => c.id === selectedClassId)?.stream}
-                                            </span>
-                                        </div>
-                                    )}
+                                    <div className="text-[10px] font-black uppercase text-slate-800 flex items-center gap-2">
+                                        <span className="text-slate-400">Current Unit:</span>
+                                        <span className="bg-primary text-white px-2 py-0.5 rounded">
+                                            {classes.find(c => c.id === selectedClassId)?.name} {classes.find(c => c.id === selectedClassId)?.stream}
+                                        </span>
+                                    </div>
                                 </div>
                                 <div className="badge badge-outline text-[10px] font-black uppercase tracking-widest">
                                     {filteredStudents.length} Records Loaded
                                 </div>
                             </div>
                         )}
-                        {groupBy === 'NONE' ? (
-                            <div className="table-container border-none shadow-none">
-                                {renderTable(filteredStudents)}
-                                {filteredStudents.length === 0 && <div className="text-center py-16 text-secondary font-bold uppercase text-xs">No records associated with this unit</div>}
-                            </div>
-                        ) : (
-                            <div className="space-y-8 p-6">
-                                {Object.keys(groupedData).sort().map(groupKey => (
-                                    <div key={groupKey} className="table-container shadow-md border border-primary">
-                                        <div className="p-4 bg-secondary-light flex justify-between items-center border-bottom">
-                                            <h3 className="mb-0 text-xs font-black uppercase text-primary tracking-widest">{groupKey}</h3>
-                                            <span className="badge badge-info">{groupedData[groupKey].length} Students</span>
-                                        </div>
-                                        {renderTable(groupedData[groupKey])}
-                                    </div>
-                                ))}
-                            </div>
-                        )}
+                        <div className="table-container border-none shadow-none">
+                            {renderTable(filteredStudents)}
+                            {filteredStudents.length === 0 && <div className="text-center py-16 text-secondary font-bold uppercase text-xs">No records associated with this unit</div>}
+                        </div>
                     </div>
                 )}
             </div>

@@ -1069,8 +1069,11 @@ const Academics = () => {
 
     if (loading) return <div className="flex items-center justify-center p-12 spinner-container"><div className="spinner"></div></div>;
 
-    const activeYear = academicYears.find((y: any) => y.is_active)?.name || 'NO ACTIVE YEAR';
-    const activeTerm = terms.find((t: any) => t.is_active)?.name || 'NO ACTIVE TERM';
+    const activeYearObj = academicYears.find((y: any) => y.is_active);
+    const activeTermObj = terms.find((t: any) => t.is_active);
+    const activeYear = activeYearObj?.name || 'NO ACTIVE YEAR';
+    const activeTerm = activeTermObj?.name || 'NO ACTIVE TERM';
+    const noActivePeriod = !activeYearObj || !activeTermObj;
 
     staff.map(s => ({ id: s.user || s.id, label: s.full_name || s.username, subLabel: `ID: ${s.employee_id}` }));
     const studentOptions = students.map(s => ({ id: s.id, label: s.full_name, subLabel: `ADM: ${s.admission_number}` }));
@@ -1098,6 +1101,21 @@ const Academics = () => {
                     <Award size={200} />
                 </div>
             </div>
+
+            {/* Active Status Header */}
+            {noActivePeriod && (
+                <div className="mb-6 animate-pulse px-6 py-4 bg-error-light/30 border-2 border-error/20 rounded-2xl flex items-center gap-4 no-print mx-4">
+                    <div className="bg-error text-white p-2 rounded-xl">
+                        <ShieldAlert size={20} />
+                    </div>
+                    <div>
+                        <h4 className="text-sm font-black text-error uppercase mb-0">Missing Active Academic Period</h4>
+                        <p className="text-[10px] font-bold text-error/70 uppercase tracking-widest">
+                            Official records require an active Year and Term. Please activate them in the "Resources" tab.
+                        </p>
+                    </div>
+                </div>
+            )}
 
             {/* Navigation Tabs - Consolidated */}
             <div className="nav-tab-container no-print">
@@ -1201,7 +1219,7 @@ const Academics = () => {
                                         <Button variant="outline" size="sm" className="p-2" onClick={() => setIsSyllabusModalOpen(true)} icon={<Edit size={12} />} />
                                     </div>
                                 </div>
-                                <div className="card-body p-6 space-y-6 max-h-400 overflow-y-auto">
+                                <div className="card-body p-6 space-y-6 min-h-[300px]">
                                     {syllabusData.length === 0 && (
                                         <div className="py-12 text-center text-slate-300">
                                             <BarChart3 size={32} className="mx-auto mb-2 opacity-20" />
@@ -1502,7 +1520,7 @@ const Academics = () => {
 
             {
                 activeTab === 'GRADING' && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-lg h-screen-200">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-lg min-h-[60vh]">
                         {/* Left: Systems List */}
                         <div className="card md:col-span-1 min-w-0 flex flex-col">
                             <div className="card-header flex justify-between items-center py-3 border-bottom">
@@ -1844,7 +1862,7 @@ const Academics = () => {
                                     <h3 className="mb-0 text-xs font-black uppercase tracking-widest text-slate-800">Cycles & Terms</h3>
                                     <Button variant="outline" size="sm" className="p-2 border-slate-200" onClick={() => setIsYearModalOpen(true)} icon={<Plus size={14} />} />
                                 </div>
-                                <div className="card-body p-4 space-y-4 max-h-70vh overflow-y-auto">
+                                <div className="card-body p-4 space-y-4">
                                     {academicYears.map(y => (
                                         <div key={y.id} className="p-4 rounded-xl bg-slate-50/50 border border-slate-100 hover:bg-white transition-all group">
                                             <div className="flex items-center justify-between mb-4 bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
@@ -1854,7 +1872,7 @@ const Academics = () => {
                                                         onClick={() => handleSetActiveYear(y)}
                                                         title={y.is_active ? "This is the CURRENT Active Cycle" : "Click to set as Active Cycle"}
                                                     >
-                                                        <CheckSquare size={18} className={y.is_active ? 'opacity-100' : 'opacity-20'} />
+                                                        {y.is_active ? <CheckSquare size={18} /> : null}
                                                     </button>
                                                     <div>
                                                         <span className="block font-black text-[10px] uppercase tracking-widest text-slate-400 mb-0.5">Academic Cycle</span>
@@ -1880,7 +1898,7 @@ const Academics = () => {
                                                                 onClick={() => handleSetActiveTerm(t)}
                                                                 title={t.is_active ? "Current Active Term" : "Set as Active"}
                                                             >
-                                                                {t.is_active ? <CheckSquare size={14} /> : <Square size={14} />}
+                                                                {t.is_active ? <CheckSquare size={14} /> : null}
                                                             </button>
                                                             <span className="font-bold text-slate-600 uppercase">{t.name}</span>
                                                         </div>

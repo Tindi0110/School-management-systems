@@ -90,13 +90,18 @@ const StudentProfile = () => {
             const [studentRes, parentsRes, libRes, resRes] = await Promise.all([
                 studentsAPI.getOne(Number(id)),
                 studentsAPI.parents.getForStudent(Number(id)),
-                libraryAPI.lendings.getAll({ student: Number(id), status: 'BORROWED' }),
+                libraryAPI.lendings.getAll({ user: Number(id) }), // Fetch all lendings for this student's user
                 academicsAPI.results.getAll({ student_id: Number(id) })
             ]);
 
             setStudent(studentRes.data);
             setParents(parentsRes.data?.results ?? parentsRes.data ?? []);
-            setUnreturnedBooks((libRes.data?.results ?? libRes.data ?? []).length);
+
+            // Calculate unreturned books locally for accuracy
+            const allLendings = libRes.data?.results ?? libRes.data ?? [];
+            const unreturned = allLendings.filter((l: any) => !l.date_returned).length;
+            setUnreturnedBooks(unreturned);
+
             setResults(resRes.data?.results ?? resRes.data ?? []);
 
             setHealthForm({
