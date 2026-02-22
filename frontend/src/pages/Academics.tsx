@@ -1190,7 +1190,7 @@ const Academics = () => {
                             <Button variant="primary" size="sm" className="ml-auto-mobile" onClick={() => setIsSubjectModalOpen(true)} icon={<Plus size={14} />}>New Subject</Button>
                         </div>
                         <div className="p-0">
-                            <div className="table-wrapper m-0">
+                            <div className="table-wrapper overflow-x-auto w-full block m-0">
                                 <table className="table min-w-[800px] relative">
                                     <thead className="sticky top-0 bg-slate-50 z-10 shadow-sm text-[10px] uppercase">
                                         <tr>
@@ -1241,7 +1241,7 @@ const Academics = () => {
                                 <h3 className="mb-0 text-sm font-black uppercase">Curriculum Progress</h3>
                             </div>
                             <div className="p-0">
-                                <div className="table-wrapper">
+                                <div className="table-wrapper overflow-x-auto w-full block">
                                     <table className="table table-sm min-w-[800px] relative">
                                         <thead className="bg-secondary-light/30 text-secondary">
                                             <tr>
@@ -1337,7 +1337,7 @@ const Academics = () => {
                                             Sync to Students
                                         </Button>
                                     </div>
-                                    <div className="p-0 table-wrapper overflow-y-auto flex-1 m-0">
+                                    <div className="p-0 table-wrapper overflow-x-auto overflow-y-auto w-full block flex-1 m-0">
                                         <table className="table min-w-[600px] border-collapse">
                                             <thead className="sticky top-0 bg-slate-50 z-10 shadow-sm text-[10px] uppercase">
                                                 <tr>
@@ -1428,7 +1428,7 @@ const Academics = () => {
                                             Add Boundary
                                         </Button>
                                     </div>
-                                    <div className="flex-1 table-wrapper p-0 w-full min-w-0">
+                                    <div className="flex-1 table-wrapper overflow-x-auto w-full block p-0 min-w-0">
                                         <table className="table table-sm min-w-[600px]">
                                             <thead className="sticky top-0 bg-white z-10 shadow-sm text-[10px] uppercase">
                                                 <tr>
@@ -1534,7 +1534,7 @@ const Academics = () => {
                                     <h4 className="text-[10px] font-black uppercase text-slate-800 tracking-widest mb-0">{groupKey}</h4>
                                     <span className="badge bg-slate-200 text-slate-600 text-[9px] font-black px-2 py-0.5 rounded-full">{groupedResults[groupKey].length} CANDIDATES</span>
                                 </div>
-                                <div className="table-wrapper m-0">
+                                <div className="table-wrapper overflow-x-auto w-full block m-0">
                                     <table className="table min-w-[800px]">
                                         <thead className="bg-white text-[10px] uppercase font-black text-slate-400">
                                             <tr>
@@ -1655,7 +1655,7 @@ const Academics = () => {
                                             )}
                                         </div>
                                     </div>
-                                    <div className="table-wrapper m-0">
+                                    <div className="table-wrapper overflow-x-auto w-full block m-0">
                                         <table className="table min-w-[600px]">
                                             <thead className="bg-slate-50/50 text-[10px] uppercase font-black text-slate-400">
                                                 <tr>
@@ -2471,8 +2471,8 @@ const Academics = () => {
 
             {/* Grade Boundary Modal */}
             <Modal isOpen={isBoundaryModalOpen} onClose={() => setIsBoundaryModalOpen(false)} title={editingBoundaryId ? "Edit Grade Boundary" : "Add Grade Boundary"}>
-                <form onSubmit={handleBoundarySubmit} style={{ maxWidth: '500px', width: '100%', margin: '0 auto' }}>
-                    <div className="grid grid-cols-2 gap-4">
+                <form onSubmit={handleBoundarySubmit} className="w-full max-w-full overflow-x-auto m-0 mx-auto px-1">
+                    <div className="grid grid-cols-2 gap-4 min-w-[300px]">
                         <div className="form-group mb-4">
                             <label className="label text-[10px] font-black uppercase">Grade Symbol</label>
                             <input type="text" className="input" placeholder="e.g. A" value={boundaryForm.grade} onChange={(e) => setBoundaryForm({ ...boundaryForm, grade: e.target.value })} required />
@@ -2482,7 +2482,7 @@ const Academics = () => {
                             <input type="number" className="input" placeholder="12" value={boundaryForm.points} onChange={(e) => setBoundaryForm({ ...boundaryForm, points: parseInt(e.target.value) })} required />
                         </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-4 min-w-[300px]">
                         <div className="form-group mb-4">
                             <label className="label text-[10px] font-black uppercase">Min Score</label>
                             <input type="number" className="input" value={boundaryForm.min_score} onChange={(e) => setBoundaryForm({ ...boundaryForm, min_score: parseInt(e.target.value) })} required />
