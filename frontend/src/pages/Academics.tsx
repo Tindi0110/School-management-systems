@@ -1033,7 +1033,7 @@ const Academics = () => {
                     <div className="grid grid-cols-12 gap-6 lg:gap-8">
                         <div className="col-span-12 sm:col-span-6 lg:col-span-3 min-w-0">
                             <StatCard
-                                title="Total Capacity"
+                                title="Enrolled Capacity"
                                 value={classes.length > 0 ? `${classes.reduce((sum, c) => sum + (c.student_count || 0), 0)}/${classes.reduce((sum, c) => sum + (c.capacity || 40), 0)}` : "0/0"}
                                 icon={<Users size={18} />}
                                 gradient="linear-gradient(135deg, #1e3c72, #2a5298)"
@@ -1044,7 +1044,7 @@ const Academics = () => {
                                 title="Departments"
                                 value={subjectGroups.length}
                                 icon={<Layers size={18} />}
-                                gradient="linear-gradient(135deg, #f093fb, #f5576c)"
+                                gradient="linear-gradient(135deg, #02aab0, #00cdac)"
                             />
                         </div>
                         <div className="col-span-12 sm:col-span-6 lg:col-span-3 min-w-0">

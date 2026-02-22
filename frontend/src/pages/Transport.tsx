@@ -105,7 +105,15 @@ const Transport = () => {
         const fetchData = async (apiCall: any, setter: any, name: string) => {
             try {
                 const res = await apiCall;
-                // Hardened parsing: handles {results: []}, {data: []}, or raw [] 
+                console.log(`Diagnostic [${name}]:`, {
+                    status: res.status,
+                    hasData: !!res.data,
+                    dataType: typeof res.data,
+                    isDataArray: Array.isArray(res.data),
+                    resultsType: typeof res.data?.results,
+                    isResultsArray: Array.isArray(res.data?.results)
+                });
+
                 const data = res.data?.results ?? res.data ?? res ?? [];
                 const finalData = Array.isArray(data) ? data : [];
                 setter(finalData);
@@ -149,12 +157,21 @@ const Transport = () => {
                 routes: routes.length
             });
 
+            if (vData?.length === 0) {
+                console.warn("WARNING: Vehicles list is EMPTY after fetch!");
+            }
+
         } catch (error) {
             toast.error("Failed to load some transport data.");
         } finally {
             setLoading(false);
         }
     };
+
+    // Watch state changes for diagnostics
+    useEffect(() => {
+        console.log("Vehicles State Changed:", { count: vehicles.length, data: vehicles });
+    }, [vehicles]);
 
     const handleEnrollmentSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -627,6 +644,7 @@ const Transport = () => {
                     <p className="text-secondary text-sm font-medium">Fleet management, route optimization, and student safety</p>
                 </div>
                 <div className="flex flex-wrap gap-2 w-full lg:w-auto justify-start lg:justify-end no-print">
+                    <Button variant="outline" size="sm" className="flex-1 sm:flex-none" onClick={loadData} icon={<Clock size={14} />}>REFRESH</Button>
                     <Button variant="outline" size="sm" className="flex-1 sm:flex-none" onClick={() => exportToCSV(vehicles, 'Fleet_Registry')} icon={<Download size={14} />}>Fleet</Button>
                     <Button variant="outline" size="sm" className="flex-1 sm:flex-none" onClick={() => window.print()} icon={<Printer size={14} />}>Reports</Button>
                     <Button variant="primary" size="sm" className="flex-1 sm:flex-none" onClick={() => { setEnrollmentId(null); setIsAllocationModalOpen(true); }} icon={<Plus size={14} />}>Enroll</Button>
