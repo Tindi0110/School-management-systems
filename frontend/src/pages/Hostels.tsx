@@ -526,13 +526,13 @@ const Hostels = () => {
             </div>
 
             {/* Tabs */}
-            <div className="tabs mb-6 no-print overflow-x-auto">
-                <button className={`tab-link ${activeTab === 'registry' ? 'active' : ''}`} onClick={() => setActiveTab('registry')}><Building size={16} /> Registry</button>
-                <button className={`tab-link ${activeTab === 'allocations' ? 'active' : ''}`} onClick={() => setActiveTab('allocations')}><Users size={16} /> Allocations</button>
-                <button className={`tab-link ${activeTab === 'attendance' ? 'active' : ''}`} onClick={() => setActiveTab('attendance')}><Clock size={16} /> Attendance</button>
-                <button className={`tab-link ${activeTab === 'discipline' ? 'active' : ''}`} onClick={() => setActiveTab('discipline')}><ShieldAlert size={16} /> Discipline</button>
-                <button className={`tab-link ${activeTab === 'assets' ? 'active' : ''}`} onClick={() => setActiveTab('assets')}><Package size={16} /> Assets</button>
-                <button className={`tab-link ${activeTab === 'maintenance' ? 'active' : ''}`} onClick={() => setActiveTab('maintenance')}><Wrench size={16} /> Maintenance</button>
+            <div className="nav-tab-container mb-6 no-print">
+                <button className={`nav-tab ${activeTab === 'registry' ? 'active' : ''}`} onClick={() => setActiveTab('registry')}><Building size={16} /> Registry</button>
+                <button className={`nav-tab ${activeTab === 'allocations' ? 'active' : ''}`} onClick={() => setActiveTab('allocations')}><Users size={16} /> Allocations</button>
+                <button className={`nav-tab ${activeTab === 'attendance' ? 'active' : ''}`} onClick={() => setActiveTab('attendance')}><Clock size={16} /> Attendance</button>
+                <button className={`nav-tab ${activeTab === 'discipline' ? 'active' : ''}`} onClick={() => setActiveTab('discipline')}><ShieldAlert size={16} /> Discipline</button>
+                <button className={`nav-tab ${activeTab === 'assets' ? 'active' : ''}`} onClick={() => setActiveTab('assets')}><Package size={16} /> Assets</button>
+                <button className={`nav-tab ${activeTab === 'maintenance' ? 'active' : ''}`} onClick={() => setActiveTab('maintenance')}><Wrench size={16} /> Maintenance</button>
             </div>
 
             {/* Tab Content */}
@@ -847,7 +847,7 @@ const Hostels = () => {
             {/* Modals */}
             {/* Modals */}
             <Modal isOpen={isHostelModalOpen} onClose={() => setIsHostelModalOpen(false)} title={hostelId ? "Edit Hostel" : "Add New Hostel"}>
-                <form onSubmit={handleHostelSubmit} className="space-y-4">
+                <form onSubmit={handleHostelSubmit} className="space-y-4 form-container-md">
                     <div className="form-group"><label className="label">Name</label><input type="text" className="input" value={hostelFormData.name} onChange={e => setHostelFormData({ ...hostelFormData, name: e.target.value })} required /></div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group"><label className="label">Type</label><select className="select" value={hostelFormData.hostel_type} onChange={e => setHostelFormData({ ...hostelFormData, hostel_type: e.target.value })}><option value="BOARDING">Boarding</option><option value="DAY">Day Scholar</option></select></div>
@@ -879,7 +879,7 @@ const Hostels = () => {
             </Modal>
 
             <Modal isOpen={isRoomModalOpen} onClose={() => setIsRoomModalOpen(false)} title={roomId ? "Edit Room" : "Add New Room"}>
-                <form onSubmit={handleRoomSubmit} className="space-y-4">
+                <form onSubmit={handleRoomSubmit} className="space-y-4 form-container-md">
                     <div className="form-group"><label className="label">Hostel</label>
                         <select className="select" value={roomFormData.hostel} onChange={e => setRoomFormData({ ...roomFormData, hostel: e.target.value })} required>
                             <option value="">Select Hostel...</option>
@@ -908,7 +908,7 @@ const Hostels = () => {
             </Modal>
 
             <Modal isOpen={isAllocationModalOpen} onClose={() => setIsAllocationModalOpen(false)} title={isTransferMode ? "Transfer Student" : allocationId ? "Edit Allocation" : "Assign Student"}>
-                <form onSubmit={handleAllocationSubmit} className="space-y-4">
+                <form onSubmit={handleAllocationSubmit} className="space-y-4 form-container-md">
                     {!isTransferMode && (
                         <SearchableSelect label="Select Student" options={students.map(s => ({ id: String(s.id), label: s.full_name, subLabel: s.admission_number }))} value={String(allocationFormData.student || '')} onChange={(val) => setAllocationFormData({ ...allocationFormData, student: val.toString() })} required />
                     )}

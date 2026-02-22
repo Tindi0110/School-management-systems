@@ -87,73 +87,93 @@ const Sidebar = ({ onClose }: SidebarProps) => {
         .sidebar {
           width: 100%;
           height: 100%;
-          background: var(--primary);
+          background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
           color: white;
           display: flex;
           flex-direction: column;
-          box-shadow: var(--shadow-xl);
+          box-shadow: 4px 0 24px rgba(0,0,0,0.15);
           border-right: 1px solid rgba(255,255,255,0.05);
         }
         .sidebar-header {
-          padding: var(--spacing-md) var(--spacing-md);
-          border-bottom: 1px solid rgba(255,255,255,0.08);
-          background: var(--primary-dark);
+          padding: 1.5rem 1.25rem;
+          border-bottom: 1px solid rgba(255,255,255,0.05);
+          background: transparent;
+        }
+        .sidebar-header h3 {
+          font-size: 0.85rem;
+          background: linear-gradient(90deg, #ffffff 0%, #94a3b8 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          letter-spacing: 0.1em;
         }
         .sidebar-nav {
           flex: 1;
-          padding: var(--spacing-lg) 0;
+          padding: 1rem 0.75rem;
           overflow-y: auto;
-          scrollbar-width: none;
+          scrollbar-width: thin;
+          scrollbar-color: rgba(255,255,255,0.1) transparent;
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
         }
         .sidebar-nav::-webkit-scrollbar {
-          display: none;
+          width: 4px;
+        }
+        .sidebar-nav::-webkit-scrollbar-thumb {
+          background-color: rgba(255,255,255,0.1);
+          border-radius: 4px;
         }
         .nav-item {
           display: flex;
           align-items: center;
-          padding: 0.875rem var(--spacing-lg);
-          color: var(--text-muted);
+          padding: 0.75rem 1rem;
+          color: #94a3b8;
           text-decoration: none;
-          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           font-weight: 500;
-          letter-spacing: 0.01em;
-          border-left: 4px solid transparent;
+          font-size: 0.85rem;
+          border-radius: 0.75rem;
+          border: 1px solid transparent;
         }
         .nav-item:hover {
           color: white;
-          background: rgba(255,255,255,0.05);
+          background: rgba(255,255,255,0.03);
+          transform: translateX(4px);
         }
         .nav-item.active {
-          background: rgba(255,255,255,0.08);
+          background: linear-gradient(90deg, var(--primary) 0%, rgba(var(--primary-rgb), 0.8) 100%);
           color: white;
-          border-left-color: var(--primary-accent);
-          font-weight: 600;
+          font-weight: 700;
+          border: 1px solid rgba(255,255,255,0.1);
+          box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.3);
         }
         .nav-item svg {
-          margin-right: 1rem;
-          opacity: 0.8;
-          transition: transform 0.2s;
+          margin-right: 0.875rem;
+          opacity: 0.7;
+          transition: all 0.3s ease;
         }
-        .nav-item:hover svg {
-          transform: scale(1.1);
+        .nav-item:hover svg, .nav-item.active svg {
           opacity: 1;
+          transform: scale(1.1);
         }
         .sidebar-footer {
-          padding: var(--spacing-lg);
-          background: var(--primary-dark);
-          border-top: 1px solid rgba(255,255,255,0.08);
+          padding: 1.25rem;
+          background: rgba(0,0,0,0.2);
+          border-top: 1px solid rgba(255,255,255,0.05);
+          backdrop-filter: blur(10px);
         }
         .user-name {
-          font-weight: 600;
+          font-weight: 700;
           color: white;
-          font-size: 0.9375rem;
+          font-size: 0.9rem;
           margin-bottom: 2px;
         }
         .user-role {
-          font-size: 0.75rem;
-          color: var(--text-muted);
+          font-size: 0.7rem;
+          color: var(--primary-accent);
           text-transform: uppercase;
           letter-spacing: 0.05em;
+          font-weight: 800;
         }
       `}</style>
     </aside>

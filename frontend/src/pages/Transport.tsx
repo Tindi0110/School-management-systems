@@ -640,15 +640,12 @@ const Transport = () => {
             </div>
 
             {/* Navigation Tabs */}
-            <div className="flex gap-2 mb-10 overflow-x-auto p-1.5 bg-bg-tertiary rounded-2xl no-print">
+            <div className="nav-tab-container no-print">
                 {['fleet', 'routes', 'allocations', 'trips', 'maintenance', 'fuel', 'safety'].map((tab) => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
-                        className={`px-8 py-3 rounded-xl text-sm font-bold transition-all whitespace-nowrap ${activeTab === tab
-                            ? 'bg-bg-primary text-primary shadow-md'
-                            : 'text-text-secondary hover:text-primary hover:bg-bg-primary/60'
-                            }`}
+                        className={`nav-tab ${activeTab === tab ? 'active' : ''}`}
                     >
                         {tab.charAt(0).toUpperCase() + tab.slice(1)}
                     </button>
@@ -740,7 +737,7 @@ const Transport = () => {
 
             {/* Allocations Table */}
             {activeTab === 'allocations' && (
-                <div className="table-container fade-in">
+                <div className="table-wrapper fade-in">
                     <table className="table">
                         <thead>
                             <tr>
@@ -780,7 +777,7 @@ const Transport = () => {
 
             {/* Trip Logs */}
             {activeTab === 'trips' && (
-                <div className="table-container fade-in">
+                <div className="table-wrapper fade-in">
                     <div className="flex justify-between items-center mb-4">
                         <h3>Daily Trip Logs</h3>
                         <Button variant="primary" size="sm" onClick={() => { setTripId(null); setIsTripModalOpen(true); }} icon={<Plus size={14} />}>New Trip</Button>
@@ -811,7 +808,7 @@ const Transport = () => {
 
             {/* Maintenance */}
             {activeTab === 'maintenance' && (
-                <div className="table-container fade-in">
+                <div className="table-wrapper fade-in">
                     <div className="flex justify-between items-center mb-4">
                         <h3>Maintenance & Repairs</h3>
                         <Button variant="primary" size="sm" onClick={() => { setMaintenanceId(null); setIsMaintenanceModalOpen(true); }} icon={<Wrench size={14} />}>Log Repair</Button>
@@ -842,7 +839,7 @@ const Transport = () => {
 
             {/* Safety */}
             {activeTab === 'safety' && (
-                <div className="table-container fade-in">
+                <div className="table-wrapper fade-in">
                     <div className="flex justify-between items-center mb-4">
                         <h3>Safety & Incident Reports</h3>
                         <Button variant="danger" size="sm" onClick={() => { setIncidentId(null); setIsSafetyModalOpen(true); }} icon={<ShieldAlert size={14} />}>Report Incident</Button>
@@ -873,7 +870,7 @@ const Transport = () => {
 
             {/* Fuel Tab Content */}
             {activeTab === 'fuel' && (
-                <div className="table-container fade-in">
+                <div className="table-wrapper fade-in">
                     <div className="flex justify-between items-center mb-4">
                         <h3>Fuel Consumption Records</h3>
                         <Button variant="primary" size="sm" onClick={() => setIsFuelModalOpen(true)} icon={<Droplet size={14} />}>Log Fuel</Button>

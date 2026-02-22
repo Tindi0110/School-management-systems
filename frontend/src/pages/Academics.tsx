@@ -1008,16 +1008,13 @@ const Academics = () => {
             </div>
 
             {/* Navigation Tabs - Consolidated */}
-            <div className="tabs flex-nowrap overflow-x-auto no-scrollbar pb-1 mb-10 grid grid-cols-4 md:flex md:flex-row gap-2 md:overflow-x-auto p-1.5 bg-bg-tertiary rounded-2xl no-print">
+            <div className="nav-tab-container no-print">
                 {(['SUMMARY', 'CLASSES', 'CURRICULUM', 'ALLOCATION', 'EXAMS', 'ATTENDANCE', 'RESOURCES', 'GRADING'] as const)
                     .filter(tab => !isReadOnly || ['SUMMARY', 'CURRICULUM', 'EXAMS', 'ATTENDANCE'].includes(tab))
                     .map(tab => (
                         <button
                             key={tab}
-                            className={`px-2 md:px-8 py-3 rounded-xl text-[10px] md:text-sm font-bold transition-all whitespace-nowrap overflow-hidden text-ellipsis ${activeTab === tab
-                                ? 'bg-bg-primary text-primary shadow-md'
-                                : 'text-text-secondary hover:text-primary hover:bg-bg-primary/60'
-                                }`}
+                            className={`nav-tab ${activeTab === tab ? 'active' : ''}`}
                             onClick={() => setActiveTab(tab)}
                         >
                             {tab.charAt(0) + tab.slice(1).toLowerCase()}
@@ -1168,7 +1165,7 @@ const Academics = () => {
                             {/* ... buttons ... */}
                             <button className="btn btn-primary btn-xs ml-auto-mobile" onClick={() => setIsSubjectModalOpen(true)}><Plus size={12} /> New Subject</button>
                         </div>
-                        <div className="overflow-x-auto w-full" style={{ maxWidth: 'calc(100vw - 2rem)', display: 'block' }}>
+                        <div className="table-wrapper">
                             <table className="table min-w-[800px] relative">
 
                                 <thead className="sticky top-0 bg-white z-10 shadow-sm text-[10px] uppercase">
@@ -1218,7 +1215,7 @@ const Academics = () => {
                             <div className="p-4 bg-secondary-light border-bottom flex justify-between items-center">
                                 <h3 className="mb-0 text-xs font-black uppercase tracking-wider">Curriculum Progress</h3>
                             </div>
-                            <div className="table-wrapper" style={{ maxWidth: 'calc(100vw - 2rem)', overflowX: 'auto', display: 'block' }}>
+                            <div className="table-wrapper">
                                 <table className="table table-sm min-w-[800px] relative">
                                     <thead className="bg-secondary-light/30 text-secondary">
                                         <tr>
@@ -1683,16 +1680,16 @@ const Academics = () => {
                                 <Button variant="primary" size="sm" className="flex-1 sm:flex-none shadow-sm" onClick={() => { setEditingAttendanceId(null); setAttendanceForm({ student: '', status: 'PRESENT', remark: '', date: new Date().toISOString().split('T')[0] }); setIsAttendanceModalOpen(true); }} icon={<Plus size={14} />}>Log Status</Button>
                             </div>
                         </div>
-                        <div className="overflow-x-auto w-full">
-                            <table className="table table-sm min-w-full">
+                        <div className="table-wrapper">
+                            <table className="table table-sm">
                                 <thead className="bg-secondary-light/30 text-secondary">
                                     <tr>
-                                        <th className="min-w-[100px]">Date</th>
-                                        <th className="min-w-[180px]">Student</th>
-                                        <th className="min-w-[120px]">Class / Section</th>
-                                        <th className="min-w-[100px]">Status</th>
-                                        <th className="min-w-[150px]">Remarks</th>
-                                        <th className="min-w-[100px] text-right sticky right-0 bg-white/90">Actions</th>
+                                        <th>Date</th>
+                                        <th>Student</th>
+                                        <th>Class / Section</th>
+                                        <th>Status</th>
+                                        <th>Remarks</th>
+                                        <th className="text-right sticky right-0 bg-white/90">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -1781,7 +1778,7 @@ const Academics = () => {
 
             {/* Modals */}
             <Modal isOpen={isYearModalOpen} onClose={() => setIsYearModalOpen(false)} title="Add Academic Cycle">
-                <form onSubmit={handleYearSubmit} className="space-y-4 mx-auto" style={{ maxWidth: '400px', width: '100%', margin: '0 auto' }}>
+                <form onSubmit={handleYearSubmit} className="space-y-4 form-container-sm mx-auto">
                     <div className="form-group"><label className="label text-[10px] font-black uppercase">Year Name (e.g. 2026) *</label><input type="text" className="input" value={yearForm.name} onChange={(e) => setYearForm({ ...yearForm, name: e.target.value })} required /></div>
                     <div className="form-group checkbox-group"><input type="checkbox" checked={yearForm.is_active} onChange={(e) => setYearForm({ ...yearForm, is_active: e.target.checked })} /><label className="text-xs font-bold">Set as Active Year</label></div>
                     <Button type="submit" variant="primary" size="sm" className="w-full mt-2 font-black uppercase" loading={isSubmitting} loadingText="Initializing...">Initialize Year Cycle</Button>
@@ -1789,7 +1786,7 @@ const Academics = () => {
             </Modal>
 
             <Modal isOpen={isTermModalOpen} onClose={() => setIsTermModalOpen(false)} title="Configure Academic Term">
-                <form onSubmit={handleTermSubmit} className="space-y-4 mx-auto" style={{ maxWidth: '500px', width: '100%', margin: '0 auto' }}>
+                <form onSubmit={handleTermSubmit} className="space-y-4 form-container-md mx-auto">
                     <div className="form-group">
                         <label className="label text-[10px] font-black uppercase">Academic Year</label>
                         <select className="select" value={termForm.year} onChange={(e) => setTermForm({ ...termForm, year: e.target.value })} required>
@@ -1806,7 +1803,7 @@ const Academics = () => {
             </Modal>
 
             <Modal isOpen={isClassModalOpen} onClose={() => setIsClassModalOpen(false)} title="Create New Class Unit">
-                <div className="space-y-4 mx-auto" style={{ maxWidth: '500px', width: '100%', margin: '0 auto' }}>
+                <form onSubmit={handleClassSubmit} className="space-y-4 form-container-md mx-auto">
                     <div className="grid grid-cols-2 gap-md">
                         <div className="form-group"><label className="label text-[10px] font-black uppercase">Class Level *</label><input type="text" className="input" value={classForm.name} onChange={(e) => setClassForm({ ...classForm, name: e.target.value })} placeholder="Form 4" required /></div>
                         <div className="form-group"><label className="label text-[10px] font-black uppercase">Stream *</label><input type="text" className="input" value={classForm.stream} onChange={(e) => setClassForm({ ...classForm, stream: e.target.value })} placeholder="North" required /></div>
@@ -1825,7 +1822,7 @@ const Academics = () => {
                         <div className="form-group"><label className="label text-[10px] font-black uppercase">Max Capacity</label><input type="number" className="input" value={classForm.capacity || ''} onChange={(e) => setClassForm({ ...classForm, capacity: parseInt(e.target.value) || 0 })} /></div>
                     </div>
                     <Button type="button" onClick={(e) => { e.preventDefault(); handleClassSubmit(e); }} variant="primary" size="sm" className="w-full mt-2 font-black uppercase" loading={isSubmitting} loadingText={editingClassId ? "Updating..." : "Creating..."}>Confirm Unit Creation</Button>
-                </div>
+                </form>
             </Modal>
 
             <Modal isOpen={isGroupModalOpen} onClose={() => setIsGroupModalOpen(false)} title="Create Department Group">
@@ -1849,7 +1846,7 @@ const Academics = () => {
             </Modal>
 
             <Modal isOpen={isSubjectModalOpen} onClose={() => setIsSubjectModalOpen(false)} title="Add Curriculum Subject">
-                <form onSubmit={handleSubjectSubmit} className="space-y-4 mx-auto" style={{ maxWidth: '500px', width: '100%', margin: '0 auto' }}>
+                <form onSubmit={handleSubjectSubmit} className="space-y-4 form-container-md mx-auto">
                     <div className="form-group"><label className="label text-[10px] font-black uppercase">Subject Name *</label><input type="text" className="input" value={subjectForm.name} onChange={(e) => setSubjectForm({ ...subjectForm, name: e.target.value })} required /></div>
                     <div className="grid grid-cols-2 gap-md">
                         <div className="form-group"><label className="label text-[10px] font-black uppercase">Unique Code *</label><input type="text" className="input" value={subjectForm.code} onChange={(e) => setSubjectForm({ ...subjectForm, code: e.target.value })} required /></div>
@@ -1865,7 +1862,7 @@ const Academics = () => {
             </Modal>
 
             <Modal isOpen={isAttendanceModalOpen} onClose={() => setIsAttendanceModalOpen(false)} title="Log Student Attendance" size="lg">
-                <form onSubmit={handleAttendanceSubmit} style={{ maxWidth: '500px', width: '100%', margin: '0 auto' }}>
+                <form onSubmit={handleAttendanceSubmit} className="form-container-md mx-auto">
                     <div className="flex justify-between items-center mb-4 border-bottom pb-2">
                         <span className="text-xs font-bold uppercase text-secondary">Recording Mode:</span>
                         <div className="flex bg-secondary-light p-1 rounded-lg">
@@ -1987,7 +1984,7 @@ const Academics = () => {
             </Modal>
 
             <Modal isOpen={isExamModalOpen} onClose={() => setIsExamModalOpen(false)} title="Schedule Assessment/Exam">
-                <form onSubmit={handleExamSubmit} className="mx-auto" style={{ maxWidth: '500px', width: '100%', margin: '0 auto' }}>
+                <form onSubmit={handleExamSubmit} className="form-container-md mx-auto">
                     <div className="grid grid-cols-2 gap-md mb-4">
                         <div className="form-group col-span-2"><label className="label text-[10px] font-black uppercase">Exam Title *</label><input type="text" className="input" value={examForm.name} onChange={(e) => setExamForm({ ...examForm, name: e.target.value })} placeholder="End of Term 1" required /></div>
 
@@ -2038,7 +2035,7 @@ const Academics = () => {
                     <Button variant="outline" size="sm" onClick={() => window.print()} icon={<Printer size={14} />}>Print Broadsheet</Button>
                 </div>
 
-                <div className="table-wrapper max-h-[70vh] overflow-auto border rounded bg-white relative min-w-0" style={{ maxWidth: 'calc(100vw - 4rem)', overflowX: 'auto', display: 'block' }}>
+                <div className="table-wrapper max-h-[70vh] overflow-auto border rounded bg-white relative min-w-0">
                     {/* If Group By Stream, we might need multiple tables or just one big sorted table. 
                          For simplicity and "Matrix view", let's do one big table but filter/sort accordingly. 
                      */}
@@ -2236,7 +2233,7 @@ const Academics = () => {
                     </div>
 
                     {resultContext.classId && (
-                        <div className="max-h-[80vh] overflow-auto bg-white relative" style={{ maxWidth: 'calc(100vw - 4rem)', overflowX: 'auto', display: 'block' }}>
+                        <div className="table-wrapper max-h-[80vh] overflow-auto bg-white relative">
                             <table className="results-entry-table table w-full border-collapse text-xs">
                                 <thead className="sticky top-0 z-20 bg-white">
                                     <tr className="border-none">
@@ -2333,7 +2330,7 @@ const Academics = () => {
 
             {/* Syllabus Modal */}
             <Modal isOpen={isSyllabusModalOpen} onClose={() => setIsSyllabusModalOpen(false)} title="Track Syllabus Coverage" >
-                <form onSubmit={handleSyllabusSubmit} style={{ maxWidth: '500px', width: '100%', margin: '0 auto' }}>
+                <form onSubmit={handleSyllabusSubmit} className="form-container-md mx-auto">
                     <div className="form-group">
                         <label className="label text-[10px] font-black uppercase">Class Grade</label>
                         <select className="select" value={syllabusForm.class_grade} onChange={(e) => setSyllabusForm({ ...syllabusForm, class_grade: e.target.value })} required>
@@ -2364,7 +2361,7 @@ const Academics = () => {
 
             {/* Grade System Modal */}
             <Modal isOpen={isGradeModalOpen} onClose={() => setIsGradeModalOpen(false)} title={editingSystemId ? "Edit Grading System" : "New Grading System"}>
-                <form onSubmit={handleGradeSystemSubmit} style={{ maxWidth: '500px', width: '100%', margin: '0 auto' }}>
+                <form onSubmit={handleGradeSystemSubmit} className="form-container-md mx-auto">
                     <div className="form-group mb-4">
                         <label className="label text-[10px] font-black uppercase">System Name</label>
                         <input type="text" className="input" placeholder="e.g. KNEC Standard" value={gradeForm.name} onChange={(e) => setGradeForm({ ...gradeForm, name: e.target.value })} required />

@@ -392,15 +392,12 @@ const Finance = () => {
                 )}
             </div>
 
-            <div className="flex gap-2 mb-10 overflow-x-auto p-1.5 bg-bg-tertiary rounded-2xl no-print">
+            <div className="nav-tab-container no-print">
                 {['dashboard', 'invoices', 'payments', 'fees', 'expenses'].map((tab) => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
-                        className={`px-8 py-3 rounded-xl text-sm font-bold transition-all whitespace-nowrap ${activeTab === tab
-                            ? 'bg-bg-primary text-primary shadow-md'
-                            : 'text-text-secondary hover:text-primary hover:bg-bg-primary/60'
-                            }`}
+                        className={`nav-tab ${activeTab === tab ? 'active' : ''}`}
                     >
                         {tab.charAt(0).toUpperCase() + tab.slice(1)}
                     </button>

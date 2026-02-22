@@ -215,14 +215,11 @@ const Staff = () => {
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    <div className="flex gap-2 mb-10 overflow-x-auto p-1.5 bg-bg-tertiary rounded-2xl no-print">
+                    <div className="nav-tab-container no-print">
                         {(['NONE', 'DEPARTMENT', 'ROLE'] as const).map((mode) => (
                             <button
                                 key={mode}
-                                className={`px-8 py-3 rounded-xl text-sm font-bold transition-all whitespace-nowrap ${groupBy === mode
-                                    ? 'bg-bg-primary text-primary shadow-md'
-                                    : 'text-text-secondary hover:text-primary hover:bg-bg-primary/60'
-                                    }`}
+                                className={`nav-tab ${groupBy === mode ? 'active' : ''}`}
                                 onClick={() => setGroupBy(mode)}
                             >
                                 {mode === 'NONE' ? 'General Directory' : mode === 'DEPARTMENT' ? 'By Department' : 'By Role'}

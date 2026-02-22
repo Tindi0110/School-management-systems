@@ -400,18 +400,19 @@ const Library = () => {
             </div>
 
             {/* Tabs */}
-            <div className="tabs mb-6 no-print overflow-x-auto">
-                <button className={`tab-link ${activeTab === 'catalog' ? 'active' : ''}`} onClick={() => setActiveTab('catalog')}><Archive size={16} /> Asset Catalog</button>
-                <button className={`tab-link ${activeTab === 'copies' ? 'active' : ''}`} onClick={() => setActiveTab('copies')}><Layers size={16} /> Inventory (Copies)</button>
-                <button className={`tab-link ${activeTab === 'lendings' ? 'active' : ''}`} onClick={() => setActiveTab('lendings')}><Bookmark size={16} /> Circulation</button>
-                <button className={`tab-link ${activeTab === 'fines' ? 'active' : ''}`} onClick={() => setActiveTab('fines')}><ShieldAlert size={16} /> Fines & Discipline</button>
-                <Button variant="outline" size="sm" className="ml-auto" onClick={() => {
+            <div className="flex gap-2 mb-6 no-print">
+                <div className="nav-tab-container flex-1">
+                    <button className={`nav-tab ${activeTab === 'catalog' ? 'active' : ''}`} onClick={() => setActiveTab('catalog')}><Archive size={16} /> Asset Catalog</button>
+                    <button className={`nav-tab ${activeTab === 'copies' ? 'active' : ''}`} onClick={() => setActiveTab('copies')}><Layers size={16} /> Inventory (Copies)</button>
+                    <button className={`nav-tab ${activeTab === 'lendings' ? 'active' : ''}`} onClick={() => setActiveTab('lendings')}><Bookmark size={16} /> Circulation</button>
+                    <button className={`nav-tab ${activeTab === 'fines' ? 'active' : ''}`} onClick={() => setActiveTab('fines')}><ShieldAlert size={16} /> Fines & Discipline</button>
+                </div>
+                <Button variant="outline" size="sm" className="ml-auto flex-none" onClick={() => {
                     const dataToExport = activeTab === 'catalog' ? books : activeTab === 'copies' ? copies : activeTab === 'lendings' ? lendings : fines;
                     exportToCSV(dataToExport, `Library_${activeTab}`);
                 }} icon={<Download size={14} />}>
                     Export {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
                 </Button>
-
             </div>
 
             <div className="mb-4 no-print flex justify-end">
@@ -688,7 +689,7 @@ const Library = () => {
 
             {/* Modals */}
             <Modal isOpen={isBookModalOpen} onClose={() => setIsBookModalOpen(false)} title={bookId ? "Edit Book Title" : "Add New Title"}>
-                <form onSubmit={handleBookSubmit} className="space-y-4">
+                <form onSubmit={handleBookSubmit} className="space-y-4 form-container-md">
                     <div className="form-group"><label className="label">Title</label><input type="text" className="input" value={bookForm.title} onChange={e => setBookForm({ ...bookForm, title: e.target.value })} required /></div>
                     <div className="form-group"><label className="label">Author</label><input type="text" className="input" value={bookForm.author} onChange={e => setBookForm({ ...bookForm, author: e.target.value })} required /></div>
                     <div className="grid grid-cols-2 gap-4">
@@ -720,7 +721,7 @@ const Library = () => {
             </Modal>
 
             <Modal isOpen={isCopyModalOpen} onClose={() => setIsCopyModalOpen(false)} title={copyId ? "Edit Copy Details" : "Add Inventory Copy"}>
-                <form onSubmit={handleCopySubmit} className="space-y-4">
+                <form onSubmit={handleCopySubmit} className="space-y-4 form-container-md">
                     <div className="form-group"><label className="label">Book Title</label>
                         <select className="select" value={copyForm.book} onChange={e => setCopyForm({ ...copyForm, book: e.target.value })} required>
                             <option value="">Select Book...</option>
@@ -757,7 +758,7 @@ const Library = () => {
             </Modal>
 
             <Modal isOpen={isLendModalOpen} onClose={() => setIsLendModalOpen(false)} title={lendingId ? "Edit Lending Record" : "New Resource Circulation"}>
-                <form onSubmit={handleLendSubmit} className="space-y-4">
+                <form onSubmit={handleLendSubmit} className="space-y-4 form-container-md">
                     <SearchableSelect label="Select Copy *" options={copyOptions} value={String(lendingForm.copy)} onChange={(val) => setLendingForm({ ...lendingForm, copy: val.toString() })} required />
                     <SearchableSelect label="Assign to Student *" options={studentOptions} value={String(lendingForm.student)} onChange={(val) => setLendingForm({ ...lendingForm, student: val.toString() })} required />
                     <div className="form-group"><label className="label">Return Deadline *</label><input type="date" className="input" value={lendingForm.due_date} onChange={e => setLendingForm({ ...lendingForm, due_date: e.target.value })} required /></div>
@@ -770,7 +771,7 @@ const Library = () => {
             </Modal>
 
             <Modal isOpen={isFineModalOpen} onClose={() => setIsFineModalOpen(false)} title={fineId ? "Edit Fine Record" : "Record Library Fine"}>
-                <form onSubmit={handleFineSubmit} className="space-y-4">
+                <form onSubmit={handleFineSubmit} className="space-y-4 form-container-md">
                     <SearchableSelect label="Student *" options={studentOptions} value={String(fineForm.student)} onChange={(val) => setFineForm({ ...fineForm, student: val.toString() })} required />
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group"><label className="label">Fine Type</label>

@@ -522,10 +522,10 @@ const StudentProfile = () => {
                     </div>
                 </div>
 
-                <div className="flex flex-wrap border-top bg-secondary-light/30 px-4 py-2 gap-1 no-print">
+                <div className="nav-tab-container px-4 py-2 no-print">
                     {tabs.map(tab => (
                         <button key={tab.id}
-                            className={`flex items-center gap-2 px-8 py-5 text-[10px] md:text-xs font-black uppercase tracking-widest transition-all border-bottom-2 whitespace-nowrap ${activeTab === tab.id ? 'border-primary text-primary' : 'border-transparent text-secondary hover:text-primary'}`}
+                            className={`nav-tab ${activeTab === tab.id ? 'active' : ''}`}
                             onClick={() => setActiveTab(tab.id)}
                         >
                             {tab.icon} {tab.label}
@@ -1068,7 +1068,7 @@ const StudentProfile = () => {
 
             {/* Modals ... (keep existing) */}
             <Modal isOpen={isDisciplineModalOpen} onClose={() => setIsDisciplineModalOpen(false)} title="New Discipline Intervention" size="md">
-                <form onSubmit={handleDisciplineSubmit} className="space-y-4 mx-auto" style={{ maxWidth: '500px', width: '100%', margin: '0 auto' }}>
+                <form onSubmit={handleDisciplineSubmit} className="space-y-4 form-container-md mx-auto">
                     <div className="grid grid-cols-2 gap-md">
                         <div className="form-group"><label className="label text-[10px] font-black uppercase">Incident Date</label><input type="date" className="input" value={disciplineForm.incident_date} onChange={e => setDisciplineForm({ ...disciplineForm, incident_date: e.target.value })} required /></div>
                         <div className="form-group"><label className="label text-[10px] font-black uppercase">Offence Category</label><input type="text" className="input" placeholder="e.g. Lateness, Theft" value={disciplineForm.offence_category} onChange={e => setDisciplineForm({ ...disciplineForm, offence_category: e.target.value })} required /></div>
@@ -1085,7 +1085,7 @@ const StudentProfile = () => {
 
             {/* Transfer Modal */}
             <Modal isOpen={isTransferModalOpen} onClose={() => setIsTransferModalOpen(false)} title="Transfer Student Unit" size="sm">
-                <form onSubmit={handleTransfer} className="space-y-4 mx-auto" style={{ maxWidth: '400px', width: '100%', margin: '0 auto' }}>
+                <form onSubmit={handleTransfer} className="space-y-4 form-container-sm mx-auto">
                     <p className="text-secondary text-xs">Select the new class/unit for this student.</p>
                     <select className="select" value={transferClassId} onChange={e => setTransferClassId(e.target.value)} required>
                         <option value="">Select New Class</option>
@@ -1101,7 +1101,7 @@ const StudentProfile = () => {
             </Modal>
 
             <Modal isOpen={isHealthModalOpen} onClose={() => setIsHealthModalOpen(false)} title="Update Medical Integrity" size="md">
-                <form onSubmit={handleHealthSubmit} className="space-y-4 mx-auto" style={{ maxWidth: '500px', width: '100%', margin: '0 auto' }}>
+                <form onSubmit={handleHealthSubmit} className="space-y-4 form-container-md mx-auto">
                     <div className="grid grid-cols-2 gap-md">
                         <div className="form-group"><label className="label text-[10px] font-black uppercase">Blood Group</label><input type="text" className="input" value={healthForm.blood_group} onChange={e => setHealthForm({ ...healthForm, blood_group: e.target.value })} /></div>
                         <div className="form-group"><label className="label text-[10px] font-black uppercase">Known Allergies</label><input type="text" className="input" value={healthForm.allergies} onChange={e => setHealthForm({ ...healthForm, allergies: e.target.value })} /></div>
@@ -1121,7 +1121,7 @@ const StudentProfile = () => {
             </Modal>
 
             <Modal isOpen={isActivityModalOpen} onClose={() => setIsActivityModalOpen(false)} title="Register Extra-Curricular Activity" size="md">
-                <form onSubmit={handleActivitySubmit} className="space-y-4 mx-auto" style={{ maxWidth: '500px', width: '100%', margin: '0 auto' }}>
+                <form onSubmit={handleActivitySubmit} className="space-y-4 form-container-md mx-auto">
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group"><label className="label text-[10px] font-black uppercase">Activity Name</label><input type="text" className="input" placeholder="e.g. Debate Club" value={activityForm.name} onChange={e => setActivityForm({ ...activityForm, name: e.target.value })} required /></div>
                         <div className="form-group"><label className="label text-[10px] font-black uppercase">Type</label>
@@ -1141,7 +1141,7 @@ const StudentProfile = () => {
             </Modal>
 
             <Modal isOpen={isDocumentModalOpen} onClose={() => setIsDocumentModalOpen(false)} title="Upload Institutional Document" size="sm">
-                <form onSubmit={handleDocumentSubmit} className="space-y-4 mx-auto" style={{ maxWidth: '400px', width: '100%', margin: '0 auto' }}>
+                <form onSubmit={handleDocumentSubmit} className="space-y-4 form-container-sm mx-auto">
                     <div className="form-group"><label className="label text-[10px] font-black uppercase">Document Type</label>
                         <select className="select" value={documentForm.doc_type} onChange={e => setDocumentForm({ ...documentForm, doc_type: e.target.value })}>
                             <option value="BIRTH_CERT">Birth Certificate</option>
@@ -1161,7 +1161,7 @@ const StudentProfile = () => {
 
 
             <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title="Edit Student Profile" size="md">
-                <form onSubmit={handleEditSubmit} className="space-y-4 mx-auto" style={{ maxWidth: '500px', width: '100%', margin: '0 auto' }}>
+                <form onSubmit={handleEditSubmit} className="space-y-4 form-container-md mx-auto">
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group"><label className="label text-[10px] font-black uppercase">Full Name</label><input type="text" className="input" value={student.full_name} onChange={e => setStudent({ ...student, full_name: e.target.value })} required /></div>
                         <div className="form-group"><label className="label text-[10px] font-black uppercase">Admission Number</label><input type="text" className="input" value={student.admission_number} onChange={e => setStudent({ ...student, admission_number: e.target.value })} required /></div>
