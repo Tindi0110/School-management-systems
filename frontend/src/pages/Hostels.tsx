@@ -1220,7 +1220,7 @@ const Hostels = () => {
                     {rooms.filter(r => r.hostel === selectedHostel?.id).length === 0 ? (
                         <p className="text-secondary text-center p-4 italic">No rooms configured.</p>
                     ) : (
-                        <div className="overflow-auto max-h-[400px]">
+                        <div className="overflow-auto max-h-400">
                             <table className="table w-full">
                                 <thead>
                                     <tr>
@@ -1263,7 +1263,7 @@ const Hostels = () => {
                     {viewHostelResidents.length === 0 ? (
                         <p className="text-secondary text-center p-4 italic">No active residents in this hostel.</p>
                     ) : (
-                        <div className="overflow-auto max-h-[400px]">
+                        <div className="overflow-auto max-h-400">
                             <table className="table w-full">
                                 <thead>
                                     <tr>
