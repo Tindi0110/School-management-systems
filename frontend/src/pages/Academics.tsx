@@ -2331,7 +2331,7 @@ const Academics = () => {
                     </div>
 
                     {resultContext.classId && (
-                        <div className="table-wrapper max-h-[80vh] overflow-x-auto overflow-y-auto w-full max-w-full block bg-white relative m-0">
+                        <div className="table-wrapper max-h-[75vh] w-full block bg-white relative m-0 mt-4 border rounded-xl overflow-auto shadow-sm">
                             <table className="results-entry-table table w-full border-collapse text-xs">
                                 <thead className="sticky top-0 z-20 bg-white">
                                     <tr className="border-none">
