@@ -723,7 +723,7 @@ const StudentProfile = () => {
                                 </div>
                             </div>
 
-                            <div className="card border-none shadow-xl bg-white overflow-hidden">
+                            <div className="card border-none shadow-xl bg-white overflow-hidden card-mobile-flat">
                                 <div className="p-5 border-b bg-slate-50/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                                     <div>
                                         <h3 className="text-sm font-black uppercase tracking-widest text-slate-800 mb-1">Examination Ledger</h3>
@@ -860,7 +860,7 @@ const StudentProfile = () => {
 
                             <div className="flex flex-col lg:flex-row gap-8">
                                 <div className="flex-grow min-w-0">
-                                    <div className="card border-none shadow-xl bg-white overflow-hidden">
+                                    <div className="card border-none shadow-xl bg-white overflow-hidden card-mobile-flat">
                                         <div className="p-5 border-b bg-slate-50/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                                             <div>
                                                 <h3 className="text-sm font-black uppercase tracking-widest text-slate-800 mb-1">Accounting Ledger</h3>
@@ -1223,20 +1223,22 @@ const StudentProfile = () => {
                     </div>
                     <p>This is to certify that <strong>{student.full_name}</strong> (ADM: <strong>{student.admission_number}</strong>) has successfully cleared with the following departments:</p>
 
-                    <table className="report-table">
-                        <thead>
-                            <tr>
-                                <th>Department</th>
-                                <th>Status</th>
-                                <th>Signature/Stamp</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr><td>Academics (Books/Exams)</td><td>{unreturnedBooks > 0 ? `PENDING (${unreturnedBooks} Unreturned Books)` : 'CLEARED'}</td><td></td></tr>
-                            <tr><td>Boarding/Hostel</td><td>{student.hostel_name ? `PENDING (Allocated to ${student.hostel_name})` : 'CLEARED'}</td><td></td></tr>
-                            <tr><td>Finance/Accounts</td><td>{(student.fee_balance || 0) > 0 ? `OUTSTANDING BALANCE (KES ${student.fee_balance.toLocaleString()})` : 'CLEARED'}</td><td></td></tr>
-                        </tbody>
-                    </table>
+                    <div className="table-wrapper">
+                        <table className="report-table">
+                            <thead>
+                                <tr>
+                                    <th>Department</th>
+                                    <th>Status</th>
+                                    <th>Signature/Stamp</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Academics (Books/Exams)</td><td>{unreturnedBooks > 0 ? `PENDING (${unreturnedBooks} Unreturned Books)` : 'CLEARED'}</td><td></td></tr>
+                                <tr><td>Boarding/Hostel</td><td>{student.hostel_name ? `PENDING (Allocated to ${student.hostel_name})` : 'CLEARED'}</td><td></td></tr>
+                                <tr><td>Finance/Accounts</td><td>{(student.fee_balance || 0) > 0 ? `OUTSTANDING BALANCE (KES ${student.fee_balance.toLocaleString()})` : 'CLEARED'}</td><td></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
 
                     <div className="signature-group">
                         <div className="signature-line">Student Signature</div>

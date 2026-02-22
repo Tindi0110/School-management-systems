@@ -1141,7 +1141,7 @@ const Academics = () => {
             {activeTab === 'CURRICULUM' && (
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-lg">
                     <div className="md:col-span-1 space-y-4 min-w-0">
-                        <div className="card">
+                        <div className="card card-mobile-flat p-0">
                             <div className="card-header border-bottom py-3 flex justify-between items-center mb-4">
                                 <h3 className="mb-0 text-sm font-black uppercase">Subject Groups</h3>
                                 <Button variant="outline" size="sm" onClick={() => { setEditingGroupId(null); setGroupForm({ name: '' }); setIsGroupModalOpen(true); }} icon={<Plus size={14} />} />
@@ -1159,7 +1159,7 @@ const Academics = () => {
                             </div>
                         </div>
                     </div>
-                    <div className="md:col-span-3 min-w-0 fade-in card p-0">
+                    <div className="md:col-span-3 min-w-0 fade-in card card-mobile-flat p-0">
                         <div className="card-header border-bottom py-3 px-4 flex justify-between items-center">
                             <h3 className="mb-0 text-sm font-black uppercase">Institutional Curriculum</h3>
                             {/* ... buttons ... */}
@@ -1213,7 +1213,7 @@ const Academics = () => {
                             )}
                         </div>
 
-                        <div className="fade-in card p-0">
+                        <div className="fade-in card card-mobile-flat p-0">
                             <div className="card-header border-bottom py-3 px-4 flex justify-between items-center">
                                 <h3 className="mb-0 text-sm font-black uppercase">Curriculum Progress</h3>
                             </div>

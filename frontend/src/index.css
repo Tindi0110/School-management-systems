@@ -98,7 +98,7 @@ body,
 #root {
   width: 100%;
   max-width: 100vw;
-  overflow-x: hidden;
+  overflow-x: clip;
   position: relative;
 }
 
@@ -321,6 +321,45 @@ input[type=number] {
 
 .mb-md {
   margin-bottom: var(--spacing-md);
+}
+
+/* New Responsive Utilities */
+.p-0 {
+  padding: 0 !important;
+}
+
+.p-1 {
+  padding: 4px !important;
+}
+
+.p-2 {
+  padding: 8px !important;
+}
+
+.p-3 {
+  padding: 12px !important;
+}
+
+.p-4 {
+  padding: 16px !important;
+}
+
+.m-0 {
+  margin: 0 !important;
+}
+
+.w-auto {
+  width: auto !important;
+}
+
+@media (max-width: 768px) {
+  .card-mobile-flat {
+    padding: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    border-left: none !important;
+    border-right: none !important;
+  }
 }
 
 .section {
@@ -1488,19 +1527,7 @@ table.table {
 
 /* ===== GLOBAL UI STANDARDIZATION ===== */
 
-.table-wrapper {
-  width: 100%;
-  max-width: calc(100vw - 2rem);
-  overflow-x: auto;
-  display: block;
-}
-
-@media (min-width: 1024px) {
-  .table-wrapper {
-    max-width: 100%;
-    /* On large screens, allow the container width to naturally dictate space */
-  }
-}
+/* Redundant table-wrapper rules removed to prevent conflicts */
 
 .nav-tab-container {
   display: flex;
