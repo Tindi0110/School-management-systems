@@ -17,13 +17,13 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, size = 
         md: 'max-w-2xl',
         lg: 'max-w-4xl',
         xl: 'max-w-7xl',
-        full: 'w-[98vw] h-[95vh] m-2'
+        full: 'w-98vw h-95vh m-2'
     };
 
     return (
         <div className="modal-overlay" onClick={onClose}>
             <div
-                className={`modal-container w-full ${sizeClasses[size]} ${size === 'full' ? 'h-[95vh] m-2' : 'max-h-[90vh]'}`}
+                className={`modal-container w-full ${sizeClasses[size]} ${size === 'full' ? 'h-95vh m-2' : 'max-h-90vh'}`}
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="modal-header">

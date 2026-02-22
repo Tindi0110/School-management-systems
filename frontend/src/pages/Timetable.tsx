@@ -205,7 +205,7 @@ const Timetable = () => {
                                 <div className="p-3 bg-white border-b font-black text-center text-primary uppercase text-sm tracking-wider print:p-1 print:text-xs">
                                     {day.label}
                                 </div>
-                                <div className="p-2 space-y-2 min-h-[200px] print:p-1 print:min-h-0 print:space-y-1">
+                                <div className="p-2 space-y-2 min-h-200 print:p-1 print:min-h-0 print:space-y-1">
                                     {daySlots.map(slot => (
                                         <div key={slot.id} className="bg-white p-3 rounded border shadow-sm hover:shadow-md transition-all group relative print:shadow-none print:p-1 print:border-secondary-light">
                                             <div className="flex justify-between items-start mb-1">

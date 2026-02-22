@@ -1091,7 +1091,7 @@ const Hostels = () => {
                         </div>
 
                         {bulkAttendanceRoom && (
-                            <div className="overflow-y-auto max-h-[300px] border rounded">
+                            <div className="overflow-y-auto max-h-300 border rounded">
                                 <table className="table w-full relative">
                                     <thead className="sticky top-0 bg-white shadow-sm z-10">
                                         <tr><th>Student</th><th>Status</th><th>Remarks</th></tr>

@@ -62,7 +62,7 @@ const StudentResultRow = React.memo(({ student, sClass, subjects, studentScores,
                 const hasSavedResult = !!entry.id;
                 return (
                     <td key={sub.id} className="p-0 relative border-r group min-w-[120px]">
-                        <div className="flex flex-col items-center min-h-[85px] justify-center">
+                        <div className="flex flex-col items-center min-h-85 justify-center">
                             <input
                                 type="text"
                                 inputMode="decimal"
@@ -1102,7 +1102,7 @@ const Academics = () => {
                                         <Button variant="outline" size="sm" className="p-2" onClick={() => setIsSyllabusModalOpen(true)} icon={<Edit size={12} />} />
                                     </div>
                                 </div>
-                                <div className="card-body p-6 space-y-6 max-h-[400px] overflow-y-auto">
+                                <div className="card-body p-6 space-y-6 max-h-400 overflow-y-auto">
                                     {syllabusData.length === 0 && (
                                         <div className="py-12 text-center text-slate-300">
                                             <BarChart3 size={32} className="mx-auto mb-2 opacity-20" />
@@ -1309,7 +1309,7 @@ const Academics = () => {
 
             {
                 activeTab === 'ALLOCATION' && (
-                    <div className="grid grid-cols-12 gap-6 lg:gap-8 h-[calc(100vh-250px)]">
+                    <div className="grid grid-cols-12 gap-6 lg:gap-8 h-screen-250">
                         <div className="col-span-12 lg:col-span-3 min-w-0 flex flex-col gap-4 overflow-y-auto pr-2">
                             <h3 className="text-xs font-black uppercase mb-0 tracking-widest text-slate-400">Select Class</h3>
                             <div className="space-y-2">
@@ -1391,7 +1391,7 @@ const Academics = () => {
 
             {
                 activeTab === 'GRADING' && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-lg h-[calc(100vh-200px)]">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-lg h-screen-200">
                         {/* Left: Systems List */}
                         <div className="card md:col-span-1 min-w-0 flex flex-col">
                             <div className="card-header flex justify-between items-center py-3 border-bottom">
@@ -1527,7 +1527,7 @@ const Academics = () => {
                         </div>
                     </div>
 
-                    <div className="max-h-[60vh] overflow-y-auto">
+                    <div className="max-h-60vh overflow-y-auto">
                         {Object.keys(groupedResults).sort().map(groupKey => (
                             <div key={groupKey} className="mb-8 card p-0 overflow-hidden border-slate-100 shadow-sm">
                                 <div className="card-header bg-slate-50/50">
@@ -1698,7 +1698,7 @@ const Academics = () => {
                                     <h3 className="mb-0 text-xs font-black uppercase tracking-widest text-slate-800">Cycles & Terms</h3>
                                     <Button variant="outline" size="sm" className="p-2 border-slate-200" onClick={() => setIsYearModalOpen(true)} icon={<Plus size={14} />} />
                                 </div>
-                                <div className="card-body p-4 space-y-4 max-h-[70vh] overflow-y-auto">
+                                <div className="card-body p-4 space-y-4 max-h-70vh overflow-y-auto">
                                     {academicYears.map(y => (
                                         <div key={y.id} className="p-4 rounded-xl bg-slate-50/50 border border-slate-100 hover:bg-white transition-all group">
                                             <div className="flex items-center justify-between mb-4">
@@ -2027,7 +2027,7 @@ const Academics = () => {
                             <div className="form-group"><label className="label text-[10px] font-black uppercase">Remarks</label><input type="text" className="input" value={attendanceForm.remark} onChange={(e) => setAttendanceForm({ ...attendanceForm, remark: e.target.value })} placeholder="Reason if absent..." /></div>
                         </>
                     ) : (
-                        <div className="max-h-[400px] overflow-y-auto border rounded">
+                        <div className="max-h-400 overflow-y-auto border rounded">
                             <table className="table table-xs w-full">
                                 <thead className="sticky top-0 bg-white z-10">
                                     <tr>
@@ -2133,7 +2133,7 @@ const Academics = () => {
                     <Button variant="outline" size="sm" onClick={() => window.print()} icon={<Printer size={14} />}>Print Broadsheet</Button>
                 </div>
 
-                <div className="table-wrapper max-h-[70vh] overflow-auto border rounded bg-white relative min-w-0">
+                <div className="table-wrapper max-h-70vh overflow-auto border rounded bg-white relative min-w-0">
                     {/* If Group By Stream, we might need multiple tables or just one big sorted table. 
                          For simplicity and "Matrix view", let's do one big table but filter/sort accordingly. 
                      */}
@@ -2331,7 +2331,7 @@ const Academics = () => {
                     </div>
 
                     {resultContext.classId && (
-                        <div className="table-wrapper max-h-[75vh] w-full block bg-white relative m-0 mt-4 border rounded-xl overflow-auto shadow-sm">
+                        <div className="table-wrapper max-h-75vh w-full block bg-white relative m-0 mt-4 border rounded-xl overflow-auto shadow-sm">
                             <table className="results-entry-table table w-full border-collapse text-xs">
                                 <thead className="sticky top-0 z-20 bg-white">
                                     <tr className="border-none">

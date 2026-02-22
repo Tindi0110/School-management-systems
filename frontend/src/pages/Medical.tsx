@@ -114,7 +114,7 @@ const Medical = () => {
     })), [students]);
 
     if (loading) {
-        return <div className="flex items-center justify-center min-h-[400px]"><div className="spinner"></div></div>;
+        return <div className="flex items-center justify-center min-h-400"><div className="spinner"></div></div>;
     }
 
     return (
