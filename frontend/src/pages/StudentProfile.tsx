@@ -478,14 +478,14 @@ const StudentProfile = () => {
         <div className="fade-in pb-12 w-full max-w-full overflow-x-hidden">
             {/* Header ... (keep existing) */}
             <div className="flex justify-between items-center mb-6 no-print">
-                <Button variant="outline" size="sm" onClick={() => navigate('/students')} icon={<ArrowLeft size={16} />}>
+                <Button variant="ghost" size="sm" onClick={() => navigate('/students')} icon={<ArrowLeft size={16} />} className="font-black text-secondary hover:text-primary">
                     BACK TO REGISTRY
                 </Button>
                 <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => setIsClearanceModalOpen(true)} icon={<Printer size={16} />}>
+                    <Button variant="outline" size="sm" className="font-black" onClick={() => setIsClearanceModalOpen(true)} icon={<Printer size={16} />}>
                         CLEARANCE FORM
                     </Button>
-                    <Button variant="primary" size="sm" className="font-black" onClick={() => setIsEditModalOpen(true)} icon={<Edit size={14} />}>
+                    <Button variant="primary" size="sm" className="font-black shadow-lg shadow-primary/20" onClick={() => setIsEditModalOpen(true)} icon={<Edit size={14} />}>
                         EDIT PROFILE
                     </Button>
                 </div>
@@ -542,20 +542,32 @@ const StudentProfile = () => {
                     {activeTab === 'SUMMARY' && (
                         <>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div className="card flex flex-col items-center text-center border-top-4 border-success">
-                                    <div className="w-12 h-12 rounded-full bg-success/10 text-success flex items-center justify-center mb-3"><TrendingUp size={24} /></div>
-                                    <h4 className="font-black text-xs uppercase text-secondary mb-1">Average Grade</h4>
-                                    <h2 className="mb-0 font-black text-primary">{student.average_grade || 'N/A'}</h2>
+                                <div className="card flex flex-row items-center gap-6 p-6 transition-all hover-scale border-left-4 border-success card-mobile-flat">
+                                    <div className="p-4 rounded-2xl bg-success bg-opacity-10 text-success shrink-0">
+                                        <TrendingUp size={28} />
+                                    </div>
+                                    <div>
+                                        <p className="text-text-muted text-[10px] font-black uppercase tracking-[0.2em] mb-1">Average Grade</p>
+                                        <h3 className="text-2xl font-black text-primary m-0 leading-tight">{student.average_grade || 'N/A'}</h3>
+                                    </div>
                                 </div>
-                                <div className="card flex flex-col items-center text-center border-top-4 border-info">
-                                    <div className="w-12 h-12 rounded-full bg-info/10 text-info flex items-center justify-center mb-3"><HistoryIcon size={24} /></div>
-                                    <h4 className="font-black text-xs uppercase text-secondary mb-1">Attendance</h4>
-                                    <h2 className="mb-0 font-black text-primary">{student.attendance_percentage}%</h2>
+                                <div className="card flex flex-row items-center gap-6 p-6 transition-all hover-scale border-left-4 border-info card-mobile-flat">
+                                    <div className="p-4 rounded-2xl bg-info bg-opacity-10 text-info shrink-0">
+                                        <HistoryIcon size={28} />
+                                    </div>
+                                    <div>
+                                        <p className="text-text-muted text-[10px] font-black uppercase tracking-[0.2em] mb-1">Attendance</p>
+                                        <h3 className="text-2xl font-black text-primary m-0 leading-tight">{student.attendance_percentage}%</h3>
+                                    </div>
                                 </div>
-                                <div className="card flex flex-col items-center text-center border-top-4 border-error">
-                                    <div className="w-12 h-12 rounded-full bg-error/10 text-error flex items-center justify-center mb-3"><ShieldAlert size={24} /></div>
-                                    <h4 className="font-black text-xs uppercase text-secondary mb-1">Incident Rep.</h4>
-                                    <h2 className="mb-0 font-black text-primary">{discipline.length}</h2>
+                                <div className="card flex flex-row items-center gap-6 p-6 transition-all hover-scale border-left-4 border-error card-mobile-flat">
+                                    <div className="p-4 rounded-2xl bg-error bg-opacity-10 text-error shrink-0">
+                                        <ShieldAlert size={28} />
+                                    </div>
+                                    <div>
+                                        <p className="text-text-muted text-[10px] font-black uppercase tracking-[0.2em] mb-1">Incident Rep.</p>
+                                        <h3 className="text-2xl font-black text-primary m-0 leading-tight">{discipline.length}</h3>
+                                    </div>
                                 </div>
                             </div>
                             <div className="card overflow-hidden border">
@@ -649,35 +661,35 @@ const StudentProfile = () => {
                                     </Button>
                                 </div>
                             </div>
-                            <div className="grid grid-cols-2 gap-8">
-                                <div className="card border-top-4 border-info">
-                                    <div className="flex items-center gap-3 mb-6">
-                                        <Heart className="text-info" size={20} />
-                                        <h3 className="mb-0 text-xs font-black uppercase tracking-widest">Vital Records</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="card flex flex-col p-0 overflow-hidden border-left-4 border-info card-mobile-flat">
+                                    <div className="p-5 border-b bg-slate-50 flex items-center gap-3">
+                                        <Heart className="text-info" size={18} />
+                                        <h3 className="mb-0 text-xs font-black uppercase tracking-widest text-slate-800">Vital Records</h3>
                                     </div>
-                                    <div className="space-y-4">
+                                    <div className="p-5 space-y-4">
                                         <div className="flex justify-between items-center border-bottom pb-2">
-                                            <span className="text-[11px] font-black text-secondary uppercase">Blood Group</span>
-                                            <span className="text-[11px] font-black text-primary uppercase">{student.health_record?.blood_group || 'UNDECLARED'}</span>
+                                            <span className="text-[11px] font-black text-secondary uppercase tracking-tight">Blood Group</span>
+                                            <span className="text-[11px] font-black text-primary uppercase font-mono">{student.health_record?.blood_group || 'UNDECLARED'}</span>
                                         </div>
                                         <div className="flex flex-col gap-1">
-                                            <span className="text-[11px] font-black text-secondary uppercase opacity-70">Known Allergies</span>
-                                            <p className={`text-xs font-bold p-2 rounded ${student.health_record?.allergies && student.health_record.allergies !== 'None' ? 'bg-error-light text-error' : 'bg-success-light text-success'}`}>
+                                            <span className="text-[11px] font-black text-secondary uppercase opacity-70 tracking-tight">Known Allergies</span>
+                                            <p className={`text-[10px] font-black p-2 rounded uppercase ${student.health_record?.allergies && student.health_record.allergies !== 'None' ? 'bg-error-light text-error' : 'bg-success-light text-success'}`}>
                                                 {student.health_record?.allergies || 'NO RECORDED ALLERGIES'}
                                             </p>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="card border-top-4 border-warning">
-                                    <div className="flex items-center gap-3 mb-6">
-                                        <AlertTriangle className="text-warning" size={20} />
-                                        <h3 className="mb-0 text-xs font-black uppercase tracking-widest">Emergency Services</h3>
+                                <div className="card flex flex-col p-0 overflow-hidden border-left-4 border-warning card-mobile-flat">
+                                    <div className="p-5 border-b bg-slate-50 flex items-center gap-3">
+                                        <AlertTriangle className="text-warning" size={18} />
+                                        <h3 className="mb-0 text-xs font-black uppercase tracking-widest text-slate-800">Emergency Services</h3>
                                     </div>
-                                    <div className="space-y-4">
-                                        <div className="p-4 bg-warning/10 rounded-lg">
-                                            <p className="text-[10px] font-black text-warning uppercase mb-1">Primary Contact</p>
+                                    <div className="p-5 space-y-4">
+                                        <div className="p-4 bg-warning/10 rounded-xl border border-warning/20">
+                                            <p className="text-[10px] font-black text-warning uppercase mb-1 tracking-widest">Primary Contact</p>
                                             <h4 className="font-black text-xs mb-0 uppercase text-primary">{healthForm.emergency_contact_name}</h4>
-                                            <div className="flex items-center gap-2 text-xs font-bold mt-2"><Phone size={12} /> {healthForm.emergency_contact_phone}</div>
+                                            <div className="flex items-center gap-2 text-xs font-mono font-bold mt-2 text-secondary"><Phone size={12} /> {healthForm.emergency_contact_phone}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -689,45 +701,45 @@ const StudentProfile = () => {
                         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             {/* Performance Analytics Dashboard */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div className="card bg-white border-none shadow-xl p-6 flex items-center gap-6 group hover:shadow-2xl transition-all duration-300 card-mobile-flat">
-                                    <div className="w-16 h-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                                        <TrendingUp size={32} />
+                                <div className="card flex flex-row items-center gap-6 p-6 transition-all hover-scale border-left-4 border-primary card-mobile-flat">
+                                    <div className="p-4 rounded-2xl bg-primary bg-opacity-10 text-primary shrink-0">
+                                        <TrendingUp size={28} />
                                     </div>
                                     <div>
-                                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Mean Score</p>
-                                        <h2 className="text-3xl font-black text-slate-900 mb-0">
+                                        <p className="text-text-muted text-[10px] font-black uppercase tracking-[0.2em] mb-1">Mean Score</p>
+                                        <h3 className="text-2xl font-black text-primary m-0 leading-tight">
                                             {(() => {
                                                 const validScores = results.map((r: any) => parseFloat(r.score || r.marks_attained || 0)).filter(s => !isNaN(s));
                                                 return validScores.length > 0 ? (validScores.reduce((a, b) => a + b, 0) / validScores.length).toFixed(1) : '0';
                                             })()}%
-                                        </h2>
+                                        </h3>
                                     </div>
                                 </div>
-                                <div className="card bg-white border-none shadow-xl p-6 flex items-center gap-6 group hover:shadow-2xl transition-all duration-300 card-mobile-flat">
-                                    <div className="w-16 h-16 rounded-2xl bg-success/10 text-success flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                                        <ShieldCheck size={32} />
+                                <div className="card flex flex-row items-center gap-6 p-6 transition-all hover-scale border-left-4 border-success card-mobile-flat">
+                                    <div className="p-4 rounded-2xl bg-success bg-opacity-10 text-success shrink-0">
+                                        <ShieldCheck size={28} />
                                     </div>
                                     <div>
-                                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Mean Grade</p>
-                                        <h2 className="text-3xl font-black text-slate-900 mb-0">{student.average_grade || '—'}</h2>
+                                        <p className="text-text-muted text-[10px] font-black uppercase tracking-[0.2em] mb-1">Mean Grade</p>
+                                        <h3 className="text-2xl font-black text-primary m-0 leading-tight">{student.average_grade || '—'}</h3>
                                     </div>
                                 </div>
-                                <div className="card bg-white border-none shadow-xl p-6 flex items-center gap-6 group hover:shadow-2xl transition-all duration-300 card-mobile-flat">
-                                    <div className="w-16 h-16 rounded-2xl bg-info/10 text-info flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                                        <BookOpen size={32} />
+                                <div className="card flex flex-row items-center gap-6 p-6 transition-all hover-scale border-left-4 border-info card-mobile-flat">
+                                    <div className="p-4 rounded-2xl bg-info bg-opacity-10 text-info shrink-0">
+                                        <BookOpen size={28} />
                                     </div>
                                     <div>
-                                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Subjects Recorded</p>
-                                        <h2 className="text-3xl font-black text-slate-900 mb-0">{new Set(results.map(r => r.subject_name)).size}</h2>
+                                        <p className="text-text-muted text-[10px] font-black uppercase tracking-[0.2em] mb-1">Subjects Recorded</p>
+                                        <h3 className="text-2xl font-black text-primary m-0 leading-tight">{new Set(results.map(r => r.subject_name)).size}</h3>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="card border-none shadow-xl bg-white card-mobile-flat">
-                                <div className="p-5 border-b bg-slate-50/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                            <div className="card border-none shadow-xl bg-white card-mobile-flat p-0 overflow-hidden">
+                                <div className="p-5 border-b bg-slate-50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                                     <div>
-                                        <h3 className="text-sm font-black uppercase tracking-widest text-slate-800 mb-1">Examination Ledger</h3>
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Detailed breakdown of institutional assessments</p>
+                                        <h3 className="text-sm font-black uppercase tracking-widest text-slate-800 mb-0">Examination Ledger</h3>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.1em]">Detailed breakdown of institutional assessments</p>
                                     </div>
                                     <Button variant="primary" size="sm" className="font-black shadow-lg shadow-primary/20" onClick={handleTranscriptPrint} icon={<Printer size={14} />}>GENERATE TRANSCRIPT</Button>
                                 </div>
@@ -819,55 +831,52 @@ const StudentProfile = () => {
                         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             {/* Modern Financial Dashboard */}
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 no-print">
-                                <div className="md:col-span-2 card bg-gradient-to-br from-slate-900 to-slate-800 text-white border-none shadow-2xl relative card-mobile-flat">
+                                <div className="md:col-span-2 card flex flex-row items-center gap-6 p-6 transition-all hover-scale border-left-4 border-slate-900 bg-slate-900 text-white shadow-2xl relative card-mobile-flat overflow-hidden">
                                     <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/5 rounded-full blur-3xl"></div>
-                                    <div className="absolute -left-8 -bottom-8 w-32 h-32 bg-primary/10 rounded-full blur-3xl"></div>
-                                    <div className="relative z-10 p-2">
-                                        <div className="flex justify-between items-start mb-6">
-                                            <div>
-                                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/50 mb-1">Total Fee Liability</p>
-                                                <h1 className="text-3xl font-black tracking-tighter mb-0">
-                                                    KES {(student.fee_balance || 0).toLocaleString()}
-                                                </h1>
-                                            </div>
-                                            <div className={`p-3 rounded-2xl ${Number(student.fee_balance || 0) <= 0 ? 'bg-success/20 text-success' : 'bg-error/20 text-error shadow-[0_0_20px_rgba(239,68,68,0.2)]'}`}>
-                                                <CreditCard size={28} />
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-4 text-[10px] font-bold">
-                                            <span className={`px-2 py-1 rounded-lg ${Number(student.fee_balance || 0) <= 0 ? 'bg-success/20 text-success' : 'bg-white/10 text-white'}`}>
-                                                STATUS: {Number(student.fee_balance || 0) <= 0 ? 'CLEARED' : 'OUTSTANDING'}
+                                    <div className="p-4 rounded-2xl bg-white bg-opacity-10 text-white shrink-0 relative z-10">
+                                        <CreditCard size={28} />
+                                    </div>
+                                    <div className="relative z-10">
+                                        <p className="text-white/50 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Total Fee Liability</p>
+                                        <h3 className="text-3xl font-black text-white m-0 leading-tight">KES {(student.fee_balance || 0).toLocaleString()}</h3>
+                                        <div className="flex items-center gap-3 mt-2">
+                                            <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase ${Number(student.fee_balance || 0) <= 0 ? 'bg-success/20 text-success' : 'bg-white/10 text-white'}`}>
+                                                {Number(student.fee_balance || 0) <= 0 ? 'CLEARED' : 'OUTSTANDING'}
                                             </span>
-                                            <span className="text-white/40 uppercase tracking-widest">Acc: {student.admission_number}</span>
+                                            <span className="text-white/30 text-[9px] font-black uppercase tracking-widest">ADM: {student.admission_number}</span>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="card border-none bg-blue-50/50 shadow-sm flex flex-col justify-center items-center text-center p-6 border-t-4 border-blue-500 card-mobile-flat">
-                                    <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mb-3">
-                                        <TrendingUp size={24} />
+                                <div className="card flex flex-row items-center gap-6 p-6 transition-all hover-scale border-left-4 border-blue-500 bg-blue-50/50 card-mobile-flat">
+                                    <div className="p-4 rounded-2xl bg-blue-500 bg-opacity-10 text-blue-600 shrink-0">
+                                        <TrendingUp size={28} />
                                     </div>
-                                    <p className="text-[10px] font-black uppercase text-slate-500 mb-1">Invoiced Sum</p>
-                                    <h3 className="text-xl font-black text-slate-900 mb-0">KES {invoices.reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0).toLocaleString()}</h3>
+                                    <div>
+                                        <p className="text-text-muted text-[10px] font-black uppercase tracking-[0.2em] mb-1">Invoiced Sum</p>
+                                        <h3 className="text-2xl font-black text-primary m-0 leading-tight">KES {invoices.reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0).toLocaleString()}</h3>
+                                    </div>
                                 </div>
-                                <div className="card border-none bg-emerald-50/50 shadow-sm flex flex-col justify-center items-center text-center p-6 border-t-4 border-emerald-500 card-mobile-flat">
-                                    <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-3">
-                                        <ShieldCheck size={24} />
+                                <div className="card flex flex-row items-center gap-6 p-6 transition-all hover-scale border-left-4 border-emerald-500 bg-emerald-50/50 card-mobile-flat">
+                                    <div className="p-4 rounded-2xl bg-emerald-500 bg-opacity-10 text-emerald-600 shrink-0">
+                                        <ShieldCheck size={28} />
                                     </div>
-                                    <p className="text-[10px] font-black uppercase text-slate-500 mb-1">Total Receipts</p>
-                                    <h3 className="text-xl font-black text-slate-900 mb-0">KES {payments.reduce((sum, pay) => sum + Number(pay.amount || 0), 0).toLocaleString()}</h3>
+                                    <div>
+                                        <p className="text-text-muted text-[10px] font-black uppercase tracking-[0.2em] mb-1">Total Receipts</p>
+                                        <h3 className="text-2xl font-black text-primary m-0 leading-tight">KES {payments.reduce((sum, pay) => sum + Number(pay.amount || 0), 0).toLocaleString()}</h3>
+                                    </div>
                                 </div>
                             </div>
 
                             <div className="flex flex-col lg:flex-row gap-8">
                                 <div className="flex-grow min-w-0">
-                                    <div className="card border-none shadow-xl bg-white card-mobile-flat">
-                                        <div className="p-5 border-b bg-slate-50/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                                    <div className="card border-none shadow-xl bg-white card-mobile-flat p-0 overflow-hidden">
+                                        <div className="p-5 border-b bg-slate-50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                                             <div>
-                                                <h3 className="text-sm font-black uppercase tracking-widest text-slate-800 mb-1">Accounting Ledger</h3>
-                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Verified transaction history & adjustments</p>
+                                                <h3 className="text-sm font-black uppercase tracking-widest text-slate-800 mb-0">Accounting Ledger</h3>
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.1em]">Verified transaction history & adjustments</p>
                                             </div>
                                             <div className="flex gap-2 w-full sm:w-auto">
-                                                <Button variant="outline" size="sm" className="bg-white shadow-sm font-black flex-1 sm:flex-none" onClick={() => window.print()} icon={<Printer size={14} />}>PRINT PDF</Button>
+                                                <Button variant="outline" size="sm" className="bg-white shadow-sm font-black flex-1 sm:flex-none" onClick={() => window.print()} icon={<Printer size={14} />}>PRINT STATEMENT</Button>
                                             </div>
                                         </div>
 
@@ -965,21 +974,23 @@ const StudentProfile = () => {
                                     JOIN CLUB/SPORT
                                 </Button>
                             </div>
-                            <div className="grid grid-cols-2 gap-6">
-                                {activities.length === 0 ? <p className="text-secondary italic text-xs uppercase font-bold text-center py-8 col-span-2">No extra-curricular activities recorded</p> :
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {activities.length === 0 ? <p className="text-secondary italic text-xs uppercase font-bold text-center py-8 col-span-2 opacity-40">No extra-curricular activities recorded</p> :
                                     activities.map((act, i) => (
-                                        <div key={i} className={`card p-6 border-left-4 border-primary shadow-md relative group hover:shadow-xl transition-all`}>
-                                            <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                                                <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); handleEditActivity(act); }} icon={<Edit size={14} />} title="Edit" />
-                                                <Button variant="ghost" size="sm" className="text-error" onClick={(e) => { e.stopPropagation(); handleDeleteActivity(act.id); }} icon={<Trash2 size={14} />} title="Delete" />
-                                            </div>
-                                            <div className="flex justify-between items-start mb-3">
-                                                <h4 className="font-black text-xs uppercase text-primary mb-0">{act.name}</h4>
+                                        <div key={i} className="card flex flex-col p-0 overflow-hidden border-left-4 border-primary shadow-md relative group hover-scale transition-all card-mobile-flat">
+                                            <div className="p-5 flex justify-between items-start">
+                                                <div>
+                                                    <h4 className="font-black text-xs uppercase text-primary mb-1">{act.name}</h4>
+                                                    <p className="text-[9px] font-black text-secondary uppercase tracking-widest opacity-60">Role: {act.role}</p>
+                                                </div>
                                                 <span className="text-[9px] font-black text-secondary uppercase bg-secondary-light px-2 py-0.5 rounded">{act.year}</span>
                                             </div>
-                                            <p className="text-[10px] font-black text-secondary uppercase mb-2">Role: {act.role}</p>
-                                            <div className="flex gap-2">
-                                                <span className="badge badge-success badge-xs px-2 py-0 font-black">ACTIVE PARTICIPANT</span>
+                                            <div className="px-5 pb-5 flex justify-between items-center">
+                                                <span className="badge badge-success badge-xxs px-2 py-0 font-black">ACTIVE PARTICIPANT</span>
+                                                <div className="flex gap-1">
+                                                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={(e) => { e.stopPropagation(); handleEditActivity(act); }} icon={<Edit size={12} />} />
+                                                    <Button variant="ghost" size="sm" className="text-error h-7 w-7 p-0" onClick={(e) => { e.stopPropagation(); handleDeleteActivity(act.id); }} icon={<Trash2 size={12} />} />
+                                                </div>
                                             </div>
                                         </div>
                                     ))}
@@ -995,14 +1006,14 @@ const StudentProfile = () => {
                                     ATTACH FILE
                                 </Button>
                             </div>
-                            <div className="grid grid-cols-3 gap-6">
-                                {documents.length === 0 ? <p className="text-secondary italic text-xs uppercase font-bold text-center py-8 col-span-3">No documents archived</p> :
+                            <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
+                                {documents.length === 0 ? <p className="text-secondary italic text-xs uppercase font-bold text-center py-8 col-span-3 opacity-40">No documents archived</p> :
                                     documents.map((doc, i) => (
-                                        <div key={i} className="card text-center hover-bg-secondary cursor-pointer border-dashed border-2 flex flex-col items-center gap-3 relative">
-                                            <Button variant="ghost" size="sm" className="absolute top-2 right-2 text-error z-50" onClick={(e) => { e.stopPropagation(); handleDeleteDocument(doc.id); }} icon={<Trash2 size={14} />} title="Delete" />
-                                            <div className="w-10 h-10 rounded-full bg-secondary-light flex items-center justify-center"><FileText className="text-primary" /></div>
-                                            <h4 className="text-[10px] font-black uppercase text-primary mb-0">{doc.doc_type || 'DOCUMENT'}</h4>
-                                            <p className="text-[9px] text-secondary font-bold mb-0 truncate w-full">{doc.file.split('/').pop()}</p>
+                                        <div key={i} className="card flex flex-col items-center text-center p-6 border-dashed border-2 hover:border-primary transition-colors cursor-pointer group relative card-mobile-flat">
+                                            <Button variant="ghost" size="sm" className="absolute top-2 right-2 text-error opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => { e.stopPropagation(); handleDeleteDocument(doc.id); }} icon={<Trash2 size={14} />} />
+                                            <div className="w-12 h-12 rounded-full bg-secondary-light flex items-center justify-center mb-4 group-hover:scale-110 transition-transform"><FileText className="text-primary" size={24} /></div>
+                                            <h4 className="text-[10px] font-black uppercase text-primary mb-1 tracking-widest">{doc.doc_type || 'DOCUMENT'}</h4>
+                                            <p className="text-[9px] text-secondary font-bold mb-0 truncate w-full opacity-60 px-2">{doc.file.split('/').pop()}</p>
                                         </div>
                                     ))}
                             </div>
@@ -1016,50 +1027,56 @@ const StudentProfile = () => {
                     {/* Only show these cards if NOT on the Finance tab, as we moved them to a scrollable row there */}
                     {activeTab !== 'FINANCE' && (
                         <>
-                            <div className="card border-top-4 border-primary card-mobile-flat">
-                                <h4 className="text-[10px] font-black uppercase text-primary border-bottom pb-2 mb-4 tracking-widest flex items-center gap-2">
-                                    <ShieldCheck size={14} /> Administrative Control
-                                </h4>
-                                <div className="space-y-4">
-                                    <div className="flex justify-between items-center text-[10px] font-black uppercase text-secondary"><span>Admission Date</span> <span className="text-primary">{new Date(student.admission_date).toLocaleDateString()}</span></div>
+                            <div className="card flex flex-col p-0 overflow-hidden border-left-4 border-primary card-mobile-flat">
+                                <div className="p-5 border-b bg-slate-50">
+                                    <h4 className="text-[10px] font-black uppercase text-primary mb-0 tracking-[0.2em] flex items-center gap-2">
+                                        <ShieldCheck size={14} /> Administrative Control
+                                    </h4>
+                                </div>
+                                <div className="p-5 space-y-4">
+                                    <div className="flex justify-between items-center text-[10px] font-black uppercase text-secondary"><span>Admission Date</span> <span className="text-primary font-mono">{new Date(student.admission_date).toLocaleDateString()}</span></div>
                                     <div className="flex justify-between items-start text-[10px] font-black uppercase text-secondary">
                                         <span>Primary Guardian</span>
                                         <div className="text-right">
                                             <span className="text-primary block">{parents.find(p => p.is_primary)?.full_name || student.guardian_name}</span>
-                                            <span className="text-secondary text-[8px] block opacity-70 tracking-normal">{parents.find(p => p.is_primary)?.phone_number || student.guardian_phone}</span>
+                                            <span className="text-secondary text-[8px] block opacity-70 tracking-normal lower-case">{parents.find(p => p.is_primary)?.phone_number || student.guardian_phone}</span>
                                         </div>
                                     </div>
                                     <div className="flex justify-between items-center text-[10px] font-black uppercase text-secondary"><span>House Unit</span> <span className="text-primary">{student.residence_details || student.hostel_name || 'DAY SCHOLAR'}</span></div>
                                     <div className="flex justify-between items-center text-[10px] font-black uppercase text-secondary"><span>Transport</span> <span className="text-primary">{student.transport_details || 'NONE'}</span></div>
-                                </div>
-                                <div className="mt-8 space-y-2">
-                                    <Button variant="outline" size="sm" className="w-full uppercase font-black py-2 tracking-widest" onClick={() => setIsTransferModalOpen(true)}>Transfer Unit</Button>
-                                    <Button variant="ghost" size="sm" className="text-warning w-full uppercase font-black py-2 tracking-widest" onClick={() => setIsSuspendModalOpen(true)}>Restrict / Suspend</Button>
-                                    <Button variant="danger" size="sm" className="w-full uppercase font-black py-2 tracking-widest mt-2 shadow-lg shadow-error/20" onClick={() => setIsDeleteModalOpen(true)}>PERMANENTLY DELETE</Button>
+
+                                    <div className="pt-4 space-y-2 border-t border-slate-100">
+                                        <Button variant="outline" size="sm" className="w-full uppercase font-black py-2 tracking-widest text-[10px]" onClick={() => setIsTransferModalOpen(true)}>Transfer Unit</Button>
+                                        <Button variant="ghost" size="sm" className="text-warning w-full uppercase font-black py-2 tracking-widest text-[10px]" onClick={() => setIsSuspendModalOpen(true)}>Restrict / Suspend</Button>
+                                        <Button variant="danger" size="sm" className="w-full uppercase font-black py-2 tracking-widest mt-2 shadow-lg shadow-error/20 text-[10px]" onClick={() => setIsDeleteModalOpen(true)}>PERMANENTLY DELETE</Button>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="card bg-primary text-white">
-                                <MessageSquare className="mb-4 opacity-50" size={32} />
-                                <h4 className="text-[10px] font-black uppercase mb-1 tracking-widest">Rapid Communication</h4>
-                                <p className="text-[10px] font-bold opacity-80 leading-relaxed mb-4">Send instant alerts or messages to guardian/parent.</p>
+                            <div className="card bg-slate-900 text-white border-none shadow-xl flex flex-col p-6 relative overflow-hidden">
+                                <div className="absolute -right-4 -top-4 w-24 h-24 bg-white/5 rounded-full blur-2xl"></div>
+                                <div className="p-3 rounded-xl bg-white/10 text-white w-fit mb-4 relative z-10 transition-transform group-hover:scale-110">
+                                    <MessageSquare size={24} />
+                                </div>
+                                <h4 className="text-[10px] font-black uppercase mb-1 tracking-[0.2em] relative z-10">Rapid Communication</h4>
+                                <p className="text-[10px] font-bold opacity-60 leading-relaxed mb-6 relative z-10">Send instant alerts or messages to guardian/parent.</p>
 
-                                <div className="grid grid-cols-3 gap-2 mb-4">
-                                    <button onClick={handleWhatsApp} className="flex flex-col items-center justify-center p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-all gap-1" title="WhatsApp">
-                                        <MessageCircle size={18} />
-                                        <span className="text-[8px] font-black uppercase">WA</span>
+                                <div className="grid grid-cols-3 gap-3 mb-6 relative z-10">
+                                    <button onClick={handleWhatsApp} className="flex flex-col items-center justify-center p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all gap-2 group" title="WhatsApp">
+                                        <MessageCircle size={18} className="group-hover:scale-110 transition-transform" />
+                                        <span className="text-[9px] font-black uppercase tracking-tighter">WA</span>
                                     </button>
-                                    <button onClick={handleEmail} className="flex flex-col items-center justify-center p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-all gap-1" title="Email">
-                                        <Mail size={18} />
-                                        <span className="text-[8px] font-black uppercase">Email</span>
+                                    <button onClick={handleEmail} className="flex flex-col items-center justify-center p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all gap-2 group" title="Email">
+                                        <Mail size={18} className="group-hover:scale-110 transition-transform" />
+                                        <span className="text-[9px] font-black uppercase tracking-tighter">Email</span>
                                     </button>
-                                    <button onClick={handleDirectSMS} className="flex flex-col items-center justify-center p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-all gap-1" title="SMS">
-                                        <Send size={18} />
-                                        <span className="text-[8px] font-black uppercase">SMS</span>
+                                    <button onClick={handleDirectSMS} className="flex flex-col items-center justify-center p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all gap-2 group" title="SMS">
+                                        <Send size={18} className="group-hover:scale-110 transition-transform" />
+                                        <span className="text-[9px] font-black uppercase tracking-tighter">SMS</span>
                                     </button>
                                 </div>
 
-                                <button className="btn btn-xs bg-white text-primary w-full uppercase font-black shadow-lg" onClick={handleMessage}>Open Messenger</button>
+                                <Button variant="primary" size="sm" className="w-full bg-white text-slate-900 border-none hover:bg-white/90 uppercase font-black shadow-lg py-2.5 text-[10px]" onClick={handleMessage}>Open Messenger</Button>
                             </div>
                         </>
                     )}
@@ -1224,18 +1241,18 @@ const StudentProfile = () => {
                     <p>This is to certify that <strong>{student.full_name}</strong> (ADM: <strong>{student.admission_number}</strong>) has successfully cleared with the following departments:</p>
 
                     <div className="table-wrapper">
-                        <table className="report-table">
+                        <table className="table w-full">
                             <thead>
-                                <tr>
-                                    <th>Department</th>
-                                    <th>Status</th>
-                                    <th>Signature/Stamp</th>
+                                <tr className="bg-slate-50">
+                                    <th className="py-3 px-4 text-[10px] font-black uppercase text-slate-400">Department</th>
+                                    <th className="py-3 px-4 text-[10px] font-black uppercase text-slate-400">Status</th>
+                                    <th className="py-3 px-4 text-[10px] font-black uppercase text-slate-400">Signature/Stamp</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr><td>Academics (Books/Exams)</td><td>{unreturnedBooks > 0 ? `PENDING (${unreturnedBooks} Unreturned Books)` : 'CLEARED'}</td><td></td></tr>
-                                <tr><td>Boarding/Hostel</td><td>{student.hostel_name ? `PENDING (Allocated to ${student.hostel_name})` : 'CLEARED'}</td><td></td></tr>
-                                <tr><td>Finance/Accounts</td><td>{(student.fee_balance || 0) > 0 ? `OUTSTANDING BALANCE (KES ${student.fee_balance.toLocaleString()})` : 'CLEARED'}</td><td></td></tr>
+                            <tbody className="divide-y divide-slate-100">
+                                <tr><td className="py-3 px-4 text-xs font-bold text-slate-700">Academics (Books/Exams)</td><td className="py-3 px-4 text-xs font-black text-primary">{unreturnedBooks > 0 ? `PENDING (${unreturnedBooks} Unreturned Books)` : 'CLEARED'}</td><td className="py-3 px-4"></td></tr>
+                                <tr><td className="py-3 px-4 text-xs font-bold text-slate-700">Boarding/Hostel</td><td className="py-3 px-4 text-xs font-black text-primary">{student.hostel_name ? `PENDING (Allocated to ${student.hostel_name})` : 'CLEARED'}</td><td className="py-3 px-4"></td></tr>
+                                <tr><td className="py-3 px-4 text-xs font-bold text-slate-700">Finance/Accounts</td><td className="py-3 px-4 text-xs font-black text-primary">{(student.fee_balance || 0) > 0 ? `OUTSTANDING BALANCE (KES ${student.fee_balance.toLocaleString()})` : 'CLEARED'}</td><td className="py-3 px-4"></td></tr>
                             </tbody>
                         </table>
                     </div>
