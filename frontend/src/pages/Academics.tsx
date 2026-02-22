@@ -165,6 +165,7 @@ const Academics = () => {
     const [selectedClass, setSelectedClass] = useState<any>(null);
     const [viewClassStudents, setViewClassStudents] = useState<any[]>([]);
     const [rankingFilter, setRankingFilter] = useState({ level: '', classId: '' });
+    const [viewResultsGroupBy, setViewResultsGroupBy] = useState<'STREAM' | 'ENTIRE_CLASS'>('STREAM');
 
     // Form States
     const [yearForm, setYearForm] = useState({ name: '', is_active: false });

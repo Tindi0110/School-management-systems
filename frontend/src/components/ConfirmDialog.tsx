@@ -1,6 +1,5 @@
 import React from 'react';
 import { AlertCircle } from 'lucide-react';
-import Button from './common/Button';
 
 interface ConfirmDialogProps {
     isOpen: boolean;

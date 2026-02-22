@@ -361,7 +361,7 @@ const Students = () => {
                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Select a class unit to view specific student records</p>
                             </div>
                             <div className="flex bg-slate-100 p-1 rounded-lg">
-                                <Button variant="ghost" size="xs" onClick={() => setGroupBy('CLASS')} className="text-[9px] font-black uppercase">Switch to Grouped View</Button>
+                                <Button variant="ghost" size="sm" onClick={() => setGroupBy('CLASS')} className="text-[9px] font-black uppercase">Switch to Grouped View</Button>
                             </div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
