@@ -8,6 +8,7 @@ import { libraryAPI, studentsAPI } from '../api/api';
 import { exportToCSV } from '../utils/export';
 import Modal from '../components/Modal';
 import SearchableSelect from '../components/SearchableSelect';
+import { StatCard } from '../components/Card';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 import Button from '../components/common/Button';
@@ -381,22 +382,30 @@ const Library = () => {
 
             {/* Quick Stats */}
             <div className="grid grid-cols-2 gap-4 mb-8">
-                <div className="card flex items-center gap-4 border-l-4 border-info">
-                    <Bookmark className="text-info" size={24} />
-                    <div><p className="text-xs text-secondary font-bold uppercase">Out on Loan</p><h3>{stats.activeLendings}</h3></div>
-                </div>
-                <div className="card flex items-center gap-4 border-l-4 border-warning">
-                    <Receipt className="text-warning" size={24} />
-                    <div><p className="text-xs text-secondary font-bold uppercase">Unpaid Fines</p><h3>KES {stats.totalFines.toLocaleString()}</h3></div>
-                </div>
-                <div className="card flex items-center gap-4 border-l-4 border-success">
-                    <Layers className="text-success" size={24} />
-                    <div><p className="text-xs text-secondary font-bold uppercase">Total Copies</p><h3>{stats.totalCopies}</h3></div>
-                </div>
-                <div className="card flex items-center gap-4 border-l-4 border-primary">
-                    <Book className="text-primary" size={24} />
-                    <div><p className="text-xs text-secondary font-bold uppercase">Unique Titles</p><h3>{stats.totalBooks}</h3></div>
-                </div>
+                <StatCard
+                    title="Out on Loan"
+                    value={stats.activeLendings}
+                    icon={<Bookmark />}
+                    gradient="linear-gradient(135deg, #3b82f6, #2563eb)"
+                />
+                <StatCard
+                    title="Unpaid Fines"
+                    value={`KES ${stats.totalFines.toLocaleString()}`}
+                    icon={<Receipt />}
+                    gradient="linear-gradient(135deg, #ef4444, #dc2626)"
+                />
+                <StatCard
+                    title="Total Copies"
+                    value={stats.totalCopies}
+                    icon={<Layers />}
+                    gradient="linear-gradient(135deg, #10b981, #059669)"
+                />
+                <StatCard
+                    title="Unique Titles"
+                    value={stats.totalBooks}
+                    icon={<Book />}
+                    gradient="linear-gradient(135deg, #8b5cf6, #7c3aed)"
+                />
             </div>
 
             {/* Tabs */}

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { ShieldCheck, Activity, Database, Server, Smartphone, Globe, RefreshCcw, Clock } from 'lucide-react';
 import { auditAPI } from '../api/api';
 import { useToast } from '../context/ToastContext';
+import { StatCard } from '../components/Card';
 
 const SystemHealth = () => {
     const { error } = useToast();
@@ -95,52 +96,28 @@ const SystemHealth = () => {
 
             <div className="grid grid-cols-2 gap-6 mb-8">
                 {/* Overall Status */}
-                <div className={`card p-6 border-top-4 ${getStatusBg(healthData?.status)} shadow-lg`}>
-                    <div className="flex items-center gap-4">
-                        <div className={`p-4 rounded-2xl ${getStatusBg(healthData?.status)}`}>
-                            <Activity size={24} className={getStatusColor(healthData?.status)} />
-                        </div>
-                        <div>
-                            <p className="text-[10px] font-black uppercase text-secondary tracking-wider">Overall State</p>
-                            <h2 className={`text-2xl font-black uppercase ${getStatusColor(healthData?.status)}`}>
-                                {healthData?.status || 'Unknown'}
-                            </h2>
-                        </div>
-                    </div>
-                </div>
+                <StatCard
+                    title="Overall State"
+                    value={healthData?.status || 'Unknown'}
+                    icon={<Activity />}
+                    gradient={healthData?.status === 'HEALTHY' ? "linear-gradient(135deg, #10b981, #059669)" : "linear-gradient(135deg, #f59e0b, #d97706)"}
+                />
 
                 {/* Server Time */}
-                <div className="card border-top-4 border-info">
-                    <div className="flex items-center gap-4">
-                        <div className="p-4 rounded-2xl bg-info/10">
-                            <Clock size={24} className="text-info" />
-                        </div>
-                        <div>
-                            <p className="text-[10px] font-black uppercase text-secondary tracking-wider">Server Time</p>
-                            <h2 className="text-lg font-bold">
-                                {healthData?.timestamp ? new Date(healthData.timestamp).toLocaleTimeString() : '--:--:--'}
-                            </h2>
-                            <p className="text-[9px] text-secondary">
-                                {healthData?.timestamp ? new Date(healthData.timestamp).toLocaleDateString() : 'N/A'}
-                            </p>
-                        </div>
-                    </div>
-                </div>
+                <StatCard
+                    title="Server Time"
+                    value={healthData?.timestamp ? new Date(healthData.timestamp).toLocaleTimeString() : '--:--:--'}
+                    icon={<Clock />}
+                    gradient="linear-gradient(135deg, #3b82f6, #2563eb)"
+                />
 
                 {/* Environment */}
-                <div className="card border-top-4 border-primary">
-                    <div className="flex items-center gap-4">
-                        <div className="p-4 rounded-2xl bg-primary/10">
-                            <Globe size={24} className="text-primary" />
-                        </div>
-                        <div>
-                            <p className="text-[10px] font-black uppercase text-secondary tracking-wider">Environment</p>
-                            <h2 className="text-2xl font-black uppercase text-primary">
-                                {healthData?.services?.backend?.environment || 'PROD'}
-                            </h2>
-                        </div>
-                    </div>
-                </div>
+                <StatCard
+                    title="Environment"
+                    value={healthData?.services?.backend?.environment || 'PROD'}
+                    icon={<Globe />}
+                    gradient="linear-gradient(135deg, #6366f1, #4f46e5)"
+                />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

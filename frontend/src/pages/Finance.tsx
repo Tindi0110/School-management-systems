@@ -4,6 +4,7 @@ import { financeAPI, academicsAPI, studentsAPI, classesAPI, mpesaAPI } from '../
 import { CreditCard, FileText, TrendingUp, CheckCircle, Plus, Printer, Bell, Send, Mail, MessageSquare } from 'lucide-react';
 import SearchableSelect from '../components/SearchableSelect';
 import Modal from '../components/Modal';
+import { StatCard } from '../components/Card';
 import { useToast } from '../context/ToastContext';
 import Button from '../components/common/Button';
 
@@ -432,17 +433,17 @@ const Finance = () => {
                     {activeTab === 'dashboard' && (
                         <div className="space-y-6">
                             <div className="grid grid-cols-2 gap-6">
-                                <StatsCard title="Total Invoiced" value={`KES ${stats.totalInvoiced.toLocaleString()}`} icon={<FileText />} color="text-blue-500" />
-                                <StatsCard title="Total Collected" value={`KES ${stats.totalCollected.toLocaleString()}`} icon={<CheckCircle />} color="text-green-500" />
-                                <StatsCard title="Outstanding" value={`KES ${stats.totalOutstanding.toLocaleString()}`} icon={<CreditCard />} color="text-red-500" />
-                                <StatsCard title="Daily Collection" value={`KES ${stats.dailyCollection.toLocaleString()}`} icon={<TrendingUp />} color="text-purple-500" />
+                                <StatCard title="Total Invoiced" value={`KES ${stats.totalInvoiced.toLocaleString()}`} icon={<FileText size={18} />} gradient="linear-gradient(135deg, #3b82f6, #2563eb)" />
+                                <StatCard title="Total Collected" value={`KES ${stats.totalCollected.toLocaleString()}`} icon={<CheckCircle size={18} />} gradient="linear-gradient(135deg, #10b981, #059669)" />
+                                <StatCard title="Outstanding" value={`KES ${stats.totalOutstanding.toLocaleString()}`} icon={<CreditCard size={18} />} gradient="linear-gradient(135deg, #ef4444, #dc2626)" />
+                                <StatCard title="Daily Collection" value={`KES ${stats.dailyCollection.toLocaleString()}`} icon={<TrendingUp size={18} />} gradient="linear-gradient(135deg, #8b5cf6, #7c3aed)" />
                             </div>
 
                             <div className="grid grid-cols-2 gap-6">
-                                <StatsCard title="Enrolled Students" value={stats.enrolledStudents.toLocaleString()} icon={<TrendingUp />} color="text-cyan-500" />
-                                <StatsCard title="Total Capacity" value={stats.totalCapacity.toLocaleString()} icon={<CheckCircle />} color="text-indigo-500" />
-                                <StatsCard title="Revenue / Seat" value={`KES ${stats.revenuePerSeat.toLocaleString()}`} icon={<CreditCard />} color="text-orange-500" />
-                                <StatsCard title="Collection Rate" value={`${stats.collectionRate}%`} icon={<FileText />} color="text-emerald-500" />
+                                <StatCard title="Enrolled Students" value={stats.enrolledStudents.toLocaleString()} icon={<TrendingUp size={18} />} gradient="linear-gradient(135deg, #06b6d4, #0891b2)" />
+                                <StatCard title="Total Capacity" value={stats.totalCapacity.toLocaleString()} icon={<CheckCircle size={18} />} gradient="linear-gradient(135deg, #6366f1, #4f46e5)" />
+                                <StatCard title="Revenue / Seat" value={`KES ${stats.revenuePerSeat.toLocaleString()}`} icon={<CreditCard size={18} />} gradient="linear-gradient(135deg, #f59e0b, #d97706)" />
+                                <StatCard title="Collection Rate" value={`${stats.collectionRate}%`} icon={<FileText size={18} />} gradient="linear-gradient(135deg, #10b981, #059669)" />
                             </div>
 
                             <div className="card">

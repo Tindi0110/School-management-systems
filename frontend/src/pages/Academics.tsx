@@ -1030,8 +1030,8 @@ const Academics = () => {
 
             {activeTab === 'SUMMARY' && (
                 <div className="space-y-8 fade-in">
-                    <div className="grid grid-cols-12 gap-6 lg:gap-8">
-                        <div className="col-span-6 min-w-0">
+                    <div className="grid grid-cols-2 gap-6 lg:gap-8">
+                        <div className="min-w-0">
                             <StatCard
                                 title="Enrolled Capacity"
                                 value={classes.length > 0 ? `${classes.reduce((sum, c) => sum + (c.student_count || 0), 0)}/${classes.reduce((sum, c) => sum + (c.capacity || 40), 0)}` : "0/0"}
@@ -1039,7 +1039,7 @@ const Academics = () => {
                                 gradient="linear-gradient(135deg, #0f172a, #1e293b)"
                             />
                         </div>
-                        <div className="col-span-6 min-w-0">
+                        <div className="min-w-0">
                             <StatCard
                                 title="Departments"
                                 value={subjectGroups.length}
@@ -1047,7 +1047,7 @@ const Academics = () => {
                                 gradient="linear-gradient(135deg, #0f172a, #1e293b)"
                             />
                         </div>
-                        <div className="col-span-6 min-w-0">
+                        <div className="min-w-0">
                             <StatCard
                                 title="Active Exams"
                                 value={exams.filter(e => e.is_active).length}
@@ -1055,7 +1055,7 @@ const Academics = () => {
                                 gradient="linear-gradient(135deg, #4facfe, #00f2fe)"
                             />
                         </div>
-                        <div className="col-span-6 min-w-0">
+                        <div className="min-w-0">
                             <StatCard
                                 title="Overall Mean"
                                 value={meanGrade === '...' ? '—' : (meanGrade || "N/A")}
