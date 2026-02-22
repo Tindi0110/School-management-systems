@@ -476,7 +476,7 @@ const StudentProfile = () => {
     // ... (keep existing modals)
 
     return (
-        <div className="fade-in pb-12 w-full max-w-full container mx-auto overflow-x-hidden">
+        <div className="fade-in pb-12 w-full max-w-full overflow-x-hidden min-w-0">
             {/* Header ... (keep existing) */}
             <div className="flex justify-between items-center mb-6 no-print">
                 <Button variant="ghost" size="sm" onClick={() => navigate('/students')} icon={<ArrowLeft size={16} />} className="font-black text-secondary hover:text-primary">
@@ -537,7 +537,7 @@ const StudentProfile = () => {
 
 
 
-            <div className="grid grid-cols-12 gap-8 max-w-[1280px] mx-auto">
+            <div className="grid grid-cols-12 gap-8 w-full">
                 <div className="col-span-12 lg:col-span-8 space-y-8 min-w-0">
                     {/* ... (SUMMARY tab remains same) ... */}
                     {activeTab === 'SUMMARY' && (

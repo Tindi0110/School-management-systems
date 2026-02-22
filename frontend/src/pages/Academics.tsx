@@ -977,7 +977,7 @@ const Academics = () => {
     const studentOptions = students.map(s => ({ id: s.id, label: s.full_name, subLabel: `ADM: ${s.admission_number}` }));
 
     return (
-        <div className="fade-in max-w-full container mx-auto overflow-x-hidden">
+        <div className="fade-in w-full max-w-full overflow-x-hidden min-w-0">
             {/* Elegant Header with Multi-layer Background */}
             <div className="relative overflow-hidden rounded-3xl bg-primary text-white p-8 mb-8 shadow-2xl">
                 <div className="relative z-10 flex justify-between items-center">
@@ -1129,7 +1129,7 @@ const Academics = () => {
 
 
             {activeTab === 'CLASSES' && (
-                <div className="grid grid-cols-12 gap-6 lg:gap-8">
+                <div className="grid grid-cols-12 gap-6 lg:gap-8 min-w-0">
                     {classes.filter(cls =>
                         !searchTerm ||
                         cls.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -1163,7 +1163,7 @@ const Academics = () => {
             )}
 
             {activeTab === 'CURRICULUM' && (
-                <div className="grid grid-cols-12 gap-6 lg:gap-8">
+                <div className="grid grid-cols-12 gap-6 lg:gap-8 min-w-0">
                     <div className="col-span-12 lg:col-span-3 space-y-4 min-w-0">
                         <div className="card card-mobile-flat p-0 overflow-hidden">
                             <div className="card-header">
@@ -1228,7 +1228,7 @@ const Academics = () => {
                     </div>
 
                     {/* Merged Syllabus Tracking */}
-                    <div className="col-span-12 space-y-6 lg:space-y-8 fade-in mt-8">
+                    <div className="col-span-12 space-y-6 lg:space-y-8 fade-in mt-8 min-w-0">
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4 px-2">
                             <h3 className="text-lg font-black text-slate-800 uppercase mb-0 tracking-wider">Syllabus Tracking</h3>
                             {!isReadOnly && (

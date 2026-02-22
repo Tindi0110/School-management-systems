@@ -170,15 +170,16 @@ const DashboardLayout = () => {
         .dashboard-layout {
           display: flex;
           height: 100dvh;
+          width: 100%;
+          max-width: 100vw;
           background: var(--bg-secondary);
           position: relative;
+          overflow-x: hidden;
         }
-        .main-content {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
           overflow: visible;
           width: 100%; 
+          min-width: 0;
+          max-width: 100%;
         }
         .top-bar {
           background: var(--bg-primary);
@@ -220,6 +221,9 @@ const DashboardLayout = () => {
             position: relative;
             transform: none !important;
             box-shadow: none;
+          }
+          .main-content {
+            max-width: calc(100% - 280px);
           }
         }
 
@@ -299,12 +303,12 @@ const DashboardLayout = () => {
           background: var(--error);
           color: white;
         }
-        .content-area {
           flex: 1;
           padding: var(--spacing-xl) var(--spacing-lg);
           overflow-y: auto;
-          overflow-x: auto;
+          overflow-x: hidden;
           width: 100%;
+          min-width: 0;
           -webkit-overflow-scrolling: touch;
         }
         @media (max-width: 767px) {
