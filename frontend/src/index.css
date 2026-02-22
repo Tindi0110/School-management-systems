@@ -165,7 +165,7 @@ p {
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 16px;
+  padding: 8px;
   /* overflow-x: hidden removed to allow internal scrollbars to breath */
 }
 

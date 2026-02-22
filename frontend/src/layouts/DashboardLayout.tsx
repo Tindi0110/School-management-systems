@@ -177,7 +177,7 @@ const DashboardLayout = () => {
           flex: 1;
           display: flex;
           flex-direction: column;
-          overflow: hidden;
+          overflow: visible;
           width: 100%; 
         }
         .top-bar {
@@ -303,9 +303,14 @@ const DashboardLayout = () => {
           flex: 1;
           padding: var(--spacing-xl) var(--spacing-lg);
           overflow-y: auto;
-          overflow-x: hidden;
+          overflow-x: auto;
           width: 100%;
           -webkit-overflow-scrolling: touch;
+        }
+        @media (max-width: 767px) {
+          .content-area {
+            padding: 1rem 0.5rem;
+          }
         }
       `}</style>
     </div>

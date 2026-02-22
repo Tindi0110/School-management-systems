@@ -723,7 +723,7 @@ const StudentProfile = () => {
                                 </div>
                             </div>
 
-                            <div className="card border-none shadow-xl bg-white overflow-hidden card-mobile-flat">
+                            <div className="card border-none shadow-xl bg-white card-mobile-flat">
                                 <div className="p-5 border-b bg-slate-50/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                                     <div>
                                         <h3 className="text-sm font-black uppercase tracking-widest text-slate-800 mb-1">Examination Ledger</h3>
@@ -819,7 +819,7 @@ const StudentProfile = () => {
                         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             {/* Modern Financial Dashboard */}
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 no-print">
-                                <div className="md:col-span-2 card bg-gradient-to-br from-slate-900 to-slate-800 text-white border-none shadow-2xl relative overflow-hidden card-mobile-flat">
+                                <div className="md:col-span-2 card bg-gradient-to-br from-slate-900 to-slate-800 text-white border-none shadow-2xl relative card-mobile-flat">
                                     <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/5 rounded-full blur-3xl"></div>
                                     <div className="absolute -left-8 -bottom-8 w-32 h-32 bg-primary/10 rounded-full blur-3xl"></div>
                                     <div className="relative z-10 p-2">
@@ -860,7 +860,7 @@ const StudentProfile = () => {
 
                             <div className="flex flex-col lg:flex-row gap-8">
                                 <div className="flex-grow min-w-0">
-                                    <div className="card border-none shadow-xl bg-white overflow-hidden card-mobile-flat">
+                                    <div className="card border-none shadow-xl bg-white card-mobile-flat">
                                         <div className="p-5 border-b bg-slate-50/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                                             <div>
                                                 <h3 className="text-sm font-black uppercase tracking-widest text-slate-800 mb-1">Accounting Ledger</h3>
