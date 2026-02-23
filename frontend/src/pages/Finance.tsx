@@ -214,7 +214,7 @@ const Finance = () => {
     }, [showInvoiceModal, showPaymentModal, showFeeModal, showMpesaModal]);
 
 
-    const handleReceivePayment = async (e: React.FormEvent) => {
+    const handlePaymentSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
         if ((payForm.method === 'MPESA' || payForm.method === 'BANK') && !payForm.reference.trim()) {

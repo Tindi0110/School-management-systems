@@ -550,7 +550,7 @@ const Hostels = () => {
                                     <Building className="text-secondary opacity-20" size={40} />
                                 </div>
                                 <div className="space-y-3 text-sm">
-                                    <div className="flex justify-between"><span className="text-secondary">Warden:</span><span className="font-semibold text-primary">{staff.find(s => s.id === h.warden)?.full_name || h.warden_name || 'Not Assigned'}</span></div>
+                                    <div className="flex justify-between"><span className="text-secondary">Warden:</span><span className="font-semibold text-primary">{staff.find(s => String(s.user) === String(h.warden))?.full_name || h.warden_name || 'Not Assigned'}</span></div>
                                     <div className="flex justify-between"><span className="text-secondary">Type:</span><span className="font-semibold">{h.hostel_type}</span></div>
                                     <div className="flex justify-between"><span className="text-secondary">Rooms:</span><span className="font-semibold">{rooms.filter(r => r.hostel === h.id).length} Units</span></div>
                                     <div className="w-full bg-secondary-light rounded-full h-2 mt-4 overflow-hidden">
@@ -801,7 +801,7 @@ const Hostels = () => {
                             <label className="label">Warden In-Charge</label>
                             <select className="select" value={hostelFormData.warden} onChange={(e) => setHostelFormData({ ...hostelFormData, warden: e.target.value })}>
                                 <option value="">Select Warden...</option>
-                                {staff.filter(s => s.role === 'WARDEN').map(s => <option key={s.id} value={s.id}>{s.full_name}</option>)}
+                                {staff.filter(s => s.role === 'WARDEN').map(s => <option key={s.id} value={s.user}>{s.full_name}</option>)}
                             </select>
                         </div>
                     </div>

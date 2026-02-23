@@ -45,11 +45,17 @@ class HostelAllocationSerializer(serializers.ModelSerializer):
     student_name = serializers.CharField(source='student.full_name', read_only=True)
     room_number = serializers.CharField(source='room.room_number', read_only=True)
     bed_number = serializers.CharField(source='bed.bed_number', read_only=True)
-    hostel_name = serializers.CharField(source='room.hostel.name', read_only=True)
+    hostel_name = serializers.SerializerMethodField()
     
     class Meta:
         model = HostelAllocation
         fields = '__all__'
+
+    def get_hostel_name(self, obj):
+        try:
+            return obj.room.hostel.name
+        except AttributeError:
+            return "Unknown Hostel"
 
     def validate(self, data):
         student = data.get('student')
@@ -78,7 +84,12 @@ class HostelAllocationSerializer(serializers.ModelSerializer):
 
 class HostelAttendanceSerializer(serializers.ModelSerializer):
     student_name = serializers.CharField(source='student.full_name', read_only=True)
-    hostel_name = serializers.CharField(source='student.hostel_allocation.room.hostel.name', read_only=True)
+    hostel_name = serializers.SerializerMethodField()
+    def get_hostel_name(self, obj):
+        try:
+            return obj.student.hostel_allocation.room.hostel.name
+        except AttributeError:
+            return "No Active Allocation"
     class Meta:
         model = HostelAttendance
         fields = '__all__'

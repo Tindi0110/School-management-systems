@@ -1424,7 +1424,7 @@ const StudentProfile = () => {
                                 <tr>
                                     <td className="py-4 px-6 text-xs font-black text-slate-700 uppercase bg-slate-50/50">Financial Accounts</td>
                                     <td className="py-4 px-6 text-xs font-black bg-slate-50/50">
-                                        {student.fee_balance > 0 ? (
+                                        {(student.fee_balance ?? 0) > 0 ? (
                                             <span className="text-error border-b-2 border-error/50">OUTSTANDING: KES {Number(student.fee_balance).toLocaleString()}</span>
                                         ) : (
                                             <span className="text-success border-b-2 border-success/50">CLEARED (ZERO BALANCE)</span>
