@@ -843,239 +843,241 @@ const Finance = () => {
             </Modal>
 
             {/* Payment Modal */}
-            <div className="bg-primary/5 p-4 rounded-xl border border-primary/10 flex items-center gap-4 mb-4">
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                    <CreditCard size={20} />
-                </div>
-                <div>
-                    <h4 className="text-xs font-black uppercase tracking-tight text-primary">Receive Fee Payment</h4>
-                    <p className="text-[10px] text-secondary font-bold uppercase opacity-60">Record manual bank or cash transactions</p>
-                </div>
-            </div>
+            <Modal isOpen={showPaymentModal} onClose={() => setShowPaymentModal(false)} title="Receive Fee Payment">
+                <form onSubmit={handlePaymentSubmit} className="form-container-md mx-auto space-y-6">
+                    <div className="bg-primary/5 p-4 rounded-xl border border-primary/10 flex items-center gap-4 mb-4">
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                            <CreditCard size={20} />
+                        </div>
+                        <div>
+                            <h4 className="text-xs font-black uppercase tracking-tight text-primary">Receive Fee Payment</h4>
+                            <p className="text-[10px] text-secondary font-bold uppercase opacity-60">Record manual bank or cash transactions</p>
+                        </div>
+                    </div>
 
-            <div className="space-y-4">
-                <SearchableSelect
-                    label="Search Student"
-                    placeholder="Type Name or Admission Number..."
-                    options={students.map((s: any) => ({
-                        id: s.id,
-                        label: `${s.admission_number} - ${s.full_name}`,
-                        subLabel: `Balance: KES ${Number(s.fee_balance).toLocaleString()}`
-                    }))}
-                    value={payForm.student_id}
-                    onChange={(val) => {
-                        const studentId = String(val);
-                        // Auto-select most recent unpaid invoice for this student
-                        const studentInvoices = invoices.filter(
-                            (i: any) => String(i.student) === studentId && i.status !== 'PAID'
-                        );
-                        const latestInvoice = studentInvoices.length > 0 ? studentInvoices[0] : null;
+                    <div className="space-y-4">
+                        <SearchableSelect
+                            label="Search Student"
+                            placeholder="Type Name or Admission Number..."
+                            options={students.map((s: any) => ({
+                                id: s.id,
+                                label: `${s.admission_number} - ${s.full_name}`,
+                                subLabel: `Balance: KES ${Number(s.fee_balance).toLocaleString()}`
+                            }))}
+                            value={payForm.student_id}
+                            onChange={(val) => {
+                                const studentId = String(val);
+                                // Auto-select most recent unpaid invoice for this student
+                                const studentInvoices = invoices.filter(
+                                    (i: any) => String(i.student) === studentId && i.status !== 'PAID'
+                                );
+                                const latestInvoice = studentInvoices.length > 0 ? studentInvoices[0] : null;
 
-                        setPayForm({
-                            ...payForm,
-                            student_id: studentId,
-                            invoice_id: latestInvoice ? String(latestInvoice.id) : '',
-                            amount: latestInvoice ? String(latestInvoice.balance) : ''
-                        });
-                    }}
-                    required
-                />
-
-                {payForm.student_id && (
-                    <div className="form-group fade-in">
-                        <label className="label text-[10px] font-black uppercase tracking-widest text-secondary">Target Invoice / Period *</label>
-                        <select className="select border-2 border-primary/20 focus:border-primary transition-all font-bold"
-                            value={payForm.invoice_id}
-                            onChange={e => {
-                                const invId = e.target.value;
-                                const inv = invoices.find(i => String(i.id) === invId);
                                 setPayForm({
                                     ...payForm,
-                                    invoice_id: invId,
-                                    amount: inv ? String(inv.balance) : payForm.amount
+                                    student_id: studentId,
+                                    invoice_id: latestInvoice ? String(latestInvoice.id) : '',
+                                    amount: latestInvoice ? String(latestInvoice.balance) : ''
                                 });
                             }}
                             required
-                        >
-                            <option value="">-- Select Active Invoice --</option>
-                            {invoices
-                                .filter((i: any) => String(i.student) === String(payForm.student_id) && i.status !== 'PAID')
-                                .map((i: any) => (
-                                    <option key={i.id} value={i.id}>
-                                        Invoice #{i.id} | {i.academic_year_name} T{i.term} (Remaining: {Number(i.balance).toLocaleString()})
-                                    </option>
-                                ))}
-                        </select>
+                        />
+
+                        {payForm.student_id && (
+                            <div className="form-group fade-in">
+                                <label className="label text-[10px] font-black uppercase tracking-widest text-secondary">Target Invoice / Period *</label>
+                                <select className="select border-2 border-primary/20 focus:border-primary transition-all font-bold"
+                                    value={payForm.invoice_id}
+                                    onChange={e => {
+                                        const invId = e.target.value;
+                                        const inv = invoices.find(i => String(i.id) === invId);
+                                        setPayForm({
+                                            ...payForm,
+                                            invoice_id: invId,
+                                            amount: inv ? String(inv.balance) : payForm.amount
+                                        });
+                                    }}
+                                    required
+                                >
+                                    <option value="">-- Select Active Invoice --</option>
+                                    {invoices
+                                        .filter((i: any) => String(i.student) === String(payForm.student_id) && i.status !== 'PAID')
+                                        .map((i: any) => (
+                                            <option key={i.id} value={i.id}>
+                                                Invoice #{i.id} | {i.academic_year_name} T{i.term} (Remaining: {Number(i.balance).toLocaleString()})
+                                            </option>
+                                        ))}
+                                </select>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="form-group">
+                        <label className="label">Amount (KES) *</label>
+                        <input type="number" className="input" required
+                            value={payForm.amount} onChange={e => setPayForm({ ...payForm, amount: e.target.value })}
+                        />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="form-group">
+                            <label className="label">Payment Method *</label>
+                            <select className="select" value={payForm.method} onChange={e => setPayForm({ ...payForm, method: e.target.value })}>
+                                <option value="CASH">Cash</option>
+                                <option value="MPESA">M-Pesa</option>
+                                <option value="BANK">Bank Transfer</option>
+                            </select>
+                        </div>
+                        <div className="form-group">
+                            <label className="label">Reference No.</label>
+                            <input type="text" className="input"
+                                placeholder="Ref..."
+                                value={payForm.reference} onChange={e => setPayForm({ ...payForm, reference: e.target.value })}
+                            />
+                        </div>
+                    </div>
+                    <div className="modal-footer pt-6 border-top mt-4 flex justify-end gap-3">
+                        <Button type="button" variant="outline" onClick={() => setShowPaymentModal(false)}>Cancel</Button>
+                        <Button type="submit" variant="primary" className="px-8 font-black shadow-lg" loading={isSubmitting} loadingText="PROCESSING...">
+                            RECORD PAYMENT
+                        </Button>
+                    </div>
+                </form>
+            </Modal>
+
+            {/* Fee Modal */}
+            <Modal isOpen={showFeeModal} onClose={() => setShowFeeModal(false)} title={editingFeeId ? "Edit Fee Structure" : "New Fee Structure"}>
+                <form onSubmit={handleFeeSubmit} className="form-container-md mx-auto space-y-6">
+                    <div className="form-group">
+                        <label className="label">Structure Name *</label>
+                        <input type="text" className="input" placeholder="e.g. Tuition Fee" required
+                            value={feeForm.name} onChange={e => setFeeForm({ ...feeForm, name: e.target.value })}
+                        />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="form-group">
+                            <label className="label">Academic Year *</label>
+                            <select className="select" value={feeForm.year_id} onChange={e => setFeeForm({ ...feeForm, year_id: e.target.value })} required>
+                                <option value="">-- Select Year --</option>
+                                {years.map((y: any) => <option key={y.id} value={y.id}>{y.name}</option>)}
+                            </select>
+                        </div>
+                        <div className="form-group">
+                            <label className="label">Class Level</label>
+                            <select className="select" value={feeForm.class_id} onChange={e => setFeeForm({ ...feeForm, class_id: e.target.value })}>
+                                <option value="">-- All Levels --</option>
+                                {classes.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                            </select>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="form-group">
+                            <label className="label">Amount (KES) *</label>
+                            <input type="number" className="input" required
+                                value={feeForm.amount} onChange={e => setFeeForm({ ...feeForm, amount: e.target.value })}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label className="label">Term *</label>
+                            <select className="select" value={feeForm.term} onChange={e => setFeeForm({ ...feeForm, term: e.target.value })}>
+                                <option value="1">Term 1</option>
+                                <option value="2">Term 2</option>
+                                <option value="3">Term 3</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div className="modal-footer pt-6 border-top mt-4 flex justify-end gap-3">
+                        <Button type="button" variant="outline" onClick={() => setShowFeeModal(false)}>Cancel</Button>
+                        <Button type="submit" variant="primary" className="px-8 font-black shadow-lg" loading={isSubmitting} loadingText="SAVING...">
+                            SAVE STRUCTURE
+                        </Button>
+                    </div>
+                </form>
+            </Modal>
+            <Modal isOpen={!!selectedInvoice} onClose={() => setSelectedInvoice(null)} title={`Invoice Details - #INV-${selectedInvoice?.id}`}>
+                {selectedInvoice && (
+                    <div className="space-y-6">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pb-4 border-b">
+                            <div><p className="text-xs text-secondary uppercase font-black">Student</p><p className="font-bold">{selectedInvoice.student_name}</p></div>
+                            <div><p className="text-xs text-secondary uppercase font-black">Admission</p><p className="font-bold">{selectedInvoice.admission_number}</p></div>
+                            <div><p className="text-xs text-secondary uppercase font-black">Class</p><p className="font-bold">{selectedInvoice.class_name} {selectedInvoice.stream_name}</p></div>
+                            <div><p className="text-xs text-secondary uppercase font-black">Term</p><p className="font-bold">Term {selectedInvoice.term} ({selectedInvoice.academic_year_name})</p></div>
+                        </div>
+
+                        <div>
+                            <h4 className="font-bold text-sm mb-2 text-gray-500 uppercase tracking-wider">Invoice Items</h4>
+                            <div className="overflow-x-auto border rounded-lg">
+                                <table className="table table-compact w-full">
+                                    <thead className="bg-gray-50">
+                                        <tr>
+                                            <th>Description</th>
+                                            <th className="text-right">Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {selectedInvoice.items?.map((item: any) => (
+                                            <tr key={item.id}>
+                                                <td>{item.description}</td>
+                                                <td className="text-right font-mono">KES {Number(item.amount).toLocaleString()}</td>
+                                            </tr>
+                                        ))}
+                                        {selectedInvoice.adjustments?.length > 0 && (
+                                            <>
+                                                <tr className="bg-gray-50"><td colSpan={2} className="text-xs font-bold text-gray-400">ADJUSTMENTS (FINES/WAIVERS)</td></tr>
+                                                {selectedInvoice.adjustments.map((adj: any) => (
+                                                    <tr key={adj.id}>
+                                                        <td>{adj.reason} <span className="text-xs text-gray-400">({adj.adjustment_type})</span></td>
+                                                        <td className={`text-right font-mono ${adj.adjustment_type === 'DEBIT' ? 'text-error' : 'text-success'}`}>
+                                                            {adj.adjustment_type === 'DEBIT' ? '+' : '-'} KES {Number(adj.amount).toLocaleString()}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </>
+                                        )}
+                                        {selectedInvoice.payments?.length > 0 && (
+                                            <>
+                                                <tr className="bg-gray-50"><td colSpan={2} className="text-xs font-bold text-gray-400">PAYMENTS</td></tr>
+                                                {selectedInvoice.payments.map((pay: any) => (
+                                                    <tr key={pay.id}>
+                                                        <td>
+                                                            Payment - {pay.method} {pay.reference_number && `(Ref: ${pay.reference_number})`}
+                                                            <span className="text-xs text-gray-400 block">{formatDate(pay.date_received)}</span>
+                                                        </td>
+                                                        <td className="text-right font-mono text-success">
+                                                            - KES {Number(pay.amount).toLocaleString()}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div className="p-4 bg-gray-50 rounded-xl space-y-2">
+                            <div className="flex justify-between items-center text-sm">
+                                <span>Subtotal</span>
+                                <span className="font-bold">KES {Number(selectedInvoice.total_amount).toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-sm">
+                                <span>Total Paid</span>
+                                <span className="font-bold text-success">KES {Number(selectedInvoice.paid_amount).toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between items-center border-t pt-2 text-lg">
+                                <span className="font-bold">Balance Due</span>
+                                <span className={`font-black ${Number(selectedInvoice.balance) === 0 ? 'text-success' : Number(selectedInvoice.balance) < 0 ? 'text-info' : 'text-error'}`}>KES {Number(selectedInvoice.balance).toLocaleString()}</span>
+                            </div>
+                        </div>
+
+                        <div className="modal-action">
+                            <Button variant="ghost" onClick={() => setSelectedInvoice(null)}>Close</Button>
+                            <Button variant="outline" icon={<Printer size={16} />} onClick={() => window.print()}>Print / Save PDF</Button>
+                        </div>
                     </div>
                 )}
-            </div>
+            </Modal>
 
-            <div className="form-group">
-                <label className="label">Amount (KES) *</label>
-                <input type="number" className="input" required
-                    value={payForm.amount} onChange={e => setPayForm({ ...payForm, amount: e.target.value })}
-                />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="form-group">
-                    <label className="label">Payment Method *</label>
-                    <select className="select" value={payForm.method} onChange={e => setPayForm({ ...payForm, method: e.target.value })}>
-                        <option value="CASH">Cash</option>
-                        <option value="MPESA">M-Pesa</option>
-                        <option value="BANK">Bank Transfer</option>
-                    </select>
-                </div>
-                <div className="form-group">
-                    <label className="label">Reference No.</label>
-                    <input type="text" className="input"
-                        placeholder="Ref..."
-                        value={payForm.reference} onChange={e => setPayForm({ ...payForm, reference: e.target.value })}
-                    />
-                </div>
-            </div>
-            <div className="modal-footer pt-6 border-top mt-4 flex justify-end gap-3">
-                <Button type="button" variant="outline" onClick={() => setShowPaymentModal(false)}>Cancel</Button>
-                <Button type="submit" variant="primary" className="px-8 font-black shadow-lg" loading={isSubmitting} loadingText="PROCESSING...">
-                    RECORD PAYMENT
-                </Button>
-            </div>
-        </form>
-            </Modal >
-
-    {/* Fee Modal */ }
-    < Modal isOpen = { showFeeModal } onClose = {() => setShowFeeModal(false)} title = { editingFeeId? "Edit Fee Structure": "New Fee Structure" } >
-        <form onSubmit={handleFeeSubmit} className="form-container-md mx-auto space-y-6">
-            <div className="form-group">
-                <label className="label">Structure Name *</label>
-                <input type="text" className="input" placeholder="e.g. Tuition Fee" required
-                    value={feeForm.name} onChange={e => setFeeForm({ ...feeForm, name: e.target.value })}
-                />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="form-group">
-                    <label className="label">Academic Year *</label>
-                    <select className="select" value={feeForm.year_id} onChange={e => setFeeForm({ ...feeForm, year_id: e.target.value })} required>
-                        <option value="">-- Select Year --</option>
-                        {years.map((y: any) => <option key={y.id} value={y.id}>{y.name}</option>)}
-                    </select>
-                </div>
-                <div className="form-group">
-                    <label className="label">Class Level</label>
-                    <select className="select" value={feeForm.class_id} onChange={e => setFeeForm({ ...feeForm, class_id: e.target.value })}>
-                        <option value="">-- All Levels --</option>
-                        {classes.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
-                    </select>
-                </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="form-group">
-                    <label className="label">Amount (KES) *</label>
-                    <input type="number" className="input" required
-                        value={feeForm.amount} onChange={e => setFeeForm({ ...feeForm, amount: e.target.value })}
-                    />
-                </div>
-                <div className="form-group">
-                    <label className="label">Term *</label>
-                    <select className="select" value={feeForm.term} onChange={e => setFeeForm({ ...feeForm, term: e.target.value })}>
-                        <option value="1">Term 1</option>
-                        <option value="2">Term 2</option>
-                        <option value="3">Term 3</option>
-                    </select>
-                </div>
-            </div>
-            <div className="modal-footer pt-6 border-top mt-4 flex justify-end gap-3">
-                <Button type="button" variant="outline" onClick={() => setShowFeeModal(false)}>Cancel</Button>
-                <Button type="submit" variant="primary" className="px-8 font-black shadow-lg" loading={isSubmitting} loadingText="SAVING...">
-                    SAVE STRUCTURE
-                </Button>
-            </div>
-        </form>
-            </Modal >
-    <Modal isOpen={!!selectedInvoice} onClose={() => setSelectedInvoice(null)} title={`Invoice Details - #INV-${selectedInvoice?.id}`}>
-        {selectedInvoice && (
-            <div className="space-y-6">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pb-4 border-b">
-                    <div><p className="text-xs text-secondary uppercase font-black">Student</p><p className="font-bold">{selectedInvoice.student_name}</p></div>
-                    <div><p className="text-xs text-secondary uppercase font-black">Admission</p><p className="font-bold">{selectedInvoice.admission_number}</p></div>
-                    <div><p className="text-xs text-secondary uppercase font-black">Class</p><p className="font-bold">{selectedInvoice.class_name} {selectedInvoice.stream_name}</p></div>
-                    <div><p className="text-xs text-secondary uppercase font-black">Term</p><p className="font-bold">Term {selectedInvoice.term} ({selectedInvoice.academic_year_name})</p></div>
-                </div>
-
-                <div>
-                    <h4 className="font-bold text-sm mb-2 text-gray-500 uppercase tracking-wider">Invoice Items</h4>
-                    <div className="overflow-x-auto border rounded-lg">
-                        <table className="table table-compact w-full">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    <th>Description</th>
-                                    <th className="text-right">Amount</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {selectedInvoice.items?.map((item: any) => (
-                                    <tr key={item.id}>
-                                        <td>{item.description}</td>
-                                        <td className="text-right font-mono">KES {Number(item.amount).toLocaleString()}</td>
-                                    </tr>
-                                ))}
-                                {selectedInvoice.adjustments?.length > 0 && (
-                                    <>
-                                        <tr className="bg-gray-50"><td colSpan={2} className="text-xs font-bold text-gray-400">ADJUSTMENTS (FINES/WAIVERS)</td></tr>
-                                        {selectedInvoice.adjustments.map((adj: any) => (
-                                            <tr key={adj.id}>
-                                                <td>{adj.reason} <span className="text-xs text-gray-400">({adj.adjustment_type})</span></td>
-                                                <td className={`text-right font-mono ${adj.adjustment_type === 'DEBIT' ? 'text-error' : 'text-success'}`}>
-                                                    {adj.adjustment_type === 'DEBIT' ? '+' : '-'} KES {Number(adj.amount).toLocaleString()}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </>
-                                )}
-                                {selectedInvoice.payments?.length > 0 && (
-                                    <>
-                                        <tr className="bg-gray-50"><td colSpan={2} className="text-xs font-bold text-gray-400">PAYMENTS</td></tr>
-                                        {selectedInvoice.payments.map((pay: any) => (
-                                            <tr key={pay.id}>
-                                                <td>
-                                                    Payment - {pay.method} {pay.reference_number && `(Ref: ${pay.reference_number})`}
-                                                    <span className="text-xs text-gray-400 block">{formatDate(pay.date_received)}</span>
-                                                </td>
-                                                <td className="text-right font-mono text-success">
-                                                    - KES {Number(pay.amount).toLocaleString()}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div className="p-4 bg-gray-50 rounded-xl space-y-2">
-                    <div className="flex justify-between items-center text-sm">
-                        <span>Subtotal</span>
-                        <span className="font-bold">KES {Number(selectedInvoice.total_amount).toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between items-center text-sm">
-                        <span>Total Paid</span>
-                        <span className="font-bold text-success">KES {Number(selectedInvoice.paid_amount).toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between items-center border-t pt-2 text-lg">
-                        <span className="font-bold">Balance Due</span>
-                        <span className={`font-black ${Number(selectedInvoice.balance) === 0 ? 'text-success' : Number(selectedInvoice.balance) < 0 ? 'text-info' : 'text-error'}`}>KES {Number(selectedInvoice.balance).toLocaleString()}</span>
-                    </div>
-                </div>
-
-                <div className="modal-action">
-                    <Button variant="ghost" onClick={() => setSelectedInvoice(null)}>Close</Button>
-                    <Button variant="outline" icon={<Printer size={16} />} onClick={() => window.print()}>Print / Save PDF</Button>
-                </div>
-            </div>
-        )}
-    </Modal>
-
-{/* Expense Modal */ }
+            {/* Expense Modal */}
             <Modal isOpen={showExpenseModal} onClose={() => setShowExpenseModal(false)} title="Record New Expense">
                 <form onSubmit={handleExpenseSubmit} className="form-container-md mx-auto space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1140,8 +1142,8 @@ const Finance = () => {
                         value={mpesaForm.admission_number}
                         onChange={(val) => {
                             const stud = students.find((s: any) => String(s.admission_number) === String(val));
-                            setMpesaForm({ 
-                                ...mpesaForm, 
+                            setMpesaForm({
+                                ...mpesaForm,
                                 admission_number: String(val),
                                 amount: stud ? String((stud as any).fee_balance) : mpesaForm.amount
                             });
@@ -1169,78 +1171,78 @@ const Finance = () => {
                 </form>
             </Modal>
 
-{/* Bulk Reminder Modal */ }
-<Modal isOpen={showReminderModal} onClose={() => setShowReminderModal(false)} title="Send Automated Fee Reminders">
-    <form onSubmit={handleSendReminders} className="space-y-6 form-container-md">
-        <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 flex items-start gap-3">
-            <Bell className="text-blue-600 mt-1 shrink-0" size={20} />
-            <div>
-                <h4 className="font-bold text-blue-900 text-sm">Target: {selectedInvoices.size} Parents</h4>
-                <p className="text-xs text-blue-700 leading-relaxed">
-                    You are about to send automated reminders to {selectedInvoices.size} selected parents. The system will automatically fetch their contact information and insert the correct student name and balance.
-                </p>
-            </div>
-        </div>
+            {/* Bulk Reminder Modal */}
+            <Modal isOpen={showReminderModal} onClose={() => setShowReminderModal(false)} title="Send Automated Fee Reminders">
+                <form onSubmit={handleSendReminders} className="space-y-6 form-container-md">
+                    <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 flex items-start gap-3">
+                        <Bell className="text-blue-600 mt-1 shrink-0" size={20} />
+                        <div>
+                            <h4 className="font-bold text-blue-900 text-sm">Target: {selectedInvoices.size} Parents</h4>
+                            <p className="text-xs text-blue-700 leading-relaxed">
+                                You are about to send automated reminders to {selectedInvoices.size} selected parents. The system will automatically fetch their contact information and insert the correct student name and balance.
+                            </p>
+                        </div>
+                    </div>
 
-        <div className="form-control">
-            <label className="label">
-                <span className="label-text font-bold">Message Template</span>
-                <span className="label-text-alt text-gray-400">Use {`{student_name}`} and {`{balance}`} as placeholders</span>
-            </label>
-            <textarea
-                className="textarea textarea-bordered h-32 text-sm leading-relaxed"
-                required
-                value={reminderForm.template}
-                onChange={e => setReminderForm({ ...reminderForm, template: e.target.value })}
-            />
-            <div className="label">
-                <span className="label-text-alt text-gray-500">Character count: {reminderForm.template.length}</span>
-            </div>
-        </div>
+                    <div className="form-control">
+                        <label className="label">
+                            <span className="label-text font-bold">Message Template</span>
+                            <span className="label-text-alt text-gray-400">Use {`{student_name}`} and {`{balance}`} as placeholders</span>
+                        </label>
+                        <textarea
+                            className="textarea textarea-bordered h-32 text-sm leading-relaxed"
+                            required
+                            value={reminderForm.template}
+                            onChange={e => setReminderForm({ ...reminderForm, template: e.target.value })}
+                        />
+                        <div className="label">
+                            <span className="label-text-alt text-gray-500">Character count: {reminderForm.template.length}</span>
+                        </div>
+                    </div>
 
-        <div className="grid grid-cols-2 gap-4">
-            <label className="flex items-center gap-3 p-4 border rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
-                <input
-                    type="checkbox"
-                    className="checkbox checkbox-primary"
-                    checked={reminderForm.send_sms}
-                    onChange={e => setReminderForm({ ...reminderForm, send_sms: e.target.checked })}
-                />
-                <div className="flex items-center gap-2">
-                    <MessageSquare size={18} className="text-gray-400" />
-                    <span className="text-sm font-bold">Send SMS</span>
-                </div>
-            </label>
-            <label className="flex items-center gap-3 p-4 border rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
-                <input
-                    type="checkbox"
-                    className="checkbox checkbox-primary"
-                    checked={reminderForm.send_email}
-                    onChange={e => setReminderForm({ ...reminderForm, send_email: e.target.checked })}
-                />
-                <div className="flex items-center gap-2">
-                    <Mail size={18} className="text-gray-400" />
-                    <span className="text-sm font-bold">Send Email</span>
-                </div>
-            </label>
-        </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <label className="flex items-center gap-3 p-4 border rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
+                            <input
+                                type="checkbox"
+                                className="checkbox checkbox-primary"
+                                checked={reminderForm.send_sms}
+                                onChange={e => setReminderForm({ ...reminderForm, send_sms: e.target.checked })}
+                            />
+                            <div className="flex items-center gap-2">
+                                <MessageSquare size={18} className="text-gray-400" />
+                                <span className="text-sm font-bold">Send SMS</span>
+                            </div>
+                        </label>
+                        <label className="flex items-center gap-3 p-4 border rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
+                            <input
+                                type="checkbox"
+                                className="checkbox checkbox-primary"
+                                checked={reminderForm.send_email}
+                                onChange={e => setReminderForm({ ...reminderForm, send_email: e.target.checked })}
+                            />
+                            <div className="flex items-center gap-2">
+                                <Mail size={18} className="text-gray-400" />
+                                <span className="text-sm font-bold">Send Email</span>
+                            </div>
+                        </label>
+                    </div>
 
-        <div className="modal-action">
-            <Button type="button" variant="ghost" onClick={() => setShowReminderModal(false)}>Cancel</Button>
-            <Button
-                type="submit"
-                variant="primary"
-                className="bg-orange-600 hover:bg-orange-700 border-none px-8"
-                loading={isSubmitting}
-                loadingText="Sending Batch..."
-                icon={<Send size={16} />}
-            >
-                Send Reminders Now
-            </Button>
+                    <div className="modal-action">
+                        <Button type="button" variant="ghost" onClick={() => setShowReminderModal(false)}>Cancel</Button>
+                        <Button
+                            type="submit"
+                            variant="primary"
+                            className="bg-orange-600 hover:bg-orange-700 border-none px-8"
+                            loading={isSubmitting}
+                            loadingText="Sending Batch..."
+                            icon={<Send size={16} />}
+                        >
+                            Send Reminders Now
+                        </Button>
+                    </div>
+                </form>
+            </Modal>
         </div>
-    </form>
-</Modal>
-        </div >
     );
 };
 
