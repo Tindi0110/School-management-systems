@@ -542,12 +542,6 @@ const Hostels = () => {
         setIsViewResidentsModalOpen(true);
     };
 
-    const stats = {
-        totalHostels: hostels.length,
-        totalCapacity: hostels.reduce((acc, h) => acc + (h.capacity || 0), 0),
-        totalResidents: allocations.filter(a => a.status === 'ACTIVE').length,
-        maintenanceIssues: maintenance.filter(m => m.status === 'PENDING').length
-    };
 
 
     if (loading) return <div className="spinner-container"><div className="spinner"></div></div>;
@@ -614,6 +608,7 @@ const Hostels = () => {
                                     <button className="btn btn-sm btn-outline flex-1 gap-1" onClick={() => openViewRooms(h)} title="View rooms"><BedIcon size={14} /> Rooms</button>
                                     <button className="btn btn-sm btn-primary flex-1 gap-1" onClick={() => openAddRoom(h)} title="Quick add room"><Plus size={14} /> Add </button>
                                     <button className="btn btn-sm btn-outline flex-1 gap-2" onClick={() => handleEditHostel(h)}><Edit size={14} /> Edit</button>
+                                    <button className="btn btn-sm btn-outline flex-1 gap-2" onClick={() => openViewResidents(h)} title="View residents"><Users size={14} /> Users</button>
                                     <button className="btn btn-sm btn-outline text-error" onClick={(e) => { e.stopPropagation(); handleDeleteHostel(h.id); }}><Trash2 size={14} /></button>
                                 </div>
                             </div>
@@ -1026,7 +1021,7 @@ const Hostels = () => {
                     </div>
                     <div className="form-group">
                         <label className="label">Default Capacity (Beds)</label>
-                        <input type="number" className="input" value={roomFormData.capacity} onChange={e => setRoomFormData({ ...roomFormData, capacity: e.target.value })} required />
+                        <input type="number" className="input" value={roomFormData.capacity} onChange={e => setRoomFormData({ ...roomFormData, capacity: Number(e.target.value) })} required />
                     </div>
                     <div className="modal-footer">
                         <Button type="submit" className="w-full" loading={isSubmitting}>{roomId ? "Update Room" : "Save Room"}</Button>
