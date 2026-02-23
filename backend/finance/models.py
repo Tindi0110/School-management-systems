@@ -38,8 +38,8 @@ class Invoice(models.Model):
     )
 
     student = models.ForeignKey('students.Student', on_delete=models.CASCADE, related_name='invoices')
-    academic_year = models.ForeignKey('academics.AcademicYear', on_delete=models.PROTECT)
-    term = models.IntegerField()
+    academic_year = models.ForeignKey('academics.AcademicYear', on_delete=models.PROTECT, db_index=True)
+    term = models.IntegerField(db_index=True)
     
     # Financials
     total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0, db_index=True)
@@ -47,7 +47,7 @@ class Invoice(models.Model):
     balance = models.DecimalField(max_digits=12, decimal_places=2, default=0, db_index=True)
     
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='UNPAID', db_index=True)
-    date_generated = models.DateField(default=timezone.now)
+    date_generated = models.DateField(default=timezone.now, db_index=True)
     due_date = models.DateField(null=True, blank=True)
     
     is_finalized = models.BooleanField(default=True) # If False, can still add items. If True, locked.

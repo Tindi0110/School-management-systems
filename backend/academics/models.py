@@ -42,7 +42,7 @@ class Subject(models.Model):
     def __str__(self): return f"{self.name} ({self.code})"
 
 class Class(models.Model):
-    name = models.CharField(max_length=50) 
+    name = models.CharField(max_length=50, db_index=True) 
     stream = models.CharField(max_length=50)
     year = models.IntegerField() # Deprecating in favor of AcademicYear relation soon
     class_teacher = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='classes_managed')

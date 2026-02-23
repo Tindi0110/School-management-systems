@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { financeAPI, academicsAPI, studentsAPI, classesAPI, mpesaAPI } from '../api/api';
 import { CreditCard, FileText, TrendingUp, CheckCircle, Plus, Printer, Bell, Send, Mail, MessageSquare } from 'lucide-react';
@@ -88,24 +88,24 @@ const Finance = () => {
 
     // Options
     const [classes, setClasses] = useState([]);
-    const uniqueClassNames = Array.from(new Set(classes.map((c: any) => c.name))).sort();
+    const uniqueClassNames = useMemo(() => {
+        return Array.from(new Set(classes.map((c: any) => c.name))).sort();
+    }, [classes]);
     const [loading, setLoading] = useState(true);
     const [students, setStudents] = useState([]);
     const [years, setYears] = useState([]);
 
+    // Unified data loading effect
     useEffect(() => {
-        setPage(1); // Reset page on tab switch
+        // If it's a search update, loadData is handled by the debounce effect below
+        if (searchTerm && activeTab !== 'dashboard') return;
+
         loadData();
-    }, [activeTab, isAllTime]);
+    }, [activeTab, isAllTime, page, invFilters]);
 
+    // Debounced search effect
     useEffect(() => {
-        if (activeTab !== 'dashboard') {
-            loadData();
-        }
-    }, [page, invFilters]);
-
-    // Debounced search
-    useEffect(() => {
+        if (!searchTerm) return;
         const handler = setTimeout(() => {
             if (page !== 1) setPage(1);
             else loadData();
@@ -113,7 +113,7 @@ const Finance = () => {
         return () => clearTimeout(handler);
     }, [searchTerm]);
 
-    const loadData = async () => {
+    const loadData = useCallback(async () => {
         setLoading(true);
         try {
             const d = (r: any) => r?.data?.results ?? r?.data ?? [];
@@ -183,7 +183,7 @@ const Finance = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [activeTab, isAllTime, page, searchTerm, invFilters, pageSize, statsContext?.year_id, statsContext?.term_num, toastError, success]);
 
     // Ensure data is loaded when modals open (in case user hasn't visited the tab)
     useEffect(() => {

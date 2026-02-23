@@ -46,7 +46,7 @@ class Student(models.Model):
     
     # SIS Fields
     category = models.CharField(max_length=10, choices=CATEGORY_CHOICES, default='DAY')
-    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='ACTIVE')
+    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='ACTIVE', db_index=True)
     
     # Sync Fields (Auto-updated via signals)
     residence_details = models.CharField(max_length=100, blank=True, help_text="Auto-synced from Hostel Allocation")
@@ -61,7 +61,7 @@ class Student(models.Model):
     guardian_phone = models.CharField(max_length=20, blank=True)
     
     admission_date = models.DateField(auto_now_add=True)
-    is_active = models.BooleanField(default=True) # Linked to status='ACTIVE'
+    is_active = models.BooleanField(default=True, db_index=True) # Linked to status='ACTIVE'
 
     def save(self, *args, **kwargs):
         if not self.admission_number:
