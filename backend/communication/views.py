@@ -19,7 +19,7 @@ class SchoolEventViewSet(viewsets.ModelViewSet):
     queryset = SchoolEvent.objects.order_by('date')
     serializer_class = SchoolEventSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    filterset_fields = ['event_type', 'is_active']
+    filterset_fields = ['event_type']
 
     def get_queryset(self):
         qs = super().get_queryset()
