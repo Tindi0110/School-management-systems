@@ -2362,7 +2362,7 @@ const Academics = () => {
             </Modal>
 
             {/* Enter Results Modal */}
-            <Modal isOpen={isResultModalOpen} onClose={() => setIsResultModalOpen(false)} title={`Enter Results: ${selectedExam?.name || ''}`} size="xxl">
+            <Modal isOpen={isResultModalOpen} onClose={() => setIsResultModalOpen(false)} title={`Enter Results: ${selectedExam?.name || ''}`} size="full">
                 <form onSubmit={handleBulkResultSubmit} className="max-w-[95vw] lg:max-w-7xl mx-auto">
                     {/* Cascading Class Selector */}
                     <div className="form-group p-3 mb-4 bg-gray-50">
