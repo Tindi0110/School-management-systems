@@ -4,7 +4,7 @@ import {
     Plus, Search, Edit, Trash2, User as UserIcon,
     UserCheck, MapPin, Printer, TrendingUp, Download, ArrowRight
 } from 'lucide-react';
-import { studentsAPI, academicsAPI } from '../api/api';
+import { studentsAPI, academicsAPI, statsAPI } from '../api/api';
 import { useSelector } from 'react-redux';
 import Modal from '../components/Modal';
 import { StatCard } from '../components/Card';
@@ -29,6 +29,7 @@ const Students = () => {
     const [autoAssignHostel, setAutoAssignHostel] = useState(true);
     const [page, setPage] = useState(1);
     const [totalItems, setTotalItems] = useState(0);
+    const [institutionalTotal, setInstitutionalTotal] = useState(0);
     const [pageSize] = useState(25);
 
     // Consolidated Form Data
@@ -72,13 +73,15 @@ const Students = () => {
             };
             if (selectedClassId) params.current_class = selectedClassId;
 
-            const [studentsRes, classesRes] = await Promise.all([
+            const [studentsRes, classesRes, globalStatsRes] = await Promise.all([
                 studentsAPI.getAll(params),
                 academicsAPI.classes.getAll({ page_size: 100 }),
+                statsAPI.getDashboard(),
             ]);
 
             setStudents(studentsRes.data?.results ?? studentsRes.data ?? []);
             setTotalItems(studentsRes.data?.count ?? (studentsRes.data?.results ? studentsRes.data.results.length : 0));
+            setInstitutionalTotal(globalStatsRes.data?.total_students || 0);
             setClasses(classesRes.data?.results ?? classesRes.data ?? []);
         } catch (error) {
             errorToast("Failed to load students.");
@@ -308,7 +311,7 @@ const Students = () => {
 
                 <div className="w-full lg:w-auto">
                     <h1 className="text-3xl font-black tracking-tight">Institutional Registry</h1>
-                    <p className="text-secondary font-bold uppercase text-[10px] tracking-widest opacity-70">SIS Management | Enrollment: {totalItems}</p>
+                    <p className="text-secondary font-bold uppercase text-[10px] tracking-widest opacity-70">SIS Management | Enrollment: {institutionalTotal}</p>
                 </div>
                 <div className="flex flex-wrap gap-2 w-full lg:w-auto justify-start lg:justify-end">
                     <Button variant="outline" className="flex-1 sm:flex-none" onClick={() => exportToCSV(students, 'student_registry')} icon={<Download size={16} />}>
@@ -334,8 +337,8 @@ const Students = () => {
             </div>
 
             {/* Dashboard Stats */}
-            <div className="grid grid-cols-2 gap-md mb-8 no-print">
-                <StatCard title="Active Enrollment" value={students.filter(s => s.status === 'ACTIVE').length.toString()} icon={<UserCheck size={18} />} gradient="linear-gradient(135deg, #0ba360, #3cba92)" />
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-md mb-8 no-print">
+                <StatCard title="Active Enrollment" value={institutionalTotal.toString()} icon={<UserCheck size={18} />} gradient="linear-gradient(135deg, #0ba360, #3cba92)" />
                 <StatCard title="Boarders" value={students.filter(s => s.category === 'BOARDING').length.toString()} icon={<MapPin size={18} />} gradient="var(--info)" />
                 <StatCard title="Day Scholars" value={students.filter(s => s.category === 'DAY').length.toString()} icon={<UserIcon size={18} />} gradient="var(--secondary)" />
                 <StatCard title="Enrolled Capacity" value={`${classes.length > 0 ? Math.round((students.filter(s => s.status === 'ACTIVE').length / classes.reduce((sum, c) => sum + (c.capacity || 40), 0)) * 100) : 0}%`} icon={<TrendingUp size={18} />} gradient="linear-gradient(135deg, #0f172a, #1e293b)" />

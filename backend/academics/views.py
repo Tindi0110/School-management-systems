@@ -1,5 +1,6 @@
 from django.db.models import Count
-from rest_framework import viewsets, permissions, status
+from rest_framework import viewsets, permissions, status, filters
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from .models import (
@@ -19,12 +20,15 @@ from .serializers import (
 class AcademicYearViewSet(viewsets.ModelViewSet):
     queryset = AcademicYear.objects.all()
     serializer_class = AcademicYearSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['is_active']
 
 class TermViewSet(viewsets.ModelViewSet):
-    queryset = Term.objects.all()
+    queryset = Term.objects.select_related('year').all()
     serializer_class = TermSerializer
-    filterset_fields = ['is_active', 'academic_year']
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['is_active', 'year']
+    search_fields = ['name']
 
 
 class SubjectGroupViewSet(viewsets.ModelViewSet):

@@ -398,7 +398,7 @@ const StudentProfile = () => {
 
     const handleMarkPrimary = async (parentId: number) => {
         try {
-            await studentsAPI.parents.update(parentId, { is_primary: true });
+            await studentsAPI.parents.patch(parentId, { is_primary: true });
             toast.success('Marked as primary guardian');
             loadCoreStudentData();
         } catch (err: any) {
