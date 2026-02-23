@@ -129,8 +129,8 @@ const Finance = () => {
                     enrolledStudents: res.data.enrolledStudents || 0,
                     revenuePerSeat: res.data.revenuePerSeat || 0,
                 });
-                setInvoices(res.data.recentInvoices);
-                setStatsContext(res.data.context);
+                setInvoices(res.data.recentInvoices || []);
+                setStatsContext(res.data.context || null);
 
                 // Auto-set filters if they are empty and context is available
                 if (!invFilters.year_id && res.data.context?.year_id) {
@@ -178,7 +178,8 @@ const Finance = () => {
             }
         } catch (error: any) {
             console.error('Error loading finance data:', error);
-            toastError(error?.message || 'Failed to load finance data.');
+            const msg = error?.response?.data?.message || error?.message || 'Failed to load finance data.';
+            toastError(String(msg));
         } finally {
             setLoading(false);
         }
@@ -325,7 +326,7 @@ const Finance = () => {
         setIsSubmitting(true);
         try {
             const res = await financeAPI.invoices.syncAll();
-            success(res.data.message || 'Financials synchronized successfully!');
+            success(res.data?.message || 'Financials synchronized successfully!');
             loadData();
         } catch (err: any) {
             toastError(err.message || 'Failed to sync financials');
@@ -343,7 +344,8 @@ const Finance = () => {
             setShowMpesaModal(false);
             setMpesaForm({ admission_number: '', phone_number: '', amount: '' });
         } catch (err: any) {
-            toastError(err.message || 'Failed to initiate M-Pesa push');
+            const msg = err?.response?.data?.message || err?.message || 'Failed to initiate M-Pesa push';
+            toastError(String(msg));
         } finally {
             setIsSubmitting(false);
         }
