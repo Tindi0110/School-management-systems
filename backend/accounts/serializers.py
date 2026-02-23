@@ -28,14 +28,8 @@ class UserSerializer(serializers.ModelSerializer):
             'PARENT': ['view_dashboard'],
         }
 
-        # Use role-defined permissions as the base (avoids get_all_permissions DB hit for most cases)
+        # Use role-defined permissions as the base (avoids get_all_permissions DB hit entirely)
         final_perms = role_permissions.get(obj.role, []).copy()
-        
-        # Only fetch database permissions if user is a superuser or staff to minimize latency
-        if obj.is_superuser or obj.is_staff:
-            # We use list() to force evaluation and set() to ensure uniqueness if we merge
-            db_perms = list(obj.get_all_permissions())
-            final_perms.extend(db_perms)
             
         return list(set(final_perms))
 
