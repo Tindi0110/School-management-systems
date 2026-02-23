@@ -1,20 +1,107 @@
 /* Design System: Classic & Professional */
 
 @media print {
+  /* Hide all system UI elements */
+  nav, 
+  aside,
+  header,
+  footer,
+  .top-bar,
+  .sidebar-wrapper,
+  .no-print,
+  .btn,
+  button,
+  .modal-action,
+  .pagination,
+  .nav-tab-container,
+  .toast-container,
+  .sidebar-overlay {
+    display: none !important;
+  }
 
+  /* Reset layout for full-width printing */
   body,
   html,
   #root,
+  .dashboard-layout,
   .main-content,
-  .table-container,
-  .modal,
-  .modal-body,
-  .content-area {
+  .content-area,
+  .container,
+  .page-wrapper {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
     height: auto !important;
-    max-height: none !important;
+    min-height: 0 !important;
     overflow: visible !important;
-    overflow-y: visible !important;
-    overflow-x: visible !important;
+    display: block !important;
+    background: white !important;
+  }
+
+  /* Container adjustments */
+  .container {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Ensure cards and tables are clear */
+  .card {
+    box-shadow: none !important;
+    border: 1px solid #eee !important;
+    margin-bottom: 20px !important;
+    padding: 0 !important;
+    break-inside: avoid;
+  }
+
+  table {
+    width: 100% !important;
+    table-layout: auto !important;
+    border: 1px solid #eee !important;
+  }
+
+  th, td {
+    border: 1px solid #eee !important;
+    padding: 8px !important;
+  }
+
+  /* Modal Printing - Ensure open modals take over the full page */
+  .modal-overlay {
+    position: static !important;
+    background: none !important;
+    padding: 0 !important;
+    display: block !important;
+  }
+
+  .modal-content {
+    box-shadow: none !important;
+    border: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    position: static !important;
+    transform: none !important;
+  }
+
+  .modal-header {
+    border-bottom: 2px solid #334155 !important;
+    padding-bottom: 10px !important;
+    margin-bottom: 20px !important;
+  }
+
+  /* Typography for print */
+  h1, h2, h3, h4 {
+    color: black !important;
+  }
+
+  .text-secondary, .text-muted {
+    color: #444 !important;
+  }
+
+  /* Force colors if browser settings allow */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 }
 

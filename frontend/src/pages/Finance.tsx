@@ -810,7 +810,12 @@ const Finance = () => {
                 <form onSubmit={handleReceivePayment} className="form-container-md mx-auto space-y-6">
                     <SearchableSelect
                         label="Student"
-                        options={students.map((s: any) => ({ id: s.id, label: `${s.admission_number} - ${s.full_name}` }))}
+                        options={students
+                            .filter((s: any) => (s.fee_balance || 0) > 0)
+                            .map((s: any) => ({ 
+                                id: s.id, 
+                                label: `${s.admission_number} - ${s.full_name} (KES ${Number(s.fee_balance).toLocaleString()})` 
+                            }))}
                         value={payForm.student_id}
                         onChange={(val) => setPayForm({ ...payForm, student_id: String(val) })}
                         required
@@ -1019,6 +1024,17 @@ const Finance = () => {
                             <label className="label">Amount (KES) *</label>
                             <input type="number" className="input" value={expenseForm.amount} onChange={e => setExpenseForm({ ...expenseForm, amount: e.target.value })} required />
                         </div>
+                        <div className="form-group">
+                            <label className="label">Date *</label>
+                            <input 
+                                type="date" 
+                                className="input" 
+                                value={expenseForm.date_occurred} 
+                                onChange={e => setExpenseForm({ ...expenseForm, date_occurred: e.target.value })} 
+                                min={new Date().toISOString().split('T')[0]}
+                                required 
+                            />
+                        </div>
                     </div>
                     <div className="form-group">
                         <label className="label">Paid To / Recipient *</label>
@@ -1046,7 +1062,12 @@ const Finance = () => {
                     </div>
                     <SearchableSelect
                         label="Student (Admission Number)"
-                        options={students.map((s: any) => ({ id: s.admission_number, label: `${s.admission_number} - ${s.full_name}` }))}
+                        options={students
+                            .filter((s: any) => (s.fee_balance || 0) > 0)
+                            .map((s: any) => ({ 
+                                id: s.admission_number, 
+                                label: `${s.admission_number} - ${s.full_name} (KES ${Number(s.fee_balance).toLocaleString()})` 
+                            }))}
                         value={mpesaForm.admission_number}
                         onChange={(val) => setMpesaForm({ ...mpesaForm, admission_number: String(val) })}
                         required

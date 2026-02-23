@@ -13,6 +13,7 @@ interface DatePickerProps {
     placeholder?: string;
     description?: string;
     disabled?: boolean;
+    minDate?: string; // e.g. '2023-01-01'
 }
 
 const PremiumDateInput: React.FC<DatePickerProps> = ({
@@ -22,7 +23,8 @@ const PremiumDateInput: React.FC<DatePickerProps> = ({
     required,
     placeholder = 'Select Date',
     description,
-    disabled
+    disabled,
+    minDate
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [view, setView] = useState<'days' | 'months' | 'years'>('days');
@@ -106,15 +108,20 @@ const PremiumDateInput: React.FC<DatePickerProps> = ({
             const isSelected = value === dateStr;
             const isToday = formatDate(new Date()) === dateStr;
 
+            const isPastMinDate = minDate && dateStr < minDate;
+
             items.push(
                 <button
                     key={d}
                     type="button"
-                    onClick={() => handleDayClick(d)}
+                    onClick={() => !isPastMinDate && handleDayClick(d)}
+                    disabled={!!isPastMinDate}
                     className={`p-2 rounded-xl text-xs font-black transition-all transform active:scale-95 ${isSelected
-                            ? 'bg-primary text-white shadow-lg scale-105'
-                            : isToday
-                                ? 'bg-primary/5 text-primary border border-primary/20'
+                        ? 'bg-primary text-white shadow-lg scale-105'
+                        : isToday
+                            ? 'bg-primary/5 text-primary border border-primary/20'
+                            : isPastMinDate
+                                ? 'text-slate-200 cursor-not-allowed'
                                 : 'text-slate-700 hover:bg-slate-50'
                         }`}
                 >
@@ -123,7 +130,7 @@ const PremiumDateInput: React.FC<DatePickerProps> = ({
             );
         }
         return items;
-    }, [viewDate, value]);
+    }, [viewDate, value, minDate]);
 
     return (
         <div className={`form-group relative ${disabled ? 'opacity-50 pointer-events-none' : ''}`} ref={containerRef}>

@@ -11,6 +11,7 @@ import { StatCard } from '../components/Card';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 import Button from '../components/common/Button';
+import PremiumDateInput from '../components/common/DatePicker';
 
 const Hostels = () => {
     const [activeTab, setActiveTab] = useState('registry');
@@ -858,6 +859,13 @@ const Hostels = () => {
                 {attendanceMode === 'SINGLE' ? (
                     <form onSubmit={handleAttendanceSubmit} className="space-y-4 form-container-md mx-auto">
                         <SearchableSelect label="Student" options={students.map(s => ({ id: String(s.id), label: s.full_name, subLabel: s.admission_number }))} value={String(attendanceFormData.student || '')} onChange={(val) => setAttendanceFormData({ ...attendanceFormData, student: val })} required />
+                        <PremiumDateInput
+                            label="Attendance Date"
+                            value={attendanceFormData.date}
+                            onChange={(val) => setAttendanceFormData({ ...attendanceFormData, date: val })}
+                            minDate={new Date().toISOString().split('T')[0]}
+                            required
+                        />
                         <div className="modal-footer"><Button type="submit" className="w-full" loading={isSubmitting}>Log Attendance</Button></div>
                     </form>
                 ) : (
@@ -877,6 +885,13 @@ const Hostels = () => {
             <Modal isOpen={isDisciplineModalOpen} onClose={() => setIsDisciplineModalOpen(false)} title="Discipline">
                 <form onSubmit={handleDisciplineSubmit} className="space-y-4 form-container-md mx-auto">
                     <SearchableSelect label="Student" options={students.map(s => ({ id: String(s.id), label: s.full_name, subLabel: s.admission_number }))} value={String(disciplineFormData.student ?? '')} onChange={(val) => setDisciplineFormData({ ...disciplineFormData, student: val as string })} required />
+                    <PremiumDateInput
+                        label="Occurrence Date"
+                        value={disciplineFormData.date}
+                        onChange={(val) => setDisciplineFormData({ ...disciplineFormData, date: val })}
+                        minDate={new Date().toISOString().split('T')[0]}
+                        required
+                    />
                     <div className="form-group"><label className="label">Offence</label><input type="text" className="input" value={disciplineFormData.offence} onChange={e => setDisciplineFormData({ ...disciplineFormData, offence: e.target.value })} required /></div>
                     <div className="modal-footer"><Button type="submit" className="w-full" loading={isSubmitting}>Report</Button></div>
                 </form>
@@ -885,6 +900,13 @@ const Hostels = () => {
             <Modal isOpen={isMaintenanceModalOpen} onClose={() => setIsMaintenanceModalOpen(false)} title="Maintenance">
                 <form onSubmit={handleMaintenanceSubmit} className="space-y-4 form-container-md mx-auto">
                     <div className="form-group"><label className="label">Hostel</label><select className="select" value={maintenanceFormData.hostel} onChange={e => setMaintenanceFormData({ ...maintenanceFormData, hostel: e.target.value })} required><option value="">Select Hostel...</option>{hostels.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}</select></div>
+                    <PremiumDateInput
+                        label="Date Reported"
+                        value={maintenanceFormData.date}
+                        onChange={(val) => setMaintenanceFormData({ ...maintenanceFormData, date: val })}
+                        minDate={new Date().toISOString().split('T')[0]}
+                        required
+                    />
                     <div className="modal-footer"><Button type="submit" className="w-full" loading={isSubmitting}>Log Request</Button></div>
                 </form>
             </Modal>

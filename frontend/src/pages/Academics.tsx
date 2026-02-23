@@ -2054,12 +2054,14 @@ const Academics = () => {
                             label="Start Date"
                             value={termForm.start_date}
                             onChange={(val) => setTermForm({ ...termForm, start_date: val })}
+                            minDate={new Date().toISOString().split('T')[0]}
                             required
                         />
                         <PremiumDateInput
                             label="End Date"
                             value={termForm.end_date}
                             onChange={(val) => setTermForm({ ...termForm, end_date: val })}
+                            minDate={termForm.start_date || new Date().toISOString().split('T')[0]}
                             required
                         />
                     </div>
@@ -2146,6 +2148,7 @@ const Academics = () => {
                                 value={attendanceForm.date}
                                 onChange={(val) => setAttendanceForm({ ...attendanceForm, date: val })}
                                 placeholder="Date"
+                                minDate={new Date().toISOString().split('T')[0]}
                                 required
                             />
                         </div>
@@ -2289,6 +2292,7 @@ const Academics = () => {
                                 label="Assessment Start Date"
                                 value={examForm.date_started}
                                 onChange={(val) => setExamForm({ ...examForm, date_started: val })}
+                                minDate={new Date().toISOString().split('T')[0]}
                                 required
                             />
                         </div>
