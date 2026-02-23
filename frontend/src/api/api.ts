@@ -100,6 +100,7 @@ export const studentsAPI = {
   delete: (id: number) => api.delete(`students/${id}/`),
   forceDelete: (id: number) => api.delete(`students/${id}/force_delete/`),
   linkUser: (id: number) => api.post(`students/${id}/link_user/`),
+  minimalSearch: (search?: string) => api.get('students/minimal_search/', { params: { search } }),
 
   parents: {
     getAll: () => api.get('parents/', ALL),

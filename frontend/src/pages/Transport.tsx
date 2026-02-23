@@ -179,7 +179,7 @@ const Transport = () => {
                 }
             }
             if (students.length === 0) {
-                const sRes = await studentsAPI.getAll({ page_size: 200 });
+                const sRes = await studentsAPI.minimalSearch();
                 setStudents(sRes.data?.results ?? sRes.data ?? []);
             }
 

@@ -188,9 +188,9 @@ const Finance = () => {
                 }
             }
             if (showPaymentModal || showMpesaModal) {
-                // Only fetch students if really needed, and use a limited set or search
+                // Optimized: Fetch minimal student data for selectors instead of full profiles
                 if (students.length === 0) {
-                    const studs = await studentsAPI.getAll({ page_size: 100 }); // Enough for most recent lookups
+                    const studs = await studentsAPI.minimalSearch();
                     setStudents(d(studs));
                 }
             }
@@ -812,9 +812,9 @@ const Finance = () => {
                         label="Student"
                         options={students
                             .filter((s: any) => (s.fee_balance || 0) > 0)
-                            .map((s: any) => ({ 
-                                id: s.id, 
-                                label: `${s.admission_number} - ${s.full_name} (KES ${Number(s.fee_balance).toLocaleString()})` 
+                            .map((s: any) => ({
+                                id: s.id,
+                                label: `${s.admission_number} - ${s.full_name} (KES ${Number(s.fee_balance).toLocaleString()})`
                             }))}
                         value={payForm.student_id}
                         onChange={(val) => setPayForm({ ...payForm, student_id: String(val) })}
@@ -1026,13 +1026,13 @@ const Finance = () => {
                         </div>
                         <div className="form-group">
                             <label className="label">Date *</label>
-                            <input 
-                                type="date" 
-                                className="input" 
-                                value={expenseForm.date_occurred} 
-                                onChange={e => setExpenseForm({ ...expenseForm, date_occurred: e.target.value })} 
+                            <input
+                                type="date"
+                                className="input"
+                                value={expenseForm.date_occurred}
+                                onChange={e => setExpenseForm({ ...expenseForm, date_occurred: e.target.value })}
                                 min={new Date().toISOString().split('T')[0]}
-                                required 
+                                required
                             />
                         </div>
                     </div>
@@ -1064,9 +1064,9 @@ const Finance = () => {
                         label="Student (Admission Number)"
                         options={students
                             .filter((s: any) => (s.fee_balance || 0) > 0)
-                            .map((s: any) => ({ 
-                                id: s.admission_number, 
-                                label: `${s.admission_number} - ${s.full_name} (KES ${Number(s.fee_balance).toLocaleString()})` 
+                            .map((s: any) => ({
+                                id: s.admission_number,
+                                label: `${s.admission_number} - ${s.full_name} (KES ${Number(s.fee_balance).toLocaleString()})`
                             }))}
                         value={mpesaForm.admission_number}
                         onChange={(val) => setMpesaForm({ ...mpesaForm, admission_number: String(val) })}

@@ -31,11 +31,13 @@ class SubjectGroupViewSet(viewsets.ModelViewSet):
     serializer_class = SubjectGroupSerializer
 
 class SubjectViewSet(viewsets.ModelViewSet):
-    queryset = Subject.objects.all()
+    queryset = Subject.objects.select_related('group').all()
     serializer_class = SubjectSerializer
 
 class ClassViewSet(viewsets.ModelViewSet):
-    queryset = Class.objects.all()
+    queryset = Class.objects.select_related('class_teacher').annotate(
+        _student_count=Count('students')
+    ).all()
     serializer_class = ClassSerializer
 
 class GradeSystemViewSet(viewsets.ModelViewSet):
@@ -47,7 +49,7 @@ class GradeBoundaryViewSet(viewsets.ModelViewSet):
     serializer_class = GradeBoundarySerializer
 
 class ExamViewSet(viewsets.ModelViewSet):
-    queryset = Exam.objects.all()
+    queryset = Exam.objects.select_related('term', 'grade_system').all()
     serializer_class = ExamSerializer
     filterset_fields = ['academic_year', 'term', 'status']
 
@@ -138,7 +140,7 @@ class LearningResourceViewSet(viewsets.ModelViewSet):
     serializer_class = LearningResourceSerializer
 
 class SyllabusCoverageViewSet(viewsets.ModelViewSet):
-    queryset = SyllabusCoverage.objects.all()
+    queryset = SyllabusCoverage.objects.select_related('subject', 'class_grade').all()
     serializer_class = SyllabusCoverageSerializer
     
     

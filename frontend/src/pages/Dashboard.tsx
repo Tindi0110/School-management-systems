@@ -57,59 +57,25 @@ const Dashboard = () => {
     }, []);
 
     const loadDashboardData = async () => {
+        setLoading(true);
         try {
-            const todayStr = new Date().toISOString().split('T')[0];
+            const res = await statsAPI.getDashboard();
+            const { counts, active_context, alerts: alertsData, events: eventsData } = res.data;
 
-            // Phase 1: Immediate Stats & Context
-            const [statsRes, yearsRes, termsRes] = await Promise.allSettled([
-                statsAPI.getDashboard(),
-                academicsAPI.years.getAll({ is_active: true }),
-                academicsAPI.terms.getAll({ is_active: true }),
-            ]);
-
-            const d = (r: PromiseSettledResult<any>) => r.status === 'fulfilled' ? (r.value.data?.results ?? r.value.data ?? {}) : {};
-
-            const s = d(statsRes);
             setStats({
-                totalStudents: s.total_students ?? 0,
-                totalStaff: s.total_staff ?? 0,
-                totalClasses: s.total_classes ?? 0,
-                pendingPayments: s.pending_invoices ?? 0,
+                totalStudents: counts.total_students ?? 0,
+                totalStaff: counts.total_staff ?? 0,
+                totalClasses: counts.total_classes ?? 0,
+                pendingPayments: counts.pending_invoices ?? 0,
             });
 
-            const yearsData = Array.isArray(d(yearsRes)) ? d(yearsRes) : [];
-            const termsData = Array.isArray(d(termsRes)) ? d(termsRes) : [];
-            let activeY = yearsData.find((y: any) => y.is_active === true)?.name
-                || yearsData.find((y: any) => String(y.is_active) === 'true')?.name
-                || (yearsData.length > 0 ? yearsData[yearsData.length - 1].name : '2024');
-            const activeT = termsData.find((t: any) => t.is_active === true)?.name
-                || (termsData.length > 0 ? termsData[termsData.length - 1].name : 'Term 1');
-            setActiveAcademic({ year: activeY, term: activeT });
+            setActiveAcademic({
+                year: active_context.year || 'No Active Year',
+                term: active_context.term || 'No Active Term'
+            });
 
-            // Phase 2: Secondary Content (Alerts & Events)
-            const [alertsRes, eventsRes, examsRes] = await Promise.allSettled([
-                communicationAPI.alerts.getActive(),
-                academicsAPI.events.getAll({ start_date: todayStr, page_size: 10 }),
-                academicsAPI.exams.getAll({ start_date: todayStr, page_size: 10 }),
-            ]);
-
-            const dList = (r: PromiseSettledResult<any>) => r.status === 'fulfilled' ? (r.value.data?.results ?? r.value.data ?? []) : [];
-
-            setAlerts(dList(alertsRes));
-
-            const apiEvents = dList(eventsRes);
-            const apiExams = dList(examsRes).map((ex: any) => ({
-                id: `exam-${ex.id}`,
-                title: `${ex.name} (${ex.exam_type})`,
-                date: ex.date_started,
-                start_time: '08:00',
-                location: 'Main Hall',
-                event_type: 'EXAM'
-            }));
-            const allEvents = [...apiEvents, ...apiExams].sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            setEvents(allEvents.filter((e: any) => new Date(e.date) >= today).slice(0, 5));
+            setAlerts(alertsData || []);
+            setEvents(eventsData || []);
 
         } catch (error) {
             console.error('Dashboard load error:', error);

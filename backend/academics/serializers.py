@@ -103,7 +103,7 @@ class ClassSerializer(serializers.ModelSerializer):
         return obj.class_teacher.get_full_name() if obj.class_teacher else "Unassigned"
 
     def get_student_count(self, obj):
-        return obj.students.count()
+        return getattr(obj, '_student_count', obj.students.count())
 
 class AttendanceSerializer(serializers.ModelSerializer):
     student_name = serializers.CharField(source='student.full_name', read_only=True)

@@ -147,7 +147,7 @@ const Hostels = () => {
                 setBeds(bRes?.data?.results ?? bRes?.data ?? []);
             }
             if (students.length === 0) {
-                const sRes = await studentsAPI.getAll({ page_size: 200 }); // Partial list for dropdowns
+                const sRes = await studentsAPI.minimalSearch();
                 setStudents(sRes?.data?.results ?? sRes?.data ?? []);
             }
             if (staff.length === 0) {

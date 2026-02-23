@@ -54,9 +54,11 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         today = timezone.now().date()
         daily_collection = Payment.objects.filter(date_received=today).aggregate(sum=Sum('amount'))['sum'] or 0
         
-        # Get 5 recent invoices
+        # Get 5 recent invoices with optimized prefetching to avoid N+1 queries
         recent_invoices = Invoice.objects.select_related(
             'student', 'student__current_class', 'academic_year'
+        ).prefetch_related(
+            'items', 'payments', 'adjustments', 'payments__received_by'
         ).order_by('-date_generated', '-id')[:5]
         
         recent_data = InvoiceSerializer(recent_invoices, many=True).data

@@ -96,6 +96,29 @@ class StudentViewSet(viewsets.ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=201, headers=headers)
 
+    @action(detail=False, methods=['get'])
+    def minimal_search(self, request):
+        """
+        Lightweight search for dropdowns and selectors.
+        Returns only ID, name, admission number, and class.
+        """
+        from .serializers import SimpleStudentSerializer
+        queryset = self.get_queryset().select_related('current_class').only(
+            'id', 'full_name', 'admission_number', 'current_class__name', 'current_class__stream'
+        )
+        
+        search = request.query_params.get('search')
+        if search:
+            queryset = queryset.filter(
+                Q(full_name__icontains=search) | 
+                Q(admission_number__icontains=search)
+            )
+            
+        # Limit to 20 results for maximum responsiveness in selectors
+        queryset = queryset[:20]
+        serializer = SimpleStudentSerializer(queryset, many=True)
+        return Response(serializer.data)
+
     @action(detail=True, methods=['post', 'delete'])
     def link_user(self, request, pk=None):
         student = self.get_object()
