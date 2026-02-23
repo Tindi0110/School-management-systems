@@ -87,6 +87,8 @@ const StudentProfile = () => {
     const [isDocumentModalOpen, setIsDocumentModalOpen] = useState(false);
     const [activityForm, setActivityForm] = useState({ name: '', role: '', year: new Date().getFullYear(), activity_type: 'Club' });
     const [documentForm, setDocumentForm] = useState<any>({ doc_type: 'OTHER', file: null });
+    const [isCreatingNewGuardian, setIsCreatingNewGuardian] = useState(false);
+    const [newGuardianForm, setNewGuardianForm] = useState({ full_name: '', phone: '', email: '', relation: 'PARENT' });
 
 
 
@@ -403,6 +405,26 @@ const StudentProfile = () => {
             loadCoreStudentData();
         } catch (err: any) {
             toast.error(err.message || 'Failed to update guardian');
+        }
+    };
+
+    const handleCreateGuardian = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        try {
+            const res = await studentsAPI.parents.create({
+                ...newGuardianForm,
+                student_id: Number(id)
+            });
+            toast.success('New guardian created and linked successfully!');
+            setParents([...parents, res.data]);
+            setIsCreatingNewGuardian(false);
+            setNewGuardianForm({ full_name: '', phone: '', email: '', relation: 'PARENT' });
+            setIsGuardianModalOpen(false);
+        } catch (err: any) {
+            toast.error(err.response?.data?.error || 'Failed to create guardian');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -1340,8 +1362,8 @@ const StudentProfile = () => {
                 </div>
             </Modal>
 
-            {/* Clearance Form Template */}
-            <div id="clearance-form" className="hidden">
+            {/* Clearance Form Template - HIDDEN ON SCREEN, REVEALED ON PRINT */}
+            <div id="clearance-form" className="print-only">
                 <div className="report-container p-12 bg-white text-slate-800" style={{ fontFamily: "'Inter', sans-serif" }}>
                     <div className="report-header border-b-2 border-slate-900 pb-6 mb-8 text-center">
                         <h1 className="text-2xl font-black uppercase tracking-tighter mb-1">Institutional Student Clearance</h1>
@@ -1402,10 +1424,10 @@ const StudentProfile = () => {
                                 <tr>
                                     <td className="py-4 px-6 text-xs font-black text-slate-700 uppercase bg-slate-50/50">Financial Accounts</td>
                                     <td className="py-4 px-6 text-xs font-black bg-slate-50/50">
-                                        {(student.fee_balance ?? 0) > 0 ? (
-                                            <span className="text-error border-b border-error">OUTSTANDING: KES {(student.fee_balance ?? 0).toLocaleString()}</span>
+                                        {student.fee_balance > 0 ? (
+                                            <span className="text-error border-b-2 border-error/50">OUTSTANDING: KES {Number(student.fee_balance).toLocaleString()}</span>
                                         ) : (
-                                            <span className="text-success">CLEARED (ZERO BALANCE)</span>
+                                            <span className="text-success border-b-2 border-success/50">CLEARED (ZERO BALANCE)</span>
                                         )}
                                     </td>
                                     <td className="py-4 px-6 h-12 bg-slate-50/50"></td>
@@ -1481,23 +1503,90 @@ const StudentProfile = () => {
 
             <Modal isOpen={isGuardianModalOpen} onClose={() => setIsGuardianModalOpen(false)} title="Guardian Network Management" size="sm">
                 <div className="space-y-6">
-                    <form onSubmit={handleLinkParent} className="space-y-4">
-                        <p className="text-[11px] font-bold text-secondary uppercase tracking-widest leading-relaxed">Search Existing Parent Records</p>
-                        <div className="flex gap-2">
-                            <div className="form-group flex-grow">
+                    <div className="flex bg-slate-100 p-1 rounded-xl mb-4">
+                        <button
+                            className={`flex-1 py-2 text-[10px] font-black uppercase rounded-lg transition-all ${!isCreatingNewGuardian ? 'bg-white shadow-sm text-primary' : 'text-slate-400'}`}
+                            onClick={() => setIsCreatingNewGuardian(false)}
+                        >
+                            Link Existing
+                        </button>
+                        <button
+                            className={`flex-1 py-2 text-[10px] font-black uppercase rounded-lg transition-all ${isCreatingNewGuardian ? 'bg-white shadow-sm text-primary' : 'text-slate-400'}`}
+                            onClick={() => setIsCreatingNewGuardian(true)}
+                        >
+                            Create New
+                        </button>
+                    </div>
+
+                    {!isCreatingNewGuardian ? (
+                        <form onSubmit={handleLinkParent} className="space-y-4">
+                            <p className="text-[11px] font-bold text-secondary uppercase tracking-widest leading-relaxed px-1">Search via Phone Number</p>
+                            <div className="flex gap-2">
+                                <div className="form-group flex-grow">
+                                    <input
+                                        type="tel"
+                                        className="input h-12 bg-white"
+                                        placeholder="e.g. 0712345678"
+                                        value={searchPhone}
+                                        onChange={e => setSearchPhone(e.target.value)}
+                                        required
+                                    />
+                                </div>
+                                <Button type="submit" variant="primary" loading={isSearchingParent} className="h-12 px-6">LINK</Button>
+                            </div>
+                            <p className="text-[9px] text-slate-400 italic uppercase px-1">Linking an existing parent connects all their students.</p>
+                        </form>
+                    ) : (
+                        <form onSubmit={handleCreateGuardian} className="space-y-3">
+                            <div className="form-group">
+                                <label className="label text-[10px] font-black uppercase text-slate-500">Full Name *</label>
                                 <input
-                                    type="tel"
-                                    className="input"
-                                    placeholder="Enter Phone Number (e.g. 07...)"
-                                    value={searchPhone}
-                                    onChange={e => setSearchPhone(e.target.value)}
+                                    type="text"
+                                    className="input h-10 bg-white"
+                                    value={newGuardianForm.full_name}
+                                    onChange={e => setNewGuardianForm({ ...newGuardianForm, full_name: e.target.value })}
                                     required
                                 />
                             </div>
-                            <Button type="submit" variant="primary" loading={isSearchingParent} icon={<Plus size={16} />}>LINK</Button>
-                        </div>
-                        <p className="text-[9px] text-slate-400 italic uppercase">If the parent exists in the system, they will be linked to this student instantly.</p>
-                    </form>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="form-group">
+                                    <label className="label text-[10px] font-black uppercase text-slate-500">Phone *</label>
+                                    <input
+                                        type="tel"
+                                        className="input h-10 bg-white"
+                                        value={newGuardianForm.phone}
+                                        onChange={e => setNewGuardianForm({ ...newGuardianForm, phone: e.target.value })}
+                                        required
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label className="label text-[10px] font-black uppercase text-slate-500">Relation</label>
+                                    <select
+                                        className="select h-10 bg-white"
+                                        value={newGuardianForm.relation}
+                                        onChange={e => setNewGuardianForm({ ...newGuardianForm, relation: e.target.value })}
+                                    >
+                                        <option value="PARENT">Parent</option>
+                                        <option value="GRANDPARENT">Grandparent</option>
+                                        <option value="SIBLING">Sibling</option>
+                                        <option value="OTHER">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div className="form-group">
+                                <label className="label text-[10px] font-black uppercase text-slate-500">Email (Optional)</label>
+                                <input
+                                    type="email"
+                                    className="input h-10 bg-white"
+                                    value={newGuardianForm.email}
+                                    onChange={e => setNewGuardianForm({ ...newGuardianForm, email: e.target.value })}
+                                />
+                            </div>
+                            <Button type="submit" variant="primary" className="w-full h-11 uppercase font-black tracking-widest mt-2" loading={isSubmitting}>
+                                CREATE & LINK GUARDIAN
+                            </Button>
+                        </form>
+                    )}
 
                     <div className="pt-6 border-t">
                         <p className="text-[10px] font-black text-primary uppercase mb-3">Linked Guardians ({parents.length})</p>

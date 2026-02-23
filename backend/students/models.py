@@ -72,15 +72,17 @@ class Student(models.Model):
             # 1. Determine the Year Part (YY)
             active_year = AcademicYear.objects.filter(is_active=True).first()
             year_val = active_year.name if active_year else str(datetime.date.today().year)
-            short_year = year_val[-2:] # Last 2 digits
+            
+            # Handle formats like "2024" or "24/25"
+            if '/' in year_val:
+                short_year = year_val.split('/')[0][-2:]
+            else:
+                short_year = year_val[-2:]
             
             # 2. Determine the sequence Part (XXXX)
-            # Filter students whose admission numbers start with this short_year
-            # This ensures we count correctly per year
+            # Filter students whose admission numbers start with this year prefix (YY/)
             year_prefix = f"{short_year}/"
-            last_student = Student.objects.filter(admission_number__startswith=year_prefix).aggregate(Max('id'))
             
-            # Better: Count actual records with this prefix to get "next"
             count = Student.objects.filter(admission_number__startswith=year_prefix).count()
             next_num = count + 1
             

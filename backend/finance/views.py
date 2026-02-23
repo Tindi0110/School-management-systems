@@ -167,27 +167,27 @@ class InvoiceViewSet(viewsets.ModelViewSet):
 
                     # Create Invoice
                     inv = Invoice.objects.create(
-                    student=student,
-                    academic_year_id=year_id,
-                    term=term,
-                    status='UNPAID'
-                )
-
-                total = 0
-                for fee in student_fees:
-                    InvoiceItem.objects.create(
-                        invoice=inv,
-                        fee_structure=fee,
-                        description=fee.name,
-                        amount=fee.amount
+                        student=student,
+                        academic_year_id=year_id,
+                        term=term,
+                        status='UNPAID'
                     )
-                    total += fee.amount
 
-                inv.total_amount = total
-                inv.update_balance()
-                created_count += 1
+                    total = 0
+                    for fee in student_fees:
+                        InvoiceItem.objects.create(
+                            invoice=inv,
+                            fee_structure=fee,
+                            description=fee.name,
+                            amount=fee.amount
+                        )
+                        total += fee.amount
 
-            return Response({'message': f'Generated {created_count} invoices successfully.'})
+                    inv.total_amount = total
+                    inv.update_balance()
+                    created_count += 1
+
+                return Response({'message': f'Generated {created_count} invoices successfully.'})
             
         except Exception as e:
             return Response({'error': f"Failed to generate batch: {str(e)}"}, status=400)

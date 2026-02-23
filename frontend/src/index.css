@@ -19,6 +19,10 @@
     display: none !important;
   }
 
+  .print-only {
+    display: block !important;
+  }
+
   /* Reset layout for full-width printing */
   body,
   html,

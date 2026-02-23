@@ -26,8 +26,7 @@ class StudentViewSet(viewsets.ModelViewSet):
         'health_record',
     ).prefetch_related(
         'parents',
-        'parents__students',
-        'invoices',
+        'documents',
     ).annotate(
         fee_balance=Coalesce(
             Subquery(
@@ -37,24 +36,9 @@ class StudentViewSet(viewsets.ModelViewSet):
             ),
             Value(0, output_field=DecimalField())
         ),
-        # Attendance annotations using subqueries for precise counts
-        attendance_total=Coalesce(
-            Subquery(
-                Attendance.objects.filter(student=OuterRef('pk')).values('student').annotate(
-                    cnt=Count('pk')
-                ).values('cnt')
-            ), 
-            Value(0)
-        ),
-        attendance_present=Coalesce(
-            Subquery(
-                Attendance.objects.filter(student=OuterRef('pk'), status='PRESENT').values('student').annotate(
-                    cnt=Count('pk')
-                ).values('cnt')
-            ),
-            Value(0)
-        ),
-        # Grade annotation
+        # Lighter attendance counts
+        attendance_total=Count('attendance', distinct=True),
+        attendance_present=Count('attendance', filter=Q(attendance__status='PRESENT'), distinct=True),
         avg_score=Avg('results__score'),
     ).order_by('admission_number')
     serializer_class = StudentSerializer
@@ -65,15 +49,38 @@ class StudentViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'])
     def minimal_search(self, request):
-        """Ultra-lightweight endpoint for dropdowns/selectors"""
+        """Ultra-lightweight endpoint for dropdowns/selectors with optional debt filtering"""
         search = request.query_params.get('search', '')
+        has_debt = request.query_params.get('has_debt', 'false').lower() == 'true'
+        
+        from finance.models import Invoice
+        from django.db.models.functions import Coalesce
+        from django.db.models import Sum, DecimalField, Value, OuterRef, Subquery
+
         qs = Student.objects.filter(status='ACTIVE')
+        
+        # Annotate with fee_balance for filtering/display
+        qs = qs.annotate(
+            fee_balance=Coalesce(
+                Subquery(
+                    Invoice.objects.filter(student=OuterRef('pk')).values('student').annotate(
+                        total_balance=Sum('balance')
+                    ).values('total_balance')
+                ),
+                Value(0, output_field=DecimalField())
+            )
+        )
+
+        if has_debt:
+            qs = qs.filter(fee_balance__gt=0)
+
         if search:
             qs = qs.filter(Q(full_name__icontains=search) | Q(admission_number__icontains=search))
         
         # Optimize query by only fetching needed fields
+        # Note: values() on annotated QS works fine
         qs = qs.select_related('current_class').values(
-            'id', 'full_name', 'admission_number', 'current_class__name', 'current_class__stream'
+            'id', 'full_name', 'admission_number', 'current_class__name', 'current_class__stream', 'fee_balance'
         )[:50]
         
         data = [
@@ -82,7 +89,8 @@ class StudentViewSet(viewsets.ModelViewSet):
                 'full_name': s['full_name'],
                 'admission_number': s['admission_number'],
                 'class_name': s['current_class__name'],
-                'class_stream': s['current_class__stream']
+                'class_stream': s['current_class__stream'],
+                'fee_balance': float(s['fee_balance'])
             }
             for s in qs
         ]
