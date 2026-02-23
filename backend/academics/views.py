@@ -146,7 +146,7 @@ class SyllabusCoverageViewSet(viewsets.ModelViewSet):
     
     
     def get_queryset(self):
-        queryset = SyllabusCoverage.objects.all()
+        queryset = super().get_queryset()
         class_id = self.request.query_params.get('class_id')
         if class_id:
             queryset = queryset.filter(class_grade_id=class_id)
