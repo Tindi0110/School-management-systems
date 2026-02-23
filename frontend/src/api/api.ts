@@ -108,6 +108,7 @@ export const studentsAPI = {
     getAll: () => api.get('parents/', ALL),
     create: (data: any) => api.post('parents/', data),
     update: (id: number, data: any) => api.put(`parents/${id}/`, data),
+    patch: (id: number, data: any) => api.patch(`parents/${id}/`, data),
     delete: (id: number) => api.delete(`parents/${id}/`),
     getForStudent: (studentId: number) => api.get('parents/', allWith({ student_id: studentId })),
   },
