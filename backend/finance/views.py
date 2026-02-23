@@ -114,30 +114,54 @@ class InvoiceViewSet(viewsets.ModelViewSet):
     def generate_batch(self, request):
         """
         Generates invoices for a specific class/term based on FeeStructures.
+        Supports 'all' for class_id and level.
         """
-        class_id = request.data.get('class_id')
+        level = request.data.get('level') # e.g. "Grade 1" or "all"
+        class_id = request.data.get('class_id') # e.g. 1 or "all"
         term = request.data.get('term')
-        year_id = request.data.get('year_id') # Academic Year ID
+        year_id = request.data.get('year_id')
 
-        if not all([class_id, term, year_id]):
-            return Response({'error': 'Missing required fields (class_id, term, year_id)'}, status=400)
+        if not all([level, term, year_id]):
+            return Response({'error': 'Missing required fields (level, term, year_id)'}, status=400)
 
-        # 1. Get Active Fee Structures for this Class/Term (including 'All Levels')
-        fees = FeeStructure.objects.filter(
-            term=term, 
-            academic_year_id=year_id
-        ).filter(Q(class_level_id=class_id) | Q(class_level__isnull=True))
+        # Base filters for fee structures
+        fee_filters = Q(term=term, academic_year_id=year_id)
+        
+        # Base filters for students
+        student_filters = Q(is_active=True)
+
+        if level != 'all':
+            if class_id != 'all' and class_id:
+                # Specific Class
+                fee_filters &= (Q(class_level_id=class_id) | Q(class_level__isnull=True))
+                student_filters &= Q(current_class_id=class_id)
+            else:
+                # All Streams in a Level
+                fee_filters &= (Q(class_level__name=level) | Q(class_level__isnull=True))
+                student_filters &= Q(current_class__name=level)
+        else:
+            # All Levels, All Streams
+            # fee_filters remains as term/year only (catches all levels + null)
+            pass
+
+        # 1. Get Active Fee Structures
+        fees = FeeStructure.objects.filter(fee_filters).distinct()
         if not fees.exists():
-            return Response({'error': 'No Fee Structures defined for this Class/Term'}, status=404)
+            return Response({'error': 'No Fee Structures defined for the selected criteria'}, status=404)
 
-        # 2. Get Students in Class
-        students = Student.objects.filter(current_class_id=class_id, is_active=True)
+        # 2. Get Students
+        students = Student.objects.filter(student_filters)
         created_count = 0
 
         with transaction.atomic():
             for student in students:
                 # Check if invoice already exists
                 if Invoice.objects.filter(student=student, term=term, academic_year_id=year_id).exists():
+                    continue
+
+                # Filter fees relevant to THIS student's class or global fees
+                student_fees = fees.filter(Q(class_level=student.current_class) | Q(class_level__isnull=True))
+                if not student_fees.exists():
                     continue
 
                 # Create Invoice
@@ -148,9 +172,8 @@ class InvoiceViewSet(viewsets.ModelViewSet):
                     status='UNPAID'
                 )
 
-                # Add Items and Calculate Total
                 total = 0
-                for fee in fees:
+                for fee in student_fees:
                     InvoiceItem.objects.create(
                         invoice=inv,
                         fee_structure=fee,
@@ -160,7 +183,7 @@ class InvoiceViewSet(viewsets.ModelViewSet):
                     total += fee.amount
 
                 inv.total_amount = total
-                inv.update_balance() # Sets initial balance
+                inv.update_balance()
                 created_count += 1
 
         return Response({'message': f'Generated {created_count} invoices successfully.'})
@@ -168,19 +191,26 @@ class InvoiceViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'])
     def sync_all(self, request):
         """
-        Recalculates totals and balances for ALL invoices.
-        Ensures student balances are accurately reflected.
+        Recalculates totals and balances for ALL invoices in the background.
         """
-        invoices = Invoice.objects.all()
-        updated_count = 0
+        def run_sync():
+            from django.db import connection
+            try:
+                invoices = Invoice.objects.all()
+                for inv in invoices:
+                    try:
+                        inv.recalculate_totals()
+                        inv.recalculate_pricing()
+                    except Exception:
+                        continue
+            finally:
+                connection.close()
+
+        thread = threading.Thread(target=run_sync)
+        thread.daemon = True
+        thread.start()
         
-        with transaction.atomic():
-            for inv in invoices:
-                inv.recalculate_totals()
-                inv.recalculate_pricing()
-                updated_count += 1
-                
-        return Response({'message': f'Synchronized {updated_count} invoices successfully.'})
+        return Response({'message': 'Synchronization process started in the background.'})
 
     @action(detail=False, methods=['post'])
     def send_reminders(self, request):

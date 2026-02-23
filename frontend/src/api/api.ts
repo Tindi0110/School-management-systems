@@ -269,7 +269,7 @@ export const financeAPI = {
   invoices: {
     getAll: (params?: any) => api.get('invoices/', allWith(params)),
     getOne: (id: number) => api.get(`invoices/${id}/`),
-    generateBatch: (data: { class_id: number, term: number, year_id: number }) => api.post('invoices/generate_batch/', data),
+    generateBatch: (data: { level: string, class_id: any, term: number, year_id: number }) => api.post('invoices/generate_batch/', data),
     syncAll: () => api.post('invoices/sync_all/'),
     dashboardStats: (params?: any) => api.get('invoices/dashboard_stats/', { params }),
     sendReminders: (data: { selected_ids: number[], message_template: string, send_sms: boolean, send_email: boolean }) =>

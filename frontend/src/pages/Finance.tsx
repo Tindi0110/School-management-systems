@@ -189,21 +189,26 @@ const Finance = () => {
     useEffect(() => {
         const d = (r: any) => r?.data?.results ?? r?.data ?? [];
         const loadModalData = async () => {
-            if (showInvoiceModal || showFeeModal) {
-                if (classes.length === 0 || years.length === 0) {
-                    const [cls, yrs] = await Promise.all([
-                        classesAPI.getAll({ page_size: 50 }),
-                        academicsAPI.years.getAll({ is_active: true })
-                    ]);
-                    setClasses(d(cls)); setYears(d(yrs));
+            try {
+                if (showInvoiceModal || showFeeModal) {
+                    if (classes.length === 0 || years.length === 0) {
+                        const [cls, yrs] = await Promise.all([
+                            classesAPI.getAll({ page_size: 50 }),
+                            academicsAPI.years.getAll({ is_active: true })
+                        ]);
+                        setClasses(d(cls)); setYears(d(yrs));
+                    }
                 }
-            }
-            if (showPaymentModal || showMpesaModal) {
-                // Optimized: Fetch minimal student data for selectors instead of full profiles
-                if (students.length === 0) {
-                    const studs = await studentsAPI.minimalSearch();
-                    setStudents(d(studs));
+                if (showPaymentModal || showMpesaModal) {
+                    // Optimized: Fetch minimal student data for selectors instead of full profiles
+                    if (students.length === 0) {
+                        const studs = await studentsAPI.minimalSearch();
+                        setStudents(d(studs));
+                    }
                 }
+            } catch (err: any) {
+                console.error('Error loading modal data:', err);
+                toastError('Could not load lookup data. Some forms may be incomplete.');
             }
         };
         loadModalData();
@@ -233,8 +238,8 @@ const Finance = () => {
             setPayForm({ student_id: '', invoice_id: '', amount: '', method: 'CASH', reference: '' });
             loadData();
         } catch (err: any) {
-            const errorMsg = err.response?.data?.error || err.message || 'Failed to process payment';
-            toastError(errorMsg);
+            const errorMsg = err.response?.data?.error || err.response?.data?.message || err.message || 'Failed to process payment';
+            toastError(String(errorMsg));
         } finally {
             setIsSubmitting(false);
         }
@@ -245,15 +250,17 @@ const Finance = () => {
         setIsSubmitting(true);
         try {
             await financeAPI.invoices.generateBatch({
-                class_id: Number(genForm.class_id),
+                level: genForm.level,
+                class_id: genForm.class_id || "all",
                 year_id: Number(genForm.year_id),
                 term: Number(genForm.term)
             });
-            success('Invoices generated successfully!');
+            success('Invoices generation process completed!');
             setShowInvoiceModal(false);
             loadData();
         } catch (err: any) {
-            toastError(err.message || 'Failed to generate invoices');
+            const msg = err.response?.data?.error || err.response?.data?.message || err.message || 'Failed to generate invoices';
+            toastError(String(msg));
         } finally {
             setIsSubmitting(false);
         }
@@ -285,7 +292,8 @@ const Finance = () => {
             setFeeForm({ name: '', amount: '', term: '1', year_id: '', class_id: '' });
             loadData();
         } catch (err: any) {
-            toastError(err.message || 'Failed to save fee structure');
+            const msg = err.response?.data?.error || err.response?.data?.message || err.message || 'Failed to save fee structure';
+            toastError(String(msg));
         } finally {
             setIsSubmitting(false);
         }
@@ -326,10 +334,10 @@ const Finance = () => {
         setIsSubmitting(true);
         try {
             const res = await financeAPI.invoices.syncAll();
-            success(res.data?.message || 'Financials synchronized successfully!');
-            loadData();
+            success(res.data?.message || 'Synchronization started in background.');
         } catch (err: any) {
-            toastError(err.message || 'Failed to sync financials');
+            const msg = err.response?.data?.error || err.response?.data?.message || err.message || 'Failed to sync financials';
+            toastError(String(msg));
         } finally {
             setIsSubmitting(false);
         }
@@ -803,13 +811,15 @@ const Finance = () => {
                             <label className="label">Class Level *</label>
                             <select className="select" value={genForm.level} onChange={e => setGenForm({ ...genForm, level: e.target.value, class_id: '' })} required>
                                 <option value="">-- Select Level --</option>
+                                <option value="all">ALL CLASS LEVELS</option>
                                 {uniqueClassNames.map(name => <option key={name} value={name}>{name}</option>)}
                             </select>
                         </div>
                         <div className="form-group">
                             <label className="label">Stream *</label>
-                            <select className="select" value={genForm.class_id} onChange={e => setGenForm({ ...genForm, class_id: e.target.value })} disabled={!genForm.level} required>
+                            <select className="select" value={genForm.class_id} onChange={e => setGenForm({ ...genForm, class_id: e.target.value })} disabled={!genForm.level || genForm.level === 'all'} required={genForm.level !== 'all'}>
                                 <option value="">-- Select Stream --</option>
+                                {genForm.level && genForm.level !== 'all' && <option value="all">ALL STREAMS</option>}
                                 {classes.filter((c: any) => c.name === genForm.level).map((c: any) => (
                                     <option key={c.id} value={c.id}>{c.stream}</option>
                                 ))}
