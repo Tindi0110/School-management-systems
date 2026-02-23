@@ -51,7 +51,10 @@ class StaffSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
     def get_full_name(self, obj):
-        return obj.user.get_full_name() if obj.user else "Unknown Staff"
+        if not obj.user:
+            return "Unknown Staff"
+        full_name = obj.user.get_full_name().strip()
+        return full_name if full_name else obj.user.username
 
     def get_role(self, obj):
         return obj.user.role if obj.user else "N/A"

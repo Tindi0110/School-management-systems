@@ -127,7 +127,7 @@ const Staff = () => {
                 department: member.department,
                 role: member.role || 'TEACHER',
                 qualifications: member.qualifications,
-                date_joined: member.date_joined,
+                date_joined: member.date_joined || new Date().toISOString().split('T')[0],
             });
         } else {
             setEditingStaff(null);
@@ -165,10 +165,10 @@ const Staff = () => {
                 <tbody>
                     {staffList.map((member) => (
                         <tr key={member.id}>
-                            <td>
+                            <td className="cursor-pointer hover:bg-slate-50/50" onClick={() => openModal(member)}>
                                 <div className="flex flex-col">
-                                    <span className="font-semibold">{member.full_name || member.username}</span>
-                                    <span className="text-sm text-secondary">ID: {member.employee_id}</span>
+                                    <span className="font-semibold text-primary">{member.full_name || member.username}</span>
+                                    <span className="text-[10px] font-bold text-secondary uppercase tracking-tight">ID: {member.employee_id}</span>
                                 </div>
                             </td>
                             <td>{member.department || 'General'}</td>
@@ -280,15 +280,17 @@ const Staff = () => {
             )}
 
             {/* Pagination */}
-            <div className="flex justify-between items-center mt-6 bg-slate-50 p-4 rounded-xl border border-slate-100 no-print">
-                <div className="text-[10px] font-black text-secondary uppercase tracking-widest">
-                    Showing {Math.min((page - 1) * pageSize + 1, totalItems)} - {Math.min(page * pageSize, totalItems)} of {totalItems} Staff Members
+            {totalItems > pageSize && (
+                <div className="flex justify-between items-center mt-6 bg-slate-50 p-4 rounded-xl border border-slate-100 no-print">
+                    <div className="text-[10px] font-black text-secondary uppercase tracking-widest">
+                        Showing {Math.min((page - 1) * pageSize + 1, totalItems)} - {Math.min(page * pageSize, totalItems)} of {totalItems} Staff Members
+                    </div>
+                    <div className="flex gap-2">
+                        <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(page - 1)} className="font-black text-[10px] uppercase">Previous</Button>
+                        <Button variant="primary" size="sm" disabled={page * pageSize >= totalItems} onClick={() => setPage(page + 1)} className="font-black text-[10px] uppercase">Next Page</Button>
+                    </div>
                 </div>
-                <div className="flex gap-2">
-                    <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(page - 1)} className="font-black text-[10px] uppercase">Previous</Button>
-                    <Button variant="primary" size="sm" disabled={page * pageSize >= totalItems} onClick={() => setPage(page + 1)} className="font-black text-[10px] uppercase">Next Page</Button>
-                </div>
-            </div>
+            )}
 
             <Modal isOpen={isModalOpen} onClose={closeModal} title={editingStaff ? 'Edit Staff Member' : 'Register New Staff Member'} size="md">
                 <form onSubmit={handleSubmit} className="form-container-md mx-auto space-y-6">
@@ -309,11 +311,16 @@ const Staff = () => {
                             <label className="label">Role *</label>
                             <select className="select" value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })} required>
                                 <option value="TEACHER">Teacher</option>
+                                <option value="PRINCIPAL">Principal</option>
+                                <option value="DEPUTY">Deputy Principal</option>
+                                <option value="DOS">Director of Studies</option>
+                                <option value="REGISTRAR">Admissions Registrar</option>
                                 <option value="WARDEN">Hostel Warden</option>
                                 <option value="NURSE">Nurse</option>
-                                <option value="ACCOUNTANT">Accountant</option>
+                                <option value="ACCOUNTANT">Bursar</option>
+                                <option value="LIBRARIAN">Librarian</option>
                                 <option value="DRIVER">Driver</option>
-                                <option value="ADMIN">Admin/Principal</option>
+                                <option value="ADMIN">System Admin</option>
                                 <option value="SUPPORT">Support Staff</option>
                             </select>
                         </div>
