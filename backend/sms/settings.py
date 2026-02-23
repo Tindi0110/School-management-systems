@@ -92,7 +92,7 @@ WSGI_APPLICATION = 'sms.wsgi.application'
 DATABASES = {
     'default': dj_database_url.config(
         default=f"sqlite:///{os.path.join(BASE_DIR, 'db.sqlite3')}",
-        conn_max_age=600
+        conn_max_age=0 # Set to 0 to prevent Render Postgres connection pool exhaustion
     )
 }
 

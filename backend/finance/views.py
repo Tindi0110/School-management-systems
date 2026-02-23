@@ -169,6 +169,7 @@ class InvoiceViewSet(viewsets.ModelViewSet):
 
         # 1. Define the background task
         def run_sending():
+            from django.db import connection
             try:
                 invoices = Invoice.objects.filter(id__in=selected_ids).select_related('student')
                 for inv in invoices:
@@ -202,6 +203,9 @@ class InvoiceViewSet(viewsets.ModelViewSet):
                         continue
             except Exception as e:
                 logger.critical(f"Critical error in fee reminder background thread: {str(e)}")
+            finally:
+                # CRITICAL: Close the database connection to prevent connection pool exhaustion
+                connection.close()
 
         # 2. Trigger thread and return immediately
         thread = threading.Thread(target=run_sending)
