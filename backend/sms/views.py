@@ -15,9 +15,9 @@ def health_check(request):
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from accounts.models import User
 from students.models import Student
-from academics.models import Class, Subject, Exam, StudentResult, AcademicYear, Term, SchoolEvent
+from academics.models import Class, Subject, Exam, StudentResult, AcademicYear, Term
 from staff.models import Staff
-from communication.models import SystemAlert
+from communication.models import SystemAlert, SchoolEvent
 from accounts.serializers import UserSerializer
 from students.serializers import StudentSerializer
 from academics.serializers import ClassSerializer, SubjectSerializer, ExamSerializer, StudentResultSerializer

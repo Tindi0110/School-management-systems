@@ -7,7 +7,7 @@ import {
     Star, Award, Zap
 } from 'lucide-react';
 import { StatCard } from '../components/Card';
-import { statsAPI, staffAPI, academicsAPI, communicationAPI } from '../api/api';
+import { statsAPI, staffAPI } from '../api/api';
 import Modal from '../components/Modal';
 import { useToast } from '../context/ToastContext';
 
