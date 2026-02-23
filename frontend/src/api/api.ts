@@ -143,7 +143,7 @@ export const studentsAPI = {
 };
 
 export const staffAPI = {
-  getAll: () => api.get('staff/', ALL),
+  getAll: (params?: Record<string, any>) => api.get('staff/', allWith(params)),
   getOne: (id: number) => api.get(`staff/${id}/`),
   create: (data: any) => api.post('staff/', data),
   update: (id: number, data: any) => api.put(`staff/${id}/`, data),
@@ -290,56 +290,56 @@ export const financeAPI = {
 
 export const hostelAPI = {
   hostels: {
-    getAll: () => api.get('hostels/', ALL),
+    getAll: (params?: Record<string, any>) => api.get('hostels/', allWith(params)),
     create: (data: any) => api.post('hostels/', data),
     update: (id: number, data: any) => api.put(`hostels/${id}/`, data),
     delete: (id: number) => api.delete(`hostels/${id}/`),
   },
   rooms: {
-    getAll: () => api.get('rooms/', ALL),
+    getAll: (params?: Record<string, any>) => api.get('rooms/', allWith(params)),
     create: (data: any) => api.post('rooms/', data),
     update: (id: number, data: any) => api.put(`rooms/${id}/`, data),
     delete: (id: number) => api.delete(`rooms/${id}/`),
   },
   beds: {
-    getAll: () => api.get('beds/', ALL),
+    getAll: (params?: Record<string, any>) => api.get('beds/', allWith(params)),
     create: (data: any) => api.post('beds/', data),
     update: (id: number, data: any) => api.put(`beds/${id}/`, data),
     delete: (id: number) => api.delete(`beds/${id}/`),
   },
   allocations: {
-    getAll: () => api.get('hostel-allocations/', ALL),
+    getAll: (params?: Record<string, any>) => api.get('hostel-allocations/', allWith(params)),
     create: (data: any) => api.post('hostel-allocations/', data),
     update: (id: number, data: any) => api.put(`hostel-allocations/${id}/`, data),
     delete: (id: number) => api.delete(`hostel-allocations/${id}/`),
     transfer: (id: number, newBedId: number) => api.post(`hostel-allocations/${id}/transfer/`, { new_bed_id: newBedId }),
   },
   attendance: {
-    getAll: () => api.get('hostel-attendance/', ALL),
+    getAll: (params?: Record<string, any>) => api.get('hostel-attendance/', allWith(params)),
     create: (data: any) => api.post('hostel-attendance/', data),
     update: (id: number, data: any) => api.put(`hostel-attendance/${id}/`, data),
     delete: (id: number) => api.delete(`hostel-attendance/${id}/`),
   },
   discipline: {
-    getAll: () => api.get('hostel-discipline/', ALL),
+    getAll: (params?: Record<string, any>) => api.get('hostel-discipline/', allWith(params)),
     create: (data: any) => api.post('hostel-discipline/', data),
     update: (id: number, data: any) => api.put(`hostel-discipline/${id}/`, data),
     delete: (id: number) => api.delete(`hostel-discipline/${id}/`),
   },
   assets: {
-    getAll: () => api.get('hostel-assets/', ALL),
+    getAll: (params?: Record<string, any>) => api.get('hostel-assets/', allWith(params)),
     create: (data: any) => api.post('hostel-assets/', data),
     update: (id: number, data: any) => api.put(`hostel-assets/${id}/`, data),
     delete: (id: number) => api.delete(`hostel-assets/${id}/`),
   },
   guests: {
-    getAll: () => api.get('hostel-guests/', ALL),
+    getAll: (params?: Record<string, any>) => api.get('hostel-guests/', allWith(params)),
     create: (data: any) => api.post('hostel-guests/', data),
     update: (id: number, data: any) => api.put(`hostel-guests/${id}/`, data),
     delete: (id: number) => api.delete(`hostel-guests/${id}/`),
   },
   maintenance: {
-    getAll: () => api.get('hostel-maintenance/', ALL),
+    getAll: (params?: Record<string, any>) => api.get('hostel-maintenance/', allWith(params)),
     create: (data: any) => api.post('hostel-maintenance/', data),
     update: (id: number, data: any) => api.put(`hostel-maintenance/${id}/`, data),
     delete: (id: number) => api.delete(`hostel-maintenance/${id}/`),
@@ -348,17 +348,17 @@ export const hostelAPI = {
 
 export const libraryAPI = {
   config: {
-    getAll: () => api.get('library-config/', ALL),
+    getAll: (params?: Record<string, any>) => api.get('library-config/', allWith(params)),
     create: (data: any) => api.post('library-config/', data),
   },
   books: {
-    getAll: () => api.get('books/', ALL),
+    getAll: (params?: Record<string, any>) => api.get('books/', allWith(params)),
     create: (data: any) => api.post('books/', data),
     update: (id: number, data: any) => api.put(`books/${id}/`, data),
     delete: (id: number) => api.delete(`books/${id}/`),
   },
   copies: {
-    getAll: () => api.get('book-copies/', ALL),
+    getAll: (params?: Record<string, any>) => api.get('book-copies/', allWith(params)),
     create: (data: any) => api.post('book-copies/', data),
     update: (id: number, data: any) => api.put(`book-copies/${id}/`, data),
     delete: (id: number) => api.delete(`book-copies/${id}/`),
@@ -372,14 +372,14 @@ export const libraryAPI = {
     extendDueDate: (id: number, data: { days: number }) => api.post(`book-lendings/${id}/extend_due_date/`, data),
   },
   fines: {
-    getAll: () => api.get('library-fines/', ALL),
+    getAll: (params?: Record<string, any>) => api.get('library-fines/', allWith(params)),
     create: (data: any) => api.post('library-fines/', data),
     update: (id: number, data: any) => api.put(`library-fines/${id}/`, data),
     delete: (id: number) => api.delete(`library-fines/${id}/`),
     syncToFinance: () => api.post('library-fines/sync_to_finance/'),
   },
   reservations: {
-    getAll: () => api.get('book-reservations/', ALL),
+    getAll: (params?: Record<string, any>) => api.get('book-reservations/', allWith(params)),
     create: (data: any) => api.post('book-reservations/', data),
   }
 };
@@ -397,37 +397,37 @@ export const transportAPI = {
     update: (id: number, data: any) => api.put(`transport-config/${id}/`, data),
   },
   vehicles: {
-    getAll: () => api.get('vehicles/', ALL),
+    getAll: (params?: Record<string, any>) => api.get('vehicles/', allWith(params)),
     create: (data: any) => api.post('vehicles/', data),
     update: (id: number, data: any) => api.put(`vehicles/${id}/`, data),
     delete: (id: number) => api.delete(`vehicles/${id}/`),
     getMaintenance: (id: number) => api.get(`vehicles/${id}/maintenance_history/`),
   },
   drivers: {
-    getAll: () => api.get('driver-profiles/', ALL),
+    getAll: (params?: Record<string, any>) => api.get('driver-profiles/', allWith(params)),
     create: (data: any) => api.post('driver-profiles/', data),
     update: (id: number, data: any) => api.put(`driver-profiles/${id}/`, data),
   },
   routes: {
-    getAll: () => api.get('routes/', ALL),
+    getAll: (params?: Record<string, any>) => api.get('routes/', allWith(params)),
     create: (data: any) => api.post('routes/', data),
     update: (id: number, data: any) => api.put(`routes/${id}/`, data),
     delete: (id: number) => api.delete(`routes/${id}/`),
   },
   pickupPoints: {
-    getAll: () => api.get('pickup-points/', ALL),
+    getAll: (params?: Record<string, any>) => api.get('pickup-points/', allWith(params)),
     create: (data: any) => api.post('pickup-points/', data),
     update: (id: number, data: any) => api.put(`pickup-points/${id}/`, data),
     delete: (id: number) => api.delete(`pickup-points/${id}/`),
   },
   allocations: {
-    getAll: () => api.get('transport-allocations/', ALL),
+    getAll: (params?: Record<string, any>) => api.get('transport-allocations/', allWith(params)),
     create: (data: any) => api.post('transport-allocations/', data),
     update: (id: number, data: any) => api.put(`transport-allocations/${id}/`, data),
     delete: (id: number) => api.delete(`transport-allocations/${id}/`),
   },
   tripLogs: {
-    getAll: () => api.get('trip-logs/', ALL),
+    getAll: (params?: Record<string, any>) => api.get('trip-logs/', allWith(params)),
     create: (data: any) => api.post('trip-logs/', data),
     update: (id: number, data: any) => api.put(`trip-logs/${id}/`, data),
     delete: (id: number) => api.delete(`trip-logs/${id}/`),
@@ -435,19 +435,19 @@ export const transportAPI = {
       api.post(`trip-logs/${tripId}/mark_attendance/`, { student_id: studentId, is_present: isPresent }),
   },
   maintenance: {
-    getAll: () => api.get('vehicle-maintenance/', ALL),
+    getAll: (params?: Record<string, any>) => api.get('vehicle-maintenance/', allWith(params)),
     create: (data: any) => api.post('vehicle-maintenance/', data),
     update: (id: number, data: any) => api.put(`vehicle-maintenance/${id}/`, data),
     delete: (id: number) => api.delete(`vehicle-maintenance/${id}/`),
   },
   fuel: {
-    getAll: () => api.get('fuel-records/', ALL),
+    getAll: (params?: Record<string, any>) => api.get('fuel-records/', allWith(params)),
     create: (data: any) => api.post('fuel-records/', data),
     update: (id: number, data: any) => api.put(`fuel-records/${id}/`, data),
     delete: (id: number) => api.delete(`fuel-records/${id}/`),
   },
   incidents: {
-    getAll: () => api.get('transport-incidents/', ALL),
+    getAll: (params?: Record<string, any>) => api.get('transport-incidents/', allWith(params)),
     create: (data: any) => api.post('transport-incidents/', data),
     update: (id: number, data: any) => api.put(`transport-incidents/${id}/`, data),
     delete: (id: number) => api.delete(`transport-incidents/${id}/`),

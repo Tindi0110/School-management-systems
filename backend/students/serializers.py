@@ -28,6 +28,11 @@ class ParentSerializer(serializers.ModelSerializer):
         model = Parent
         fields = '__all__'
 
+    def validate_phone(self, value):
+        if value and not value.startswith('+'):
+            raise serializers.ValidationError("Phone number must include a country code starting with '+' (e.g., +254XXXXXXXXX)")
+        return value
+
 class StudentAdmissionSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudentAdmission
@@ -120,6 +125,11 @@ class StudentSerializer(serializers.ModelSerializer):
             return round((present_days / total_days) * 100, 1)
         except Exception:
             return 0
+
+    def validate_guardian_phone(self, value):
+        if value and not value.startswith('+'):
+            raise serializers.ValidationError("Guardian phone number must include a country code starting with '+' (e.g., +254XXXXXXXXX)")
+        return value
 
     def get_average_grade(self, obj):
         # Use pre-annotated value if available (avoids per-row DB query)

@@ -4,14 +4,25 @@ export interface Student {
     admission_number: string;
     admission_date: string;
     date_of_birth: string;
-    gender: 'MALE' | 'FEMALE' | 'OTHER';
+    gender: 'MALE' | 'FEMALE' | 'OTHER' | 'M' | 'F'; // Backend sometimes uses short versions
     level?: string;
     stream?: string;
     class_unit?: number;
+    current_class?: number;
+    class_name?: string;
+    class_stream?: string;
     guardian_name?: string;
     guardian_phone?: string;
+    guardian_email?: string;
     photo?: string;
     status: 'ACTIVE' | 'GRADUATED' | 'SUSPENDED' | 'TRANSFERRED' | 'INACTIVE';
+    category?: string;
+    fee_balance?: number;
+    average_grade?: string;
+    attendance_percentage?: number;
+    residence_details?: string;
+    hostel_name?: string;
+    transport_details?: string;
     health_record?: {
         id: number;
         blood_group?: string;
@@ -26,6 +37,7 @@ export interface Parent {
     id: number;
     full_name: string;
     phone: string;
+    phone_number?: string;
     email?: string;
     relationship: string;
     is_primary: boolean;

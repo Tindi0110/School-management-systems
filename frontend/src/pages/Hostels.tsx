@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
-    Plus, Building, Edit, Trash2, Users, Users as UsersIcon, Printer, Package, Wrench, Bed as BedIcon,
-    Layout, Clock, ShieldAlert, Download
+    Plus, Building, Edit, Trash2, Users, Users as UsersIcon, Package, Wrench, Bed as BedIcon,
+    Layout, Clock, ShieldAlert, Search
 } from 'lucide-react';
 import { hostelAPI, studentsAPI, staffAPI } from '../api/api';
 import { exportToCSV } from '../utils/export';
@@ -25,6 +25,12 @@ const Hostels = () => {
     const [students, setStudents] = useState<any[]>([]);
     const [staff, setStaff] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
+
+    // Pagination State
+    const [page, setPage] = useState(1);
+    const [totalItems, setTotalItems] = useState(0);
+    const pageSize = 50;
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { success, error: toastError } = useToast();
     const { confirm } = useConfirm();
@@ -33,7 +39,7 @@ const Hostels = () => {
     // Modal & Form States
     // ID States for Edit
     const [hostelId, setHostelId] = useState<number | null>(null);
-    const [roomId, setRoomId] = useState<number | null>(null);
+
     const [allocationId, setAllocationId] = useState<number | null>(null);
     const [assetId, setAssetId] = useState<number | null>(null);
     const [attendanceId, setAttendanceId] = useState<number | null>(null);
@@ -47,7 +53,7 @@ const Hostels = () => {
 
     // Modal States
     const [isHostelModalOpen, setIsHostelModalOpen] = useState(false);
-    const [isRoomModalOpen, setIsRoomModalOpen] = useState(false);
+
     const [isAllocationModalOpen, setIsAllocationModalOpen] = useState(false);
     const [isAssetModalOpen, setIsAssetModalOpen] = useState(false);
     const [isAttendanceModalOpen, setIsAttendanceModalOpen] = useState(false);
@@ -56,19 +62,19 @@ const Hostels = () => {
 
     // Form Data
     const [hostelFormData, setHostelFormData] = useState({ name: '', gender_allowed: 'M', hostel_type: 'BOARDING', capacity: 100, warden: '' });
-    const [roomFormData, setRoomFormData] = useState({ hostel: '', room_number: '', room_type: 'DORM', floor: 'Ground', capacity: 4 });
+
     const [allocationFormData, setAllocationFormData] = useState({ student: '', hostel: '', room: '', bed: '', status: 'ACTIVE' }); // Added hostel for cascading
     const [isTransferMode, setIsTransferMode] = useState(false); // New State
     const [allocationSort, setAllocationSort] = useState<'HOSTEL' | 'ROOM' | 'STATUS'>('HOSTEL'); // New State
     const [attendanceSort, setAttendanceSort] = useState<'DATE' | 'HOSTEL' | 'SESSION'>('DATE'); // New State
     const [assetFormData, setAssetFormData] = useState<any>({ asset_code: '', asset_type: 'FURNITURE', type: 'FURNITURE', condition: 'GOOD', value: 0, quantity: 1, hostel: '', room: '' });
     const [attendanceFormData, setAttendanceFormData] = useState<any>({ student: '', date: new Date().toISOString().split('T')[0], status: 'PRESENT', session: 'EVENING', remarks: '' });
-    const [assetSort, setAssetSort] = useState({ field: 'asset_code', direction: 'asc' });
+    const [_assetSort, _setAssetSort] = useState({ field: 'asset_code', direction: 'asc' });
     const [disciplineFormData, setDisciplineFormData] = useState({ student: '', offence: '', description: '', date: new Date().toISOString().split('T')[0], action_taken: '', severity: 'MINOR' });
     const [maintenanceFormData, setMaintenanceFormData] = useState({ hostel: '', room: '', issue: '', repair_cost: 0, status: 'PENDING', date: new Date().toISOString().split('T')[0] });
 
     // Filter States for Modals (Strict Cascading)
-    const [filterHostel, setFilterHostel] = useState<string>(''); // Used across modals to drive Room dropdown
+    const [_filterHostel, _setFilterHostel] = useState<string>(''); // Used across modals to drive Room dropdown
 
 
     const [selectedHostel, setSelectedHostel] = useState<any>(null);
@@ -76,38 +82,78 @@ const Hostels = () => {
     const [isViewResidentsModalOpen, setIsViewResidentsModalOpen] = useState(false);
 
     useEffect(() => {
+        setPage(1);
         loadData();
-    }, []);
+    }, [activeTab]);
+
+    useEffect(() => {
+        loadData();
+    }, [page]);
+
+    // Debounced search
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            if (page !== 1) setPage(1);
+            else loadData();
+        }, 500);
+        return () => clearTimeout(handler);
+    }, [searchTerm]);
 
     const loadData = async () => {
+        setLoading(true);
         try {
-            const [
-                hostelsRes, roomsRes, bedsRes, allocationsRes,
-                attendanceRes, disciplineRes, assetsRes,
-                maintenanceRes, studentsRes, staffRes
-            ] = await Promise.all([
-                hostelAPI.hostels.getAll(),
-                hostelAPI.rooms.getAll(),
-                hostelAPI.beds.getAll(),
-                hostelAPI.allocations.getAll(),
-                hostelAPI.attendance.getAll(),
-                hostelAPI.discipline.getAll(),
-                hostelAPI.assets.getAll(),
-                hostelAPI.maintenance.getAll(),
-                studentsAPI.getAll(),
-                staffAPI.getAll(),
-            ]);
-            const d = (r: any) => r?.data?.results ?? r?.data ?? [];
-            setHostels(d(hostelsRes));
-            setRooms(d(roomsRes));
-            setBeds(d(bedsRes));
-            setAllocations(d(allocationsRes));
-            setAttendance(d(attendanceRes));
-            setDiscipline(d(disciplineRes));
-            setAssets(d(assetsRes));
-            setMaintenance(d(maintenanceRes));
-            setStudents(d(studentsRes));
-            setStaff(d(staffRes));
+            const params = { page, page_size: pageSize, search: searchTerm };
+
+            if (activeTab === 'registry') {
+                const res = await hostelAPI.hostels.getAll(params);
+                setHostels(res?.data?.results ?? res?.data ?? []);
+                setTotalItems(res?.data?.count ?? (res?.data?.results ? res.data.results.length : 0));
+            } else if (activeTab === 'allocations') {
+                const res = await hostelAPI.allocations.getAll(params);
+                setAllocations(res?.data?.results ?? res?.data ?? []);
+                setTotalItems(res?.data?.count ?? (res?.data?.results ? res.data.results.length : 0));
+            } else if (activeTab === 'attendance') {
+                const res = await hostelAPI.attendance.getAll(params);
+                setAttendance(res?.data?.results ?? res?.data ?? []);
+                setTotalItems(res?.data?.count ?? (res?.data?.results ? res.data.results.length : 0));
+            } else if (activeTab === 'discipline') {
+                const res = await hostelAPI.discipline.getAll(params);
+                setDiscipline(res?.data?.results ?? res?.data ?? []);
+                setTotalItems(res?.data?.count ?? (res?.data?.results ? res.data.results.length : 0));
+            } else if (activeTab === 'assets') {
+                const res = await hostelAPI.assets.getAll(params);
+                setAssets(res?.data?.results ?? res?.data ?? []);
+                setTotalItems(res?.data?.count ?? (res?.data?.results ? res.data.results.length : 0));
+            } else if (activeTab === 'maintenance') {
+                const res = await hostelAPI.maintenance.getAll(params);
+                setMaintenance(res?.data?.results ?? res?.data ?? []);
+                setTotalItems(res?.data?.count ?? (res?.data?.results ? res.data.results.length : 0));
+            }
+
+            // Always fetch dependent data for dropdowns (usually small enough for 100)
+            if (['allocations', 'assets', 'maintenance'].includes(activeTab)) {
+                if (hostels.length === 0) {
+                    const hRes = await hostelAPI.hostels.getAll({ page_size: 100 });
+                    setHostels(hRes?.data?.results ?? hRes?.data ?? []);
+                }
+                if (rooms.length === 0) {
+                    const rRes = await hostelAPI.rooms.getAll({ page_size: 500 });
+                    setRooms(rRes?.data?.results ?? rRes?.data ?? []);
+                }
+            }
+            if (activeTab === 'allocations' && beds.length === 0) {
+                const bRes = await hostelAPI.beds.getAll({ page_size: 1000 });
+                setBeds(bRes?.data?.results ?? bRes?.data ?? []);
+            }
+            if (students.length === 0) {
+                const sRes = await studentsAPI.getAll({ page_size: 200 }); // Partial list for dropdowns
+                setStudents(sRes?.data?.results ?? sRes?.data ?? []);
+            }
+            if (staff.length === 0) {
+                const stRes = await staffAPI.getAll({ page_size: 200 });
+                setStaff(stRes?.data?.results ?? stRes?.data ?? []);
+            }
+
         } catch (error) {
             console.error('Error loading hostel data:', error);
         } finally {
@@ -233,34 +279,6 @@ const Hostels = () => {
         setIsHostelModalOpen(true);
     };
 
-    const handleRoomSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsSubmitting(true);
-        try {
-            const payload = { ...roomFormData, hostel: Number(roomFormData.hostel), capacity: Number(roomFormData.capacity) };
-            if (roomId) await hostelAPI.rooms.update(roomId, payload);
-            else await hostelAPI.rooms.create(payload);
-            success(roomId ? 'Room updated.' : 'Room added.');
-            loadData(); setIsRoomModalOpen(false); setRoomId(null); setRoomFormData({ hostel: '', room_number: '', room_type: 'DORM', floor: 'Ground', capacity: 4 });
-        } catch (err: any) {
-            toastError(err.message || 'Failed to save room.');
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
-    const openEditRoom = (r: any) => { setRoomId(r.id); setRoomFormData({ ...r, hostel: String(r.hostel) }); setIsRoomModalOpen(true); };
-    const handleDeleteRoom = async (id: number) => {
-        if (!await confirm('Delete this room?', { type: 'danger' })) return;
-        try {
-            await hostelAPI.rooms.delete(id);
-            success('Room deleted');
-            loadData();
-        } catch (err: any) {
-            toastError(err.message || 'Failed to delete room');
-        }
-    };
-
-    // --- New Handlers (Assets, Attendance, Discipline, Maintenance) ---
 
     const handleAssetSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -325,7 +343,6 @@ const Hostels = () => {
             const studentId = parseInt(sId);
             const data = bulkAttendanceData[studentId];
 
-            // Check for existing record to UPSERT
             const existingRecord = attendance.find(a =>
                 a.student === studentId &&
                 a.date === targetDate &&
@@ -458,7 +475,6 @@ const Hostels = () => {
     };
 
 
-    // State for viewing rooms
     const [isViewRoomsModalOpen, setIsViewRoomsModalOpen] = useState(false);
 
     const openViewRooms = (h: any) => {
@@ -468,19 +484,9 @@ const Hostels = () => {
 
     const openViewResidents = (h: any) => {
         setSelectedHostel(h);
-        // Filter allocations for this hostel (and room if specified)
-        let residents = allocations.filter(a => a.hostel_name === h.name && a.status === 'ACTIVE');
-        if (h.roomFilter) {
-            residents = residents.filter(a => a.room === h.roomFilter);
-        }
+        const residents = allocations.filter(a => a.hostel_name === h.name && a.status === 'ACTIVE');
         setViewHostelResidents(residents);
         setIsViewResidentsModalOpen(true);
-    };
-
-    const openAddRoom = (h: any) => {
-        setFilterHostel(h.id.toString());
-        setRoomFormData({ hostel: h.id.toString(), room_number: '', room_type: 'DORM', floor: 'Ground', capacity: 4 });
-        setIsRoomModalOpen(true);
     };
 
     const stats = {
@@ -491,16 +497,26 @@ const Hostels = () => {
     };
 
 
-
     if (loading) return <div className="spinner-container"><div className="spinner"></div></div>;
 
     return (
         <div className="fade-in">
-            {/* Header section with Stats Bar */}
             <div className="flex justify-between items-end mb-6">
                 <div>
                     <h1>Boarding & Hostel Management</h1>
                     <p className="text-secondary text-sm">Institutional residence logistics, safety, and inventory</p>
+                </div>
+                <div className="flex-grow max-w-md mx-6 no-print">
+                    <div className="search-container">
+                        <Search className="search-icon" size={16} />
+                        <input
+                            type="text"
+                            className="input search-input text-xs"
+                            placeholder="Search residents, assets, or attendance..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
                 </div>
                 <div className="flex gap-2 no-print">
                     <Button size="sm" onClick={() => setIsAllocationModalOpen(true)} icon={<Plus size={16} />}>New Admission</Button>
@@ -508,33 +524,12 @@ const Hostels = () => {
             </div>
 
             <div className="grid grid-cols-2 gap-md mb-8">
-                <StatCard
-                    title="Hostels"
-                    value={stats.totalHostels}
-                    icon={<Building />}
-                    gradient="linear-gradient(135deg, #0f172a, #1e293b)"
-                />
-                <StatCard
-                    title="Residents"
-                    value={stats.totalResidents}
-                    icon={<UsersIcon />}
-                    gradient="linear-gradient(135deg, #10b981, #059669)"
-                />
-                <StatCard
-                    title="Occupancy"
-                    value={`${Math.round((stats.totalResidents / (stats.totalCapacity || 1)) * 100)}%`}
-                    icon={<Layout />}
-                    gradient="linear-gradient(135deg, #f59e0b, #d97706)"
-                />
-                <StatCard
-                    title="Maintenance"
-                    value={stats.maintenanceIssues}
-                    icon={<Wrench />}
-                    gradient="linear-gradient(135deg, #ef4444, #dc2626)"
-                />
+                <StatCard title="Hostels" value={stats.totalHostels} icon={<Building />} gradient="linear-gradient(135deg, #0f172a, #1e293b)" />
+                <StatCard title="Residents" value={stats.totalResidents} icon={<UsersIcon />} gradient="linear-gradient(135deg, #10b981, #059669)" />
+                <StatCard title="Occupancy" value={`${Math.round((stats.totalResidents / (stats.totalCapacity || 1)) * 100)}%`} icon={<Layout />} gradient="linear-gradient(135deg, #f59e0b, #d97706)" />
+                <StatCard title="Maintenance" value={stats.maintenanceIssues} icon={<Wrench />} gradient="linear-gradient(135deg, #ef4444, #dc2626)" />
             </div>
 
-            {/* Tabs */}
             <div className="nav-tab-container mb-6 no-print">
                 <button className={`nav-tab ${activeTab === 'registry' ? 'active' : ''}`} onClick={() => setActiveTab('registry')}><Building size={16} /> Registry</button>
                 <button className={`nav-tab ${activeTab === 'allocations' ? 'active' : ''}`} onClick={() => setActiveTab('allocations')}><Users size={16} /> Allocations</button>
@@ -544,317 +539,254 @@ const Hostels = () => {
                 <button className={`nav-tab ${activeTab === 'maintenance' ? 'active' : ''}`} onClick={() => setActiveTab('maintenance')}><Wrench size={16} /> Maintenance</button>
             </div>
 
-            {/* Tab Content */}
             {activeTab === 'registry' && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-lg">
-                    {hostels.map(h => (
-                        <div key={h.id} className="card border-top-4 border-primary hover-scale">
-                            <div className="flex justify-between items-start mb-4">
-                                <div><h3 className="mb-0">{h.name}</h3><span className={`badge ${h.gender_allowed === 'M' ? 'badge-primary' : 'badge-error'}`}>{h.gender_allowed === 'M' ? 'BOYS' : 'GIRLS'}</span></div>
-                                <Building className="text-secondary opacity-20" size={40} />
-                            </div>
-                            <div className="space-y-3 text-sm">
-                                <div className="flex justify-between">
-                                    <span className="text-secondary">Warden:</span>
-                                    <span className="font-semibold text-primary">
-                                        {staff.find(s => s.id === h.warden)?.full_name || h.warden_name || 'Not Assigned'}
-                                    </span>
+                <div className="fade-in">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-lg">
+                        {hostels.map(h => (
+                            <div key={h.id} className="card border-top-4 border-primary hover-scale">
+                                <div className="flex justify-between items-start mb-4">
+                                    <div><h3 className="mb-0">{h.name}</h3><span className={`badge ${h.gender_allowed === 'M' ? 'badge-primary' : 'badge-error'}`}>{h.gender_allowed === 'M' ? 'BOYS' : 'GIRLS'}</span></div>
+                                    <Building className="text-secondary opacity-20" size={40} />
                                 </div>
-                                <div className="flex justify-between"><span className="text-secondary">Type:</span><span className="font-semibold">{h.hostel_type}</span></div>
-                                <div className="flex justify-between"><span className="text-secondary">Rooms:</span><span className="font-semibold">{rooms.filter(r => r.hostel === h.id).length} Units</span></div>
-                                <div className="w-full bg-secondary-light rounded-full h-2 mt-4 overflow-hidden">
-                                    <div className="progress-fill bg-primary" style={{ width: `${h.occupancy_rate || 0}%` }}></div>
+                                <div className="space-y-3 text-sm">
+                                    <div className="flex justify-between"><span className="text-secondary">Warden:</span><span className="font-semibold text-primary">{staff.find(s => s.id === h.warden)?.full_name || h.warden_name || 'Not Assigned'}</span></div>
+                                    <div className="flex justify-between"><span className="text-secondary">Type:</span><span className="font-semibold">{h.hostel_type}</span></div>
+                                    <div className="flex justify-between"><span className="text-secondary">Rooms:</span><span className="font-semibold">{rooms.filter(r => r.hostel === h.id).length} Units</span></div>
+                                    <div className="w-full bg-secondary-light rounded-full h-2 mt-4 overflow-hidden">
+                                        <div className="progress-fill bg-primary" style={{ width: `${h.occupancy_rate || 0}%` }}></div>
+                                    </div>
+                                    <p className="text-right text-xs font-bold text-primary mt-1">{h.occupancy_rate || 0}% Occupied</p>
                                 </div>
-
-                                <p className="text-right text-xs font-bold text-primary mt-1">{h.occupancy_rate || 0}% Occupied</p>
+                                <div className="flex gap-2 mt-6 pt-4 border-top">
+                                    <button className="btn btn-sm btn-outline flex-1 gap-1" onClick={() => openViewRooms(h)}><BedIcon size={14} /> Rooms</button>
+                                    <button className="btn btn-sm btn-outline flex-1 gap-2" onClick={() => handleEditHostel(h)}><Edit size={14} /> Edit</button>
+                                    <button className="btn btn-sm btn-outline flex-1 gap-2" onClick={() => openViewResidents(h)}><Users size={14} /> Users</button>
+                                    <button className="btn btn-sm btn-outline text-error" onClick={(e) => { e.stopPropagation(); handleDeleteHostel(h.id); }}><Trash2 size={14} /></button>
+                                </div>
                             </div>
-                            <div className="flex gap-2 mt-6 pt-4 border-top">
-                                <button className="btn btn-sm btn-outline flex-1 gap-1" onClick={() => openViewRooms(h)} title="View Rooms"><BedIcon size={14} /> Rooms</button>
-                                <button className="btn btn-sm btn-outline flex-1 gap-2" onClick={() => handleEditHostel(h)} title="Edit Details"><Edit size={14} /> Edit</button>
-                                <button className="btn btn-sm btn-outline flex-1 gap-2" onClick={() => openViewResidents(h)} title="View Residents"><Users size={14} /> Users</button>
-                                <button className="btn btn-sm btn-outline text-error" onClick={(e) => { e.stopPropagation(); handleDeleteHostel(h.id); }} title="Delete Hostel"><Trash2 size={14} /></button>
-
-                            </div>
+                        ))}
+                        <div className="card flex flex-col items-center justify-center border-dashed border-2 text-secondary cursor-pointer hover-bg-secondary" onClick={() => setIsHostelModalOpen(true)}>
+                            <Plus size={32} className="mb-2" />
+                            <p className="font-bold">Add New Hostel</p>
                         </div>
-                    ))}
-                    <div className="card flex flex-col items-center justify-center border-dashed border-2 text-secondary cursor-pointer hover-bg-secondary" onClick={() => setIsHostelModalOpen(true)}>
-                        <Plus size={32} className="mb-2" />
-                        <p className="font-bold">Add New Hostel</p>
+                    </div>
+                    <div className="flex justify-between items-center mt-6 bg-slate-50 p-4 rounded-xl border border-slate-100 no-print">
+                        <div className="text-[10px] font-black text-secondary uppercase tracking-widest">
+                            Showing {Math.min((page - 1) * pageSize + 1, totalItems)} - {Math.min(page * pageSize, totalItems)} of {totalItems} Hostels
+                        </div>
+                        <div className="flex gap-2">
+                            <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(page - 1)} className="font-black text-[10px] uppercase">Previous</Button>
+                            <Button variant="primary" size="sm" disabled={page * pageSize >= totalItems} onClick={() => setPage(page + 1)} className="font-black text-[10px] uppercase">Next Page</Button>
+                        </div>
                     </div>
                 </div>
             )}
 
-            {/* Allocations Tab */}
             {activeTab === 'allocations' && (
                 <div className="table-wrapper fade-in">
                     <div className="flex justify-between items-center mb-4">
                         <h3>Student Allocations</h3>
                         <div className="flex gap-2 items-center">
-                            <span className="text-xs text-secondary font-bold whitespace-nowrap">Sort By:</span>
-                            <select
-                                className="select select-sm bg-white min-w-[120px]"
-                                value={allocationSort}
-                                onChange={(e) => setAllocationSort(e.target.value as any)}
-                            >
+                            <select className="select select-sm bg-white min-w-[120px]" value={allocationSort} onChange={(e) => setAllocationSort(e.target.value as any)}>
                                 <option value="HOSTEL">Hostel</option>
                                 <option value="ROOM">Room</option>
                                 <option value="STATUS">Status</option>
                             </select>
-                            <div className="flex gap-2 ml-4">
-                                <button className="btn btn-outline btn-sm" onClick={() => exportToCSV(allocations.map(a => ({
-                                    Student: students.find(s => s.id === a.student)?.full_name,
-                                    Hostel: hostels.find(h => h.id === rooms.find(r => r.id === a.room)?.hostel)?.name,
-                                    Room: rooms.find(r => r.id === a.room)?.room_number,
-                                    Bed: beds.find(b => b.id === a.bed)?.bed_number,
-                                    Status: a.status
-                                })), 'allocations_report')}><UsersIcon size={14} /> CSV</button>
-                                <button className="btn btn-outline btn-sm" onClick={() => window.print()}><Printer size={14} /> Print</button>
-                            </div>
+                            <button className="btn btn-outline btn-sm" onClick={() => exportToCSV(allocations, 'allocations')}><UsersIcon size={14} /> CSV</button>
                             <button className="btn btn-primary btn-sm ml-2" onClick={() => { setAllocationId(null); setIsTransferMode(false); setIsAllocationModalOpen(true); }}><Plus size={14} /> Assign Student</button>
                         </div>
                     </div>
                     <table className="table">
                         <thead><tr><th>Student</th><th>Hostel</th><th>Room</th><th>Bed</th><th>Status</th><th>Actions</th></tr></thead>
                         <tbody>
-                            {allocations
-                                .sort((a, b) => {
-                                    if (allocationSort === 'HOSTEL') return (a.hostel_name || '').localeCompare(b.hostel_name || '');
-                                    if (allocationSort === 'ROOM') return (a.room_number || '').localeCompare(b.room_number || '');
-                                    return (a.status || '').localeCompare(b.status || '');
-                                })
-                                .map(a => (
-                                    <tr key={a.id}>
-                                        <td className="font-bold">{a.student_name || students.find(s => s.id === a.student)?.full_name}</td>
-                                        <td>{a.hostel_name || 'N/A'}</td>
-                                        <td>{a.room_number || 'N/A'}</td>
-                                        <td>{a.bed_number || 'N/A'}</td>
-                                        <td><span className={`badge ${a.status === 'ACTIVE' ? 'badge-success' : 'badge-ghost'}`}>{a.status}</span></td>
-                                        <td>
-                                            <div className="flex gap-2">
-                                                <button className="btn btn-sm btn-outline text-info" onClick={() => openTransferModal(a)} title="Transfer Room">Transfer</button>
-                                                <button className="btn btn-sm btn-ghost text-primary" onClick={() => handleEditAllocation(a)}><Edit size={14} /></button>
-                                                <button className="btn btn-sm btn-ghost text-error" onClick={() => handleDeleteAllocation(a.id)}><Trash2 size={14} /></button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
+                            {allocations.map(a => (
+                                <tr key={a.id}>
+                                    <td className="font-bold">{a.student_name || students.find(s => s.id === a.student)?.full_name}</td>
+                                    <td>{a.hostel_name || 'N/A'}</td>
+                                    <td>{a.room_number || 'N/A'}</td>
+                                    <td>{a.bed_number || 'N/A'}</td>
+                                    <td><span className={`badge ${a.status === 'ACTIVE' ? 'badge-success' : 'badge-ghost'}`}>{a.status}</span></td>
+                                    <td>
+                                        <div className="flex gap-2">
+                                            <button className="btn btn-sm btn-outline text-info" onClick={() => openTransferModal(a)}>Transfer</button>
+                                            <button className="btn btn-sm btn-ghost text-primary" onClick={() => handleEditAllocation(a)}><Edit size={14} /></button>
+                                            <button className="btn btn-sm btn-ghost text-error" onClick={() => handleDeleteAllocation(a.id)}><Trash2 size={14} /></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
                         </tbody>
                     </table>
+                    <div className="flex justify-between items-center mt-6 bg-slate-50 p-4 rounded-xl border border-slate-100 no-print">
+                        <div className="text-[10px] font-black text-secondary uppercase tracking-widest">
+                            Showing {Math.min((page - 1) * pageSize + 1, totalItems)} - {Math.min(page * pageSize, totalItems)} of {totalItems} Allocations
+                        </div>
+                        <div className="flex gap-2">
+                            <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(page - 1)} className="font-black text-[10px] uppercase">Previous</Button>
+                            <Button variant="primary" size="sm" disabled={page * pageSize >= totalItems} onClick={() => setPage(page + 1)} className="font-black text-[10px] uppercase">Next Page</Button>
+                        </div>
+                    </div>
                 </div>
-            )
-            }
+            )}
 
-            {/* Assets Tab */}
-            {
-                activeTab === 'assets' && (
-                    <div className="table-wrapper fade-in">
-                        <div className="flex justify-between items-center mb-4 no-print">
-                            <div className="flex items-center gap-4">
-                                <h3>Hostel Assets</h3>
-                                <div className="flex gap-2">
-                                    <select
-                                        className="select select-xs select-bordered"
-                                        value={assetSort.field}
-                                        onChange={(e) => setAssetSort({ ...assetSort, field: e.target.value })}
-                                    >
-                                        <option value="asset_code">Sort by Code</option>
-                                        <option value="asset_type">Sort by Type</option>
-                                        <option value="condition">Sort by Condition</option>
-                                    </select>
-                                    <select
-                                        className="select select-sm bg-white min-w-[160px]"
-                                        value={assetSort.direction}
-                                        onChange={(e) => setAssetSort({ ...assetSort, direction: e.target.value as 'asc' | 'desc' })}
-                                    >
-                                        <option value="desc">Descending (High to Low)</option>
-                                        <option value="asc">Ascending (Low to High)</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div className="flex gap-2">
-                                <button className="btn btn-outline btn-sm" onClick={() => exportToCSV(assets, 'hostel_assets')}><UsersIcon size={14} /> CSV</button>
-                                <button className="btn btn-outline btn-sm" onClick={() => window.print()}><Printer size={14} /> Print</button>
-                                <button className="btn btn-primary btn-sm" onClick={() => { setAssetId(null); setIsAssetModalOpen(true); }}><Plus size={14} /> Add Asset</button>
-                            </div>
+            {activeTab === 'attendance' && (
+                <div className="table-wrapper fade-in">
+                    <div className="flex justify-between items-center mb-4 no-print">
+                        <h3>Hostel Attendance</h3>
+                        <div className="flex gap-2 items-center">
+                            <select className="select select-sm bg-white min-w-[140px]" value={attendanceSort} onChange={(e) => setAttendanceSort(e.target.value as any)}>
+                                <option value="DATE">Date</option>
+                                <option value="HOSTEL">Hostel</option>
+                                <option value="SESSION">Session</option>
+                            </select>
+                            <button className="btn btn-primary btn-sm" onClick={() => { setAttendanceId(null); setIsAttendanceModalOpen(true); }}><Plus size={14} /> Log Attendance</button>
                         </div>
-                        <table className="table">
-                            <thead><tr><th>Name</th><th>Type</th><th>Condition</th><th>Hostel</th><th>Value</th><th>Actions</th></tr></thead>
-                            <tbody>
-                                {assets.length === 0 && <tr><td colSpan={6} className="text-center italic">No assets recorded.</td></tr>}
-                                {[...assets].sort((a, b) => {
-                                    const valA = String(a[assetSort.field] || '');
-                                    const valB = String(b[assetSort.field] || '');
-                                    return assetSort.direction === 'asc'
-                                        ? valA.localeCompare(valB)
-                                        : valB.localeCompare(valA);
-                                }).map(a => (
-                                    <tr key={a.id}>
-                                        <td className="font-bold">{a.asset_code}</td>
-                                        <td><span className="badge badge-info">{a.asset_type}</span></td>
-                                        <td>{a.condition}</td>
-                                        <td>{hostels.find(h => h.id === a.hostel)?.name || (a.room ? hostels.find(h => h.id === rooms.find(r => r.id === a.room)?.hostel)?.name : 'General')}</td>
-                                        <td>{a.value?.toLocaleString()}</td>
-                                        <td>
-                                            <div className="flex gap-2">
-                                                <button className="btn btn-sm btn-ghost text-primary" onClick={() => handleEditAsset(a)}><Edit size={14} /></button>
-                                                <button className="btn btn-sm btn-ghost text-error" onClick={() => handleDeleteAsset(a.id)}><Trash2 size={14} /></button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
                     </div>
-                )
-            }
-
-            {/* Attendance Tab */}
-            {
-                activeTab === 'attendance' && (
-                    <div className="table-wrapper fade-in">
-                        <div className="flex justify-between items-center mb-4 no-print">
-                            <h3>Hostel Attendance</h3>
-
-                            <div className="flex gap-2 items-center">
-                                <div className="flex gap-2">
-                                    <select
-                                        className="select select-sm bg-white min-w-[140px]"
-                                        value={attendanceSort}
-                                        onChange={(e) => setAttendanceSort(e.target.value as any)}
-                                    >
-                                        <option value="DATE">Sort by Date</option>
-                                        <option value="HOSTEL">Sort by Hostel</option>
-                                        <option value="SESSION">Sort by Session</option>
-                                    </select>
-                                </div>
-
-                                <button className="btn btn-outline btn-sm" onClick={() => exportToCSV(attendance.map(a => ({
-                                    Date: a.date,
-                                    Session: a.session || 'N/A',
-                                    Student: students.find(s => s.id === a.student)?.full_name,
-                                    Hostel: hostels.find(h => h.id === rooms.find(r => r.id === allocations.find(al => al.student === a.student && al.status === 'ACTIVE')?.room)?.hostel)?.name || 'N/A',
-                                    Status: a.status,
-                                    Remarks: a.remarks
-                                })), 'attendance_report')}><UsersIcon size={14} /> CSV</button>
-                                <button className="btn btn-primary btn-sm" onClick={() => { setAttendanceId(null); setIsAttendanceModalOpen(true); }}><Plus size={14} /> Log Attendance</button>
-                            </div>
+                    <table className="table">
+                        <thead><tr><th>Date</th><th>Session</th><th>Student</th><th>Hostel</th><th>Status</th><th>Remarks</th><th>Actions</th></tr></thead>
+                        <tbody>
+                            {attendance.map(a => (
+                                <tr key={a.id}>
+                                    <td>{a.date}</td>
+                                    <td><span className="badge badge-ghost text-xs">{a.session || 'N/A'}</span></td>
+                                    <td className="font-bold">{a.student_name || students.find(s => s.id === a.student)?.full_name}</td>
+                                    <td className="text-sm text-secondary">{a.hostel_name || 'N/A'}</td>
+                                    <td><span className={`badge ${a.status === 'PRESENT' ? 'badge-success' : a.status === 'ABSENT' ? 'badge-error' : 'badge-info'}`}>{a.status}</span></td>
+                                    <td>{a.remarks}</td>
+                                    <td>
+                                        <div className="flex gap-2">
+                                            <button className="btn btn-sm btn-ghost text-primary" onClick={() => handleEditAttendance(a)}><Edit size={14} /></button>
+                                            <button className="btn btn-sm btn-ghost text-error" onClick={() => handleDeleteAttendance(a.id)}><Trash2 size={14} /></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                    <div className="flex justify-between items-center mt-6 bg-slate-50 p-4 rounded-xl border border-slate-100 no-print">
+                        <div className="text-[10px] font-black text-secondary uppercase tracking-widest">
+                            Showing {Math.min((page - 1) * pageSize + 1, totalItems)} - {Math.min(page * pageSize, totalItems)} of {totalItems} Records
                         </div>
-                        <table className="table">
-                            <thead><tr><th>Date</th><th>Session</th><th>Student</th><th>Hostel</th><th>Status</th><th>Remarks</th><th>Actions</th></tr></thead>
-                            <tbody>
-                                {attendance
-                                    .sort((a, b) => {
-                                        if (attendanceSort === 'HOSTEL') return (a.hostel_name || '').localeCompare(b.hostel_name || '');
-                                        if (attendanceSort === 'SESSION') return (a.session || '').localeCompare(b.session || '');
-                                        // Default Date Sort
-                                        return new Date(b.date).getTime() - new Date(a.date).getTime();
-                                    })
-                                    .map(a => (
-                                        <tr key={a.id}>
-                                            <td>{a.date}</td>
-                                            <td><span className="badge badge-ghost text-xs">{a.session || 'N/A'}</span></td>
-                                            <td className="font-bold">{a.student_name || students.find(s => s.id === a.student)?.full_name}</td>
-                                            <td className="text-sm text-secondary">{a.hostel_name || 'N/A'}</td>
-                                            <td><span className={`badge ${a.status === 'PRESENT' ? 'badge-success' : a.status === 'ABSENT' ? 'badge-error' : 'badge-info'}`}>{a.status}</span></td>
-                                            <td>{a.remarks}</td>
-                                            <td className="no-print">
-                                                <div className="flex gap-2">
-                                                    <button className="btn btn-sm btn-ghost text-primary" onClick={() => handleEditAttendance(a)}><Edit size={14} /></button>
-                                                    <button className="btn btn-sm btn-ghost text-error" onClick={() => handleDeleteAttendance(a.id)}><Trash2 size={14} /></button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                )
-            }
-
-            {/* Discipline Tab */}
-            {
-                activeTab === 'discipline' && (
-                    <div className="table-wrapper fade-in">
-                        <div className="flex justify-between items-center mb-4 no-print">
-                            <h3>Discipline Records</h3>
-                            <div className="flex gap-2">
-                                <button className="btn btn-outline btn-sm" onClick={() => exportToCSV(discipline.map(d => ({
-                                    Date: d.date,
-                                    Student: students.find(s => s.id === d.student)?.full_name,
-                                    Hostel: hostels.find(h => h.id === rooms.find(r => r.id === allocations.find(al => al.student === d.student && al.status === 'ACTIVE')?.room)?.hostel)?.name || 'N/A',
-                                    Infraction: d.infraction,
-                                    Severity: d.severity,
-                                    Action: d.action_taken
-                                })), 'discipline_report')}><UsersIcon size={14} /> CSV</button>
-                                <button className="btn btn-outline btn-sm" onClick={() => window.print()}><Printer size={14} /> Print</button>
-                                <button className="btn btn-error btn-sm text-white" onClick={() => { setDisciplineId(null); setIsDisciplineModalOpen(true); }}><ShieldAlert size={14} /> Report Incident</button>
-                            </div>
+                        <div className="flex gap-2">
+                            <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(page - 1)} className="font-black text-[10px] uppercase">Previous</Button>
+                            <Button variant="primary" size="sm" disabled={page * pageSize >= totalItems} onClick={() => setPage(page + 1)} className="font-black text-[10px] uppercase">Next Page</Button>
                         </div>
-                        <table className="table">
-                            <thead><tr><th>Date</th><th>Student</th><th>Infraction</th><th>Severity</th><th>Action Taken</th><th>Actions</th></tr></thead>
-                            <tbody>
-                                {discipline.length === 0 && <tr><td colSpan={6} className="text-center italic">No discipline records.</td></tr>}
-                                {discipline.map(d => (
-                                    <tr key={d.id}>
-                                        <td>{d.date || d.incident_date}</td>
-                                        <td className="font-bold">{students.find(s => s.id === d.student)?.full_name}</td>
-                                        <td>{d.offence}</td>
-                                        <td><span className={`badge ${d.severity === 'MAJOR' ? 'badge-error' : 'badge-warning'}`}>{d.severity}</span></td>
-                                        <td>{d.action_taken}</td>
-                                        <td>
-                                            <div className="flex gap-2">
-                                                <button className="btn btn-sm btn-ghost text-primary" onClick={() => handleEditDiscipline(d)}><Edit size={14} /></button>
-                                                <button className="btn btn-sm btn-ghost text-error" onClick={() => handleDeleteDiscipline(d.id)}><Trash2 size={14} /></button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
                     </div>
-                )
-            }
+                </div>
+            )}
 
-            {/* Maintenance Tab */}
-            {
-                activeTab === 'maintenance' && (
-                    <div className="table-wrapper fade-in">
-                        <div className="flex justify-between items-center mb-4 no-print">
-                            <h3>Hostel Maintenance</h3>
-                            <div className="flex gap-2">
-                                <button className="btn btn-outline btn-sm" onClick={() => exportToCSV(assets, 'hostel_assets')}><UsersIcon size={14} /> CSV</button>
-                                <button className="btn btn-outline btn-sm" onClick={() => window.print()}><Printer size={14} /> Print</button>
-                                <button className="btn btn-primary btn-sm" onClick={() => { setMaintenanceId(null); setIsMaintenanceModalOpen(true); }}><Wrench size={14} /> Log Request</button>
-                            </div>
+            {activeTab === 'discipline' && (
+                <div className="table-wrapper fade-in">
+                    <div className="flex justify-between items-center mb-4 no-print">
+                        <h3>Discipline Records</h3>
+                        <button className="btn btn-error btn-sm text-white" onClick={() => { setDisciplineId(null); setIsDisciplineModalOpen(true); }}><ShieldAlert size={14} /> Report Incident</button>
+                    </div>
+                    <table className="table">
+                        <thead><tr><th>Date</th><th>Student</th><th>Infraction</th><th>Severity</th><th>Action Taken</th><th>Actions</th></tr></thead>
+                        <tbody>
+                            {discipline.map(d => (
+                                <tr key={d.id}>
+                                    <td>{d.date || d.incident_date}</td>
+                                    <td className="font-bold">{students.find(s => s.id === d.student)?.full_name}</td>
+                                    <td>{d.offence}</td>
+                                    <td><span className={`badge ${d.severity === 'MAJOR' ? 'badge-error' : 'badge-warning'}`}>{d.severity}</span></td>
+                                    <td>{d.action_taken}</td>
+                                    <td>
+                                        <div className="flex gap-2">
+                                            <button className="btn btn-sm btn-ghost text-primary" onClick={() => handleEditDiscipline(d)}><Edit size={14} /></button>
+                                            <button className="btn btn-sm btn-ghost text-error" onClick={() => handleDeleteDiscipline(d.id)}><Trash2 size={14} /></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                    <div className="flex justify-between items-center mt-6 bg-slate-50 p-4 rounded-xl border border-slate-100 no-print">
+                        <div className="text-[10px] font-black text-secondary uppercase tracking-widest">
+                            Showing {Math.min((page - 1) * pageSize + 1, totalItems)} - {Math.min(page * pageSize, totalItems)} of {totalItems} Incidents
                         </div>
-                        <table className="table">
-                            <thead><tr><th>Date</th><th>Hostel</th><th>Description</th><th>Cost</th><th>Status</th><th>Actions</th></tr></thead>
-                            <tbody>
-                                {maintenance.length === 0 && <tr><td colSpan={6} className="text-center italic">No maintenance requests.</td></tr>}
-                                {maintenance.map(m => (
-                                    <tr key={m.id}>
-                                        <td>{m.date_reported || m.date}</td>
-                                        <td className="font-bold">{hostels.find(h => String(h.id) === String(m.hostel))?.name || 'N/A'}</td>
-                                        <td>{m.issue}</td>
-                                        <td>{m.repair_cost?.toLocaleString()}</td>
-                                        <td><span className={`badge ${m.status === 'COMPLETED' ? 'badge-success' : 'badge-warning'}`}>{m.status}</span></td>
-                                        <td>
-                                            <div className="flex gap-2">
-                                                <button className="btn btn-sm btn-ghost text-primary" onClick={() => handleEditMaintenance(m)}><Edit size={14} /></button>
-                                                <button className="btn btn-sm btn-ghost text-error" onClick={() => handleDeleteMaintenance(m.id)}><Trash2 size={14} /></button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                        <div className="flex gap-2">
+                            <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(page - 1)} className="font-black text-[10px] uppercase">Previous</Button>
+                            <Button variant="primary" size="sm" disabled={page * pageSize >= totalItems} onClick={() => setPage(page + 1)} className="font-black text-[10px] uppercase">Next Page</Button>
+                        </div>
                     </div>
-                )
-            }
+                </div>
+            )}
 
-            {/* Modals */}
-            {/* Modals */}
+            {activeTab === 'assets' && (
+                <div className="table-wrapper fade-in">
+                    <div className="flex justify-between items-center mb-4 no-print">
+                        <h3>Hostel Assets</h3>
+                        <button className="btn btn-primary btn-sm" onClick={() => { setAssetId(null); setIsAssetModalOpen(true); }}><Plus size={14} /> Add Asset</button>
+                    </div>
+                    <table className="table">
+                        <thead><tr><th>Name</th><th>Type</th><th>Condition</th><th>Value</th><th>Actions</th></tr></thead>
+                        <tbody>
+                            {assets.map(a => (
+                                <tr key={a.id}>
+                                    <td className="font-bold">{a.asset_code}</td>
+                                    <td><span className="badge badge-info">{a.asset_type}</span></td>
+                                    <td>{a.condition}</td>
+                                    <td>{a.value?.toLocaleString()}</td>
+                                    <td>
+                                        <div className="flex gap-2">
+                                            <button className="btn btn-sm btn-ghost text-primary" onClick={() => handleEditAsset(a)}><Edit size={14} /></button>
+                                            <button className="btn btn-sm btn-ghost text-error" onClick={() => handleDeleteAsset(a.id)}><Trash2 size={14} /></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                    <div className="flex justify-between items-center mt-6 bg-slate-50 p-4 rounded-xl border border-slate-100 no-print">
+                        <div className="text-[10px] font-black text-secondary uppercase tracking-widest">
+                            Showing {Math.min((page - 1) * pageSize + 1, totalItems)} - {Math.min(page * pageSize, totalItems)} of {totalItems} Assets
+                        </div>
+                        <div className="flex gap-2">
+                            <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(page - 1)} className="font-black text-[10px] uppercase">Previous</Button>
+                            <Button variant="primary" size="sm" disabled={page * pageSize >= totalItems} onClick={() => setPage(page + 1)} className="font-black text-[10px] uppercase">Next Page</Button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {activeTab === 'maintenance' && (
+                <div className="table-wrapper fade-in">
+                    <div className="flex justify-between items-center mb-4 no-print">
+                        <h3>Hostel Maintenance</h3>
+                        <button className="btn btn-primary btn-sm" onClick={() => { setMaintenanceId(null); setIsMaintenanceModalOpen(true); }}><Wrench size={14} /> Log Request</button>
+                    </div>
+                    <table className="table">
+                        <thead><tr><th>Date</th><th>Hostel</th><th>Description</th><th>Status</th><th>Actions</th></tr></thead>
+                        <tbody>
+                            {maintenance.map(m => (
+                                <tr key={m.id}>
+                                    <td>{m.date_reported || m.date}</td>
+                                    <td className="font-bold">{hostels.find(h => String(h.id) === String(m.hostel))?.name || 'N/A'}</td>
+                                    <td>{m.issue}</td>
+                                    <td><span className={`badge ${m.status === 'COMPLETED' ? 'badge-success' : 'badge-warning'}`}>{m.status}</span></td>
+                                    <td>
+                                        <div className="flex gap-2">
+                                            <button className="btn btn-sm btn-ghost text-primary" onClick={() => handleEditMaintenance(m)}><Edit size={14} /></button>
+                                            <button className="btn btn-sm btn-ghost text-error" onClick={() => handleDeleteMaintenance(m.id)}><Trash2 size={14} /></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                    <div className="flex justify-between items-center mt-6 bg-slate-50 p-4 rounded-xl border border-slate-100 no-print">
+                        <div className="text-[10px] font-black text-secondary uppercase tracking-widest">
+                            Showing {Math.min((page - 1) * pageSize + 1, totalItems)} - {Math.min(page * pageSize, totalItems)} of {totalItems} Requests
+                        </div>
+                        <div className="flex gap-2">
+                            <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(page - 1)} className="font-black text-[10px] uppercase">Previous</Button>
+                            <Button variant="primary" size="sm" disabled={page * pageSize >= totalItems} onClick={() => setPage(page + 1)} className="font-black text-[10px] uppercase">Next Page</Button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <Modal isOpen={isHostelModalOpen} onClose={() => setIsHostelModalOpen(false)} title={hostelId ? "Edit Hostel" : "Add New Hostel"}>
                 <form onSubmit={handleHostelSubmit} className="space-y-4 form-container-md mx-auto">
                     <div className="form-group"><label className="label">Name</label><input type="text" className="input" value={hostelFormData.name} onChange={e => setHostelFormData({ ...hostelFormData, name: e.target.value })} required /></div>
@@ -868,486 +800,129 @@ const Hostels = () => {
                             <label className="label">Warden In-Charge</label>
                             <select className="select" value={hostelFormData.warden} onChange={(e) => setHostelFormData({ ...hostelFormData, warden: e.target.value })}>
                                 <option value="">Select Warden...</option>
-                                {staff.filter(s => s.role === 'WARDEN').map(s => (
-                                    <option key={s.id} value={s.id}>{s.full_name} ({s.employee_id})</option>
-                                ))}
+                                {staff.filter(s => s.role === 'WARDEN').map(s => <option key={s.id} value={s.id}>{s.full_name}</option>)}
                             </select>
                         </div>
                     </div>
-                    <div className="modal-footer">
-                        <Button
-                            type="submit"
-                            className="w-full"
-                            loading={isSubmitting}
-                            loadingText={hostelId ? "Updating..." : "Creating..."}
-                        >
-                            {hostelId ? "Update Hostel" : "Create Hostel"}
-                        </Button>
-                    </div>
+                    <div className="modal-footer"><Button type="submit" className="w-full" loading={isSubmitting}>{hostelId ? "Update Hostel" : "Create Hostel"}</Button></div>
                 </form>
             </Modal>
 
-            <Modal isOpen={isRoomModalOpen} onClose={() => setIsRoomModalOpen(false)} title={roomId ? "Edit Room" : "Add New Room"}>
-                <form onSubmit={handleRoomSubmit} className="space-y-4 form-container-md mx-auto">
-                    <div className="form-group"><label className="label">Hostel</label>
-                        <select className="select" value={roomFormData.hostel} onChange={e => setRoomFormData({ ...roomFormData, hostel: e.target.value })} required>
+            <Modal isOpen={isAllocationModalOpen} onClose={() => setIsAllocationModalOpen(false)} title={isTransferMode ? "Transfer Student" : allocationId ? "Edit Allocation" : "New Admission"}>
+                <form onSubmit={handleAllocationSubmit} className="space-y-4 form-container-md mx-auto">
+                    {!isTransferMode && <SearchableSelect label="Student" options={students.map(s => ({ id: String(s.id), label: s.full_name, subLabel: s.admission_number }))} value={String(allocationFormData.student ?? '')} onChange={(val) => setAllocationFormData({ ...allocationFormData, student: val as string })} required />}
+                    {isTransferMode && <div className="bg-primary-light p-3 rounded mb-4 text-primary font-bold">Moving: {students.find(s => String(s.id) === String(allocationFormData.student))?.full_name}</div>}
+                    <div className="form-group">
+                        <label className="label">Hostel</label>
+                        <select className="select" value={allocationFormData.hostel} onChange={e => setAllocationFormData({ ...allocationFormData, hostel: e.target.value, room: '', bed: '' })} required>
                             <option value="">Select Hostel...</option>
                             {hostels.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
                         </select>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group"><label className="label">Room Number</label><input type="text" className="input" value={roomFormData.room_number} onChange={e => setRoomFormData({ ...roomFormData, room_number: e.target.value })} required /></div>
-                        <div className="form-group"><label className="label">Floor</label><input type="text" className="input" value={roomFormData.floor} onChange={e => setRoomFormData({ ...roomFormData, floor: e.target.value })} /></div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group"><label className="label">Type</label><select className="select" value={roomFormData.room_type} onChange={e => setRoomFormData({ ...roomFormData, room_type: e.target.value })}><option value="DORM">Dormitory</option><option value="CUBICLE">Cubicle</option><option value="SINGLE">Single</option></select></div>
-                        <div className="form-group"><label className="label">Capacity</label><input type="number" className="input" value={roomFormData.capacity} onChange={e => setRoomFormData({ ...roomFormData, capacity: parseInt(e.target.value) })} required /></div>
-                    </div>
-                    <div className="modal-footer">
-                        <Button
-                            type="submit"
-                            className="w-full"
-                            loading={isSubmitting}
-                            loadingText={roomId ? "Updating..." : "Adding..."}
-                        >
-                            {roomId ? "Update Room" : "Add Room"}
-                        </Button>
-                    </div>
-                </form>
-            </Modal>
-
-            <Modal isOpen={isAllocationModalOpen} onClose={() => setIsAllocationModalOpen(false)} title={isTransferMode ? "Transfer Student" : allocationId ? "Edit Allocation" : "Assign Student"}>
-                <form onSubmit={handleAllocationSubmit} className="space-y-4 form-container-md mx-auto">
-                    {!isTransferMode && (
-                        <SearchableSelect label="Select Student" options={students.map(s => ({ id: String(s.id), label: s.full_name, subLabel: s.admission_number }))} value={String(allocationFormData.student || '')} onChange={(val) => setAllocationFormData({ ...allocationFormData, student: val.toString() })} required />
-                    )}
-                    {isTransferMode && (
-                        <div className="bg-primary-light p-3 rounded mb-4 text-primary font-bold">
-                            Moving: {students.find(s => String(s.id) === String(allocationFormData.student))?.full_name}
-                        </div>
-                    )}
-
-
-                    <div className="form-group">
-                        <label className="label">Hostel</label>
-                        <select className="select" value={allocationFormData.hostel} onChange={e => setAllocationFormData({ ...allocationFormData, hostel: e.target.value, room: '', bed: '' })} required>
-                            <option value="">Select Hostel...</option>
-                            {hostels.map(h => <option key={h.id} value={h.id}>{h.name} ({h.gender_allowed === 'M' ? 'Boys' : h.gender_allowed === 'F' ? 'Girls' : 'Mixed'})</option>)}
-                        </select>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
                         <div className="form-group">
                             <label className="label">Room</label>
                             <select className="select" value={allocationFormData.room} onChange={e => setAllocationFormData({ ...allocationFormData, room: e.target.value, bed: '' })} required disabled={!allocationFormData.hostel}>
                                 <option value="">Select Room...</option>
-                                {rooms
-                                    .filter(r => String(r.hostel) === allocationFormData.hostel)
-                                    .map(r => <option key={r.id} value={r.id}>{r.room_number} ({r.available_beds || '?'} free)</option>)}
+                                {rooms.filter(r => String(r.hostel) === allocationFormData.hostel).map(r => <option key={r.id} value={r.id}>{r.room_number}</option>)}
                             </select>
                         </div>
                         <div className="form-group">
                             <label className="label">Bed</label>
                             <select className="select" value={allocationFormData.bed} onChange={e => setAllocationFormData({ ...allocationFormData, bed: e.target.value })} required disabled={!allocationFormData.room}>
                                 <option value="">Select Bed...</option>
-                                {beds
-                                    .filter(b => String(b.room) === allocationFormData.room && (b.status === 'AVAILABLE' || String(b.id) === String(allocationFormData.bed)))
-                                    .map(b => <option key={b.id} value={b.id}>{b.bed_number} {b.status !== 'AVAILABLE' ? '(Current)' : ''}</option>)
-                                }
+                                {beds.filter(b => String(b.room) === allocationFormData.room && (b.status === 'AVAILABLE' || String(b.id) === String(allocationFormData.bed))).map(b => <option key={b.id} value={b.id}>{b.bed_number}</option>)}
                             </select>
                         </div>
                     </div>
-                    <div className="modal-footer">
-                        <Button
-                            type="submit"
-                            className="w-full"
-                            loading={isSubmitting}
-                            loadingText={isTransferMode ? "Transferring..." : "Saving..."}
-                        >
-                            {isTransferMode ? "Confirm Transfer" : allocationId ? "Update Allocation" : "Assign Student"}
-                        </Button>
-                    </div>
-                </form >
-            </Modal >
-
-            <Modal isOpen={isAssetModalOpen} onClose={() => setIsAssetModalOpen(false)} title={assetId ? "Edit Asset" : "Add Hostel Asset"}>
-                <form onSubmit={handleAssetSubmit} className="space-y-4 form-container-md mx-auto">
-                    <div className="form-group"><label className="label">Asset Code/Name</label><input type="text" className="input" value={assetFormData.asset_code} onChange={e => setAssetFormData({ ...assetFormData, asset_code: e.target.value })} placeholder="e.g. BED-001" /></div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group"><label className="label">Hostel</label><select className="select" value={assetFormData.hostel} onChange={e => {
-                            setAssetFormData({ ...assetFormData, hostel: e.target.value, room: '' });
-                        }} required><option value="">Select Hostel...</option>{hostels.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}</select></div>
-                        <div className="form-group">
-                            <label className="label">Room (Optional)</label>
-                            <select className="select" value={assetFormData.room} onChange={e => setAssetFormData({ ...assetFormData, room: e.target.value })} disabled={!assetFormData.hostel}>
-                                <option value="">General / Store</option>
-                                {rooms.filter(r => String(r.hostel) === assetFormData.hostel).map(r => <option key={r.id} value={r.id}>{r.room_number}</option>)}
-                            </select>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group"><label className="label">Type</label><select className="select" value={assetFormData.type} onChange={e => setAssetFormData({ ...assetFormData, type: e.target.value })}><option value="FURNITURE">Furniture</option><option value="ELECTRONIC">Electronic</option><option value="OTHER">Other</option></select></div>
-                        <div className="form-group"><label className="label">Condition</label><select className="select" value={assetFormData.condition} onChange={e => setAssetFormData({ ...assetFormData, condition: e.target.value })}><option value="GOOD">Good</option><option value="FAIR">Fair</option><option value="POOR">Poor</option></select></div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group"><label className="label">Quantity</label><input type="number" className="input" value={assetFormData.quantity} onChange={e => setAssetFormData({ ...assetFormData, quantity: parseInt(e.target.value) })} min="1" required /></div>
-                        <div className="form-group"><label className="label">Value (KES)</label><input type="number" className="input" value={assetFormData.value} onChange={e => setAssetFormData({ ...assetFormData, value: parseFloat(e.target.value) })} /></div>
-                    </div>
-                    <div className="modal-footer">
-                        <Button
-                            type="submit"
-                            className="w-full"
-                            loading={isSubmitting}
-                            loadingText={assetId ? "Updating..." : "Adding..."}
-                        >
-                            {assetId ? "Update Asset" : "Add Asset"}
-                        </Button>
-                    </div>
+                    <div className="modal-footer"><Button type="submit" className="w-full" loading={isSubmitting}>{isTransferMode ? "Confirm Transfer" : allocationId ? "Update" : "Assign"}</Button></div>
                 </form>
             </Modal>
 
-            <Modal isOpen={isAttendanceModalOpen} onClose={() => setIsAttendanceModalOpen(false)} title="Log Attendance">
-                <div className="flex gap-4 mb-4 border-b pb-2">
-                    <button className={`btn btn-sm ${attendanceMode === 'SINGLE' ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setAttendanceMode('SINGLE')}>Single Entry</button>
-                    <button className={`btn btn-sm ${attendanceMode === 'BULK' ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setAttendanceMode('BULK')}>Room Roll Call</button>
-                </div>
+            <Modal isOpen={isAssetModalOpen} onClose={() => setIsAssetModalOpen(false)} title={assetId ? "Edit Asset" : "Add Asset"}>
+                <form onSubmit={handleAssetSubmit} className="space-y-4 form-container-md mx-auto">
+                    <div className="form-group"><label className="label">Asset Name</label><input type="text" className="input" value={assetFormData.asset_code} onChange={e => setAssetFormData({ ...assetFormData, asset_code: e.target.value })} required /></div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="form-group"><label className="label">Hostel</label><select className="select" value={assetFormData.hostel} onChange={e => setAssetFormData({ ...assetFormData, hostel: e.target.value, room: '' })} required><option value="">Select Hostel...</option>{hostels.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}</select></div>
+                        <div className="form-group"><label className="label">Room</label><select className="select" value={assetFormData.room} onChange={e => setAssetFormData({ ...assetFormData, room: e.target.value })} disabled={!assetFormData.hostel}><option value="">General Area</option>{rooms.filter(r => String(r.hostel) === assetFormData.hostel).map(r => <option key={r.id} value={r.id}>{r.room_number}</option>)}</select></div>
+                    </div>
+                    <div className="modal-footer"><Button type="submit" className="w-full" loading={isSubmitting}>{assetId ? "Update" : "Add"}</Button></div>
+                </form>
+            </Modal>
 
+            <Modal isOpen={isAttendanceModalOpen} onClose={() => setIsAttendanceModalOpen(false)} title="Attendance">
+                <div className="flex gap-4 mb-4 border-b pb-2">
+                    <button className={`btn btn-sm ${attendanceMode === 'SINGLE' ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setAttendanceMode('SINGLE')}>Single</button>
+                    <button className={`btn btn-sm ${attendanceMode === 'BULK' ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setAttendanceMode('BULK')}>Bulk</button>
+                </div>
                 {attendanceMode === 'SINGLE' ? (
                     <form onSubmit={handleAttendanceSubmit} className="space-y-4 form-container-md mx-auto">
                         <SearchableSelect label="Student" options={students.map(s => ({ id: String(s.id), label: s.full_name, subLabel: s.admission_number }))} value={String(attendanceFormData.student || '')} onChange={(val) => setAttendanceFormData({ ...attendanceFormData, student: val })} required />
-
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="form-group"><label className="label">Date</label><input type="date" className="input" value={attendanceFormData.date} onChange={e => setAttendanceFormData({ ...attendanceFormData, date: e.target.value })} required /></div>
-                            <div className="form-group"><label className="label">Session</label><select className="select" value={attendanceFormData.session} onChange={e => setAttendanceFormData({ ...attendanceFormData, session: e.target.value })} required><option value="MORNING">Morning</option><option value="EVENING">Evening</option><option value="NIGHT">Night</option></select></div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="form-group"><label className="label">Status</label><select className="select" value={attendanceFormData.status} onChange={e => setAttendanceFormData({ ...attendanceFormData, status: e.target.value })}><option value="PRESENT">Present</option><option value="ABSENT">Absent</option><option value="PERMITTED">Permitted</option></select></div>
-                            <div className="form-group"><label className="label">Remarks</label><input type="text" className="input" value={attendanceFormData.remarks} onChange={e => setAttendanceFormData({ ...attendanceFormData, remarks: e.target.value })} /></div>
-                        </div>
-                        <div className="modal-footer">
-                            <Button
-                                type="submit"
-                                className="w-full"
-                                loading={isSubmitting}
-                                loadingText={attendanceId ? "Updating..." : "Logging..."}
-                            >
-                                {attendanceId ? "Update Attendance" : "Log Attendance"}
-                            </Button>
-                        </div>
+                        <div className="modal-footer"><Button type="submit" className="w-full" loading={isSubmitting}>Log Attendance</Button></div>
                     </form>
                 ) : (
                     <div className="space-y-4 form-container-md mx-auto">
-                        <div className="grid grid-cols-2 gap-4">
-                            {/* ... (Hostel/Room selects unchanged) ... */}
-                            <div className="form-group">
-                                <label className="label">Hostel</label>
-                                <select className="select" value={filterHostel} onChange={e => {
-                                    setFilterHostel(e.target.value);
-                                    setBulkAttendanceRoom(null); // Reset room on hostel change
-                                    setBulkAttendanceData({});
-                                }}>
-                                    <option value="">Select Hostel...</option>
-                                    {hostels.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
-                                </select>
-                            </div>
-
-                            <div className="form-group">
-                                <label className="label">Room</label>
-                                <select className="select" value={bulkAttendanceRoom || ''} onChange={e => {
-                                    const rId = parseInt(e.target.value);
-                                    setBulkAttendanceRoom(rId);
-                                    // Pre-fill bulk data using STRICT ID comparison
-                                    const residents = allocations.filter(a => a.room === rId && a.status === 'ACTIVE');
-                                    const initialData: any = {};
-                                    residents.forEach(r => {
-                                        initialData[r.student] = { status: 'PRESENT', remarks: '' };
-                                    });
-                                    setBulkAttendanceData(initialData);
-                                }} disabled={!filterHostel}>
-                                    <option value="">Select Room...</option>
-                                    {rooms
-                                        .filter(r => String(r.hostel) === filterHostel) // Strict Filter
-                                        .map(r => <option key={r.id} value={r.id}>{r.room_number}</option>)
-                                    }
-                                </select>
-                            </div>
+                        <div className="form-group">
+                            <label className="label">Room</label>
+                            <select className="select" value={bulkAttendanceRoom || ''} onChange={e => setBulkAttendanceRoom(Number(e.target.value))}>
+                                <option value="">Select Room...</option>
+                                {rooms.map(r => <option key={r.id} value={r.id}>{r.room_number} ({hostels.find(h => h.id === r.hostel)?.name})</option>)}
+                            </select>
                         </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="form-group">
-                                <label className="label">Date</label>
-                                <input type="date" className="input" value={attendanceFormData.date} onChange={e => setAttendanceFormData({ ...attendanceFormData, date: e.target.value })} />
-                            </div>
-                            <div className="form-group">
-                                <label className="label">Session</label>
-                                <select className="select" value={attendanceFormData.session} onChange={e => setAttendanceFormData({ ...attendanceFormData, session: e.target.value })}>
-                                    <option value="MORNING">Morning Call</option>
-                                    <option value="EVENING">Evening Call</option>
-                                    <option value="NIGHT">Night Call</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        {bulkAttendanceRoom && (
-                            <div className="overflow-y-auto max-h-300 border rounded">
-                                <table className="table w-full relative">
-                                    <thead className="sticky top-0 bg-white shadow-sm z-10">
-                                        <tr><th>Student</th><th>Status</th><th>Remarks</th></tr>
-                                    </thead>
-                                    <tbody>
-                                        {allocations.filter(a => a.room === bulkAttendanceRoom && a.status === 'ACTIVE').map(a => (
-                                            <tr key={a.id}>
-                                                <td className="text-sm font-medium">
-                                                    {students.find(s => s.id === a.student)?.full_name}
-                                                    <div className="text-xs text-secondary">{students.find(s => s.id === a.student)?.admission_number}</div>
-                                                </td>
-                                                <td>
-                                                    <div className="flex gap-2">
-                                                        {['PRESENT', 'ABSENT', 'PERMITTED'].map(status => (
-                                                            <button
-                                                                key={status}
-                                                                type="button"
-                                                                className={`px-2 py-1 text-[10px] rounded border ${bulkAttendanceData[a.student]?.status === status
-                                                                    ? (status === 'PRESENT' ? 'bg-success text-white border-success' : status === 'ABSENT' ? 'bg-error text-white border-error' : 'bg-info text-white border-info')
-                                                                    : 'bg-white text-secondary border-gray-200'}`}
-                                                                onClick={() => setBulkAttendanceData(prev => ({ ...prev, [a.student]: { ...prev[a.student], status } }))}
-                                                            >
-                                                                {status === 'PERMITTED' ? 'PERMIT' : status[0]}
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <input
-                                                        type="text"
-                                                        className="input input-sm w-full"
-                                                        placeholder="Note..."
-                                                        value={bulkAttendanceData[a.student]?.remarks || ''}
-                                                        onChange={e => setBulkAttendanceData(prev => ({ ...prev, [a.student]: { ...prev[a.student], remarks: e.target.value } }))}
-                                                    />
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
-                        <div className="modal-footer">
-                            <Button
-                                type="button"
-                                className="w-full"
-                                onClick={handleBulkAttendanceSubmit}
-                                disabled={!bulkAttendanceRoom}
-                                loading={isSubmitting}
-                                loadingText="Saving Roll Call..."
-                            >
-                                Submit Roll Call ({Object.keys(bulkAttendanceData).length})
-                            </Button>
-                        </div>
+                        <div className="modal-footer"><Button type="button" className="w-full" onClick={handleBulkAttendanceSubmit} disabled={!bulkAttendanceRoom}>Submit Bulk</Button></div>
                     </div>
                 )}
             </Modal>
 
-            <Modal isOpen={isDisciplineModalOpen} onClose={() => setIsDisciplineModalOpen(false)} title={disciplineId ? "Edit Discipline Record" : "Report Incident"}>
+            <Modal isOpen={isDisciplineModalOpen} onClose={() => setIsDisciplineModalOpen(false)} title="Discipline">
                 <form onSubmit={handleDisciplineSubmit} className="space-y-4 form-container-md mx-auto">
-                    <SearchableSelect label="Student" options={students.map(s => ({ id: String(s.id), label: s.full_name, subLabel: s.admission_number }))} value={String(disciplineFormData.student || '')} onChange={(val) => setDisciplineFormData({ ...disciplineFormData, student: String(val) })} required />
-
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group"><label className="label">Date</label><input type="date" className="input" value={disciplineFormData.date} onChange={e => setDisciplineFormData({ ...disciplineFormData, date: e.target.value })} required /></div>
-                        <div className="form-group"><label className="label">Severity</label><select className="select" value={disciplineFormData.severity} onChange={e => setDisciplineFormData({ ...disciplineFormData, severity: e.target.value })}><option value="MINOR">Minor</option><option value="MAJOR">Major</option><option value="CRITICAL">Critical</option></select></div>
-                    </div>
-                    <div className="form-group"><label className="label">Offence</label><input type="text" className="input" value={disciplineFormData.offence} onChange={e => setDisciplineFormData({ ...disciplineFormData, offence: e.target.value })} required placeholder="e.g. Late coming" /></div>
-                    <div className="form-group"><label className="label">Description</label><textarea className="input" rows={2} value={disciplineFormData.description} onChange={e => setDisciplineFormData({ ...disciplineFormData, description: e.target.value })} required placeholder="Details of what happened..." /></div>
-                    <div className="form-group"><label className="label">Action Taken</label><input type="text" className="input" value={disciplineFormData.action_taken} onChange={e => setDisciplineFormData({ ...disciplineFormData, action_taken: e.target.value })} required /></div>
-                    <div className="modal-footer">
-                        <Button
-                            type="submit"
-                            variant="danger"
-                            className="w-full text-white"
-                            loading={isSubmitting}
-                            loadingText="Reporting..."
-                        >
-                            {disciplineId ? "Update Record" : "Report Incident"}
-                        </Button>
-                    </div>
+                    <SearchableSelect label="Student" options={students.map(s => ({ id: String(s.id), label: s.full_name, subLabel: s.admission_number }))} value={String(disciplineFormData.student ?? '')} onChange={(val) => setDisciplineFormData({ ...disciplineFormData, student: val as string })} required />
+                    <div className="form-group"><label className="label">Offence</label><input type="text" className="input" value={disciplineFormData.offence} onChange={e => setDisciplineFormData({ ...disciplineFormData, offence: e.target.value })} required /></div>
+                    <div className="modal-footer"><Button type="submit" className="w-full" loading={isSubmitting}>Report</Button></div>
                 </form>
             </Modal>
 
-            <Modal isOpen={isMaintenanceModalOpen} onClose={() => setIsMaintenanceModalOpen(false)} title={maintenanceId ? "Edit Repair Request" : "Log Maintenance"}>
+            <Modal isOpen={isMaintenanceModalOpen} onClose={() => setIsMaintenanceModalOpen(false)} title="Maintenance">
                 <form onSubmit={handleMaintenanceSubmit} className="space-y-4 form-container-md mx-auto">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group"><label className="label">Hostel</label><select className="select" value={maintenanceFormData.hostel} onChange={e => {
-                            setMaintenanceFormData({ ...maintenanceFormData, hostel: e.target.value });
-                            setFilterHostel(e.target.value); // Sync filter
-                        }} required><option value="">Select Hostel...</option>{hostels.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}</select></div>
-                        <div className="form-group">
-                            <label className="label">Room (Optional)</label>
-                            <select className="select" value={maintenanceFormData.room} onChange={e => setMaintenanceFormData({ ...maintenanceFormData, room: e.target.value })} disabled={!maintenanceFormData.hostel}>
-                                <option value="">General Area</option>
-                                {rooms.filter(r => String(r.hostel) === maintenanceFormData.hostel).map(r => <option key={r.id} value={r.id}>{r.room_number}</option>)}
-                            </select>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group"><label className="label">Date</label><input type="date" className="input" value={maintenanceFormData.date} onChange={e => setMaintenanceFormData({ ...maintenanceFormData, date: e.target.value })} required /></div>
-                        <div className="form-group"><label className="label">Cost (KES)</label><input type="number" className="input" value={maintenanceFormData.repair_cost} onChange={e => setMaintenanceFormData({ ...maintenanceFormData, repair_cost: parseFloat(e.target.value) })} /></div>
-                    </div>
-                    <div className="form-group"><label className="label">Description</label><textarea className="input" rows={3} value={maintenanceFormData.issue} onChange={e => setMaintenanceFormData({ ...maintenanceFormData, issue: e.target.value })} required placeholder="Describe the maintenance issue..."></textarea></div>
-                    <div className="form-group"><label className="label">Status</label><select className="select" value={maintenanceFormData.status} onChange={e => setMaintenanceFormData({ ...maintenanceFormData, status: e.target.value })}><option value="PENDING">Pending</option><option value="IN_PROGRESS">In Progress</option><option value="COMPLETED">Completed</option></select></div>
-                    <div className="modal-footer">
-                        <Button
-                            type="submit"
-                            className="w-full bg-amber-600 text-white hover:bg-amber-700"
-                            loading={isSubmitting}
-                            loadingText="Saving..."
-                        >
-                            {maintenanceId ? "Update Request" : "Log Request"}
-                        </Button>
-                    </div>
+                    <div className="form-group"><label className="label">Hostel</label><select className="select" value={maintenanceFormData.hostel} onChange={e => setMaintenanceFormData({ ...maintenanceFormData, hostel: e.target.value })} required><option value="">Select Hostel...</option>{hostels.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}</select></div>
+                    <div className="modal-footer"><Button type="submit" className="w-full" loading={isSubmitting}>Log Request</Button></div>
                 </form>
             </Modal>
 
-            {/* View Rooms Modal (Read-Only/Quick Actions) */}
-            <Modal isOpen={isViewRoomsModalOpen} onClose={() => setIsViewRoomsModalOpen(false)} title={`Rooms: ${selectedHostel?.name || ''}`}>
-                <div className="p-1">
-                    <div className="flex justify-between items-center mb-4 p-2 bg-secondary-light rounded-lg">
-                        <p className="mb-0 text-sm font-bold">Total Rooms: {rooms.filter(r => r.hostel === selectedHostel?.id).length}</p>
-                        <Button variant="primary" size="sm" onClick={() => { setIsViewRoomsModalOpen(false); openAddRoom(selectedHostel); }}>+ Add Room</Button>
-                    </div>
-                    {rooms.filter(r => r.hostel === selectedHostel?.id).length === 0 ? (
-                        <p className="text-secondary text-center p-4 italic">No rooms configured.</p>
-                    ) : (
-                        <div className="overflow-auto max-h-400">
-                            <table className="table w-full">
-                                <thead>
-                                    <tr>
-                                        <th className="text-left text-xs uppercase p-2">Room #</th>
-                                        <th className="text-left text-xs uppercase p-2">Type</th>
-                                        <th className="text-left text-xs uppercase p-2">Capacity</th>
-                                        <th className="text-left text-xs uppercase p-2">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {rooms.filter(r => r.hostel === selectedHostel?.id).map(r => (
-                                        <tr key={r.id} className="border-b hover:bg-gray-50">
-                                            <td className="p-2 text-sm font-bold">{r.room_number}</td>
-                                            <td className="p-2 text-xs">{r.room_type}</td>
-                                            <td className="p-2 text-xs">{r.capacity} Beds</td>
-                                            <td className="p-2 flex gap-2">
-                                                <button className="btn btn-xs btn-outline" onClick={() => { setIsViewRoomsModalOpen(false); openEditRoom(r); }} title="Edit Room"><Edit size={12} /></button>
-                                                <button className="btn btn-xs btn-outline" onClick={() => { setIsViewRoomsModalOpen(false); openViewResidents({ ...selectedHostel, roomFilter: r.id }); }} title="View Students"><Users size={12} /></button>
-                                                <button className="btn btn-xs btn-outline text-error" onClick={() => handleDeleteRoom(r.id)} title="Delete Room"><Trash2 size={12} /></button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
+            <Modal isOpen={isViewRoomsModalOpen} onClose={() => setIsViewRoomsModalOpen(false)} title={`Rooms: ${selectedHostel?.name}`}>
+                <div className="p-4">
+                    <table className="table">
+                        <thead><tr><th>Room #</th><th>Type</th><th>Capacity</th></tr></thead>
+                        <tbody>
+                            {rooms.filter(r => r.hostel === selectedHostel?.id).map(r => (
+                                <tr key={r.id}><td>{r.room_number}</td><td>{r.room_type}</td><td>{r.capacity}</td></tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
             </Modal>
 
-            {/* View Residents Modal */}
-            <Modal isOpen={isViewResidentsModalOpen} onClose={() => setIsViewResidentsModalOpen(false)} title={`Residents: ${selectedHostel?.name || ''}`}>
-                <div className="p-1">
-                    <div className="flex justify-between items-center mb-4 p-2 bg-secondary-light rounded-lg no-print">
-                        <p className="mb-0 text-sm font-bold">Total Residents: {viewHostelResidents.length}</p>
-                        <div className="flex gap-2">
-                            <Button variant="outline" size="sm" onClick={() => exportToCSV(viewHostelResidents.map(r => ({ 'Student Name': r.student_name, 'Room': r.room_number, 'Bed': r.bed_number })), `${selectedHostel?.name || 'hostel'}_residents`)} icon={<Download size={14} />}>CSV</Button>
-                            <Button variant="primary" size="sm" onClick={() => { setTimeout(() => window.print(), 100); }} icon={<Printer size={14} />}>Print</Button>
-                        </div>
-                    </div>
-                    {viewHostelResidents.length === 0 ? (
-                        <p className="text-secondary text-center p-4 italic">No active residents in this hostel.</p>
-                    ) : (
-                        <div className="overflow-auto max-h-400">
-                            <table className="table w-full">
-                                <thead>
-                                    <tr>
-                                        <th className="text-left text-xs uppercase p-2">Student</th>
-                                        <th className="text-left text-xs uppercase p-2">Room/Bed</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {viewHostelResidents.map(r => (
-                                        <tr key={r.id} className="border-b">
-                                            <td className="p-2 text-sm font-bold">{r.student_name}</td>
-                                            <td className="p-2 text-xs font-mono">{r.room_number} / Bed {r.bed_number}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
+            <Modal isOpen={isViewResidentsModalOpen} onClose={() => setIsViewResidentsModalOpen(false)} title={`Residents: ${selectedHostel?.name}`}>
+                <div className="p-4">
+                    <table className="table">
+                        <thead><tr><th>Student</th><th>Room/Bed</th></tr></thead>
+                        <tbody>
+                            {viewHostelResidents.map(r => (
+                                <tr key={r.id}><td>{r.student_name}</td><td>{r.room_number} / {r.bed_number}</td></tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
             </Modal>
-
-
 
             <style>{`
-                @media print {
-                    .no-print { display: none !important; }
-                    .print-only { display: block !important; }
-                    body { background: white; color: black; }
-                }
-
-                .print-only { display: none; }
-                .tab-link { 
-                    display: flex;
-                    align-items: center;
-                    gap: 0.5rem;
-                    padding: 0.75rem 1.5rem;
-                    border-bottom: 2px solid transparent;
-                    color: var(--text-secondary);
-                    font-weight: 700;
-                    transition: all 0.2s;
-                    white-space: nowrap;
-                    background: none;
-                    border-top: none;
-                    border-left: none;
-                    border-right: none;
-                    cursor: pointer;
-                }
-                .tab-link.active { 
-                    border-bottom-color: var(--primary);
-                    color: var(--primary);
-                    background: rgba(30, 60, 114, 0.05);
-                }
-                .avatar-sm { 
-                    width: 2rem;
-                    height: 2rem;
-                    border-radius: 9999px;
-                    background: var(--primary);
-                    color: white;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-weight: 700;
-                    font-size: 0.75rem;
-                }
-                .status-badge.success { 
-                    background: var(--success-light);
-                    color: var(--success);
-                    padding: 2px 8px;
-                    border-radius: 4px;
-                    font-size: 10px;
-                    font-weight: 700;
-                    text-transform: uppercase;
-                }
-                .status-badge.secondary { 
-                    background: var(--bg-secondary);
-                    color: var(--text-secondary);
-                    padding: 2px 8px;
-                    border-radius: 4px;
-                    font-size: 10px;
-                    font-weight: 700;
-                    text-transform: uppercase;
-                }
+                .nav-tab-container { display: flex; gap: 1rem; border-bottom: 2px solid #e2e8f0; }
+                .nav-tab { padding: 0.75rem 1rem; font-weight: 700; color: #64748b; border: none; background: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s; }
+                .nav-tab.active { color: #1e3c72; border-bottom: 2px solid #1e3c72; background: rgba(30,60,114,0.05); }
+                .fade-in { animation: fadeIn 0.3s ease-in; }
+                @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
             `}</style>
-        </div >
+        </div>
     );
 };
 

@@ -63,3 +63,17 @@ def send_email(recipient_email, subject, message):
     except Exception as e:
         logger.error(f"Failed to send Email to {recipient_email}: {str(e)}")
         return False, str(e)
+
+def send_whatsapp(phone_number, message):
+    """
+    Sends a WhatsApp message using a provider (simulated for now).
+    """
+    try:
+        # In a real scenario, you'd use Twilio or a similar service
+        # For now, we simulate and log for diagnostic purposes
+        logger.info(f"WHATSAPP SIMULATION: To {phone_number} -> {message}")
+        print(f"WHATSAPP SIMULATION: To {phone_number} -> {message}")
+        return True, "Sent (Simulated)"
+    except Exception as e:
+        logger.error(f"Failed to send WhatsApp to {phone_number}: {str(e)}")
+        return False, str(e)

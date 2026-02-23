@@ -17,6 +17,9 @@ const Staff = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const toast = useToast();
     const { confirm } = useConfirm();
+    const [page, setPage] = useState(1);
+    const [totalItems, setTotalItems] = useState(0);
+    const pageSize = 50;
 
     const [formData, setFormData] = useState({
         employee_id: '',
@@ -29,12 +32,27 @@ const Staff = () => {
 
     useEffect(() => {
         loadData();
-    }, []);
+    }, [page]);
+
+    // Debounced search
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            if (page !== 1) setPage(1);
+            else loadData();
+        }, 500);
+        return () => clearTimeout(handler);
+    }, [searchTerm]);
 
     const loadData = async () => {
+        setLoading(true);
         try {
-            const res = await staffAPI.getAll();
+            const res = await staffAPI.getAll({
+                page,
+                page_size: pageSize,
+                search: searchTerm
+            });
             setStaff(res.data?.results ?? res.data ?? []);
+            setTotalItems(res.data?.count ?? (res.data?.results ? res.data.results.length : 0));
         } catch (error) {
             console.error('Error loading staff:', error);
         } finally {
@@ -117,15 +135,7 @@ const Staff = () => {
         setEditingStaff(null);
     };
 
-    const filteredStaff = React.useMemo(() => {
-        const lowerSearch = searchTerm.toLowerCase();
-        return staff.filter(s =>
-            (s.full_name || '').toLowerCase().includes(lowerSearch) ||
-            (s.employee_id || '').toLowerCase().includes(lowerSearch) ||
-            (s.department || '').toLowerCase().includes(lowerSearch) ||
-            (s.role || '').toLowerCase().includes(lowerSearch)
-        );
-    }, [staff, searchTerm]);
+    const filteredStaff = staff; // Client-side search moved to server
 
     const renderStaffTable = (staffList: any[]) => (
         <div className="table-wrapper">
@@ -252,6 +262,17 @@ const Staff = () => {
                     {Object.keys(groupedStaff).length === 0 && <div className="card text-center py-12 text-secondary">No records found for current criteria</div>}
                 </div>
             )}
+
+            {/* Pagination */}
+            <div className="flex justify-between items-center mt-6 bg-slate-50 p-4 rounded-xl border border-slate-100 no-print">
+                <div className="text-[10px] font-black text-secondary uppercase tracking-widest">
+                    Showing {Math.min((page - 1) * pageSize + 1, totalItems)} - {Math.min(page * pageSize, totalItems)} of {totalItems} Staff Members
+                </div>
+                <div className="flex gap-2">
+                    <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(page - 1)} className="font-black text-[10px] uppercase">Previous</Button>
+                    <Button variant="primary" size="sm" disabled={page * pageSize >= totalItems} onClick={() => setPage(page + 1)} className="font-black text-[10px] uppercase">Next Page</Button>
+                </div>
+            </div>
 
             <Modal isOpen={isModalOpen} onClose={closeModal} title={editingStaff ? 'Edit Staff Member' : 'Register New Staff Member'} size="md">
                 <form onSubmit={handleSubmit} className="form-container-md mx-auto space-y-6">

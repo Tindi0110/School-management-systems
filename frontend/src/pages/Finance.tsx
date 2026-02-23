@@ -60,6 +60,11 @@ const Finance = () => {
     // Mpesa Form
     const [mpesaForm, setMpesaForm] = useState({ admission_number: '', phone_number: '', amount: '' });
 
+    // Pagination State
+    const [page, setPage] = useState(1);
+    const [_totalItems, setTotalItems] = useState(0);
+    const pageSize = 50;
+
     // Invoice Filters
     const [invFilters, setInvFilters] = useState({ class_id: '', stream: '', year_id: '', term: '', status: '' });
     const [searchTerm, setSearchTerm] = useState('');
@@ -71,40 +76,10 @@ const Finance = () => {
         send_email: true
     });
 
-    const filteredInvoices = React.useMemo(() => {
-        const lowerSearch = searchTerm.toLowerCase();
-        return invoices.filter((inv: any) =>
-        (!searchTerm ||
-            inv.student_name.toLowerCase().includes(lowerSearch) ||
-            inv.id.toString().includes(searchTerm))
-        );
-    }, [invoices, searchTerm]);
-
-    const filteredPayments = React.useMemo(() => {
-        const lowerSearch = searchTerm.toLowerCase();
-        return payments.filter((p: any) =>
-            !searchTerm ||
-            (p.student_name && p.student_name.toLowerCase().includes(lowerSearch)) ||
-            (p.reference_number && p.reference_number.toLowerCase().includes(lowerSearch))
-        );
-    }, [payments, searchTerm]);
-
-    const filteredExpenses = React.useMemo(() => {
-        const lowerSearch = searchTerm.toLowerCase();
-        return expenses.filter((exp: any) =>
-            !searchTerm ||
-            (exp.description && exp.description.toLowerCase().includes(lowerSearch)) ||
-            (exp.paid_to && exp.paid_to.toLowerCase().includes(lowerSearch))
-        );
-    }, [expenses, searchTerm]);
-
-    const filteredFees = React.useMemo(() => {
-        const lowerSearch = searchTerm.toLowerCase();
-        return feeStructures.filter((fee: any) =>
-            !searchTerm ||
-            (fee.name && fee.name.toLowerCase().includes(lowerSearch))
-        );
-    }, [feeStructures, searchTerm]);
+    const filteredInvoices = invoices;
+    const filteredPayments = payments;
+    const filteredExpenses = expenses;
+    const filteredFees = feeStructures;
 
 
     // Options
@@ -115,8 +90,24 @@ const Finance = () => {
     const [years, setYears] = useState([]);
 
     useEffect(() => {
+        setPage(1); // Reset page on tab switch
         loadData();
     }, [activeTab]);
+
+    useEffect(() => {
+        if (activeTab !== 'dashboard') {
+            loadData();
+        }
+    }, [page, invFilters]);
+
+    // Debounced search
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            if (page !== 1) setPage(1);
+            else loadData();
+        }, 500);
+        return () => clearTimeout(handler);
+    }, [searchTerm]);
 
     const loadData = async () => {
         setLoading(true);
@@ -143,20 +134,37 @@ const Finance = () => {
                 ]);
                 setClasses(d(cls)); setYears(d(yrRes));
 
-                const params: any = { page_size: 50, ...invFilters };
+                const params: any = {
+                    page,
+                    page_size: pageSize,
+                    search: searchTerm,
+                    ...invFilters
+                };
                 if (invFilters.year_id) params.academic_year = invFilters.year_id;
 
                 const res = await financeAPI.invoices.getAll(params);
                 setInvoices(d(res));
+                setTotalItems(res.data?.count ?? (res.data?.results ? res.data.results.length : 0));
             } else if (activeTab === 'payments') {
-                const res = await financeAPI.payments.getAll({ page_size: 50 });
+                const res = await financeAPI.payments.getAll({
+                    page,
+                    page_size: pageSize,
+                    search: searchTerm
+                });
                 setPayments(d(res));
+                setTotalItems(res.data?.count ?? (res.data?.results ? res.data.results.length : 0));
             } else if (activeTab === 'fees') {
                 const res = await financeAPI.feeStructures.getAll(); // Usually small
                 setFeeStructures(d(res));
+                setTotalItems(res.data?.count ?? (res.data?.results ? res.data.results.length : 0));
             } else if (activeTab === 'expenses') {
-                const res = await financeAPI.expenses.getAll({ page_size: 50 });
+                const res = await financeAPI.expenses.getAll({
+                    page,
+                    page_size: pageSize,
+                    search: searchTerm
+                });
                 setExpenses(d(res));
+                setTotalItems(res.data?.count ?? (res.data?.results ? res.data.results.length : 0));
             }
         } catch (error: any) {
             console.error('Error loading finance data:', error);
@@ -556,7 +564,7 @@ const Finance = () => {
                                         <option value="OVERPAID">Overpaid</option>
                                     </select>
 
-                                    <button className="btn btn-sm btn-primary no-print" onClick={loadData}>Apply</button>
+                                    <button className="btn btn-sm btn-primary no-print" onClick={() => { setPage(1); loadData(); }}>Apply</button>
                                     <button className="btn btn-sm btn-outline no-print ml-4" onClick={() => window.print()} title="Print Filtered Invoices">
                                         <Printer size={14} className="mr-1" /> Print All
                                     </button>
@@ -573,7 +581,6 @@ const Finance = () => {
                                                     className="checkbox checkbox-xs"
                                                     onChange={(e) => {
                                                         const visibleOutstanding = invoices.filter((inv: any) =>
-                                                            (!searchTerm || inv.student_name.toLowerCase().includes(searchTerm.toLowerCase()) || inv.id.toString().includes(searchTerm)) &&
                                                             Number(inv.balance) > 0
                                                         ).map(i => i.id);
 

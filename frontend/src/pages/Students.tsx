@@ -12,6 +12,7 @@ import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 import { exportToCSV } from '../utils/export';
 import Button from '../components/common/Button';
+import CountryCodeSelect from '../components/CountryCodeSelect';
 
 const Students = () => {
     const navigate = useNavigate();
@@ -26,6 +27,9 @@ const Students = () => {
     const [editingStudent, setEditingStudent] = useState<any>(null);
     const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
     const [autoAssignHostel, setAutoAssignHostel] = useState(true);
+    const [page, setPage] = useState(1);
+    const [totalItems, setTotalItems] = useState(0);
+    const [pageSize] = useState(25);
 
     // Consolidated Form Data
     const [formData, setFormData] = useState({
@@ -38,6 +42,7 @@ const Students = () => {
         current_class: '',
         guardian_name: '',
         guardian_phone: '',
+        country_code: '+254',
         guardian_email: '',
         is_active: true
     });
@@ -46,22 +51,37 @@ const Students = () => {
 
     useEffect(() => {
         loadData();
-    }, []);
+    }, [page, selectedClassId]);
+
+    // Debounced search
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            if (page !== 1) setPage(1);
+            else loadData();
+        }, 500);
+        return () => clearTimeout(handler);
+    }, [searchTerm]);
 
     const loadData = async () => {
         setLoading(true);
         try {
+            const params: any = {
+                page,
+                page_size: pageSize,
+                search: searchTerm,
+            };
+            if (selectedClassId) params.current_class = selectedClassId;
+
             const [studentsRes, classesRes] = await Promise.all([
-                studentsAPI.getAll({ page_size: 50 }),
-                academicsAPI.classes.getAll({ page_size: 50 }),
+                studentsAPI.getAll(params),
+                academicsAPI.classes.getAll({ page_size: 100 }),
             ]);
-            // Handle both paginated { results: [] } and plain array responses
-            const studentsData = studentsRes.data?.results ?? studentsRes.data ?? [];
-            const classesData = classesRes.data?.results ?? classesRes.data ?? [];
-            setStudents(studentsData);
-            setClasses(classesData);
+
+            setStudents(studentsRes.data?.results ?? studentsRes.data ?? []);
+            setTotalItems(studentsRes.data?.count ?? (studentsRes.data?.results ? studentsRes.data.results.length : 0));
+            setClasses(classesRes.data?.results ?? classesRes.data ?? []);
         } catch (error) {
-            // Error handled by Toast in some cases or just silent
+            errorToast("Failed to load students.");
         } finally {
             setLoading(false);
         }
@@ -80,11 +100,24 @@ const Students = () => {
         e.preventDefault();
         setIsSubmitting(true);
         try {
+            // Enforce country code formatting
+            let phone = formData.guardian_phone.trim();
+            if (phone && !phone.startsWith('+')) {
+                phone = `${formData.country_code}${phone.startsWith('0') ? phone.slice(1) : phone}`;
+            }
+
+            if (!phone.startsWith('+')) {
+                errorToast("Phone number must include a country code (e.g., +254)");
+                setIsSubmitting(false);
+                return;
+            }
+
             // clear payload of non-model fields
-            const { guardian_email, ...modelData } = formData;
+            const { guardian_email, country_code, ...modelData } = formData;
 
             const payload = {
                 ...modelData,
+                guardian_phone: phone,
                 // Ensure class is sent as integer if selected, or null/undefined if empty
                 current_class: formData.current_class ? parseInt(formData.current_class.toString()) : null,
                 // Ensure Admission Number is present (Auto-gen if empty)
@@ -159,6 +192,7 @@ const Students = () => {
                 current_class: student.current_class?.toString() || '',
                 guardian_name: student.guardian_name || '',
                 guardian_phone: student.guardian_phone || '',
+                country_code: (student.guardian_phone || '').startsWith('+') ? student.guardian_phone.slice(0, 4) : '+254',
                 guardian_email: student.guardian_email || '',
                 is_active: student.is_active
             });
@@ -174,6 +208,7 @@ const Students = () => {
                 current_class: '',
                 guardian_name: '',
                 guardian_phone: '',
+                country_code: '+254',
                 guardian_email: '',
                 is_active: true
             });
@@ -183,18 +218,7 @@ const Students = () => {
 
     const closeModal = () => { setIsModalOpen(false); setEditingStudent(null); };
 
-    const filteredStudents = React.useMemo(() => {
-        let list = students;
-        if (selectedClassId) {
-            list = list.filter(s => s.current_class === selectedClassId);
-        }
-        const lowerSearch = searchTerm.toLowerCase();
-        return list.filter(s =>
-            (s.full_name || '').toLowerCase().includes(lowerSearch) ||
-            (s.admission_number || '').toLowerCase().includes(lowerSearch) ||
-            (s.class_name || '').toLowerCase().includes(lowerSearch)
-        );
-    }, [students, searchTerm, selectedClassId]);
+    const filteredStudents = students; // Logic moved to server-side
 
     // Reusable Table Render
     const renderTable = (list: any[]) => (
@@ -274,7 +298,7 @@ const Students = () => {
         </div>
     );
 
-    const groupedData = {}; // Placeholder for safety, but will be removed
+
 
     if (loading) return <div className="flex items-center justify-center p-12 spinner-container"><div className="spinner"></div></div>;
 
@@ -390,6 +414,33 @@ const Students = () => {
                         )}
                         <div className="table-container border-none shadow-none">
                             {renderTable(filteredStudents)}
+
+                            {/* Pagination Controls */}
+                            <div className="flex justify-between items-center mt-6 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                                <div className="text-xs font-black text-secondary uppercase tracking-widest">
+                                    Showing {Math.min((page - 1) * pageSize + 1, totalItems)} - {Math.min(page * pageSize, totalItems)} of {totalItems} Students
+                                </div>
+                                <div className="flex gap-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        disabled={page === 1}
+                                        onClick={() => setPage(page - 1)}
+                                        className="font-black uppercase"
+                                    >
+                                        Previous
+                                    </Button>
+                                    <Button
+                                        variant="primary"
+                                        size="sm"
+                                        disabled={page * pageSize >= totalItems}
+                                        onClick={() => setPage(page + 1)}
+                                        className="font-black uppercase"
+                                    >
+                                        Next Page
+                                    </Button>
+                                </div>
+                            </div>
                             {filteredStudents.length === 0 && <div className="text-center py-16 text-secondary font-bold uppercase text-xs">No records associated with this unit</div>}
                         </div>
                     </div>
@@ -491,7 +542,21 @@ const Students = () => {
                                 </div>
                                 <div className="form-group">
                                     <label className="label">Phone Contact *</label>
-                                    <input type="tel" className="input" value={formData.guardian_phone} onChange={(e) => setFormData({ ...formData, guardian_phone: e.target.value })} required placeholder="+254..." />
+                                    <div className="flex gap-2">
+                                        <CountryCodeSelect
+                                            value={formData.country_code}
+                                            onChange={(val) => setFormData({ ...formData, country_code: val })}
+                                        />
+                                        <input
+                                            type="tel"
+                                            className="input flex-grow"
+                                            value={formData.guardian_phone}
+                                            onChange={(e) => setFormData({ ...formData, guardian_phone: e.target.value })}
+                                            required
+                                            placeholder="712345678"
+                                        />
+                                    </div>
+                                    <p className="text-[9px] text-secondary mt-1">Select country code and enter mobile number without leading 0</p>
                                 </div>
                                 <div className="form-group">
                                     <label className="label">Email Address</label>

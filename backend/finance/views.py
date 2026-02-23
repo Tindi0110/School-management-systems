@@ -9,7 +9,7 @@ from .serializers import (
 )
 from students.models import Student
 from academics.models import Class
-from communication.utils import send_sms, send_email
+from communication.utils import send_sms, send_email, send_whatsapp
 from django.db.models import Sum, Q
 from django.utils import timezone
 import threading
@@ -167,32 +167,43 @@ class InvoiceViewSet(viewsets.ModelViewSet):
 
         # 1. Define the background task
         def run_sending():
-            invoices = Invoice.objects.filter(id__in=selected_ids).select_related('student')
-            for inv in invoices:
-                student = inv.student
-                phone = student.guardian_phone
-                email = None
-                
-                primary_parent = student.parents.first()
-                if primary_parent:
-                    phone = primary_parent.phone or phone
-                    email = primary_parent.email
-                
-                fullname = student.full_name
-                balance = inv.balance
-                
-                msg = message_template.replace('{student_name}', fullname).replace('{balance}', str(balance))
-                if not msg:
-                    msg = f"Dear Parent, this is a reminder regarding {fullname}'s outstanding fee balance of KES {balance}. Please settle as soon as possible."
+            try:
+                invoices = Invoice.objects.filter(id__in=selected_ids).select_related('student')
+                for inv in invoices:
+                    try:
+                        student = inv.student
+                        phone = student.guardian_phone
+                        email = None
+                        
+                        primary_parent = student.parents.first()
+                        if primary_parent:
+                            phone = primary_parent.phone or phone
+                            email = primary_parent.email
+                        
+                        fullname = student.full_name
+                        balance = inv.balance
+                        
+                        msg = message_template.replace('{student_name}', fullname).replace('{balance}', str(balance))
+                        if not msg:
+                            msg = f"Dear Parent, this is a reminder regarding {fullname}'s outstanding fee balance of KES {balance}. Please settle as soon as possible."
 
-                if send_sms_flag and phone:
-                    send_sms(phone, msg)
-                
-                if send_email_flag and email:
-                    send_email(email, f"Fee Reminder: {fullname}", msg)
+                        if send_sms_flag and phone:
+                            send_sms(phone, msg)
+                            # Also send WhatsApp if requested (or default to sending both if same flag)
+                            # The user asked to make sending DM and WhatsApp catching phone from parent
+                            send_whatsapp(phone, msg)
+                        
+                        if send_email_flag and email:
+                            send_email(email, f"Fee Reminder: {fullname}", msg)
+                    except Exception as e:
+                        logger.error(f"Error sending reminder to student {inv.student_name}: {str(e)}")
+                        continue
+            except Exception as e:
+                logger.critical(f"Critical error in fee reminder background thread: {str(e)}")
 
         # 2. Trigger thread and return immediately
         thread = threading.Thread(target=run_sending)
+        thread.daemon = True
         thread.start()
 
         return Response({

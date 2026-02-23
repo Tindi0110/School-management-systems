@@ -10,6 +10,7 @@ export interface AcademicYear {
 export interface Term {
     id: number;
     year: number;
+    year_name?: string;
     name: string;
     start_date: string;
     end_date: string;
@@ -25,6 +26,7 @@ export interface ClassUnit {
     student_count?: number;
     teacher?: number;
     teacher_name?: string;
+    class_teacher_name?: string;
 }
 
 export interface Subject {
@@ -32,6 +34,7 @@ export interface Subject {
     name: string;
     code: string;
     category?: string;
+    group_name?: string;
     is_optional: boolean;
 }
 
@@ -39,10 +42,15 @@ export interface Exam {
     id: number;
     name: string;
     term: number;
+    term_name?: string;
     year: number;
     date_start: string;
     date_end: string;
+    date_started?: string;
     is_published: boolean;
+    is_active?: boolean;
+    weighting?: number;
+    grade_system?: number;
 }
 
 export interface StudentResult {
@@ -50,6 +58,7 @@ export interface StudentResult {
     student: number;
     exam: number;
     subject: number;
+    subject_name?: string;
     score: number;
     grade?: string;
     comments?: string;
@@ -70,4 +79,5 @@ export interface GradeSystem {
     name: string;
     description?: string;
     is_default: boolean;
+    boundaries?: GradeBoundary[];
 }

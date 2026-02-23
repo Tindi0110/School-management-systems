@@ -9,6 +9,7 @@ import Modal from '../components/Modal';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 import Button from '../components/common/Button';
+import CountryCodeSelect from '../components/CountryCodeSelect';
 
 const Parents = () => {
     const [parents, setParents] = useState<any[]>([]);
@@ -23,6 +24,7 @@ const Parents = () => {
         full_name: '',
         relationship: 'FATHER',
         phone: '',
+        country_code: '+254',
         email: '',
         occupation: '',
         address: '',
@@ -49,8 +51,22 @@ const Parents = () => {
         e.preventDefault();
         setIsSubmitting(true);
         try {
+            // Enforce country code formatting
+            let phone = formData.phone.trim();
+            if (phone && !phone.startsWith('+')) {
+                phone = `${formData.country_code}${phone.startsWith('0') ? phone.slice(1) : phone}`;
+            }
+
+            if (!phone.startsWith('+')) {
+                toast.error("Phone number must include a country code (e.g., +254)");
+                setIsSubmitting(false);
+                return;
+            }
+
+            const payload = { ...formData, phone };
+
             if (editingParent) {
-                await studentsAPI.parents.update(editingParent.id, formData);
+                await studentsAPI.parents.update(editingParent.id, payload);
                 toast.success('Guardian updated successfully');
             } else {
                 await studentsAPI.parents.create(formData);
@@ -191,7 +207,14 @@ const Parents = () => {
                                             <Button
                                                 variant="ghost"
                                                 size="sm"
-                                                onClick={() => { setEditingParent(p); setFormData(p); setIsModalOpen(true); }}
+                                                onClick={() => {
+                                                    setEditingParent(p);
+                                                    setFormData({
+                                                        ...p,
+                                                        country_code: (p.phone || '').startsWith('+') ? p.phone.slice(0, 4) : '+254'
+                                                    });
+                                                    setIsModalOpen(true);
+                                                }}
                                                 icon={<Edit size={16} />}
                                                 title="Edit Details"
                                             />
@@ -234,7 +257,20 @@ const Parents = () => {
                     <div className="grid grid-cols-2 gap-md">
                         <div className="form-group">
                             <label className="label text-[10px] font-black uppercase">Mobile No *</label>
-                            <input type="tel" className="input" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} required />
+                            <div className="flex gap-2">
+                                <CountryCodeSelect
+                                    value={formData.country_code}
+                                    onChange={(val) => setFormData({ ...formData, country_code: val })}
+                                />
+                                <input
+                                    type="tel"
+                                    className="input flex-grow"
+                                    value={formData.phone}
+                                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                    required
+                                    placeholder="712345678"
+                                />
+                            </div>
                         </div>
                         <div className="form-group">
                             <label className="label text-[10px] font-black uppercase">Email</label>

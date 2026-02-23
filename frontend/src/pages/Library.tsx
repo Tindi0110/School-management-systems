@@ -24,6 +24,9 @@ const Library = () => {
     const toast = useToast();
     const { confirm } = useConfirm();
     const [searchTerm, setSearchTerm] = useState('');
+    const [page, setPage] = useState(1);
+    const [_totalBooks, setTotalBooks] = useState(0);
+    const [pageSize] = useState(20);
 
     const userString = localStorage.getItem('user');
     const user = userString ? JSON.parse(userString) : null;
@@ -79,21 +82,50 @@ const Library = () => {
     };
 
     useEffect(() => {
-        fetchAllData();
+        loadCatalog();
+    }, [page]);
+
+    // Debounced search for catalog
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            if (page !== 1) setPage(1);
+            else loadCatalog();
+        }, 500);
+        return () => clearTimeout(handler);
+    }, [searchTerm]);
+
+    useEffect(() => {
+        const fetchInitialData = async () => {
+            try {
+                // Lendings, Fines and Students can stay bulk for now as they are usually smaller than catalog
+                await Promise.all([loadLendings(), loadFines(), loadStudents()]);
+            } catch (error) { console.error('Error in initial fetch:', error); }
+            finally { setLoading(false); }
+        };
+        fetchInitialData();
     }, []);
 
-    // Split loading to avoid slow re-fetches
-    const fetchAllData = async () => {
-        try {
-            await Promise.all([loadCatalog(), loadLendings(), loadFines(), loadStudents()]);
-        } catch (error) { console.error('Error initializing library:', error); }
-        finally { setLoading(false); }
-    };
-
+    const [_isLoadingCatalog, setIsLoadingCatalog] = useState(false);
     const loadCatalog = async () => {
-        const [b, c] = await Promise.all([libraryAPI.books.getAll(), libraryAPI.copies.getAll()]);
-        setBooks(b.data?.results ?? b.data ?? []);
-        setCopies(c.data?.results ?? c.data ?? []);
+        setIsLoadingCatalog(true);
+        try {
+            const params = {
+                page,
+                page_size: pageSize,
+                search: searchTerm
+            };
+            const [bRes, cRes] = await Promise.all([
+                libraryAPI.books.getAll(params),
+                libraryAPI.copies.getAll({ page_size: 100 }) // Copies simplified for now
+            ]);
+            setBooks(bRes.data?.results ?? bRes.data ?? []);
+            setTotalBooks(bRes.data?.count ?? (bRes.data?.results ? bRes.data.results.length : 0));
+            setCopies(cRes.data?.results ?? cRes.data ?? []);
+        } catch (error) {
+            toast.error("Failed to load catalog.");
+        } finally {
+            setIsLoadingCatalog(false);
+        }
     };
 
     const loadLendings = async () => {
@@ -322,16 +354,7 @@ const Library = () => {
         copies.filter(c => c.status === 'AVAILABLE').map(c => ({ id: String(c.id), label: `${c.copy_number} - ${books.find(b => b.id === c.book)?.title}`, value: String(c.id) })),
         [copies, books]);
 
-    const filteredBooks = React.useMemo(() => {
-        const lowerSearch = searchTerm.toLowerCase();
-        return books.filter(b =>
-            !searchTerm ||
-            (b.title || '').toLowerCase().includes(lowerSearch) ||
-            (b.author || '').toLowerCase().includes(lowerSearch) ||
-            (b.isbn && b.isbn.includes(searchTerm)) ||
-            (b.category && b.category.toLowerCase().includes(lowerSearch))
-        );
-    }, [books, searchTerm]);
+    const filteredBooks = books; // Logic moved to server-side
 
     const filteredCopies = React.useMemo(() => {
         const lowerSearch = searchTerm.toLowerCase();

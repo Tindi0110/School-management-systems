@@ -12,8 +12,8 @@ import { StatCard } from '../components/Card';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 import Button from '../components/common/Button';
-import { Student, Parent, DisciplineIncident, StudentDocument, Activity } from '../types/student.types';
-import { AcademicYear, Term, ClassUnit, Subject, Exam, StudentResult } from '../types/academic.types';
+import type { Student, Parent, DisciplineIncident, StudentDocument, Activity } from '../types/student.types';
+import type { StudentResult } from '../types/academic.types';
 import PremiumDateInput from '../components/common/DatePicker';
 
 type TabType = 'SUMMARY' | 'ACADEMIC' | 'FINANCE' | 'DISCIPLINE' | 'HEALTH' | 'ACTIVITIES' | 'DOCUMENTS';
@@ -445,23 +445,23 @@ const StudentProfile = () => {
     };
 
     const handleWhatsApp = () => {
-        const primaryParent = parents.find(p => p.is_primary) || parents[0];
-        const phone = primaryParent?.phone_number || student.guardian_phone || '';
-        const name = primaryParent?.full_name || student.guardian_name || 'Guardian';
-        const message = encodeURIComponent(`Hello ${name}, this is regarding ${student.full_name} (ADM: ${student.admission_number}). `);
+        const primaryParent = parents.find(p => (p as any).is_primary) || parents[0];
+        const phone = (primaryParent as any)?.phone || student?.guardian_phone || '';
+        const name = (primaryParent as any)?.full_name || student?.guardian_name || 'Guardian';
+        const message = encodeURIComponent(`Hello ${name}, this is regarding ${student?.full_name} (ADM: ${student?.admission_number}). `);
         window.open(`https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${message}`, '_blank');
     };
 
     const handleEmail = () => {
-        const primaryParent = parents.find(p => p.is_primary) || parents[0];
-        const email = primaryParent?.email || student.guardian_email || '';
-        const subject = encodeURIComponent(`Regarding ${student.full_name} - ${student.admission_number}`);
+        const primaryParent = parents.find(p => (p as any).is_primary) || parents[0];
+        const email = (primaryParent as any)?.email || student?.guardian_email || '';
+        const subject = encodeURIComponent(`Regarding ${student?.full_name} - ${student?.admission_number}`);
         window.location.href = `mailto:${email}?subject=${subject}`;
     };
 
     const handleDirectSMS = () => {
-        const primaryParent = parents.find(p => p.is_primary) || parents[0];
-        const phone = primaryParent?.phone_number || student.guardian_phone || '';
+        const primaryParent = parents.find(p => (p as any).is_primary) || parents[0];
+        const phone = (primaryParent as any)?.phone || student?.guardian_phone || '';
         window.location.href = `sms:${phone}`;
     };
 
@@ -1176,25 +1176,25 @@ const StudentProfile = () => {
             <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title="Edit Student Profile" size="md">
                 <form onSubmit={handleEditSubmit} className="space-y-4 form-container-md mx-auto">
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Full Name</label><input type="text" className="input" value={student.full_name} onChange={e => setStudent({ ...student, full_name: e.target.value })} required /></div>
-                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Admission Number</label><input type="text" className="input" value={student.admission_number} onChange={e => setStudent({ ...student, admission_number: e.target.value })} required /></div>
+                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Full Name</label><input type="text" className="input" value={student?.full_name || ''} onChange={e => setStudent(prev => prev ? { ...prev, full_name: e.target.value } : null)} required /></div>
+                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Admission Number</label><input type="text" className="input" value={student?.admission_number || ''} onChange={e => setStudent(prev => prev ? { ...prev, admission_number: e.target.value } : null)} required /></div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group"><label className="label text-[10px] font-black uppercase">Class</label>
-                            <select className="select" value={student.current_class} onChange={e => setStudent({ ...student, current_class: e.target.value })}>
+                            <select className="select" value={student?.current_class || ''} onChange={e => setStudent(prev => prev ? { ...prev, current_class: parseInt(e.target.value) || undefined } : null)}>
                                 <option value="">Select Class</option>
                                 {classes.map(c => <option key={c.id} value={c.id}>{c.name} {c.stream}</option>)}
                             </select>
                         </div>
                         <div className="form-group"><label className="label text-[10px] font-black uppercase">Category</label>
-                            <select className="select" value={student.category} onChange={e => setStudent({ ...student, category: e.target.value })}>
+                            <select className="select" value={student?.category || ''} onChange={e => setStudent(prev => prev ? { ...prev, category: e.target.value } : null)}>
                                 <option value="DAY">Day Scholar</option>
                                 <option value="BOARDING">Boarding</option>
                             </select>
                         </div>
                     </div>
                     <div className="form-group"><label className="label text-[10px] font-black uppercase">Status</label>
-                        <select className="select" value={student.status} onChange={e => setStudent({ ...student, status: e.target.value })}>
+                        <select className="select" value={student?.status} onChange={e => setStudent(prev => prev ? { ...prev, status: e.target.value as any } : null)}>
                             <option value="ACTIVE">Active</option>
                             <option value="SUSPENDED">Suspended</option>
                             <option value="WITHDRAWN">Withdrawn</option>
@@ -1259,7 +1259,7 @@ const StudentProfile = () => {
                                     <td className="py-3 px-4"></td>
                                 </tr>
                                 <tr><td className="py-3 px-4 text-xs font-bold text-slate-700">Boarding/Hostel</td><td className="py-3 px-4 text-xs font-black text-primary">{student.hostel_name ? `PENDING (Allocated to ${student.hostel_name})` : 'CLEARED'}</td><td className="py-3 px-4"></td></tr>
-                                <tr><td className="py-3 px-4 text-xs font-bold text-slate-700">Finance/Accounts</td><td className="py-3 px-4 text-xs font-black text-primary">{(student.fee_balance || 0) > 0 ? `OUTSTANDING BALANCE (KES ${student.fee_balance.toLocaleString()})` : 'CLEARED'}</td><td className="py-3 px-4"></td></tr>
+                                <tr><td className="py-3 px-4 text-xs font-bold text-slate-700">Finance/Accounts</td><td className="py-3 px-4 text-xs font-black text-primary">{(student.fee_balance ?? 0) > 0 ? `OUTSTANDING BALANCE (KES ${(student.fee_balance ?? 0).toLocaleString()})` : 'CLEARED'}</td><td className="py-3 px-4"></td></tr>
                             </tbody>
                         </table>
                     </div>

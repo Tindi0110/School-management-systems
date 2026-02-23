@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
     Plus, Edit, Trash2, Users, Award, GraduationCap,
     School, Calendar, ClipboardCheck, BarChart3, FileText,
-    Settings, Layers, Trophy, Printer, Square, CheckSquare, Download
+    Settings, Layers, Trophy, Printer, CheckSquare, Download,
+    ShieldAlert
 } from 'lucide-react';
 import { academicsAPI, staffAPI, studentsAPI } from '../api/api';
 import { exportToCSV } from '../utils/export';
@@ -13,13 +14,13 @@ import { StatCard } from '../components/Card';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 import Button from '../components/common/Button';
-import ShieldAlert from 'lucide-react/dist/esm/icons/shield-alert';
+import PremiumDateInput from '../components/common/DatePicker';
 import ExamBroadsheet from '../components/academics/ExamBroadsheet';
-import {
+import type {
     AcademicYear, Term, ClassUnit, Subject,
-    Exam, GradeSystem, GradeBoundary, StudentResult
+    Exam, GradeSystem
 } from '../types/academic.types';
-import { Student } from '../types/student.types';
+import type { Student } from '../types/student.types';
 import { calculateGrade, calculateMeanGrade } from '../utils/academicHelpers';
 
 
@@ -146,7 +147,7 @@ const Academics = () => {
     const [selectedClass, setSelectedClass] = useState<any>(null);
     const [viewClassStudents, setViewClassStudents] = useState<any[]>([]);
     const [rankingFilter, setRankingFilter] = useState({ level: '', classId: '' });
-    const [viewResultsGroupBy, setViewResultsGroupBy] = useState<'STREAM' | 'ENTIRE_CLASS'>('STREAM');
+
 
     // Form States
     const [yearForm, setYearForm] = useState({ name: '', is_active: false });
@@ -159,7 +160,7 @@ const Academics = () => {
     const [classForm, setClassForm] = useState({ name: '', stream: '', year: new Date().getFullYear().toString(), class_teacher: '', capacity: 40 });
     const [examForm, setExamForm] = useState({ name: '', exam_type: 'END_TERM', term: '', grade_system: '', weighting: 100, date_started: '', is_active: true });
     const [syllabusForm, setSyllabusForm] = useState({ subject: '', level: '', class_grade: '', coverage_percentage: 0 });
-    const [boundaryForm, setBoundaryForm] = useState({ system: '', grade: '', min_score: 0, max_score: 100, points: 0, remarks: '' });
+    const [boundaryForm, setBoundaryForm] = useState<{ system: string | number; grade: string; min_score: number; max_score: number; points: number; remarks: string; }>({ system: '', grade: '', min_score: 0, max_score: 100, points: 0, remarks: '' });
 
     // Editing & Selection States (CONSOLIDATED)
     const [editingSyllabusId, setEditingSyllabusId] = useState<number | null>(null);
@@ -674,7 +675,7 @@ const Academics = () => {
     const openViewClass = (cls: any) => {
         setSelectedClass(cls);
         // Filter students belonging to this class (assuming student.current_class is the ID)
-        setViewClassStudents(students.filter(s => s.current_class === cls.id));
+        setViewClassStudents(students.filter(s => (s as any).current_class === cls.id));
         setIsViewClassModalOpen(true);
     };
 
@@ -1020,7 +1021,7 @@ const Academics = () => {
                 dataToExport = classes.map(c => ({
                     name: c.name,
                     stream: c.stream,
-                    teacher: c.class_teacher_name,
+                    teacher: c.teacher_name,
                     students: c.student_count,
                     capacity: c.capacity
                 }));
@@ -1173,7 +1174,7 @@ const Academics = () => {
                                                     <div className="flex items-center gap-2 mt-1">
                                                         <span className="text-[9px] font-bold text-slate-400 uppercase">{e.term_name || 'Active Term'}</span>
                                                         <span className="w-1 h-1 rounded-full bg-slate-200"></span>
-                                                        <span className="text-[9px] font-mono text-slate-500">{e.date_started ? new Date(e.date_started + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : 'TBD'}</span>
+                                                        <span className="text-[9px] font-mono text-slate-500">{e.date_start ? new Date(e.date_start + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : 'TBD'}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1245,7 +1246,7 @@ const Academics = () => {
                                 <h3 className="mb-1 text-sm font-black">{cls.name} <span className="text-secondary">{cls.stream}</span></h3>
                                 <p className="text-[10px] font-bold text-secondary mb-4 flex items-center gap-1 uppercase"><Users size={10} /> {cls.student_count} Students</p>
                                 <div className="mt-auto pt-4 border-t border-slate-100 flex justify-between items-center">
-                                    <span className="text-[10px] font-black text-secondary uppercase">{cls.class_teacher_name || 'Unassigned TR'}</span>
+                                    <span className="text-[10px] font-black text-secondary uppercase">{cls.teacher_name || 'Unassigned TR'}</span>
                                     <div className="flex gap-1">
                                         <Button variant="outline" size="sm" onClick={() => openEditClass(cls)} title="Edit Class Details" icon={<Edit size={10} />} />
                                         <Button variant="ghost" size="sm" className="text-primary" onClick={() => openViewClass(cls)} title="View Students in Class" icon={<Users size={10} />} />
@@ -1467,7 +1468,7 @@ const Academics = () => {
                                                             </td>
                                                             <td className="py-4 px-6 font-bold text-xs">{subject.name}</td>
                                                             <td className="py-4 px-6"><code className="bg-slate-100 px-2 py-1 rounded text-[10px]">{subject.code}</code></td>
-                                                            <td className="py-4 px-6 text-[10px] uppercase font-bold text-slate-400">{subject.group_name || '-'}</td>
+                                                            <td className="py-4 px-6 text-[10px] uppercase font-bold text-slate-400">{(subject as any).category || (subject as any).group_name || '-'}</td>
                                                             <td className="py-4 px-6">
                                                                 {isAllocated ?
                                                                     <span className="badge badge-success text-[9px] font-black">ALLOCATED</span> :
@@ -1512,7 +1513,7 @@ const Academics = () => {
                                             <span className="font-bold text-xs">{sys.name}</span>
                                             {sys.is_default && <span className="badge badge-success text-[8px]">DEFAULT</span>}
                                         </div>
-                                        <div className="text-[10px] text-secondary mt-1">{sys.boundaries?.length || 0} Grade Boundaries</div>
+                                        <div className="text-[10px] text-secondary mt-1">{(sys as any).boundaries?.length || 0} Grade Boundaries</div>
                                     </div>
                                 ))}
                             </div>
@@ -1767,7 +1768,7 @@ const Academics = () => {
                                                         <span className={`text-[9px] font-bold ${selectedSystem?.id === gs.id ? 'text-white/70' : 'text-slate-400'}`}>{b.min_score}+</span>
                                                     </div>
                                                 ))}
-                                                {gs.boundaries?.length > 6 && <span className="text-[10px] font-black px-2 py-1 flex items-center text-slate-400">+{gs.boundaries.length - 6} more</span>}
+                                                {gs.boundaries && gs.boundaries.length > 6 && <span className="text-[10px] font-black px-2 py-1 flex items-center text-slate-400">+{gs.boundaries.length - 6} more</span>}
                                             </div>
                                         </div>
                                     ))}
@@ -2168,7 +2169,7 @@ const Academics = () => {
                                     const cid = parseInt(newClassId);
                                     const classStudents = students.filter(s => {
                                         // Handle both direct ID match and nested object if serializer changes
-                                        const sClassId = typeof s.current_class === 'object' ? s.current_class?.id : s.current_class;
+                                        const sClassId = typeof (s as any).current_class === 'object' ? (s as any).current_class?.id : (s as any).current_class;
                                         return Number(sClassId) === cid;
                                     });
                                     setBulkAttendanceList(classStudents.map(s => ({ student_id: s.id, status: 'PRESENT', remark: '' })));
@@ -2187,7 +2188,7 @@ const Academics = () => {
                                 options={attendanceFilter.classId
                                     ? studentOptions.filter((opt: any) => {
                                         const s = students.find(st => st.id.toString() === opt.value);
-                                        return s && s.current_class === parseInt(attendanceFilter.classId);
+                                        return s && (s as any).current_class === parseInt(attendanceFilter.classId);
                                     })
                                     : studentOptions
                                 }
@@ -2272,7 +2273,7 @@ const Academics = () => {
                         <div className="form-group">
                             <label className="label text-[10px] font-black uppercase">Active Term *</label>
                             <select className="select" value={examForm.term} onChange={(e) => setExamForm({ ...examForm, term: e.target.value })} required>
-                                <option value="">Select Term</option>{terms.map(t => <option key={t.id} value={t.id}>{t.name} ({t.year_name})</option>)}
+                                <option value="">Select Term</option>{terms.map(t => <option key={t.id} value={t.id}>{t.name} ({t.year})</option>)}
                             </select>
                         </div>
 

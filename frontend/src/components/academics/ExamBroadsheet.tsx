@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Printer } from 'lucide-react';
 import Modal from '../Modal';
 import Button from '../common/Button';
-import { ClassUnit, Subject, Exam, GradeSystem, StudentResult } from '../../types/academic.types';
-import { Student } from '../../types/student.types';
+import type { ClassUnit, Subject, Exam, GradeSystem, StudentResult } from '../../types/academic.types';
+import type { Student } from '../../types/student.types';
 import { calculateMeanGrade } from '../../utils/academicHelpers';
 
 interface ExamBroadsheetProps {
