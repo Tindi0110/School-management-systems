@@ -5,10 +5,10 @@ from .models import Staff
 User = get_user_model()
 
 class StaffSerializer(serializers.ModelSerializer):
-    full_name = serializers.CharField(source='user.get_full_name', read_only=True)
-    role = serializers.CharField(source='user.role', read_only=True)
-    email = serializers.EmailField(source='user.email', required=False)
-    username = serializers.CharField(source='user.username', read_only=True)
+    full_name = serializers.SerializerMethodField()
+    role = serializers.SerializerMethodField()
+    email = serializers.SerializerMethodField()
+    username = serializers.SerializerMethodField()
     
     # Write-only fields for creation/update
     write_full_name = serializers.CharField(write_only=True, required=False)
@@ -49,6 +49,18 @@ class StaffSerializer(serializers.ModelSerializer):
             
         validated_data['user'] = user
         return super().create(validated_data)
+
+    def get_full_name(self, obj):
+        return obj.user.get_full_name() if obj.user else "Unknown Staff"
+
+    def get_role(self, obj):
+        return obj.user.role if obj.user else "N/A"
+
+    def get_email(self, obj):
+        return obj.user.email if obj.user else ""
+
+    def get_username(self, obj):
+        return obj.user.username if obj.user else ""
 
     def update(self, instance, validated_data):
         full_name = validated_data.pop('write_full_name', None)

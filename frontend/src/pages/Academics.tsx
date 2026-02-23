@@ -210,7 +210,9 @@ const Academics = () => {
                 return sClass && sClass.name === resultContext.level;
             }
             return s.current_class === parseInt(resultContext.classId);
-        }).sort((a, b) => a.full_name.localeCompare(b.full_name));
+        }).filter((student, index, self) =>
+            index === self.findIndex((t) => t.id === student.id)
+        ).sort((a, b) => a.full_name.localeCompare(b.full_name));
     }, [students, resultContext.classId, resultContext.level, classes]);
 
 
@@ -2360,8 +2362,8 @@ const Academics = () => {
             </Modal>
 
             {/* Enter Results Modal */}
-            <Modal isOpen={isResultModalOpen} onClose={() => setIsResultModalOpen(false)} title={`Enter Results: ${selectedExam?.name || ''}`} size="xl">
-                <form onSubmit={handleBulkResultSubmit}>
+            <Modal isOpen={isResultModalOpen} onClose={() => setIsResultModalOpen(false)} title={`Enter Results: ${selectedExam?.name || ''}`} size="xxl">
+                <form onSubmit={handleBulkResultSubmit} className="max-w-[95vw] lg:max-w-7xl mx-auto">
                     {/* Cascading Class Selector */}
                     <div className="form-group p-3 mb-4 bg-gray-50">
                         <label className="label text-[10px] font-black uppercase mb-2">Select Class to Enter Marks</label>
