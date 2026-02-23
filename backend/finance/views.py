@@ -144,28 +144,29 @@ class InvoiceViewSet(viewsets.ModelViewSet):
             # fee_filters remains as term/year only (catches all levels + null)
             pass
 
-        # 1. Get Active Fee Structures
-        fees = FeeStructure.objects.filter(fee_filters).distinct()
-        if not fees.exists():
-            return Response({'error': 'No Fee Structures defined for the selected criteria'}, status=404)
+        try:
+            # 1. Get Active Fee Structures
+            fees = FeeStructure.objects.filter(fee_filters).distinct()
+            if not fees.exists():
+                return Response({'error': 'No Fee Structures defined for the selected criteria'}, status=404)
 
-        # 2. Get Students
-        students = Student.objects.filter(student_filters)
-        created_count = 0
+            # 2. Get Students
+            students = Student.objects.filter(student_filters)
+            created_count = 0
 
-        with transaction.atomic():
-            for student in students:
-                # Check if invoice already exists
-                if Invoice.objects.filter(student=student, term=term, academic_year_id=year_id).exists():
-                    continue
+            with transaction.atomic():
+                for student in students:
+                    # Check if invoice already exists
+                    if Invoice.objects.filter(student=student, term=term, academic_year_id=year_id).exists():
+                        continue
 
-                # Filter fees relevant to THIS student's class or global fees
-                student_fees = fees.filter(Q(class_level=student.current_class) | Q(class_level__isnull=True))
-                if not student_fees.exists():
-                    continue
+                    # Filter fees relevant to THIS student's class or global fees
+                    student_fees = fees.filter(Q(class_level=student.current_class) | Q(class_level__isnull=True))
+                    if not student_fees.exists():
+                        continue
 
-                # Create Invoice
-                inv = Invoice.objects.create(
+                    # Create Invoice
+                    inv = Invoice.objects.create(
                     student=student,
                     academic_year_id=year_id,
                     term=term,
@@ -186,7 +187,10 @@ class InvoiceViewSet(viewsets.ModelViewSet):
                 inv.update_balance()
                 created_count += 1
 
-        return Response({'message': f'Generated {created_count} invoices successfully.'})
+            return Response({'message': f'Generated {created_count} invoices successfully.'})
+            
+        except Exception as e:
+            return Response({'error': f"Failed to generate batch: {str(e)}"}, status=400)
 
     @action(detail=False, methods=['post'])
     def sync_all(self, request):

@@ -63,6 +63,31 @@ class StudentViewSet(viewsets.ModelViewSet):
     filterset_fields = ['current_class', 'status', 'category', 'gender']
     search_fields = ['full_name', 'admission_number', 'current_class__name']
 
+    @action(detail=False, methods=['get'])
+    def minimal_search(self, request):
+        """Ultra-lightweight endpoint for dropdowns/selectors"""
+        search = request.query_params.get('search', '')
+        qs = Student.objects.filter(status='ACTIVE')
+        if search:
+            qs = qs.filter(Q(full_name__icontains=search) | Q(admission_number__icontains=search))
+        
+        # Optimize query by only fetching needed fields
+        qs = qs.select_related('current_class').values(
+            'id', 'full_name', 'admission_number', 'current_class__name', 'current_class__stream'
+        )[:50]
+        
+        data = [
+            {
+                'id': s['id'],
+                'full_name': s['full_name'],
+                'admission_number': s['admission_number'],
+                'class_name': s['current_class__name'],
+                'class_stream': s['current_class__stream']
+            }
+            for s in qs
+        ]
+        return Response(data)
+
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         # 1. Create Student (and trigger Hostel Allocation signal if Boarding)
