@@ -16,7 +16,7 @@ import type { Student, Parent, DisciplineIncident, StudentDocument, Activity } f
 import type { StudentResult } from '../types/academic.types';
 import PremiumDateInput from '../components/common/DatePicker';
 
-type TabType = 'SUMMARY' | 'ACADEMIC' | 'FINANCE' | 'DISCIPLINE' | 'HEALTH' | 'ACTIVITIES' | 'DOCUMENTS';
+type TabType = 'SUMMARY' | 'ACADEMIC' | 'FINANCE' | 'DISCIPLINE' | 'HEALTH' | 'ACTIVITIES' | 'DOCUMENTS' | 'FAMILY';
 
 const StudentProfile = () => {
     const { id } = useParams<{ id: string }>();
@@ -48,6 +48,9 @@ const StudentProfile = () => {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [transferClassId, setTransferClassId] = useState('');
     const [classes, setClasses] = useState<any[]>([]);
+    const [isGuardianModalOpen, setIsGuardianModalOpen] = useState(false);
+    const [searchPhone, setSearchPhone] = useState('');
+    const [isSearchingParent, setIsSearchingParent] = useState(false);
 
     useEffect(() => {
         const fetchClasses = async () => {
@@ -366,9 +369,44 @@ const StudentProfile = () => {
         }
     };
 
+    const handleLinkParent = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!searchPhone) return;
+        setIsSearchingParent(true);
+        try {
+            const res = await studentsAPI.linkParent(Number(id), { phone: searchPhone });
+            toast.success(`Linked ${res.data.parent.full_name} successfully`);
+            setSearchPhone('');
+            loadCoreStudentData();
+        } catch (err: any) {
+            toast.error(err.message || 'Parent not found or already linked');
+        } finally {
+            setIsSearchingParent(false);
+        }
+    };
+
+    const handleUnlinkParent = async (parentId: number) => {
+        if (!(await confirm('Remove this guardian link?'))) return;
+        try {
+            await studentsAPI.unlinkParent(Number(id), { parent_id: parentId });
+            toast.success('Guardian unlinked successfully');
+            loadCoreStudentData();
+        } catch (err: any) {
+            toast.error(err.message || 'Failed to unlink guardian');
+        }
+    };
+
+    const handleMarkPrimary = async (parentId: number) => {
+        try {
+            await studentsAPI.parents.update(parentId, { is_primary: true });
+            toast.success('Marked as primary guardian');
+            loadCoreStudentData();
+        } catch (err: any) {
+            toast.error(err.message || 'Failed to update guardian');
+        }
+    };
+
     if (loading) return <div className="spinner-container flex items-center justify-center p-20"><div className="spinner"></div></div>;
-    // Loading & Error States
-    if (loading) return <div className="p-12 text-center animate-pulse">Loading student profile...</div>;
 
     if (error) return (
         <div className="p-12 text-center flex flex-col items-center justify-center gap-4">
@@ -392,6 +430,7 @@ const StudentProfile = () => {
         { id: 'HEALTH', label: 'Health & Welfare', icon: <Heart size={16} /> },
         { id: 'ACTIVITIES', label: 'Activities & Clubs', icon: <Users size={16} /> },
         { id: 'DOCUMENTS', label: 'Archive/Docs', icon: <FileText size={16} /> },
+        { id: 'FAMILY', label: 'Family', icon: <Users size={16} /> },
     ];
 
     // --- Actions ---
@@ -411,6 +450,11 @@ const StudentProfile = () => {
     };
 
     const handlePrintClearance = () => {
+        const printContent = document.getElementById('clearance-form');
+        if (!printContent) return;
+
+        // Temporarily reveal for print styles to pick it up if needed, 
+        // but window.print() usually handles print-only CSS better.
         window.print();
     };
 
@@ -1009,6 +1053,75 @@ const StudentProfile = () => {
                         </div>
                     )}
 
+                    {activeTab === 'FAMILY' && (
+                        <div className="space-y-6">
+                            <div className="flex justify-between items-center px-2">
+                                <h3 className="mb-0 text-xs font-black uppercase tracking-widest text-secondary">Family & Guardians</h3>
+                                <Button variant="primary" size="sm" className="font-black shadow-lg" onClick={() => setIsGuardianModalOpen(true)} icon={<Plus size={14} />}>
+                                    MANAGE GUARDIANS
+                                </Button>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {parents.length === 0 ? (
+                                    <div className="col-span-full py-12 text-center card border-dashed border-2">
+                                        <Users size={48} className="mx-auto text-slate-200 mb-4" />
+                                        <p className="text-secondary font-bold uppercase text-xs tracking-widest">No formally linked guardians found</p>
+                                        <p className="text-[10px] text-slate-400 mt-1 uppercase italic">Links help in communication and fee management</p>
+                                    </div>
+                                ) : (
+                                    parents.map((p: any) => (
+                                        <div key={p.id} className={`card p-6 border-left-4 ${p.is_primary ? 'border-primary' : 'border-slate-200'} card-mobile-flat`}>
+                                            <div className="flex justify-between items-start">
+                                                <div>
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        <h4 className="font-black text-xs uppercase mb-0 text-primary">{p.full_name}</h4>
+                                                        {p.is_primary && <span className="badge badge-primary scale-75 origin-left">PRIMARY</span>}
+                                                    </div>
+                                                    <p className="text-[10px] font-bold text-secondary uppercase tracking-widest">{p.relationship || 'Guardian'}</p>
+                                                </div>
+                                                <div className="flex gap-1">
+                                                    {!p.is_primary && (
+                                                        <button
+                                                            onClick={() => handleMarkPrimary(p.id)}
+                                                            className="p-1.5 hover:bg-primary-light hover:text-white rounded transition-all text-slate-400"
+                                                            title="Mark as Primary"
+                                                        >
+                                                            <ShieldCheck size={14} />
+                                                        </button>
+                                                    )}
+                                                    <button
+                                                        onClick={() => handleUnlinkParent(p.id)}
+                                                        className="p-1.5 hover:bg-error-light hover:text-error rounded transition-all text-slate-400"
+                                                        title="Unlink Guardian"
+                                                    >
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <div className="mt-4 space-y-2">
+                                                <div className="flex items-center gap-2 text-xs font-bold text-slate-600">
+                                                    <Phone size={12} className="text-slate-400" /> {p.phone}
+                                                </div>
+                                                {p.email && (
+                                                    <div className="flex items-center gap-2 text-xs font-bold text-slate-600 truncate">
+                                                        <Mail size={12} className="text-slate-400" /> {p.email}
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <div className="mt-4 pt-4 border-t flex gap-2">
+                                                <Button variant="ghost" size="xs" onClick={() => window.open(`tel:${p.phone}`)} icon={<Phone size={12} />} className="text-[10px] font-bold">CALL</Button>
+                                                <Button variant="ghost" size="xs" onClick={() => window.open(`https://wa.me/${p.phone.replace(/[^0-9]/g, '')}`)} icon={<MessageSquare size={12} />} className="text-[10px] font-bold">WHATSAPP</Button>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+                    )}
+
                 </div>
 
                 {/* Sidebar Context */}
@@ -1027,8 +1140,8 @@ const StudentProfile = () => {
                                     <div className="flex justify-between items-start text-[10px] font-black uppercase text-secondary">
                                         <span>Primary Guardian</span>
                                         <div className="text-right">
-                                            <span className="text-primary block">{parents.find(p => p.is_primary)?.full_name || student.guardian_name}</span>
-                                            <span className="text-secondary text-[8px] block opacity-70 tracking-normal lower-case">{parents.find(p => p.is_primary)?.phone_number || student.guardian_phone}</span>
+                                            <span className="text-primary block">{parents.find((p: any) => p.is_primary)?.full_name || student.guardian_name}</span>
+                                            <span className="text-secondary text-[8px] block opacity-70 tracking-normal lower-case">{parents.find((p: any) => p.is_primary)?.phone || student.guardian_phone}</span>
                                         </div>
                                     </div>
                                     <div className="flex justify-between items-center text-[10px] font-black uppercase text-secondary"><span>House Unit</span> <span className="text-primary">{student.residence_details || student.hostel_name || 'DAY SCHOLAR'}</span></div>
@@ -1229,44 +1342,98 @@ const StudentProfile = () => {
 
             {/* Clearance Form Template */}
             <div id="clearance-form" className="hidden">
-                <div className="report-container clearance-form">
-                    <div className="report-header">
-                        <h1>Student Clearance Form</h1>
-                        <p>School Administration Details</p>
+                <div className="report-container p-12 bg-white text-slate-800" style={{ fontFamily: "'Inter', sans-serif" }}>
+                    <div className="report-header border-b-2 border-slate-900 pb-6 mb-8 text-center">
+                        <h1 className="text-2xl font-black uppercase tracking-tighter mb-1">Institutional Student Clearance</h1>
+                        <p className="text-secondary text-[10px] uppercase font-bold tracking-widest">Official Record of Discharge & Verification</p>
                     </div>
-                    <p>This is to certify that <strong>{student.full_name}</strong> (ADM: <strong>{student.admission_number}</strong>) has successfully cleared with the following departments:</p>
 
-                    <div className="table-wrapper">
-                        <table className="table w-full">
+                    <div className="grid grid-cols-2 gap-8 mb-8">
+                        <div>
+                            <p className="text-[9px] uppercase font-black text-slate-400 mb-1">Student Details</p>
+                            <h2 className="text-sm font-bold">{student.full_name}</h2>
+                            <p className="text-xs text-secondary">ADM: {student.admission_number}</p>
+                            <p className="text-xs text-secondary">Category: {student.category}</p>
+                        </div>
+                        <div className="text-right">
+                            <p className="text-[9px] uppercase font-black text-slate-400 mb-1">Verification Date</p>
+                            <p className="text-xs font-bold">{new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
+                        </div>
+                    </div>
+
+                    <div className="table-wrapper border border-slate-200 rounded-xl overflow-hidden mb-8">
+                        <table className="table w-full border-collapse">
                             <thead>
-                                <tr className="bg-slate-50">
-                                    <th className="py-3 px-4 text-[10px] font-black uppercase text-slate-400">Department</th>
-                                    <th className="py-3 px-4 text-[10px] font-black uppercase text-slate-400">Status</th>
-                                    <th className="py-3 px-4 text-[10px] font-black uppercase text-slate-400">Signature/Stamp</th>
+                                <tr className="bg-slate-50 border-b border-slate-200">
+                                    <th className="py-4 px-6 text-left text-[9px] font-black uppercase text-slate-500 tracking-widest">Departmental Unit</th>
+                                    <th className="py-4 px-6 text-left text-[9px] font-black uppercase text-slate-500 tracking-widest">Verification Status</th>
+                                    <th className="py-4 px-6 text-left text-[9px] font-black uppercase text-slate-500 tracking-widest">Official Stamp/Sign</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
-                                <tr>
-                                    <td className="py-3 px-4 text-xs font-bold text-slate-700">Academics (Books/Exams)</td>
-                                    <td className="py-3 px-4 text-xs font-black text-primary">
-                                        {unreturnedBooks > 0 || results.length === 0 ? (
-                                            <div className="flex flex-col gap-1">
-                                                {unreturnedBooks > 0 && <span>PENDING ({unreturnedBooks} UNRETURNED BOOKS)</span>}
-                                                {results.length === 0 && <span>PENDING (NO EXAM RESULTS RECORDED)</span>}
-                                            </div>
-                                        ) : 'CLEARED'}
+                                <tr className="group">
+                                    <td className="py-4 px-6 text-xs font-black text-slate-700 uppercase">Academics & Exams</td>
+                                    <td className="py-4 px-6 text-xs font-bold">
+                                        {results.length === 0 ? <span className="text-amber-600">PENDING (NO EXAM RECORDS)</span> : <span className="text-success">CLEARED (SYSTEM VERIFIED)</span>}
                                     </td>
-                                    <td className="py-3 px-4"></td>
+                                    <td className="py-4 px-6 h-12"></td>
                                 </tr>
-                                <tr><td className="py-3 px-4 text-xs font-bold text-slate-700">Boarding/Hostel</td><td className="py-3 px-4 text-xs font-black text-primary">{student.hostel_name ? `PENDING (Allocated to ${student.hostel_name})` : 'CLEARED'}</td><td className="py-3 px-4"></td></tr>
-                                <tr><td className="py-3 px-4 text-xs font-bold text-slate-700">Finance/Accounts</td><td className="py-3 px-4 text-xs font-black text-primary">{(student.fee_balance ?? 0) > 0 ? `OUTSTANDING BALANCE (KES ${(student.fee_balance ?? 0).toLocaleString()})` : 'CLEARED'}</td><td className="py-3 px-4"></td></tr>
+                                <tr>
+                                    <td className="py-4 px-6 text-xs font-black text-slate-700 uppercase">Library Services</td>
+                                    <td className="py-4 px-6 text-xs font-bold">
+                                        {unreturnedBooks > 0 ? <span className="text-error font-black italic underline decoration-2">PENDING ({unreturnedBooks} BOOKS OWED)</span> : <span className="text-success">CLEARED</span>}
+                                    </td>
+                                    <td className="py-4 px-6 h-12"></td>
+                                </tr>
+                                <tr>
+                                    <td className="py-4 px-6 text-xs font-black text-slate-700 uppercase">Hostel & Boarding</td>
+                                    <td className="py-4 px-6 text-xs font-bold">
+                                        {student.hostel_name ? <span className="text-amber-600">PENDING (RESIDENT: {student.hostel_name})</span> : <span className="text-success">CLEARED</span>}
+                                    </td>
+                                    <td className="py-4 px-6 h-12"></td>
+                                </tr>
+                                <tr>
+                                    <td className="py-4 px-6 text-xs font-black text-slate-700 uppercase">Transport & Logistics</td>
+                                    <td className="py-4 px-6 text-xs font-bold">
+                                        {student.transport_details ? <span className="text-amber-600">PENDING (ACTIVE ROUTE: {student.transport_details})</span> : <span className="text-success">CLEARED</span>}
+                                    </td>
+                                    <td className="py-4 px-6 h-12"></td>
+                                </tr>
+                                <tr>
+                                    <td className="py-4 px-6 text-xs font-black text-slate-700 uppercase bg-slate-50/50">Financial Accounts</td>
+                                    <td className="py-4 px-6 text-xs font-black bg-slate-50/50">
+                                        {(student.fee_balance ?? 0) > 0 ? (
+                                            <span className="text-error border-b border-error">OUTSTANDING: KES {(student.fee_balance ?? 0).toLocaleString()}</span>
+                                        ) : (
+                                            <span className="text-success">CLEARED (ZERO BALANCE)</span>
+                                        )}
+                                    </td>
+                                    <td className="py-4 px-6 h-12 bg-slate-50/50"></td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
 
-                    <div className="signature-group">
-                        <div className="signature-line">Student Signature</div>
-                        <div className="signature-line">Principal Signature</div>
+                    <div className="bg-slate-900 p-6 rounded-2xl mb-8">
+                        <p className="text-[10px] text-white/50 uppercase font-black mb-2 tracking-widest">Final Authorization Summary</p>
+                        <p className="text-xs text-white leading-relaxed">
+                            This document serves as written proof that the aforementioned student has fulfilled all institutional obligations. Any department marked as <strong>CLEARED</strong> has verified the absence of pending records, equipment, or fees.
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-8 mt-12 pt-8 border-t border-slate-100">
+                        <div className="text-center">
+                            <div className="h-12 border-b border-slate-900 mb-2"></div>
+                            <p className="text-[10px] font-black uppercase text-slate-400">Student Signature</p>
+                        </div>
+                        <div className="text-center">
+                            <div className="h-12 border-b border-slate-900 mb-2"></div>
+                            <p className="text-[10px] font-black uppercase text-slate-400">Head of Finance</p>
+                        </div>
+                        <div className="text-center">
+                            <div className="h-12 border-b border-slate-900 mb-2"></div>
+                            <p className="text-[10px] font-black uppercase text-slate-400">Principal / Administrator</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1312,6 +1479,63 @@ const StudentProfile = () => {
                 </div>
             </Modal>
 
+            <Modal isOpen={isGuardianModalOpen} onClose={() => setIsGuardianModalOpen(false)} title="Guardian Network Management" size="sm">
+                <div className="space-y-6">
+                    <form onSubmit={handleLinkParent} className="space-y-4">
+                        <p className="text-[11px] font-bold text-secondary uppercase tracking-widest leading-relaxed">Search Existing Parent Records</p>
+                        <div className="flex gap-2">
+                            <div className="form-group flex-grow">
+                                <input
+                                    type="tel"
+                                    className="input"
+                                    placeholder="Enter Phone Number (e.g. 07...)"
+                                    value={searchPhone}
+                                    onChange={e => setSearchPhone(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <Button type="submit" variant="primary" loading={isSearchingParent} icon={<Plus size={16} />}>LINK</Button>
+                        </div>
+                        <p className="text-[9px] text-slate-400 italic uppercase">If the parent exists in the system, they will be linked to this student instantly.</p>
+                    </form>
+
+                    <div className="pt-6 border-t">
+                        <p className="text-[10px] font-black text-primary uppercase mb-3">Linked Guardians ({parents.length})</p>
+                        <div className="space-y-3">
+                            {parents.map((p: any) => (
+                                <div key={p.id} className="flex justify-between items-center p-3 rounded-xl bg-slate-50 border border-slate-100">
+                                    <div>
+                                        <p className="text-xs font-black text-slate-800 uppercase mb-0">{p.full_name}</p>
+                                        <p className="text-[9px] font-bold text-slate-400">{p.phone}</p>
+                                    </div>
+                                    <div className="flex gap-1">
+                                        {!p.is_primary && (
+                                            <button
+                                                onClick={() => handleMarkPrimary(p.id)}
+                                                className="p-1.5 text-primary hover:bg-primary-light hover:text-white rounded-lg transition-colors"
+                                                title="Mark Primary"
+                                            >
+                                                <ShieldCheck size={14} />
+                                            </button>
+                                        )}
+                                        <button
+                                            onClick={() => handleUnlinkParent(p.id)}
+                                            className="p-1.5 text-error hover:bg-error-light rounded-lg transition-colors"
+                                            title="Unlink"
+                                        >
+                                            <Trash2 size={14} />
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="modal-footer pt-4">
+                        <Button variant="outline" className="w-full" onClick={() => setIsGuardianModalOpen(false)}>CLOSE MANAGER</Button>
+                    </div>
+                </div>
+            </Modal>
         </div >
     );
 };

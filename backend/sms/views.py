@@ -1,7 +1,14 @@
 from rest_framework import viewsets
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
+from django.utils import timezone
+from accounts.models import User
+from students.models import Student
+from academics.models import Class, AcademicYear, Term
+from staff.models import Staff
+from communication.models import SystemAlert, SchoolEvent
+from communication.serializers import SystemAlertSerializer
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -12,64 +19,15 @@ def health_check(request):
         "version": "1.0.0"
     })
 
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
-from accounts.models import User
-from students.models import Student
-from academics.models import Class, Subject, Exam, StudentResult, AcademicYear, Term
-from staff.models import Staff
-from communication.models import SystemAlert, SchoolEvent
-from accounts.serializers import UserSerializer
-from students.serializers import StudentSerializer
-from academics.serializers import ClassSerializer, SubjectSerializer, ExamSerializer, StudentResultSerializer
-from staff.serializers import StaffSerializer
-from communication.serializers import SystemAlertSerializer
-from django.utils import timezone
+# Redundant viewsets removed as they are already defined in their respective app views.py 
+# and registered in urls.py using the correct imports.
 
 class UserViewSet(viewsets.ModelViewSet):
+    from accounts.serializers import UserSerializer
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    from rest_framework.permissions import IsAdminUser
     permission_classes = [IsAdminUser]
-
-class StudentViewSet(viewsets.ModelViewSet):
-    queryset = Student.objects.all()
-    serializer_class = StudentSerializer
-    permission_classes = [IsAuthenticated]
-
-class StaffViewSet(viewsets.ModelViewSet):
-    queryset = Staff.objects.all()
-    serializer_class = StaffSerializer
-    permission_classes = [IsAuthenticated]
-
-class ClassViewSet(viewsets.ModelViewSet):
-    queryset = Class.objects.all()
-    serializer_class = ClassSerializer
-    permission_classes = [IsAuthenticated]
-
-class SubjectViewSet(viewsets.ModelViewSet):
-    queryset = Subject.objects.all()
-    serializer_class = SubjectSerializer
-    permission_classes = [IsAuthenticated]
-
-class ExamViewSet(viewsets.ModelViewSet):
-    queryset = Exam.objects.all()
-    serializer_class = ExamSerializer
-    permission_classes = [IsAuthenticated]
-
-class StudentResultViewSet(viewsets.ModelViewSet):
-    queryset = StudentResult.objects.all()
-    serializer_class = StudentResultSerializer
-    permission_classes = [IsAuthenticated]
-    
-    def get_queryset(self):
-        queryset = StudentResult.objects.select_related('student', 'exam', 'subject').all()
-        student_id = self.request.query_params.get('student_id')
-        exam_id = self.request.query_params.get('exam_id')
-        if student_id:
-            queryset = queryset.filter(student_id=student_id)
-        if exam_id:
-            queryset = queryset.filter(exam_id=exam_id)
-        return queryset
-
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -79,13 +37,15 @@ def dashboard_stats(request):
     Reduces network round-trips significantly by combining counts, active context, 
     live alerts, and upcoming events into a single response.
     """
-    from django.db.models import Count, Q
+    from django.db.models import Sum
     from finance.models import Invoice
+    from academics.models import Exam
     today = timezone.now().date()
     
     # 1. Basic Counts (Aggregated)
+    # total_students now shows all students in registry (not just active) for complete visibility
     counts = {
-        'total_students': Student.objects.filter(is_active=True).count(),
+        'total_students': Student.objects.count(), 
         'total_staff': Staff.objects.count(),
         'total_classes': Class.objects.count(),
         'pending_invoices': Invoice.objects.filter(balance__gt=0).count(),

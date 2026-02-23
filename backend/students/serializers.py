@@ -26,7 +26,7 @@ class ParentSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Parent
-        fields = '__all__'
+        fields = ['id', 'full_name', 'relationship', 'phone', 'email', 'occupation', 'address', 'is_primary', 'students']
 
     def validate_phone(self, value):
         if value and not value.startswith('+'):
@@ -89,6 +89,7 @@ class StudentSerializer(serializers.ModelSerializer):
     guardian_email = serializers.EmailField(write_only=True, required=False, allow_blank=True)
     guardian_relation = serializers.CharField(write_only=True, required=False, default='GUARDIAN')
     guardian_address = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    is_primary_guardian = serializers.BooleanField(write_only=True, required=False, default=True)
 
     def get_class_name(self, obj):
         return obj.current_class.name if obj.current_class else None

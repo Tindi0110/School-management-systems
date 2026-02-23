@@ -675,7 +675,10 @@ const Academics = () => {
     const openViewClass = (cls: any) => {
         setSelectedClass(cls);
         // Filter students belonging to this class (assuming student.current_class is the ID)
-        setViewClassStudents(students.filter(s => (s as any).current_class === cls.id));
+        setViewClassStudents(students.filter(s => {
+            const studentClassId = typeof s.current_class === 'object' ? (s.current_class as any)?.id : s.current_class;
+            return studentClassId === cls.id;
+        }));
         setIsViewClassModalOpen(true);
     };
 
@@ -1246,7 +1249,7 @@ const Academics = () => {
                                 <h3 className="mb-1 text-sm font-black">{cls.name} <span className="text-secondary">{cls.stream}</span></h3>
                                 <p className="text-[10px] font-bold text-secondary mb-4 flex items-center gap-1 uppercase"><Users size={10} /> {cls.student_count} Students</p>
                                 <div className="mt-auto pt-4 border-t border-slate-100 flex justify-between items-center">
-                                    <span className="text-[10px] font-black text-secondary uppercase">{cls.teacher_name || 'Unassigned TR'}</span>
+                                    <span className="text-[10px] font-black text-secondary uppercase">{cls.class_teacher_name || 'Unassigned TR'}</span>
                                     <div className="flex gap-1">
                                         <Button variant="outline" size="sm" onClick={() => openEditClass(cls)} title="Edit Class Details" icon={<Edit size={10} />} />
                                         <Button variant="ghost" size="sm" className="text-primary" onClick={() => openViewClass(cls)} title="View Students in Class" icon={<Users size={10} />} />
@@ -1509,11 +1512,17 @@ const Academics = () => {
                                         onClick={() => { setSelectedSystem(sys); setBoundaryForm({ ...boundaryForm, system: sys.id }); }}
                                         className={`p-3 rounded border cursor-pointer transition-all hover:shadow-md ${selectedSystem?.id === sys.id ? 'bg-primary-light border-primary' : 'bg-white hover:bg-gray-50'}`}
                                     >
-                                        <div className="flex justify-between items-center">
-                                            <span className="font-bold text-xs">{sys.name}</span>
-                                            {sys.is_default && <span className="badge badge-success text-[8px]">DEFAULT</span>}
+                                        <div className="flex justify-between items-center group/grad">
+                                            <div className="flex flex-col">
+                                                <span className="font-bold text-xs">{sys.name}</span>
+                                                <div className="text-[10px] text-secondary mt-1">{(sys as any).boundaries?.length || 0} Grade Boundaries</div>
+                                            </div>
+                                            <div className="flex items-center gap-1 opacity-0 group-hover/grad:opacity-100 transition-opacity">
+                                                <button onClick={(e) => { e.stopPropagation(); openEditGradeSystem(sys); }} className="p-1.5 rounded bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-primary transition-all"><Edit size={10} /></button>
+                                                <button onClick={(e) => { e.stopPropagation(); handleDeleteGradeSystem(sys.id); }} className="p-1.5 rounded bg-slate-100 text-slate-500 hover:bg-error-light hover:text-error transition-all"><Trash2 size={10} /></button>
+                                            </div>
                                         </div>
-                                        <div className="text-[10px] text-secondary mt-1">{(sys as any).boundaries?.length || 0} Grade Boundaries</div>
+                                        {sys.is_default && <span className="badge badge-success text-[8px] mt-2">DEFAULT</span>}
                                     </div>
                                 ))}
                             </div>
@@ -1748,7 +1757,11 @@ const Academics = () => {
                                                     <span className="font-black text-[11px] uppercase tracking-wider">{gs.name}</span>
                                                     {gs.is_default && <span className={`text-[8px] font-black px-1.5 py-0.5 rounded ${selectedSystem?.id === gs.id ? 'bg-white/20 text-white' : 'bg-success/20 text-success'}`}>DEFAULT</span>}
                                                 </div>
-                                                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity items-center">
+                                                <div className="flex gap-1 opacity-100 items-center">
+                                                    <Button variant="ghost" size="sm" className={`p-1 ${selectedSystem?.id === gs.id ? 'text-white/60 hover:text-white' : 'text-slate-400 hover:text-primary'}`} title="Edit System" onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        openEditGradeSystem(gs);
+                                                    }} icon={<Edit size={12} />} />
                                                     <Button variant="ghost" size="sm" className={`p-1 ${selectedSystem?.id === gs.id ? 'text-white/60 hover:text-white' : 'text-slate-400 hover:text-primary'}`} title="Add Boundary" onClick={(e) => {
                                                         e.stopPropagation();
                                                         setSelectedSystem(gs);
@@ -1945,85 +1958,53 @@ const Academics = () => {
                                     {attendanceRecords.length === 0 ? (
                                         <tr><td colSpan={6} className="text-center p-8 text-secondary italic">No attendance records found. Use "Log Status" to add entries.</td></tr>
                                     ) : (
-                                        [...attendanceRecords].sort((a, b) => {
-                                            let valA, valB;
-                                            if (attendanceSort.field === 'date') {
-                                                valA = a.date; valB = b.date;
-                                            } else if (attendanceSort.field === 'student') {
-                                                const sA = students.find(s => s.id === a.student);
-                                                const sB = students.find(s => s.id === b.student);
-                                                valA = sA?.full_name || ''; valB = sB?.full_name || '';
-                                            } else if (attendanceSort.field === 'stream') {
-                                                const sA = students.find(s => s.id === a.student);
-                                                const sB = students.find(s => s.id === b.student);
-                                                const cA = classes.find(c => c.id === sA?.current_class);
-                                                const cB = classes.find(c => c.id === sB?.current_class);
-                                                valA = cA?.stream || ''; valB = cB?.stream || '';
-                                            } else {
-                                                const sA = students.find(s => s.id === a.student);
-                                                const sB = students.find(s => s.id === b.student);
-                                                const cA = classes.find(c => c.id === sA?.current_class);
-                                                const cB = classes.find(c => c.id === sB?.current_class);
-                                                valA = `${cA?.name} ${cA?.stream}`; valB = `${cB?.name} ${cB?.stream}`;
-                                            }
-                                            return attendanceSort.direction === 'asc'
-                                                ? (valA > valB ? 1 : -1)
-                                                : (valA < valB ? 1 : -1);
-                                        }).map((att: any) => {
-                                            const student = students.find(s => s.id === att.student);
-                                            const cls = classes.find(c => c.id === student?.current_class);
-                                            return (
-                                                <tr key={att.id} className="hover:bg-blue-50/50">
-                                                    <td className="font-mono text-xs">{att.date}</td>
-                                                    <td>
-                                                        <div className="flex flex-col">
-                                                            <span className="font-bold text-xs">{student?.full_name || 'Unknown'}</span>
-                                                            <span className="text-[9px] text-secondary">{student?.admission_number}</span>
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <div className="flex flex-col">
-                                                            <span className="font-bold text-xs">{cls?.name || 'N/A'}</span>
-                                                            <span className="text-[9px] text-secondary font-black uppercase tracking-wider">{cls?.stream || 'General'}</span>
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <span className={`badge badge-sm font-bold ${att.status === 'PRESENT' ? 'badge-success text-white' : att.status === 'ABSENT' ? 'badge-error text-white' : 'badge-warning'}`}>
-                                                            {att.status}
-                                                        </span>
-                                                    </td>
-                                                    <td className="text-xs italic text-secondary">{att.remark || '-'}</td>
-                                                    <td className="text-right flex justify-end gap-1">
-                                                        {!isReadOnly && (
-                                                            <>
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    className="text-primary"
-                                                                    onClick={() => openEditAttendance(att)}
-                                                                    icon={<Edit size={12} />}
-                                                                />
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    className="text-error"
-                                                                    onClick={async () => {
-                                                                        if (await confirm('Delete this attendance record?', { type: 'danger' })) {
-                                                                            try {
-                                                                                await academicsAPI.attendance.delete(att.id);
-                                                                                loadAllAcademicData();
-                                                                                success('Attendance record deleted');
-                                                                            } catch (err: any) { toastError(err.message || 'Failed to delete record'); }
-                                                                        }
-                                                                    }}
-                                                                    icon={<Trash2 size={12} />}
-                                                                />
-                                                            </>
-                                                        )}
-                                                    </td>
-                                                </tr>
-                                            );
-                                        }))}
+                                        (() => {
+                                            const groupedAtt = attendanceRecords.reduce((acc: any, att: any) => {
+                                                const student = students.find(s => s.id === att.student);
+                                                const cls = classes.find(c => c.id === student?.current_class);
+                                                const groupKey = cls ? `${cls.name} ${cls.stream}` : 'Unassigned';
+                                                if (!acc[groupKey]) acc[groupKey] = [];
+                                                acc[groupKey].push({ ...att, student_name: student?.full_name, class_name: groupKey });
+                                                return acc;
+                                            }, {});
+
+                                            return Object.keys(groupedAtt).sort().map(groupKey => (
+                                                <React.Fragment key={groupKey}>
+                                                    <tr className="bg-slate-50">
+                                                        <td colSpan={6} className="py-2 px-6 text-[10px] font-black uppercase text-secondary tracking-widest">{groupKey}</td>
+                                                    </tr>
+                                                    {groupedAtt[groupKey].map((att: any) => (
+                                                        <tr key={att.id} className="hover:bg-blue-50/50">
+                                                            <td className="font-mono text-xs">{att.date}</td>
+                                                            <td>
+                                                                <div className="flex flex-col">
+                                                                    <span className="font-bold text-xs">{att.student_name || 'Unknown'}</span>
+                                                                    <span className="text-[9px] text-secondary">ADM_NOT_STORED</span>
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                <div className="flex flex-col">
+                                                                    <span className="font-bold text-xs text-primary">{att.class_name}</span>
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                <span className={`badge badge-sm font-bold ${att.status === 'PRESENT' ? 'badge-success text-white' : att.status === 'ABSENT' ? 'badge-error text-white' : 'badge-warning'}`}>
+                                                                    {att.status}
+                                                                </span>
+                                                            </td>
+                                                            <td className="text-xs">{att.remark || '—'}</td>
+                                                            <td className="text-right">
+                                                                <div className="flex justify-end gap-1">
+                                                                    <Button variant="ghost" size="sm" className="text-primary" onClick={() => { setEditingAttendanceId(att.id); setAttendanceForm({ ...att }); setIsAttendanceModalOpen(true); }} icon={<Edit size={12} />} />
+                                                                    <Button variant="ghost" size="sm" className="text-error" onClick={() => handleDeleteAttendance(att.id)} icon={<Trash2 size={12} />} />
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </React.Fragment>
+                                            ));
+                                        })()
+                                    )}
                                 </tbody>
                             </table>
                         </div>
@@ -2256,9 +2237,12 @@ const Academics = () => {
                         </div>
                     )}
 
-                    <Button type="submit" variant="primary" size="sm" className="bg-success border-success w-full mt-4 font-black uppercase text-white shadow-md" loading={isSubmitting} loadingText="Posting...">
-                        {attendanceFilter.isBulk ? `Submit Register (${bulkAttendanceList.length})` : 'Post Attendance Record'}
-                    </Button>
+                    <div className="mt-6 pt-4 border-t flex justify-end gap-2 sticky bottom-0 bg-white pb-2">
+                        <Button type="button" variant="ghost" size="sm" onClick={() => setIsAttendanceModalOpen(false)}>Cancel</Button>
+                        <Button type="submit" variant="primary" size="sm" className="bg-success border-success font-black uppercase text-white shadow-md px-8" loading={isSubmitting} loadingText="Posting...">
+                            {attendanceFilter.isBulk ? `Submit Register (${bulkAttendanceList.length})` : 'Post Attendance Record'}
+                        </Button>
+                    </div>
                 </form>
             </Modal>
 

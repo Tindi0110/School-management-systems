@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'reports', 
     'communication',
     'mpesa',
+    'django_filters',
 ]
 
 MIDDLEWARE = [
@@ -161,6 +162,7 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 50,
     # Filtering
     'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
         'rest_framework.filters.SearchFilter',
         'rest_framework.filters.OrderingFilter',
     ],

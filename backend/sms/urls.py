@@ -4,9 +4,10 @@ from django.views.generic import TemplateView
 from rest_framework.routers import DefaultRouter
 from accounts.views import RegisterView, CustomAuthToken
 from .views import (
-    health_check, UserViewSet, StaffViewSet, 
+    health_check, UserViewSet,
     dashboard_stats
 )
+from staff.views import StaffViewSet
 from finance.views import (
     FeeStructureViewSet, InvoiceViewSet, PaymentViewSet, 
     AdjustmentViewSet, ExpenseViewSet

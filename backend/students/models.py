@@ -10,13 +10,20 @@ class Parent(models.Model):
     )
     full_name = models.CharField(max_length=255)
     relationship = models.CharField(max_length=20, choices=RELATIONSHIP_CHOICES)
-    phone = models.CharField(max_length=20)
+    phone = models.CharField(max_length=20) # Removed unique filter to allow migration with existing duplicates
     email = models.EmailField(blank=True, null=True)
     occupation = models.CharField(max_length=100, blank=True)
     address = models.TextField(blank=True)
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='parent_profile')
+    is_primary = models.BooleanField(default=False, help_text="Designates the primary contact for financial and medical alerts.")
 
     def __str__(self): return f"{self.full_name} ({self.relationship})"
+
+    def delete(self, *args, **kwargs):
+        if self.students.exists():
+            from django.core.exceptions import ValidationError
+            raise ValidationError("Cannot delete a guardian that is linked to students. Unlink them first.")
+        super().delete(*args, **kwargs)
 
 class Student(models.Model):
     GENDER_CHOICES = (('M', 'Male'), ('F', 'Female'))
@@ -30,7 +37,7 @@ class Student(models.Model):
     )
 
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='student_profile')
-    admission_number = models.CharField(max_length=20, unique=True)
+    admission_number = models.CharField(max_length=20, unique=True, blank=True) # Blank allowed for auto-gen
     full_name = models.CharField(max_length=255)
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
     date_of_birth = models.DateField()
@@ -55,6 +62,32 @@ class Student(models.Model):
     
     admission_date = models.DateField(auto_now_add=True)
     is_active = models.BooleanField(default=True) # Linked to status='ACTIVE'
+
+    def save(self, *args, **kwargs):
+        if not self.admission_number:
+            from academics.models import AcademicYear
+            from django.db.models import Max
+            import datetime
+            
+            # 1. Determine the Year Part (YY)
+            active_year = AcademicYear.objects.filter(is_active=True).first()
+            year_val = active_year.name if active_year else str(datetime.date.today().year)
+            short_year = year_val[-2:] # Last 2 digits
+            
+            # 2. Determine the sequence Part (XXXX)
+            # Filter students whose admission numbers start with this short_year
+            # This ensures we count correctly per year
+            year_prefix = f"{short_year}/"
+            last_student = Student.objects.filter(admission_number__startswith=year_prefix).aggregate(Max('id'))
+            
+            # Better: Count actual records with this prefix to get "next"
+            count = Student.objects.filter(admission_number__startswith=year_prefix).count()
+            next_num = count + 1
+            
+            # 3. Format: YY/XXXX (padded to 4)
+            self.admission_number = f"{short_year}/{next_num:04d}"
+            
+        super().save(*args, **kwargs)
 
     def __str__(self): return f"{self.full_name} ({self.admission_number})"
 

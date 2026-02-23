@@ -1,4 +1,5 @@
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, filters
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from .models import (
@@ -58,6 +59,8 @@ class StudentViewSet(viewsets.ModelViewSet):
     ).order_by('admission_number')
     serializer_class = StudentSerializer
     permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['current_class', 'status', 'category', 'gender']
     search_fields = ['full_name', 'admission_number', 'current_class__name']
 
     @transaction.atomic
@@ -72,6 +75,7 @@ class StudentViewSet(viewsets.ModelViewSet):
         g_email = serializer.validated_data.pop('guardian_email', None)
         g_relation = serializer.validated_data.pop('guardian_relation', 'GUARDIAN')
         g_address = serializer.validated_data.pop('guardian_address', '')
+        g_is_primary = serializer.validated_data.pop('is_primary_guardian', True)
         
         self.perform_create(serializer)
         student = serializer.instance
@@ -86,7 +90,8 @@ class StudentViewSet(viewsets.ModelViewSet):
                         'full_name': g_name,
                         'email': g_email,
                         'relationship': g_relation,
-                        'address': g_address
+                        'address': g_address,
+                        'is_primary': g_is_primary
                     }
                 )
                 student.parents.add(parent)
@@ -185,6 +190,37 @@ class StudentViewSet(viewsets.ModelViewSet):
             })
         except Exception as e:
             return Response({'status': 'error', 'message': str(e)}, status=400)
+
+    @action(detail=True, methods=['post'])
+    def link_parent(self, request, pk=None):
+        student = self.get_object()
+        phone = request.data.get('phone')
+        parent_id = request.data.get('parent_id')
+        
+        try:
+            if parent_id:
+                parent = Parent.objects.get(id=parent_id)
+            elif phone:
+                parent = Parent.objects.get(phone=phone)
+            else:
+                return Response({'error': 'Provide phone or parent_id'}, status=400)
+            
+            student.parents.add(parent)
+            return Response({'status': 'success', 'parent': ParentSerializer(parent).data})
+        except Parent.DoesNotExist:
+            return Response({'error': 'Parent not found'}, status=404)
+
+    @action(detail=True, methods=['post'])
+    def unlink_parent(self, request, pk=None):
+        student = self.get_object()
+        parent_id = request.data.get('parent_id')
+        
+        try:
+            parent = Parent.objects.get(id=parent_id)
+            student.parents.remove(parent)
+            return Response({'status': 'success'})
+        except Parent.DoesNotExist:
+            return Response({'error': 'Parent not found'}, status=404)
 
 class ParentViewSet(viewsets.ModelViewSet):
     queryset = Parent.objects.all()

@@ -101,6 +101,8 @@ export const studentsAPI = {
   forceDelete: (id: number) => api.delete(`students/${id}/force_delete/`),
   linkUser: (id: number) => api.post(`students/${id}/link_user/`),
   minimalSearch: (search?: string) => api.get('students/minimal_search/', { params: { search } }),
+  linkParent: (studentId: number, data: { phone?: string, parent_id?: number }) => api.post(`students/${studentId}/link_parent/`, data),
+  unlinkParent: (studentId: number, data: { parent_id: number }) => api.post(`students/${studentId}/unlink_parent/`, data),
 
   parents: {
     getAll: () => api.get('parents/', ALL),

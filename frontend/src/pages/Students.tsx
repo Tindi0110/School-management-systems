@@ -308,7 +308,7 @@ const Students = () => {
 
                 <div className="w-full lg:w-auto">
                     <h1 className="text-3xl font-black tracking-tight">Institutional Registry</h1>
-                    <p className="text-secondary font-bold uppercase text-[10px] tracking-widest opacity-70">SIS Management | Enrollment: {students.length}</p>
+                    <p className="text-secondary font-bold uppercase text-[10px] tracking-widest opacity-70">SIS Management | Enrollment: {totalItems}</p>
                 </div>
                 <div className="flex flex-wrap gap-2 w-full lg:w-auto justify-start lg:justify-end">
                     <Button variant="outline" className="flex-1 sm:flex-none" onClick={() => exportToCSV(students, 'student_registry')} icon={<Download size={16} />}>
@@ -376,7 +376,7 @@ const Students = () => {
                                                 <span className="text-[11px] font-black uppercase text-slate-400 tracking-widest">{c.name}</span>
                                                 <span className="text-base font-black text-slate-800">{c.stream}</span>
                                             </div>
-                                            <span className="badge badge-info text-[10px] font-black uppercase py-3 px-3 rounded-lg shadow-sm">{students.filter(s => s.current_class === c.id).length} Students</span>
+                                            <span className="badge badge-info text-[10px] font-black uppercase py-3 px-3 rounded-lg shadow-sm">{c.student_count || 0} Students</span>
                                         </div>
                                         <div className="flex items-center justify-between mt-6">
                                             <span className="text-[10px] font-black text-primary group-hover:translate-x-1 transition-transform flex items-center gap-1.5 uppercase">

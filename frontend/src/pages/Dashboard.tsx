@@ -97,6 +97,7 @@ const Dashboard = () => {
             setIsStaffModalOpen(false);
             loadDashboardData();
             success("Faculty member registered successfully");
+            navigate('/staff');
         } catch (error: any) {
             toastError(error.response?.data?.detail || 'Failed to add staff member');
         }
