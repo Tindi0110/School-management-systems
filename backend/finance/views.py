@@ -38,10 +38,38 @@ class InvoiceViewSet(viewsets.ModelViewSet):
     def dashboard_stats(self, request):
         """
         Returns calculated stats and recent invoices for the dashboard.
-        Avoids fetching all records to the frontend.
+        Prioritizes active academic year/term context for performance and relevance.
         """
+        from academics.models import AcademicYear, Term
+        all_time = request.query_params.get('all_time') == 'true'
+        
+        # Base QuerySets
+        inv_qs = Invoice.objects.all()
+        
+        active_context = {"is_all_time": all_time}
+        
+        if not all_time:
+            active_year = AcademicYear.objects.filter(is_active=True).first()
+            active_term = Term.objects.filter(is_active=True).first()
+            
+            if active_year:
+                inv_qs = inv_qs.filter(academic_year=active_year)
+                active_context['year'] = active_year.name
+                active_context['year_id'] = active_year.id
+            
+            if active_term:
+                # Attempt to extract term number from name (e.g., "Term 1" -> 1)
+                try:
+                    term_num = int(''.join(filter(str.isdigit, active_term.name)))
+                    inv_qs = inv_qs.filter(term=term_num)
+                    active_context['term_id'] = active_term.id
+                    active_context['term_num'] = term_num
+                    active_context['term_name'] = active_term.name
+                except (ValueError, TypeError):
+                    pass
+
         # Calculate totals efficiently
-        stats = Invoice.objects.aggregate(
+        stats = inv_qs.aggregate(
             total_invoiced=Sum('total_amount'),
             total_collected=Sum('paid_amount'),
             total_outstanding=Sum('balance')
@@ -54,8 +82,8 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         today = timezone.now().date()
         daily_collection = Payment.objects.filter(date_received=today).aggregate(sum=Sum('amount'))['sum'] or 0
         
-        # Get 5 recent invoices with optimized prefetching to avoid N+1 queries
-        recent_invoices = Invoice.objects.select_related(
+        # Get recent invoices from the SAME filtered context
+        recent_invoices = inv_qs.select_related(
             'student', 'student__current_class', 'academic_year'
         ).prefetch_related(
             'items', 'payments', 'adjustments', 'payments__received_by'
@@ -78,7 +106,8 @@ class InvoiceViewSet(viewsets.ModelViewSet):
             'enrolledStudents': enrolled_students,
             'revenuePerSeat': revenue_per_seat,
             'collectionRate': collection_rate,
-            'recentInvoices': recent_data
+            'recentInvoices': recent_data,
+            'context': active_context
         })
 
     @action(detail=False, methods=['post'])

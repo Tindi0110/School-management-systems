@@ -42,9 +42,9 @@ class Invoice(models.Model):
     term = models.IntegerField()
     
     # Financials
-    total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    paid_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0, db_index=True)
+    paid_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0, db_index=True)
+    balance = models.DecimalField(max_digits=12, decimal_places=2, default=0, db_index=True)
     
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='UNPAID', db_index=True)
     date_generated = models.DateField(default=timezone.now)

@@ -65,6 +65,10 @@ const Finance = () => {
     const [_totalItems, setTotalItems] = useState(0);
     const pageSize = 50;
 
+    // Perf & Context Optimization
+    const [isAllTime, setIsAllTime] = useState(false);
+    const [statsContext, setStatsContext] = useState<any>(null);
+
     // Invoice Filters
     const [invFilters, setInvFilters] = useState({ class_id: '', stream: '', year_id: '', term: '', status: '' });
     const [searchTerm, setSearchTerm] = useState('');
@@ -92,7 +96,7 @@ const Finance = () => {
     useEffect(() => {
         setPage(1); // Reset page on tab switch
         loadData();
-    }, [activeTab]);
+    }, [activeTab, isAllTime]);
 
     useEffect(() => {
         if (activeTab !== 'dashboard') {
@@ -114,7 +118,7 @@ const Finance = () => {
         try {
             const d = (r: any) => r?.data?.results ?? r?.data ?? [];
             if (activeTab === 'dashboard') {
-                const res = await financeAPI.invoices.dashboardStats();
+                const res = await financeAPI.invoices.dashboardStats(isAllTime ? { all_time: true } : {});
                 setStats({
                     totalInvoiced: res.data.totalInvoiced || 0,
                     totalCollected: res.data.totalCollected || 0,
@@ -126,6 +130,12 @@ const Finance = () => {
                     revenuePerSeat: res.data.revenuePerSeat || 0,
                 });
                 setInvoices(res.data.recentInvoices);
+                setStatsContext(res.data.context);
+
+                // Auto-set filters if they are empty and context is available
+                if (!invFilters.year_id && res.data.context?.year_id) {
+                    setInvFilters(prev => ({ ...prev, year_id: String(res.data.context.year_id), term: String(res.data.context.term_num || '') }));
+                }
             } else if (activeTab === 'invoices') {
                 // Targeted fetch for invoices tab
                 const [cls, yrRes] = await Promise.all([
@@ -429,6 +439,22 @@ const Finance = () => {
                     )}
                     {activeTab === 'dashboard' && (
                         <div className="space-y-20">
+                            <div className="flex justify-between items-center mb-4">
+                                <div className="flex items-center gap-3">
+                                    <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${isAllTime ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
+                                        {isAllTime ? '🌐 Global History' : `📅 ${statsContext?.term_name || 'Active Term'} ${statsContext?.year || ''}`}
+                                    </span>
+                                    {!isAllTime && <p className="text-[10px] text-gray-400 font-bold uppercase italic border-l pl-3">Performance Optimized</p>}
+                                </div>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-[10px] uppercase font-black tracking-widest"
+                                    onClick={() => setIsAllTime(!isAllTime)}
+                                >
+                                    {isAllTime ? 'Switch to Active Term' : 'View All Time Stats'}
+                                </Button>
+                            </div>
                             <div className="grid grid-cols-2 gap-6">
                                 <StatCard title="Total Invoiced" value={`KES ${stats.totalInvoiced.toLocaleString()}`} icon={<FileText size={18} />} gradient="linear-gradient(135deg, #3b82f6, #2563eb)" />
                                 <StatCard title="Total Collected" value={`KES ${stats.totalCollected.toLocaleString()}`} icon={<CheckCircle size={18} />} gradient="linear-gradient(135deg, #10b981, #059669)" />
