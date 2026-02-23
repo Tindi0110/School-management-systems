@@ -299,6 +299,7 @@ export const hostelAPI = {
     create: (data: any) => api.post('hostels/', data),
     update: (id: number, data: any) => api.put(`hostels/${id}/`, data),
     delete: (id: number) => api.delete(`hostels/${id}/`),
+    getStats: () => api.get('hostels/dashboard_stats/'),
   },
   rooms: {
     getAll: (params?: Record<string, any>) => api.get('rooms/', allWith(params)),

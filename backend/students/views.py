@@ -152,8 +152,8 @@ class StudentViewSet(viewsets.ModelViewSet):
                 Q(admission_number__icontains=search)
             )
             
-        # Limit to 20 results for maximum responsiveness in selectors
-        queryset = queryset[:20]
+        # Limit to 100 results for a balance between responsiveness and visibility
+        queryset = queryset[:100]
         serializer = SimpleStudentSerializer(queryset, many=True)
         return Response(serializer.data)
 

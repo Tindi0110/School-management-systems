@@ -20,6 +20,23 @@ class HostelViewSet(viewsets.ModelViewSet):
     serializer_class = HostelSerializer
     permission_classes = [IsAuthenticated]
 
+    @action(detail=False, methods=['get'])
+    def dashboard_stats(self, request):
+        hostels = Hostel.objects.all()
+        total_hostels = hostels.count()
+        total_capacity = sum(h.capacity for h in hostels)
+        total_residents = HostelAllocation.objects.all().count()
+        
+        # Maintenance issues (Pending + In Progress)
+        maintenance_issues = HostelMaintenance.objects.exclude(status='COMPLETED').count()
+        
+        return Response({
+            'totalHostels': total_hostels,
+            'totalCapacity': total_capacity,
+            'totalResidents': total_residents,
+            'maintenanceIssues': maintenance_issues
+        })
+
 class RoomViewSet(viewsets.ModelViewSet):
     queryset = Room.objects.select_related('hostel').prefetch_related('beds').all()
     serializer_class = RoomSerializer

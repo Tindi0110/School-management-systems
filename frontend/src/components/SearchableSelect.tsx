@@ -61,34 +61,39 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
 
             {isOpen && (
                 <div className="select-dropdown fade-in">
-                    <div className="search-container mb-2">
-                        <Search size={16} className="search-icon" />
-                        <input
-                            type="text"
-                            className="input search-input"
-                            placeholder="Type to search..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            onClick={(e) => e.stopPropagation()}
-                            autoFocus
-                        />
+                    <div className="sticky top-0 bg-primary-light p-2 mb-2 rounded-t-lg z-10 border-b">
+                        <div className="relative">
+                            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary opacity-50" />
+                            <input
+                                type="text"
+                                className="input input-sm pl-9 rounded-full bg-white border-primary/20 focus:border-primary"
+                                placeholder="Type to search students..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                onClick={(e) => e.stopPropagation()}
+                                autoFocus
+                            />
+                        </div>
                     </div>
-                    <div className="options-list">
+                    <div className="options-list max-h-[250px] overflow-y-auto">
                         {filteredOptions.length === 0 ? (
-                            <div className="p-2 text-center text-secondary">No results found</div>
+                            <div className="p-4 text-center text-secondary italic text-xs">No students matching "{searchTerm}"</div>
                         ) : (
                             filteredOptions.map((opt) => (
                                 <div
                                     key={opt.id}
-                                    className={`select-option ${value?.toString() === opt.id.toString() ? 'selected' : ''}`}
+                                    className={`select-option px-4 py-2 hover:bg-primary/5 cursor-pointer border-b border-secondary/5 last:border-0 ${value?.toString() === opt.id.toString() ? 'bg-primary/10' : ''}`}
                                     onClick={() => {
                                         onChange(opt.id);
                                         setIsOpen(false);
                                         setSearchTerm('');
                                     }}
                                 >
-                                    <div className="font-semibold text-sm">{opt.label}</div>
-                                    {opt.subLabel && <div className="text-[10px] text-secondary">{opt.subLabel}</div>}
+                                    <div className="font-bold text-sm text-primary">{opt.label}</div>
+                                    <div className="flex justify-between items-center text-[10px] uppercase font-black tracking-widest opacity-60">
+                                        <span>{opt.subLabel}</span>
+                                        <span className="text-secondary">{opt.id}</span>
+                                    </div>
                                 </div>
                             ))
                         )}

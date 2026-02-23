@@ -24,6 +24,7 @@ const Hostels = () => {
     const [assets, setAssets] = useState<any[]>([]);
     const [maintenance, setMaintenance] = useState<any[]>([]);
     const [students, setStudents] = useState<any[]>([]);
+    const [stats, setStats] = useState<any>({ totalHostels: 0, totalResidents: 0, totalCapacity: 0, maintenanceIssues: 0 }); // Initialize stats
     const [staff, setStaff] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -46,6 +47,7 @@ const Hostels = () => {
     const [attendanceId, setAttendanceId] = useState<number | null>(null);
     const [disciplineId, setDisciplineId] = useState<number | null>(null);
     const [maintenanceId, setMaintenanceId] = useState<number | null>(null);
+    const [roomId, setRoomId] = useState<number | null>(null); // New State
 
     // Bulk Attendance State
     const [attendanceMode, setAttendanceMode] = useState<'SINGLE' | 'BULK'>('SINGLE');
@@ -60,11 +62,13 @@ const Hostels = () => {
     const [isAttendanceModalOpen, setIsAttendanceModalOpen] = useState(false);
     const [isDisciplineModalOpen, setIsDisciplineModalOpen] = useState(false);
     const [isMaintenanceModalOpen, setIsMaintenanceModalOpen] = useState(false);
+    const [isRoomModalOpen, setIsRoomModalOpen] = useState(false); // New State
 
     // Form Data
     const [hostelFormData, setHostelFormData] = useState({ name: '', gender_allowed: 'M', hostel_type: 'BOARDING', capacity: 100, warden: '' });
 
     const [allocationFormData, setAllocationFormData] = useState({ student: '', hostel: '', room: '', bed: '', status: 'ACTIVE' }); // Added hostel for cascading
+    const [roomFormData, setRoomFormData] = useState({ room_number: '', room_type: 'STUDENT_ROOM', hostel: '', capacity: 4 }); // New State
     const [isTransferMode, setIsTransferMode] = useState(false); // New State
     const [allocationSort, setAllocationSort] = useState<'HOSTEL' | 'ROOM' | 'STATUS'>('HOSTEL'); // New State
     const [attendanceSort, setAttendanceSort] = useState<'DATE' | 'HOSTEL' | 'SESSION'>('DATE'); // New State
@@ -154,6 +158,10 @@ const Hostels = () => {
                 const stRes = await staffAPI.getAll({ page_size: 200 });
                 setStaff(stRes?.data?.results ?? stRes?.data ?? []);
             }
+
+            // Real-time Dashboard Sync
+            const statsRes = await hostelAPI.hostels.getStats();
+            setStats(statsRes.data);
 
         } catch (error) {
             console.error('Error loading hostel data:', error);
@@ -448,19 +456,63 @@ const Hostels = () => {
                 repair_cost: payload.repair_cost,
                 status: payload.status,
                 date_reported: payload.date || new Date().toISOString().split('T')[0],
-                reported_by: null
+                description: payload.issue || ''
             };
-
             if (maintenanceId) await hostelAPI.maintenance.update(maintenanceId, backendPayload);
             else await hostelAPI.maintenance.create(backendPayload);
             success(maintenanceId ? 'Request updated.' : 'Maintenance request logged.');
             loadData(); setIsMaintenanceModalOpen(false); setMaintenanceId(null);
             setMaintenanceFormData({ hostel: '', room: '', issue: '', repair_cost: 0, status: 'PENDING', date: new Date().toISOString().split('T')[0] });
         } catch (err: any) {
-            toastError(err.message || 'Failed to save maintenance request');
+            toastError(err.message || 'Failed to save maintenance request.');
         } finally {
             setIsSubmitting(false);
         }
+    };
+
+    const handleRoomSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        try {
+            const payload = {
+                room_number: roomFormData.room_number,
+                room_type: roomFormData.room_type,
+                hostel: Number(roomFormData.hostel),
+                capacity: Number(roomFormData.capacity)
+            };
+            if (roomId) await hostelAPI.rooms.update(roomId, payload);
+            else await hostelAPI.rooms.create(payload);
+            success(roomId ? 'Room updated.' : 'Room added successfully.');
+            loadData(); setIsRoomModalOpen(false); setRoomId(null);
+        } catch (err: any) {
+            toastError(err.message || 'Failed to save room.');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleDeleteRoom = async (id: number) => {
+        if (await confirm('Delete room and all its beds? This cannot be undone.', { type: 'danger' })) {
+            try {
+                await hostelAPI.rooms.delete(id);
+                success('Room deleted');
+                loadData();
+            } catch (err: any) {
+                toastError(err.message || 'Failed to delete room');
+            }
+        }
+    };
+
+    const openAddRoom = (hostel: any) => {
+        setRoomId(null);
+        setRoomFormData({ room_number: '', room_type: 'STUDENT_ROOM', hostel: String(hostel.id), capacity: 4 });
+        setIsRoomModalOpen(true);
+    };
+
+    const openEditRoom = (room: any) => {
+        setRoomId(room.id);
+        setRoomFormData({ ...room, hostel: String(room.hostel) });
+        setIsRoomModalOpen(true);
     };
     const handleEditMaintenance = (m: any) => { setMaintenanceId(m.id); setMaintenanceFormData({ ...m, hostel: String(m.hostel) }); setIsMaintenanceModalOpen(true); };
     const handleDeleteMaintenance = async (id: number) => {
@@ -559,9 +611,9 @@ const Hostels = () => {
                                     <p className="text-right text-xs font-bold text-primary mt-1">{h.occupancy_rate || 0}% Occupied</p>
                                 </div>
                                 <div className="flex gap-2 mt-6 pt-4 border-top">
-                                    <button className="btn btn-sm btn-outline flex-1 gap-1" onClick={() => openViewRooms(h)}><BedIcon size={14} /> Rooms</button>
+                                    <button className="btn btn-sm btn-outline flex-1 gap-1" onClick={() => openViewRooms(h)} title="View rooms"><BedIcon size={14} /> Rooms</button>
+                                    <button className="btn btn-sm btn-primary flex-1 gap-1" onClick={() => openAddRoom(h)} title="Quick add room"><Plus size={14} /> Add </button>
                                     <button className="btn btn-sm btn-outline flex-1 gap-2" onClick={() => handleEditHostel(h)}><Edit size={14} /> Edit</button>
-                                    <button className="btn btn-sm btn-outline flex-1 gap-2" onClick={() => openViewResidents(h)}><Users size={14} /> Users</button>
                                     <button className="btn btn-sm btn-outline text-error" onClick={(e) => { e.stopPropagation(); handleDeleteHostel(h.id); }}><Trash2 size={14} /></button>
                                 </div>
                             </div>
@@ -840,14 +892,38 @@ const Hostels = () => {
                 </form>
             </Modal>
 
-            <Modal isOpen={isAssetModalOpen} onClose={() => setIsAssetModalOpen(false)} title={assetId ? "Edit Asset" : "Add Asset"}>
+            <Modal isOpen={isAssetModalOpen} onClose={() => setIsAssetModalOpen(false)} title={assetId ? "Edit Asset" : "Institutional Asset"}>
                 <form onSubmit={handleAssetSubmit} className="space-y-4 form-container-md mx-auto">
-                    <div className="form-group"><label className="label">Asset Name</label><input type="text" className="input" value={assetFormData.asset_code} onChange={e => setAssetFormData({ ...assetFormData, asset_code: e.target.value })} required /></div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="form-group"><label className="label">Asset Code</label><input type="text" className="input" placeholder="e.g. HSTL-001" value={assetFormData.asset_code} onChange={e => setAssetFormData({ ...assetFormData, asset_code: e.target.value })} required /></div>
+                        <div className="form-group"><label className="label">Name</label><input type="text" className="input" placeholder="e.g. Double Decker Bed" value={assetFormData.asset_name} onChange={e => setAssetFormData({ ...assetFormData, asset_name: e.target.value })} required /></div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="form-group">
+                            <label className="label">Type</label>
+                            <select className="select" value={assetFormData.asset_type} onChange={e => setAssetFormData({ ...assetFormData, asset_type: e.target.value as any })}>
+                                <option value="FURNITURE">Furniture</option>
+                                <option value="ELECTRONICS">Electronics</option>
+                                <option value="EQUIPMENT">Equipment</option>
+                                <option value="BEDDING">Bedding</option>
+                            </select>
+                        </div>
+                        <div className="form-group">
+                            <label className="label">Condition</label>
+                            <select className="select" value={assetFormData.condition} onChange={e => setAssetFormData({ ...assetFormData, condition: e.target.value as any })}>
+                                <option value="EXCELLENT">Excellent</option>
+                                <option value="GOOD">Good</option>
+                                <option value="FAIR">Fair</option>
+                                <option value="POOR">Poor</option>
+                                <option value="BROKEN">Broken</option>
+                            </select>
+                        </div>
+                    </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group"><label className="label">Hostel</label><select className="select" value={assetFormData.hostel} onChange={e => setAssetFormData({ ...assetFormData, hostel: e.target.value, room: '' })} required><option value="">Select Hostel...</option>{hostels.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}</select></div>
-                        <div className="form-group"><label className="label">Room</label><select className="select" value={assetFormData.room} onChange={e => setAssetFormData({ ...assetFormData, room: e.target.value })} disabled={!assetFormData.hostel}><option value="">General Area</option>{rooms.filter(r => String(r.hostel) === assetFormData.hostel).map(r => <option key={r.id} value={r.id}>{r.room_number}</option>)}</select></div>
+                        <div className="form-group"><label className="label">Room (Optional)</label><select className="select" value={assetFormData.room} onChange={e => setAssetFormData({ ...assetFormData, room: e.target.value })} disabled={!assetFormData.hostel}><option value="">General Area</option>{rooms.filter(r => String(r.hostel) === assetFormData.hostel).map(r => <option key={r.id} value={r.id}>{r.room_number}</option>)}</select></div>
                     </div>
-                    <div className="modal-footer"><Button type="submit" className="w-full" loading={isSubmitting}>{assetId ? "Update" : "Add"}</Button></div>
+                    <div className="modal-footer"><Button type="submit" className="w-full" loading={isSubmitting}>{assetId ? "Update Asset" : "Record Asset"}</Button></div>
                 </form>
             </Modal>
 
@@ -882,42 +958,103 @@ const Hostels = () => {
                 )}
             </Modal>
 
-            <Modal isOpen={isDisciplineModalOpen} onClose={() => setIsDisciplineModalOpen(false)} title="Discipline">
+            <Modal isOpen={isDisciplineModalOpen} onClose={() => setIsDisciplineModalOpen(false)} title="Discipline Record">
                 <form onSubmit={handleDisciplineSubmit} className="space-y-4 form-container-md mx-auto">
                     <SearchableSelect label="Student" options={students.map(s => ({ id: String(s.id), label: s.full_name, subLabel: s.admission_number }))} value={String(disciplineFormData.student ?? '')} onChange={(val) => setDisciplineFormData({ ...disciplineFormData, student: val as string })} required />
-                    <PremiumDateInput
-                        label="Occurrence Date"
-                        value={disciplineFormData.date}
-                        onChange={(val) => setDisciplineFormData({ ...disciplineFormData, date: val })}
-                        minDate={new Date().toISOString().split('T')[0]}
-                        required
-                    />
-                    <div className="form-group"><label className="label">Offence</label><input type="text" className="input" value={disciplineFormData.offence} onChange={e => setDisciplineFormData({ ...disciplineFormData, offence: e.target.value })} required /></div>
-                    <div className="modal-footer"><Button type="submit" className="w-full" loading={isSubmitting}>Report</Button></div>
+                    <div className="form-group"><label className="label">Offence</label><input type="text" className="input" placeholder="e.g. Noise making, curfew violation" value={disciplineFormData.offence} onChange={e => setDisciplineFormData({ ...disciplineFormData, offence: e.target.value })} required /></div>
+                    <div className="form-group"><label className="label">Detailed Description</label><textarea className="textarea" placeholder="Describe the incident in detail..." value={disciplineFormData.description} onChange={e => setDisciplineFormData({ ...disciplineFormData, description: e.target.value })} /></div>
+                    <div className="form-group"><label className="label">Action Taken</label><input type="text" className="input" placeholder="e.g. Warning letter, suspension" value={disciplineFormData.action_taken} onChange={e => setDisciplineFormData({ ...disciplineFormData, action_taken: e.target.value })} /></div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="form-group">
+                            <label className="label">Severity</label>
+                            <select className="select" value={disciplineFormData.severity} onChange={e => setDisciplineFormData({ ...disciplineFormData, severity: e.target.value as any })}>
+                                <option value="MINOR">Minor</option>
+                                <option value="MAJOR">Major</option>
+                                <option value="CRITICAL">Critical</option>
+                            </select>
+                        </div>
+                        <PremiumDateInput
+                            label="Occurrence Date"
+                            value={disciplineFormData.date}
+                            onChange={(val) => setDisciplineFormData({ ...disciplineFormData, date: val })}
+                            required
+                        />
+                    </div>
+                    <div className="modal-footer"><Button type="submit" className="w-full" loading={isSubmitting}>{disciplineId ? "Update Record" : "Log Incident"}</Button></div>
                 </form>
             </Modal>
 
             <Modal isOpen={isMaintenanceModalOpen} onClose={() => setIsMaintenanceModalOpen(false)} title="Maintenance">
                 <form onSubmit={handleMaintenanceSubmit} className="space-y-4 form-container-md mx-auto">
                     <div className="form-group"><label className="label">Hostel</label><select className="select" value={maintenanceFormData.hostel} onChange={e => setMaintenanceFormData({ ...maintenanceFormData, hostel: e.target.value })} required><option value="">Select Hostel...</option>{hostels.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}</select></div>
+                    <div className="form-group">
+                        <label className="label">Room</label>
+                        <select className="select" value={maintenanceFormData.room} onChange={e => setMaintenanceFormData({ ...maintenanceFormData, room: e.target.value })}>
+                            <option value="">Whole Hostel (Common Areas)</option>
+                            {rooms.filter(r => r.hostel === Number(maintenanceFormData.hostel)).map(r => <option key={r.id} value={r.id}>{r.room_number}</option>)}
+                        </select>
+                    </div>
+                    <div className="form-group"><label className="label">Issue / Description</label><textarea className="textarea" placeholder="Describe the damage or maintenance need..." value={maintenanceFormData.issue} onChange={e => setMaintenanceFormData({ ...maintenanceFormData, issue: e.target.value })} required /></div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="form-group"><label className="label">Est. Cost</label><input type="number" className="input" value={maintenanceFormData.repair_cost} onChange={e => setMaintenanceFormData({ ...maintenanceFormData, repair_cost: Number(e.target.value) })} /></div>
+                        <div className="form-group"><label className="label">Status</label><select className="select" value={maintenanceFormData.status} onChange={e => setMaintenanceFormData({ ...maintenanceFormData, status: e.target.value as any })}><option value="PENDING">Pending</option><option value="IN_PROGRESS">In Progress</option><option value="COMPLETED">Completed</option></select></div>
+                    </div>
                     <PremiumDateInput
                         label="Date Reported"
                         value={maintenanceFormData.date}
                         onChange={(val) => setMaintenanceFormData({ ...maintenanceFormData, date: val })}
-                        minDate={new Date().toISOString().split('T')[0]}
                         required
                     />
                     <div className="modal-footer"><Button type="submit" className="w-full" loading={isSubmitting}>Log Request</Button></div>
                 </form>
             </Modal>
 
+            <Modal isOpen={isRoomModalOpen} onClose={() => setIsRoomModalOpen(false)} title={roomId ? "Edit Room" : "Add Room"}>
+                <form onSubmit={handleRoomSubmit} className="space-y-4 form-container-md mx-auto">
+                    <div className="form-group">
+                        <label className="label">Room Number</label>
+                        <input type="text" className="input" placeholder="e.g. A1, 102" value={roomFormData.room_number} onChange={e => setRoomFormData({ ...roomFormData, room_number: e.target.value })} required />
+                    </div>
+                    <div className="form-group">
+                        <label className="label">Room Type</label>
+                        <select className="select" value={roomFormData.room_type} onChange={e => setRoomFormData({ ...roomFormData, room_type: e.target.value as any })}>
+                            <option value="STUDENT_ROOM">Student Room</option>
+                            <option value="STAFF_QUARTERS">Staff Quarters</option>
+                            <option value="COMMON_ROOM">Common Room</option>
+                            <option value="LAUNDRY">Laundry</option>
+                        </select>
+                    </div>
+                    <div className="form-group">
+                        <label className="label">Default Capacity (Beds)</label>
+                        <input type="number" className="input" value={roomFormData.capacity} onChange={e => setRoomFormData({ ...roomFormData, capacity: e.target.value })} required />
+                    </div>
+                    <div className="modal-footer">
+                        <Button type="submit" className="w-full" loading={isSubmitting}>{roomId ? "Update Room" : "Save Room"}</Button>
+                    </div>
+                </form>
+            </Modal>
+
             <Modal isOpen={isViewRoomsModalOpen} onClose={() => setIsViewRoomsModalOpen(false)} title={`Rooms: ${selectedHostel?.name}`}>
                 <div className="p-4">
+                    <div className="flex justify-between items-center mb-4">
+                        <h4 className="text-sm font-bold opacity-60">Existing Rooms</h4>
+                        <Button size="sm" onClick={() => openAddRoom(selectedHostel)} icon={<Plus size={14} />}>Add Room</Button>
+                    </div>
                     <table className="table">
-                        <thead><tr><th>Room #</th><th>Type</th><th>Capacity</th></tr></thead>
+                        <thead><tr><th>Room #</th><th>Type</th><th>Capacity</th><th>Actions</th></tr></thead>
                         <tbody>
                             {rooms.filter(r => r.hostel === selectedHostel?.id).map(r => (
-                                <tr key={r.id}><td>{r.room_number}</td><td>{r.room_type}</td><td>{r.capacity}</td></tr>
+                                <tr key={r.id}>
+                                    <td>{r.room_number}</td>
+                                    <td>{r.room_type}</td>
+                                    <td>{r.capacity}</td>
+                                    <td>
+                                        <div className="flex gap-1">
+                                            <button className="btn btn-xs btn-ghost text-primary" onClick={() => openEditRoom(r)}><Edit size={12} /></button>
+                                            <button className="btn btn-xs btn-ghost text-error" onClick={() => handleDeleteRoom(r.id)}><Trash2 size={12} /></button>
+                                        </div>
+                                    </td>
+                                </tr>
                             ))}
                         </tbody>
                     </table>
