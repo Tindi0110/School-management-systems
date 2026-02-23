@@ -209,11 +209,58 @@ const Academics = () => {
                 const sClass = classes.find(c => c.id === s.current_class);
                 return sClass && sClass.name === resultContext.level;
             }
-            return s.current_class === parseInt(resultContext.classId);
+            const sClassId = typeof s.current_class === 'object' ? (s.current_class as any)?.id : s.current_class;
+            return sClassId === parseInt(resultContext.classId);
         }).filter((student, index, self) =>
             index === self.findIndex((t) => t.id === student.id)
         ).sort((a, b) => a.full_name.localeCompare(b.full_name));
     }, [students, resultContext.classId, resultContext.level, classes]);
+
+    const handleLoadMatrixResults = async (cid: string) => {
+        if (!cid || !selectedExam) return;
+        setLoading(true);
+        try {
+            const res = await academicsAPI.results.getAll({ exam_id: selectedExam.id });
+            const rData = res.data?.results ?? res.data ?? [];
+
+            const relevantResults = rData.filter((r: any) => {
+                const s = students.find(st => st.id === r.student);
+                if (!s) return false;
+                if (cid === 'all') {
+                    const sClass = classes.find(c => c.id === s.current_class);
+                    return sClass && sClass.name === resultContext.level;
+                }
+                const sClassId = typeof s.current_class === 'object' ? (s.current_class as any)?.id : s.current_class;
+                return sClassId === parseInt(cid);
+            });
+
+            const matrix: any = {};
+            relevantResults.forEach((r: any) => {
+                if (!matrix[r.student]) matrix[r.student] = {};
+                matrix[r.student][r.subject] = { score: r.score.toString(), id: r.id };
+            });
+            setStudentScores(matrix);
+
+            if (cid !== 'all') {
+                const classSubRes = await academicsAPI.classSubjects.list({ class_id: cid });
+                const classSubData = classSubRes.data?.results ?? classSubRes.data ?? [];
+                setActiveClassSubjects(Array.isArray(classSubData) ? classSubData : []);
+            } else {
+                setActiveClassSubjects([]);
+            }
+        } catch (err: any) {
+            console.error(err);
+            toastError(err.message || "Failed to load results matrix");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (isResultModalOpen && resultContext.classId) {
+            handleLoadMatrixResults(resultContext.classId);
+        }
+    }, [isResultModalOpen, resultContext.classId, selectedExam]);
 
 
 
@@ -2379,51 +2426,8 @@ const Academics = () => {
                             </div>
                             <div>
                                 <label className="text-[9px] font-bold uppercase text-secondary">Stream</label>
-                                <select className="select text-xs" value={resultContext.classId} onChange={async (e) => {
-                                    const cid = e.target.value;
-                                    setResultContext({ ...resultContext, classId: cid });
-
-                                    // Load existing results for this exam + class/level
-                                    if (cid) {
-                                        setLoading(true);
-                                        try {
-                                            const res = await academicsAPI.results.getAll({ exam_id: selectedExam.id });
-                                            const rawResults = res.data?.results ?? res.data ?? [];
-                                            // Filter results based on selection (Specific Stream or ALL in Level)
-                                            const relevantResults = rawResults.filter((r: any) => {
-                                                const s = students.find(st => st.id === r.student);
-                                                if (!s) return false;
-                                                // If 'all', match by Level name. If specific ID, match by current_class ID.
-                                                if (cid === 'all') {
-                                                    // Find class object for student
-                                                    const sClass = classes.find(c => c.id === s.current_class);
-                                                    return sClass && sClass.name === resultContext.level;
-                                                }
-                                                return s.current_class === parseInt(cid);
-                                            });
-
-                                            // Map to nested matrix state
-                                            const matrix: any = {};
-                                            relevantResults.forEach((r: any) => {
-                                                if (!matrix[r.student]) matrix[r.student] = {};
-                                                matrix[r.student][r.subject] = { score: r.score.toString(), id: r.id };
-                                            });
-                                            setStudentScores(matrix);
-
-                                            // Also load the specific subjects allocated to this class
-                                            if (cid !== 'all') {
-                                                const classSubRes = await academicsAPI.classSubjects.list({ class_id: cid });
-                                                const classSubData = classSubRes.data?.results ?? classSubRes.data ?? [];
-                                                setActiveClassSubjects(Array.isArray(classSubData) ? classSubData : []);
-                                            } else {
-                                                setActiveClassSubjects([]);
-                                            }
-
-                                        } catch (err) { console.error(err); }
-                                        setLoading(false);
-                                    } else {
-                                        setActiveClassSubjects([]);
-                                    }
+                                <select className="select text-xs" value={resultContext.classId} onChange={(e) => {
+                                    setResultContext({ ...resultContext, classId: e.target.value });
                                 }} disabled={!resultContext.level}>
                                     <option value="">Select Stream...</option>
                                     <option value="all" className="font-bold">ALL STREAMS (Combined)</option>

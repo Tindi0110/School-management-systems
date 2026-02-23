@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, Search, Edit, Trash2, Briefcase, Printer, Download, LayoutGrid } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Briefcase, Printer, Download, LayoutGrid, RefreshCcw } from 'lucide-react';
 import { staffAPI } from '../api/api';
 import { exportToCSV } from '../utils/export';
 import Modal from '../components/Modal';
@@ -94,6 +94,19 @@ const Staff = () => {
         } catch (error: any) {
             console.error('Delete failed:', error);
             toast.error(error.response?.data?.detail || 'Failed to delete staff member. They may be assigned as Class Teacher or Warden.');
+        }
+    };
+
+    const handleSyncStaff = async () => {
+        setIsSubmitting(true);
+        try {
+            const res = await staffAPI.sync();
+            toast.success(res.data?.detail || 'Staff profiles synchronized successfully');
+            loadData();
+        } catch (error: any) {
+            toast.error(error.response?.data?.detail || 'Failed to sync staff profiles');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -206,6 +219,9 @@ const Staff = () => {
                     </Button>
                     <Button variant="outline" className="flex-1 sm:flex-none" onClick={handlePrint} icon={<Printer size={18} />}>
                         Print
+                    </Button>
+                    <Button variant="outline" className="flex-1 sm:flex-none" onClick={handleSyncStaff} loading={isSubmitting} icon={<RefreshCcw size={18} />}>
+                        Sync Profiles
                     </Button>
                     <Button variant="primary" className="flex-1 sm:flex-none" onClick={() => openModal()} icon={<Plus size={18} />}>
                         Add Staff

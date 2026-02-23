@@ -152,6 +152,7 @@ export const staffAPI = {
   create: (data: any) => api.post('staff/', data),
   update: (id: number, data: any) => api.put(`staff/${id}/`, data),
   delete: (id: number) => api.delete(`staff/${id}/`),
+  sync: () => api.post('staff/sync_staff/'),
 };
 
 export const academicsAPI = {
