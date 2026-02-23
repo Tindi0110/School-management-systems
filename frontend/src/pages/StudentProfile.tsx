@@ -1112,8 +1112,8 @@ const StudentProfile = () => {
                                             </div>
 
                                             <div className="mt-4 pt-4 border-t flex gap-2">
-                                                <Button variant="ghost" size="xs" onClick={() => window.open(`tel:${p.phone}`)} icon={<Phone size={12} />} className="text-[10px] font-bold">CALL</Button>
-                                                <Button variant="ghost" size="xs" onClick={() => window.open(`https://wa.me/${p.phone.replace(/[^0-9]/g, '')}`)} icon={<MessageSquare size={12} />} className="text-[10px] font-bold">WHATSAPP</Button>
+                                                <Button variant="ghost" size="sm" onClick={() => window.open(`tel:${p.phone}`)} icon={<Phone size={12} />} className="text-[10px] font-bold">CALL</Button>
+                                                <Button variant="ghost" size="sm" onClick={() => window.open(`https://wa.me/${p.phone.replace(/[^0-9]/g, '')}`)} icon={<MessageSquare size={12} />} className="text-[10px] font-bold">WHATSAPP</Button>
                                             </div>
                                         </div>
                                     ))

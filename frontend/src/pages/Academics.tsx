@@ -468,6 +468,26 @@ const Academics = () => {
         setIsTermModalOpen(true);
     };
 
+    const openEditGradeSystem = (gs: any) => {
+        setGradeForm({ name: gs.name, is_default: gs.is_default });
+        setEditingSystemId(gs.id);
+        setIsGradeModalOpen(true);
+    };
+
+    const handleDeleteAttendance = async (id: number) => {
+        if (await confirm('Delete this attendance record?', { type: 'danger' })) {
+            try {
+                await academicsAPI.attendance.delete(id);
+                success('Attendance record removed');
+                // Refresh attendance data
+                try {
+                    const attRes = await academicsAPI.attendance.getAll();
+                    setAttendanceRecords(attRes.data?.results ?? attRes.data ?? []);
+                } catch (e) { console.error("Error refreshing attendance:", e); }
+            } catch (err: any) { toastError(err.message || 'Failed to remove attendance'); }
+        }
+    };
+
     const handleSubjectSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
@@ -1995,7 +2015,7 @@ const Academics = () => {
                                                             <td className="text-xs">{att.remark || '—'}</td>
                                                             <td className="text-right">
                                                                 <div className="flex justify-end gap-1">
-                                                                    <Button variant="ghost" size="sm" className="text-primary" onClick={() => { setEditingAttendanceId(att.id); setAttendanceForm({ ...att }); setIsAttendanceModalOpen(true); }} icon={<Edit size={12} />} />
+                                                                    <Button variant="ghost" size="sm" className="text-primary" onClick={() => openEditAttendance(att)} icon={<Edit size={12} />} />
                                                                     <Button variant="ghost" size="sm" className="text-error" onClick={() => handleDeleteAttendance(att.id)} icon={<Trash2 size={12} />} />
                                                                 </div>
                                                             </td>
