@@ -56,7 +56,9 @@ class GradeBoundaryViewSet(viewsets.ModelViewSet):
 class ExamViewSet(viewsets.ModelViewSet):
     queryset = Exam.objects.select_related('term', 'grade_system').all()
     serializer_class = ExamSerializer
-    filterset_fields = ['academic_year', 'term', 'status']
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['term__year', 'term', 'is_active']
+    search_fields = ['name']
 
     def get_queryset(self):
         qs = super().get_queryset()

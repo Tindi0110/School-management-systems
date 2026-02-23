@@ -30,6 +30,9 @@ const Students = () => {
     const [page, setPage] = useState(1);
     const [totalItems, setTotalItems] = useState(0);
     const [institutionalTotal, setInstitutionalTotal] = useState(0);
+    const [activeCount, setActiveCount] = useState(0);
+    const [boarderCount, setBoarderCount] = useState(0);
+    const [dayScholarCount, setDayScholarCount] = useState(0);
     const [pageSize] = useState(25);
 
     // Consolidated Form Data
@@ -81,7 +84,13 @@ const Students = () => {
 
             setStudents(studentsRes.data?.results ?? studentsRes.data ?? []);
             setTotalItems(studentsRes.data?.count ?? (studentsRes.data?.results ? studentsRes.data.results.length : 0));
-            setInstitutionalTotal(globalStatsRes.data?.total_students || 0);
+
+            const counts = globalStatsRes.data?.counts || {};
+            setInstitutionalTotal(counts.total_students || 0);
+            setActiveCount(counts.active_students || 0);
+            setBoarderCount(counts.boarder_count || 0);
+            setDayScholarCount(counts.day_scholar_count || 0);
+
             setClasses(classesRes.data?.results ?? classesRes.data ?? []);
         } catch (error) {
             errorToast("Failed to load students.");
@@ -338,10 +347,10 @@ const Students = () => {
 
             {/* Dashboard Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-md mb-8 no-print">
-                <StatCard title="Active Enrollment" value={institutionalTotal.toString()} icon={<UserCheck size={18} />} gradient="linear-gradient(135deg, #0ba360, #3cba92)" />
-                <StatCard title="Boarders" value={students.filter(s => s.category === 'BOARDING').length.toString()} icon={<MapPin size={18} />} gradient="var(--info)" />
-                <StatCard title="Day Scholars" value={students.filter(s => s.category === 'DAY').length.toString()} icon={<UserIcon size={18} />} gradient="var(--secondary)" />
-                <StatCard title="Enrolled Capacity" value={`${classes.length > 0 ? Math.round((students.filter(s => s.status === 'ACTIVE').length / classes.reduce((sum, c) => sum + (c.capacity || 40), 0)) * 100) : 0}%`} icon={<TrendingUp size={18} />} gradient="linear-gradient(135deg, #0f172a, #1e293b)" />
+                <StatCard title="Active Enrollment" value={activeCount.toString()} icon={<UserCheck size={18} />} gradient="linear-gradient(135deg, #0ba360, #3cba92)" />
+                <StatCard title="Boarders" value={boarderCount.toString()} icon={<MapPin size={18} />} gradient="var(--info)" />
+                <StatCard title="Day Scholars" value={dayScholarCount.toString()} icon={<UserIcon size={18} />} gradient="var(--secondary)" />
+                <StatCard title="Enrolled Capacity" value={`${classes.length > 0 ? Math.round((activeCount / classes.reduce((sum, c) => sum + (c.capacity || 40), 0)) * 100) : 0}%`} icon={<TrendingUp size={18} />} gradient="linear-gradient(135deg, #0f172a, #1e293b)" />
             </div>
 
             {/* Content & Filters */}
