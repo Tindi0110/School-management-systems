@@ -36,6 +36,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [activeIndex, setActiveIndex] = useState(-1);
     const wrapperRef = useRef<HTMLDivElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
     const optionsRef = useRef<HTMLDivElement>(null);
 
     const selectedOption = options.find(opt => opt.id.toString() === value?.toString());
@@ -49,11 +50,12 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
         return () => clearTimeout(handler);
     }, [searchTerm]);
 
-    // Handle clicks outside to close
+    // Handle clicks outside
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
                 setIsOpen(false);
+                setSearchTerm('');
             }
         }
         document.addEventListener('mousedown', handleClickOutside);
@@ -91,11 +93,12 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                 break;
             case 'Escape':
                 setIsOpen(false);
+                setSearchTerm('');
                 break;
         }
     };
 
-    // Auto-scroll to active item
+    // Auto-scroll logic
     useEffect(() => {
         if (activeIndex >= 0 && optionsRef.current) {
             const activeItem = optionsRef.current.children[activeIndex] as HTMLElement;
@@ -115,6 +118,14 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
         e.stopPropagation();
         onChange('');
         setSearchTerm('');
+        if (isOpen) setIsOpen(false);
+    };
+
+    const handleTriggerClick = () => {
+        if (!disabled) {
+            setIsOpen(true);
+            inputRef.current?.focus();
+        }
     };
 
     return (
@@ -125,7 +136,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
         >
             {label && (
                 <label className="text-[11px] font-normal text-slate-500 uppercase tracking-wider ml-1">
-                    {label} {required && <span className="text-error">*</span>}
+                    {label} {required && <span className="text-error font-normal">*</span>}
                 </label>
             )}
 
@@ -133,17 +144,26 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                 <div
                     className={`
                         flex items-center justify-between px-[14px] py-3 min-h-[52px]
-                        bg-white border-2 rounded-[8px] cursor-pointer transition-all duration-200
+                        bg-white border-2 rounded-[8px] cursor-text transition-all duration-200
                         ${isOpen ? 'border-primary shadow-[0_0_0_4px_rgba(var(--primary-rgb),0.1)]' : 'border-slate-100 hover:border-slate-300'}
                         ${disabled ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}
                     `}
-                    onClick={() => setIsOpen(!isOpen)}
+                    onClick={handleTriggerClick}
                 >
-                    <div className="flex items-center gap-3 overflow-hidden">
+                    <div className="flex items-center gap-3 w-full overflow-hidden">
                         <Search size={18} className={`flex-shrink-0 ${isOpen ? 'text-primary' : 'text-slate-400'}`} />
-                        <span className={`text-sm truncate ${selectedOption ? 'text-slate-900' : 'text-slate-400'}`}>
-                            {selectedOption ? selectedOption.label : placeholder}
-                        </span>
+                        <input
+                            ref={inputRef}
+                            type="text"
+                            autoComplete="off"
+                            className="bg-transparent border-0 p-0 text-sm focus:ring-0 outline-none text-slate-900 placeholder:text-slate-400 font-normal w-full"
+                            placeholder={selectedOption ? selectedOption.label : placeholder}
+                            value={isOpen ? searchTerm : (selectedOption ? selectedOption.label : '')}
+                            onChange={(e) => {
+                                setSearchTerm(e.target.value);
+                                if (!isOpen) setIsOpen(true);
+                            }}
+                        />
                     </div>
 
                     <div className="flex items-center gap-2">
@@ -151,9 +171,9 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                         {value && !disabled && (
                             <button
                                 onClick={handleClear}
-                                className="bg-transparent border-0 p-0 shadow-none outline-none text-slate-300 hover:text-error transition-colors flex items-center justify-center"
+                                className="bg-transparent border-0 p-0 shadow-none outline-none text-slate-300 hover:text-error transition-colors flex items-center justify-center p-0.5"
                             >
-                                <X size={14} />
+                                <X size={16} />
                             </button>
                         )}
                         {isOpen ? <ChevronUp size={18} className="text-primary" /> : <ChevronDown size={18} className="text-slate-400" />}
@@ -162,24 +182,12 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
 
                 {isOpen && (
                     <div className="absolute top-[calc(100%+8px)] left-0 w-full z-[100] bg-white shadow-[0_4px_20px_rgba(0,0,0,0.15)] rounded-[12px] border border-slate-100 animate-in fade-in slide-in-from-top-2 duration-200 overflow-hidden">
-                        <div className="p-2 border-b border-slate-50 bg-slate-50/50">
-                            <input
-                                type="text"
-                                className="w-full px-3 py-3 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary transition-colors min-h-[44px]"
-                                placeholder="Type to search..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                onClick={(e) => e.stopPropagation()}
-                                autoFocus
-                            />
-                        </div>
-
                         <div
                             ref={optionsRef}
                             className="max-h-[300px] overflow-y-auto overscroll-contain py-1"
                         >
                             {filteredOptions.length === 0 ? (
-                                <div className="px-4 py-8 text-center text-slate-500 italic text-sm">
+                                <div className="px-4 py-10 text-center text-slate-400 font-normal italic text-sm">
                                     No results found matching "{searchTerm}"
                                 </div>
                             ) : (
@@ -187,14 +195,14 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                                     <div
                                         key={opt.id}
                                         className={`
-                                            px-3 py-3 cursor-pointer transition-colors flex flex-col gap-0.5
-                                            ${index === activeIndex ? 'bg-primary/5' : 'hover:bg-primary/5'}
-                                            ${value?.toString() === opt.id.toString() ? 'bg-primary/10' : ''}
+                                            px-4 py-3 cursor-pointer transition-colors flex flex-col gap-0.5
+                                            ${index === activeIndex ? 'bg-primary/15' : 'hover:bg-primary/10'}
+                                            ${value?.toString() === opt.id.toString() ? 'bg-primary/20' : ''}
                                         `}
                                         onClick={() => handleSelect(opt)}
                                         onMouseEnter={() => setActiveIndex(index)}
                                     >
-                                        <div className={`text-sm ${value?.toString() === opt.id.toString() ? 'text-primary' : 'text-slate-700'}`}>
+                                        <div className={`text-sm font-normal ${value?.toString() === opt.id.toString() ? 'text-primary' : 'text-slate-700'}`}>
                                             {opt.label}
                                         </div>
                                         {opt.subLabel && (
