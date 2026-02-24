@@ -124,7 +124,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
             onKeyDown={handleKeyDown}
         >
             {label && (
-                <label className="text-[11px] font-medium text-slate-500 uppercase tracking-wider ml-1">
+                <label className="text-[11px] font-normal text-slate-500 uppercase tracking-wider ml-1">
                     {label} {required && <span className="text-error">*</span>}
                 </label>
             )}
@@ -151,7 +151,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                         {value && !disabled && (
                             <button
                                 onClick={handleClear}
-                                className="p-1 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-colors"
+                                className="text-slate-300 hover:text-error transition-colors p-0.5"
                             >
                                 <X size={14} />
                             </button>
@@ -188,7 +188,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                                         key={opt.id}
                                         className={`
                                             px-3 py-3 cursor-pointer transition-colors flex flex-col gap-0.5
-                                            ${index === activeIndex ? 'bg-primary/5' : 'hover:bg-slate-50'}
+                                            ${index === activeIndex ? 'bg-primary/5' : 'hover:bg-primary/5'}
                                             ${value?.toString() === opt.id.toString() ? 'bg-primary/10' : ''}
                                         `}
                                         onClick={() => handleSelect(opt)}
@@ -198,7 +198,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                                             {opt.label}
                                         </div>
                                         {opt.subLabel && (
-                                            <div className="text-[10px] uppercase font-medium text-slate-400 tracking-tight">
+                                            <div className="text-[10px] uppercase font-normal text-slate-400 tracking-tight">
                                                 {opt.subLabel}
                                             </div>
                                         )}
