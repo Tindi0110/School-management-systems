@@ -17,5 +17,13 @@ class Staff(models.Model):
     qualifications = models.TextField(blank=True)
     date_joined = models.DateField()
     
+    @property
+    def full_name(self):
+        return self.user.get_full_name() or self.user.username
+
+    @property
+    def role(self):
+        return self.user.role if hasattr(self.user, 'role') else 'N/A'
+
     def __str__(self):
-        return f"{self.user.get_full_name()} - {self.employee_id}"
+        return f"{self.full_name} - {self.employee_id}"

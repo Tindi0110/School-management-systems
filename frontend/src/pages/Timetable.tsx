@@ -277,7 +277,7 @@ const Timetable = () => {
                         <label className="label text-[10px] uppercase font-black">Teacher (Optional)</label>
                         <SearchableSelect
                             placeholder="No Teacher / Self Study"
-                            options={staff.map(st => ({ id: st.id.toString(), label: st.full_name }))}
+                            options={staff.filter(st => st.role === 'TEACHER').map(st => ({ id: st.id.toString(), label: st.full_name }))}
                             value={slotForm.teacher}
                             onChange={(val) => setSlotForm({ ...slotForm, teacher: val.toString() })}
                         />

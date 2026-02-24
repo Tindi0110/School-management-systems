@@ -238,6 +238,7 @@ export const academicsAPI = {
   classSubjects: {
     list: (params: any) => api.get('class-subjects/', allWith(params)),
     create: (data: any) => api.post('class-subjects/', data),
+    update: (id: number, data: any) => api.put(`class-subjects/${id}/`, data),
     delete: (id: number) => api.delete(`class-subjects/${id}/`),
     sync: (id: number) => api.post(`class-subjects/${id}/sync_students/`),
   },

@@ -442,6 +442,16 @@ const Academics = () => {
         } catch (err: any) { toastError(err.message || 'Failed to update allocation'); }
     };
 
+    const updateAllocationTeacher = async (allocationId: number, teacherId: string) => {
+        try {
+            await academicsAPI.classSubjects.update(allocationId, { teacher: parseInt(teacherId) || null });
+            success('Teacher assigned');
+            fetchClassAllocations(selectedAllocationClass);
+        } catch (err: any) {
+            toastError(err.message || 'Failed to assign teacher');
+        }
+    };
+
     const syncClassSubjects = async () => {
         if (!classAllocations.length || !selectedAllocationClass) return;
         if (!await confirm('This will update subject lists for ALL students in this class. Continue?')) return;
@@ -1521,6 +1531,7 @@ const Academics = () => {
                                                     <th className="py-4 px-6 text-left">Subject Name</th>
                                                     <th className="py-4 px-6">Code</th>
                                                     <th className="py-4 px-6">Group</th>
+                                                    <th className="py-4 px-6 text-left">Assigned Teacher</th>
                                                     <th className="py-4 px-6">Status</th>
                                                 </tr>
                                             </thead>
@@ -1541,6 +1552,18 @@ const Academics = () => {
                                                             <td className="py-4 px-6 font-bold text-xs">{subject.name}</td>
                                                             <td className="py-4 px-6"><code className="bg-slate-100 px-2 py-1 rounded text-[10px]">{subject.code}</code></td>
                                                             <td className="py-4 px-6 text-[10px] uppercase font-bold text-slate-400">{(subject as any).category || (subject as any).group_name || '-'}</td>
+                                                            <td className="py-4 px-6 min-w-[200px]">
+                                                                {isAllocated ? (
+                                                                    <SearchableSelect
+                                                                        placeholder="Assign Teacher..."
+                                                                        options={staff.filter(s => s.role === 'TEACHER').map(s => ({ id: (s.user || s.id).toString(), label: s.full_name }))}
+                                                                        value={allocation?.teacher?.toString() || ''}
+                                                                        onChange={(val) => updateAllocationTeacher(allocation.id, val.toString())}
+                                                                    />
+                                                                ) : (
+                                                                    <span className="text-[10px] text-slate-300 italic">Select subject first</span>
+                                                                )}
+                                                            </td>
                                                             <td className="py-4 px-6">
                                                                 {isAllocated ?
                                                                     <span className="badge badge-success text-[9px] font-black">ALLOCATED</span> :
