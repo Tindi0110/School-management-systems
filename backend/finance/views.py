@@ -41,14 +41,20 @@ class InvoiceViewSet(viewsets.ModelViewSet):
     def dashboard_stats(self, request):
         """
         Returns calculated stats and recent invoices for the dashboard.
-        Prioritizes active academic year/term context for performance and relevance.
+        Prioritizes active academic year/term context for performance.
+        Results cached for 5 minutes (300s) to avoid repeated heavy aggregation.
         """
         from academics.models import AcademicYear, Term
+        from django.core.cache import cache
+
         all_time = request.query_params.get('all_time') == 'true'
-        
+        cache_key = f'finance_dashboard_stats_{"alltime" if all_time else "active"}'
+        cached = cache.get(cache_key)
+        if cached:
+            return Response(cached)
+
         # Base QuerySets
         inv_qs = Invoice.objects.all()
-        
         active_context = {"is_all_time": all_time}
         
         if not all_time:
@@ -61,7 +67,6 @@ class InvoiceViewSet(viewsets.ModelViewSet):
                 active_context['year_id'] = active_year.id
             
             if active_term:
-                # Attempt to extract term number from name (e.g., "Term 1" -> 1)
                 try:
                     term_num = int(''.join(filter(str.isdigit, active_term.name)))
                     inv_qs = inv_qs.filter(term=term_num)
@@ -100,7 +105,7 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         revenue_per_seat = round(float(total_collected) / total_capacity, 2) if total_capacity > 0 else 0
         collection_rate = round((float(total_collected) / float(total_invoiced) * 100), 1) if total_invoiced > 0 else 0
 
-        return Response({
+        result = {
             'totalInvoiced': total_invoiced,
             'totalCollected': total_collected,
             'totalOutstanding': total_outstanding,
@@ -111,7 +116,10 @@ class InvoiceViewSet(viewsets.ModelViewSet):
             'collectionRate': collection_rate,
             'recentInvoices': recent_data,
             'context': active_context
-        })
+        }
+        # Cache for 5 minutes
+        cache.set(cache_key, result, 300)
+        return Response(result)
 
     @action(detail=False, methods=['post'])
     def generate_batch(self, request):

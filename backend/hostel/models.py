@@ -66,13 +66,17 @@ class HostelAttendance(models.Model):
     STATUS_CHOICES = (('PRESENT', 'Present'), ('ABSENT', 'Absent'), ('PERMITTED', 'On Leave/Exeat'))
     
     student = models.ForeignKey('students.Student', on_delete=models.CASCADE)
-    date = models.DateField(default=timezone.now)
+    date = models.DateField(default=timezone.now, db_index=True)
     session = models.CharField(max_length=10, choices=SESSION_CHOICES)
     status = models.CharField(max_length=15, choices=STATUS_CHOICES)
     warden_remark = models.CharField(max_length=255, blank=True)
     
     class Meta:
         unique_together = ('student', 'date', 'session')
+        indexes = [
+            models.Index(fields=['student', 'date']),
+            models.Index(fields=['date', 'session']),
+        ]
 
 class HostelDiscipline(models.Model):
     student = models.ForeignKey('students.Student', on_delete=models.CASCADE)

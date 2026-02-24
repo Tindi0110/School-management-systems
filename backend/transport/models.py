@@ -81,12 +81,19 @@ class TripLog(models.Model):
     driver = models.ForeignKey(DriverProfile, on_delete=models.SET_NULL, null=True)
     attendant = models.CharField(max_length=100, blank=True)
     trip_type = models.CharField(max_length=10, choices=TYPES)
-    date = models.DateField(default=timezone.now)
+    date = models.DateField(default=timezone.now, db_index=True)
     departure_time = models.TimeField(null=True, blank=True)
     arrival_time = models.TimeField(null=True, blank=True)
     odometer_start = models.IntegerField(null=True, blank=True)
     odometer_end = models.IntegerField(null=True, blank=True)
     status = models.CharField(max_length=20, default='COMPLETED')
+
+    class Meta:
+        ordering = ['-date']
+        indexes = [
+            models.Index(fields=['date', 'vehicle']),
+            models.Index(fields=['date', 'route']),
+        ]
 
 class TransportAttendance(models.Model):
     trip = models.ForeignKey(TripLog, on_delete=models.CASCADE, related_name='attendance')

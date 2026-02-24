@@ -1,7 +1,8 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from django_filters.rest_framework import DjangoFilterBackend
 from django.db import transaction
 from django.utils import timezone
 from .models import (
@@ -161,9 +162,13 @@ class HostelAllocationViewSet(viewsets.ModelViewSet):
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 class HostelAttendanceViewSet(viewsets.ModelViewSet):
-    queryset = HostelAttendance.objects.all()
+    queryset = HostelAttendance.objects.select_related('student').order_by('-date')
     serializer_class = HostelAttendanceSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['student', 'session', 'status', 'date']
+    search_fields = ['student__full_name', 'student__admission_number']
+    ordering_fields = ['date', 'session', 'status']
 
 class HostelDisciplineViewSet(viewsets.ModelViewSet):
     queryset = HostelDiscipline.objects.all()

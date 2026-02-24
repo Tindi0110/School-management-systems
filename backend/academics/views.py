@@ -73,32 +73,34 @@ class StudentResultViewSet(viewsets.ModelViewSet):
     queryset = StudentResult.objects.select_related('student', 'exam', 'subject').all()
     serializer_class = StudentResultSerializer
     permission_classes = [permissions.IsAuthenticated, IsClassTeacherForSubject]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['student', 'exam', 'subject']
+    search_fields = ['student__full_name', 'student__admission_number']
+    ordering_fields = ['score', 'grade']
 
     def get_permissions(self):
         """
         Bypass the strict class-teacher check for admin/bulk actions.
-        These actions require only authentication:
-        - list, create, sync_grades, bulk operations
-        Object-level teacher check only applies on update/destroy.
+        - list, create, sync_grades: require only authentication.
+        - update/destroy: require class-teacher check.
         """
         if self.action in ['list', 'create', 'sync_grades']:
             return [permissions.IsAuthenticated()]
         return super().get_permissions()
-    
+
     def get_queryset(self):
         queryset = StudentResult.objects.select_related('student', 'exam', 'subject').all()
         student_id = self.request.query_params.get('student_id')
         exam_id = self.request.query_params.get('exam_id')
-        if student_id: queryset = queryset.filter(student_id=student_id)
-        if exam_id: queryset = queryset.filter(exam_id=exam_id)
+        if student_id:
+            queryset = queryset.filter(student_id=student_id)
+        if exam_id:
+            queryset = queryset.filter(exam_id=exam_id)
         return queryset
 
     @action(detail=False, methods=['post'])
     def sync_grades(self, request):
-        """
-        Recalculate and re-assign grades for all existing results
-        based on the currently active/default grading system boundaries.
-        """
+
         from .models import GradeSystem, GradeBoundary
         # Find the default grading system
         try:

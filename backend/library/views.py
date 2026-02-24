@@ -1,7 +1,8 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from django_filters.rest_framework import DjangoFilterBackend
 from django.utils import timezone
 from .models import (
     LibraryConfig, Book, BookCopy, BookLending, 
@@ -23,11 +24,18 @@ class BookViewSet(viewsets.ModelViewSet):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['category', 'language']
+    search_fields = ['title', 'author', 'isbn', 'category', 'publisher']
+    ordering_fields = ['title', 'author', 'year']
 
 class BookCopyViewSet(viewsets.ModelViewSet):
-    queryset = BookCopy.objects.all()
+    queryset = BookCopy.objects.select_related('book').all()
     serializer_class = BookCopySerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_fields = ['book', 'status', 'condition']
+    search_fields = ['copy_number', 'barcode', 'book__title']
 
 class BookLendingViewSet(viewsets.ModelViewSet):
     queryset = BookLending.objects.select_related('copy__book', 'user').all()

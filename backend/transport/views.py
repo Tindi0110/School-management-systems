@@ -1,8 +1,9 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db.models import Count, Q, OuterRef, Subquery, F, Value
 from django.db.models.functions import Concat
+from django_filters.rest_framework import DjangoFilterBackend
 from .models import (
     Vehicle, Route, PickupPoint, TransportAllocation, 
     TripLog, TransportAttendance, VehicleMaintenance, 
@@ -74,6 +75,10 @@ class TransportAllocationViewSet(viewsets.ModelViewSet):
 class TripLogViewSet(viewsets.ModelViewSet):
     queryset = TripLog.objects.select_related('vehicle', 'route').prefetch_related('attendance__student').all()
     serializer_class = TripLogSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['vehicle', 'route', 'trip_type', 'date']
+    ordering_fields = ['date', 'trip_type']
+    ordering = ['-date']
 
     @action(detail=True, methods=['post'])
     def mark_attendance(self, request, pk=None):
@@ -90,6 +95,9 @@ class TripLogViewSet(viewsets.ModelViewSet):
 class TransportAttendanceViewSet(viewsets.ModelViewSet):
     queryset = TransportAttendance.objects.select_related('student', 'trip').all()
     serializer_class = TransportAttendanceSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_fields = ['trip', 'student', 'is_present']
+    search_fields = ['student__full_name', 'student__admission_number']
 
 class VehicleMaintenanceViewSet(viewsets.ModelViewSet):
     queryset = VehicleMaintenance.objects.select_related('vehicle').all()
