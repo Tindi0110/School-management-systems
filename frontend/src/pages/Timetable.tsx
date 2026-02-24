@@ -81,12 +81,11 @@ const Timetable = () => {
     const loadTimetable = async (classId: string) => {
         setLoading(true);
         try {
-            const res = await timetableAPI.getAll({ class_assigned: classId });
+            const res = await timetableAPI.getAll({ class_assigned: classId, page_size: 200 });
             const allSlots = res.data?.results ?? res.data ?? [];
-            const filtered = allSlots.filter((s: any) => s.class_assigned.toString() === classId);
-            setSlots(filtered);
+            setSlots(allSlots);
         } catch (error) {
-            console.error(error);
+            console.error('Failed to load timetable slots:', error);
         } finally {
             setLoading(false);
         }
