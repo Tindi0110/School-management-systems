@@ -593,7 +593,7 @@ const Transport = () => {
     if (loading) return <div className="spinner-container"><div className="spinner"></div></div>;
 
     return (
-        <div className="fade-in">
+        <div className="fade-in px-4">
             {/* Header with Logistics Overview */}
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8">
                 <div className="w-full lg:w-auto">
@@ -614,15 +614,18 @@ const Transport = () => {
             </div>
 
             {/* Navigation Tabs */}
-            <div className="tabs mb-6 no-print overflow-x-auto">
-                <button className={`tab-link ${activeTab === 'fleet' ? 'active' : ''}`} onClick={() => setActiveTab('fleet')}><Bus size={16} /> Fleet Registry</button>
-                <button className={`tab-link ${activeTab === 'routes' ? 'active' : ''}`} onClick={() => setActiveTab('routes')}><MapPin size={16} /> Routes & Zones</button>
-                <button className={`tab-link ${activeTab === 'allocations' ? 'active' : ''}`} onClick={() => setActiveTab('allocations')}><Users size={16} /> Allocations</button>
-                <button className={`tab-link ${activeTab === 'trips' ? 'active' : ''}`} onClick={() => setActiveTab('trips')}><ClipboardList size={16} /> Trip Logs</button>
-                <button className={`tab-link ${activeTab === 'maintenance' ? 'active' : ''}`} onClick={() => setActiveTab('maintenance')}><Wrench size={16} /> Repairs</button>
-                <button className={`tab-link ${activeTab === 'fuel' ? 'active' : ''}`} onClick={() => setActiveTab('fuel')}><Droplet size={16} /> Fuel Usage</button>
-                <button className={`tab-link ${activeTab === 'safety' ? 'active' : ''}`} onClick={() => setActiveTab('safety')}><ShieldAlert size={16} /> Safety</button>
-                <Button variant="outline" size="sm" className="ml-auto" onClick={() => {
+            <div className="nav-tab-container no-print">
+                <button className={`nav-tab ${activeTab === 'fleet' ? 'active' : ''}`} onClick={() => setActiveTab('fleet')}>Fleet</button>
+                <button className={`nav-tab ${activeTab === 'routes' ? 'active' : ''}`} onClick={() => setActiveTab('routes')}>Routes</button>
+                <button className={`nav-tab ${activeTab === 'allocations' ? 'active' : ''}`} onClick={() => setActiveTab('allocations')}>Allocations</button>
+                <button className={`nav-tab ${activeTab === 'trips' ? 'active' : ''}`} onClick={() => setActiveTab('trips')}>Trip Logs</button>
+                <button className={`nav-tab ${activeTab === 'maintenance' ? 'active' : ''}`} onClick={() => setActiveTab('maintenance')}>Repairs</button>
+                <button className={`nav-tab ${activeTab === 'fuel' ? 'active' : ''}`} onClick={() => setActiveTab('fuel')}>Fuel</button>
+                <button className={`nav-tab ${activeTab === 'safety' ? 'active' : ''}`} onClick={() => setActiveTab('safety')}>Safety</button>
+            </div>
+
+            <div className="mb-4 no-print flex justify-end">
+                <Button variant="outline" size="sm" onClick={() => {
                     const dataToExport = activeTab === 'allocations' ? allocations : activeTab === 'routes' ? routes : activeTab === 'trips' ? trips : activeTab === 'maintenance' ? maintenanceRecords : fuelRecords;
                     exportToCSV(dataToExport, `Transport_${activeTab}`);
                 }} icon={<Download size={14} />}>

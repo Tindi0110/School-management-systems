@@ -364,7 +364,7 @@ const Library = () => {
     if (loading) return <div className="spinner-container"><div className="spinner"></div></div>;
 
     return (
-        <div className="fade-in">
+        <div className="fade-in px-4">
             {/* Header */}
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8">
                 <div className="w-full lg:w-auto">
@@ -410,18 +410,18 @@ const Library = () => {
             <div className="mb-4 no-print flex justify-end">
                 <input
                     type="text"
-                    placeholder="Search..."
+                    placeholder={`Search ${activeTab.toLowerCase()}...`}
                     className="input input-sm w-64 shadow-sm"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
             </div>
 
-            <div className="tabs mb-6 no-print overflow-x-auto">
-                <button className={`tab-link ${activeTab === 'catalog' ? 'active' : ''}`} onClick={() => setActiveTab('catalog')}><Book size={16} /> Catalog</button>
-                <button className={`tab-link ${activeTab === 'copies' ? 'active' : ''}`} onClick={() => setActiveTab('copies')}><Layers size={16} /> Inventory</button>
-                <button className={`tab-link ${activeTab === 'lendings' ? 'active' : ''}`} onClick={() => setActiveTab('lendings')}><Bookmark size={16} /> Circulation</button>
-                <button className={`tab-link ${activeTab === 'fines' ? 'active' : ''}`} onClick={() => setActiveTab('fines')}><Receipt size={16} /> Fines</button>
+            <div className="nav-tab-container no-print">
+                <button className={`nav-tab ${activeTab === 'catalog' ? 'active' : ''}`} onClick={() => setActiveTab('catalog')}>Catalog</button>
+                <button className={`nav-tab ${activeTab === 'copies' ? 'active' : ''}`} onClick={() => setActiveTab('copies')}>Inventory</button>
+                <button className={`nav-tab ${activeTab === 'lendings' ? 'active' : ''}`} onClick={() => setActiveTab('lendings')}>Circulation</button>
+                <button className={`nav-tab ${activeTab === 'fines' ? 'active' : ''}`} onClick={() => setActiveTab('fines')}>Fines</button>
             </div>
 
             {/* Catalog Content */}
