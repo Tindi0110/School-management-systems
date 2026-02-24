@@ -2152,7 +2152,7 @@ const Academics = () => {
                         <label className="label text-[10px] font-black uppercase">Class Teacher</label>
                         <SearchableSelect
                             placeholder="Select Teacher..."
-                            options={staff.filter(s => s.role === 'TEACHER').map(s => ({ id: s.id.toString(), label: `${s.full_name} (${s.employee_id})` }))}
+                            options={staff.filter(s => s.role === 'TEACHER').map(s => ({ id: (s.user || s.id).toString(), label: `${s.full_name} (${s.employee_id})` }))}
                             value={classForm.class_teacher}
                             onChange={(val) => setClassForm({ ...classForm, class_teacher: val.toString() })}
                         />

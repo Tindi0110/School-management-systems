@@ -276,9 +276,12 @@ const Timetable = () => {
                     <div className="form-group">
                         <label className="label text-[10px] uppercase font-black">Teacher (Optional)</label>
                         <SearchableSelect
-                            placeholder="No Teacher / Self Study"
-                            options={staff.filter(st => st.role === 'TEACHER').map(st => ({ id: st.id.toString(), label: st.full_name }))}
-                            value={slotForm.teacher}
+                            placeholder="No Teacher / Self Study..."
+                            options={staff.filter(st => st.role === 'TEACHER').map(st => ({
+                                id: st.id.toString(),
+                                label: `${st.full_name} (${st.employee_id})`
+                            }))}
+                            value={slotForm.teacher?.toString() || ''}
                             onChange={(val) => setSlotForm({ ...slotForm, teacher: val.toString() })}
                         />
                     </div>

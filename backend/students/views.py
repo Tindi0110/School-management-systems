@@ -53,10 +53,6 @@ class StudentViewSet(viewsets.ModelViewSet):
         search = request.query_params.get('search', '')
         has_debt = request.query_params.get('has_debt', 'false').lower() == 'true'
         
-        from finance.models import Invoice
-        from django.db.models.functions import Coalesce
-        from django.db.models import Sum, DecimalField, Value, OuterRef, Subquery
-
         qs = Student.objects.filter(status='ACTIVE')
         
         # Annotate with fee_balance for filtering/display
@@ -78,7 +74,6 @@ class StudentViewSet(viewsets.ModelViewSet):
             qs = qs.filter(Q(full_name__icontains=search) | Q(admission_number__icontains=search))
         
         # Optimize query by only fetching needed fields
-        # Note: values() on annotated QS works fine
         qs = qs.select_related('current_class').values(
             'id', 'full_name', 'admission_number', 'current_class__name', 'current_class__stream', 'fee_balance'
         )[:50]
@@ -86,11 +81,11 @@ class StudentViewSet(viewsets.ModelViewSet):
         data = [
             {
                 'id': s['id'],
-                'full_name': s['full_name'],
-                'admission_number': s['admission_number'],
-                'class_name': s['current_class__name'],
-                'class_stream': s['current_class__stream'],
-                'fee_balance': float(s['fee_balance'])
+                'full_name': s['full_name'] or 'N/A',
+                'admission_number': s['admission_number'] or 'N/A',
+                'class_name': s['current_class__name'] or 'General',
+                'class_stream': s['current_class__stream'] or '',
+                'fee_balance': float(s['fee_balance'] or 0)
             }
             for s in qs
         ]

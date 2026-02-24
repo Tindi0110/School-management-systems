@@ -71,7 +71,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                             <input
                                 type="text"
                                 className="input input-sm pl-9 rounded-full bg-white border-primary/20 focus:border-primary"
-                                placeholder="Type to search students..."
+                                placeholder="Type to search..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 onClick={(e) => e.stopPropagation()}
@@ -81,7 +81,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                     </div>
                     <div className="options-list max-h-[250px] overflow-y-auto">
                         {filteredOptions.length === 0 ? (
-                            <div className="p-4 text-center text-secondary italic text-xs">No students matching "{searchTerm}"</div>
+                            <div className="p-4 text-center text-secondary italic text-xs">No results matching "{searchTerm}"</div>
                         ) : (
                             filteredOptions.map((opt) => (
                                 <div
