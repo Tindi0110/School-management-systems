@@ -614,20 +614,19 @@ const Transport = () => {
                 <StatCard title="Fuel Term" value={stats.fuelCostTerm.toLocaleString()} icon={<Droplet />} gradient="linear-gradient(135deg, #f093fb, #f5576c)" />
             </div>
 
-            {/* Tabs & Search Area */}
-            <div className="card mb-6 no-print p-4">
-                <div className="flex flex-col lg:flex-row justify-between items-center gap-4 border-b border-slate-100 pb-4 mb-4">
-                    <div className="nav-tab-container-ghost !mb-0 p-0 border-none">
-                        <button className={`nav - tab - ghost ${activeTab === 'fleet' ? 'active' : ''} `} onClick={() => setActiveTab('fleet')}>Fleet</button>
-                        <button className={`nav - tab - ghost ${activeTab === 'routes' ? 'active' : ''} `} onClick={() => setActiveTab('routes')}>Routes</button>
-                        <button className={`nav - tab - ghost ${activeTab === 'allocations' ? 'active' : ''} `} onClick={() => setActiveTab('allocations')}>Allocations</button>
-                        <button className={`nav - tab - ghost ${activeTab === 'trips' ? 'active' : ''} `} onClick={() => setActiveTab('trips')}>Trip Logs</button>
-                        <button className={`nav - tab - ghost ${activeTab === 'maintenance' ? 'active' : ''} `} onClick={() => setActiveTab('maintenance')}>Repairs</button>
-                        <button className={`nav - tab - ghost ${activeTab === 'fuel' ? 'active' : ''} `} onClick={() => setActiveTab('fuel')}>Fuel</button>
-                        <button className={`nav - tab - ghost ${activeTab === 'safety' ? 'active' : ''} `} onClick={() => setActiveTab('safety')}>Safety</button>
-                    </div>
-                </div>
+            {/* Tabs Navigation */}
+            <div className="nav-tab-container no-print">
+                <button className={`nav-tab ${activeTab === 'fleet' ? 'active' : ''}`} onClick={() => setActiveTab('fleet')}>Fleet</button>
+                <button className={`nav-tab ${activeTab === 'routes' ? 'active' : ''}`} onClick={() => setActiveTab('routes')}>Routes</button>
+                <button className={`nav-tab ${activeTab === 'allocations' ? 'active' : ''}`} onClick={() => setActiveTab('allocations')}>Allocations</button>
+                <button className={`nav-tab ${activeTab === 'trips' ? 'active' : ''}`} onClick={() => setActiveTab('trips')}>Trip Logs</button>
+                <button className={`nav-tab ${activeTab === 'maintenance' ? 'active' : ''}`} onClick={() => setActiveTab('maintenance')}>Repairs</button>
+                <button className={`nav-tab ${activeTab === 'fuel' ? 'active' : ''}`} onClick={() => setActiveTab('fuel')}>Fuel</button>
+                <button className={`nav-tab ${activeTab === 'safety' ? 'active' : ''}`} onClick={() => setActiveTab('safety')}>Safety</button>
+            </div>
 
+            {/* Search & Actions Area */}
+            <div className="card mb-6 no-print p-4">
                 <div className="flex flex-col lg:flex-row justify-between items-center gap-4">
                     <div className="relative flex-grow w-full max-w-md">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary opacity-50" size={18} />

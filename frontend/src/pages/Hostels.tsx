@@ -516,19 +516,18 @@ const Hostels = () => {
                 <StatCard title="Maintenance" value={stats.maintenanceIssues} icon={<Wrench />} gradient="linear-gradient(135deg, #ef4444, #dc2626)" />
             </div>
 
-            {/* Tabs & Search Area */}
-            <div className="card mb-6 no-print p-4">
-                <div className="flex flex-col lg:flex-row justify-between items-center gap-4 border-b border-slate-100 pb-4 mb-4">
-                    <div className="nav-tab-container-ghost !mb-0 p-0 border-none">
-                        <button className={`nav-tab-ghost ${activeTab === 'registry' ? 'active' : ''}`} onClick={() => setActiveTab('registry')}>Registry</button>
-                        <button className={`nav-tab-ghost ${activeTab === 'allocations' ? 'active' : ''}`} onClick={() => setActiveTab('allocations')}>Allocations</button>
-                        <button className={`nav-tab-ghost ${activeTab === 'attendance' ? 'active' : ''}`} onClick={() => setActiveTab('attendance')}>Attendance</button>
-                        <button className={`nav-tab-ghost ${activeTab === 'discipline' ? 'active' : ''}`} onClick={() => setActiveTab('discipline')}>Discipline</button>
-                        <button className={`nav-tab-ghost ${activeTab === 'assets' ? 'active' : ''}`} onClick={() => setActiveTab('assets')}>Assets</button>
-                        <button className={`nav-tab-ghost ${activeTab === 'maintenance' ? 'active' : ''}`} onClick={() => setActiveTab('maintenance')}>Maintenance</button>
-                    </div>
-                </div>
+            {/* Tabs Navigation */}
+            <div className="nav-tab-container no-print">
+                <button className={`nav-tab ${activeTab === 'registry' ? 'active' : ''}`} onClick={() => setActiveTab('registry')}>Registry</button>
+                <button className={`nav-tab ${activeTab === 'allocations' ? 'active' : ''}`} onClick={() => setActiveTab('allocations')}>Allocations</button>
+                <button className={`nav-tab ${activeTab === 'attendance' ? 'active' : ''}`} onClick={() => setActiveTab('attendance')}>Attendance</button>
+                <button className={`nav-tab ${activeTab === 'discipline' ? 'active' : ''}`} onClick={() => setActiveTab('discipline')}>Discipline</button>
+                <button className={`nav-tab ${activeTab === 'assets' ? 'active' : ''}`} onClick={() => setActiveTab('assets')}>Assets</button>
+                <button className={`nav-tab ${activeTab === 'maintenance' ? 'active' : ''}`} onClick={() => setActiveTab('maintenance')}>Maintenance</button>
+            </div>
 
+            {/* Search & Actions Area */}
+            <div className="card mb-6 no-print p-4">
                 <div className="flex flex-col lg:flex-row justify-between items-center gap-4">
                     <div className="relative flex-grow w-full max-w-md">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary opacity-50" size={18} />

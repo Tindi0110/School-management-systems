@@ -405,17 +405,16 @@ const Library = () => {
                 />
             </div>
 
-            {/* Tabs & Search Area */}
-            <div className="card mb-6 no-print p-4">
-                <div className="flex flex-col lg:flex-row justify-between items-center gap-4 border-b border-slate-100 pb-4 mb-4">
-                    <div className="nav-tab-container-ghost !mb-0 p-0 border-none">
-                        <button className={`nav-tab-ghost ${activeTab === 'catalog' ? 'active' : ''}`} onClick={() => setActiveTab('catalog')}>Catalog</button>
-                        <button className={`nav-tab-ghost ${activeTab === 'copies' ? 'active' : ''}`} onClick={() => setActiveTab('copies')}>Inventory</button>
-                        <button className={`nav-tab-ghost ${activeTab === 'lendings' ? 'active' : ''}`} onClick={() => setActiveTab('lendings')}>Circulation</button>
-                        <button className={`nav-tab-ghost ${activeTab === 'fines' ? 'active' : ''}`} onClick={() => setActiveTab('fines')}>Fines</button>
-                    </div>
-                </div>
+            {/* Tabs Navigation */}
+            <div className="nav-tab-container no-print">
+                <button className={`nav-tab ${activeTab === 'catalog' ? 'active' : ''}`} onClick={() => setActiveTab('catalog')}>Catalog</button>
+                <button className={`nav-tab ${activeTab === 'copies' ? 'active' : ''}`} onClick={() => setActiveTab('copies')}>Inventory</button>
+                <button className={`nav-tab ${activeTab === 'lendings' ? 'active' : ''}`} onClick={() => setActiveTab('lendings')}>Circulation</button>
+                <button className={`nav-tab ${activeTab === 'fines' ? 'active' : ''}`} onClick={() => setActiveTab('fines')}>Fines</button>
+            </div>
 
+            {/* Search & Actions Area */}
+            <div className="card mb-6 no-print p-4">
                 <div className="flex flex-col lg:flex-row justify-between items-center gap-4">
                     <div className="relative flex-grow w-full max-w-md">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary opacity-50" size={18} />
