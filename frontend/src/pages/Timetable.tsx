@@ -4,6 +4,7 @@ import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 import { timetableAPI, classesAPI, subjectsAPI, staffAPI } from '../api/api';
 import Modal from '../components/Modal';
+import SearchableSelect from '../components/SearchableSelect';
 import Button from '../components/common/Button';
 import { exportToCSV } from '../utils/export';
 import { useSelector } from 'react-redux';
@@ -161,14 +162,13 @@ const Timetable = () => {
                     <p className="text-secondary">Weekly schedule management</p>
                 </div>
                 <div className="flex gap-4">
-                    <select
-                        className="select border-primary"
+                    <SearchableSelect
+                        placeholder="Select Class..."
+                        className="min-w-[200px]"
+                        options={classes.map(c => ({ id: c.id.toString(), label: `${c.name} ${c.stream}` }))}
                         value={selectedClass}
-                        onChange={(e) => setSelectedClass(e.target.value)}
-                    >
-                        <option value="">Select Class...</option>
-                        {classes.map(c => <option key={c.id} value={c.id}>{c.name} {c.stream}</option>)}
-                    </select>
+                        onChange={(val) => setSelectedClass(val.toString())}
+                    />
                     {selectedClass && (
                         <div className="flex gap-2 no-print">
                             <Button variant="outline" size="sm" onClick={() => {
@@ -243,16 +243,22 @@ const Timetable = () => {
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group">
                             <label className="label text-[10px] uppercase font-black">Day</label>
-                            <select className="select" value={slotForm.day} onChange={e => setSlotForm({ ...slotForm, day: e.target.value })} required>
-                                {days.map(d => <option key={d.id} value={d.id}>{d.label}</option>)}
-                            </select>
+                            <SearchableSelect
+                                options={days.map(d => ({ id: d.id, label: d.label }))}
+                                value={slotForm.day}
+                                onChange={(val) => setSlotForm({ ...slotForm, day: val.toString() })}
+                                required
+                            />
                         </div>
                         <div className="form-group">
                             <label className="label text-[10px] uppercase font-black">Subject</label>
-                            <select className="select" value={slotForm.subject} onChange={e => setSlotForm({ ...slotForm, subject: e.target.value })} required>
-                                <option value="">Select Subject...</option>
-                                {subjects.map(s => <option key={s.id} value={s.id}>{s.name} ({s.code})</option>)}
-                            </select>
+                            <SearchableSelect
+                                placeholder="Select Subject..."
+                                options={subjects.map(s => ({ id: s.id.toString(), label: s.name, subLabel: `(${s.code})` }))}
+                                value={slotForm.subject}
+                                onChange={(val) => setSlotForm({ ...slotForm, subject: val.toString() })}
+                                required
+                            />
                         </div>
                     </div>
 
@@ -269,10 +275,12 @@ const Timetable = () => {
 
                     <div className="form-group">
                         <label className="label text-[10px] uppercase font-black">Teacher (Optional)</label>
-                        <select className="select" value={slotForm.teacher} onChange={e => setSlotForm({ ...slotForm, teacher: e.target.value })}>
-                            <option value="">No Teacher / Self Study</option>
-                            {staff.map(st => <option key={st.id} value={st.id}>{st.full_name}</option>)}
-                        </select>
+                        <SearchableSelect
+                            placeholder="No Teacher / Self Study"
+                            options={staff.map(st => ({ id: st.id.toString(), label: st.full_name }))}
+                            value={slotForm.teacher}
+                            onChange={(val) => setSlotForm({ ...slotForm, teacher: val.toString() })}
+                        />
                     </div>
 
                     <div className="modal-footer">

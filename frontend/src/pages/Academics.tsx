@@ -764,7 +764,7 @@ const Academics = () => {
     };
 
     const handleDeleteSingleResult = async (studentId: number, subjectId: number, resultId: number) => {
-        if (!window.confirm('Delete this result? This cannot be undone.')) return;
+        if (!await confirm('Delete this result? This cannot be undone.', { type: 'danger' })) return;
         try {
             await academicsAPI.results.delete(resultId);
             // Remove from local state
@@ -1700,28 +1700,21 @@ const Academics = () => {
                         <div className="flex items-center gap-3 w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0">
                             <div className="flex flex-col">
                                 <span className="text-[9px] font-black uppercase text-slate-400 mb-1">Level</span>
-                                <select
-                                    className="select h-8 text-[10px] font-bold py-0 pr-8 min-w-[100px]"
+                                <SearchableSelect
+                                    placeholder="All Levels"
+                                    options={uniqueClassNames.map(name => ({ id: name, label: name }))}
                                     value={rankingFilter.level}
-                                    onChange={(e) => setRankingFilter({ ...rankingFilter, level: e.target.value, classId: '' })}
-                                >
-                                    <option value="">All Levels</option>
-                                    {uniqueClassNames.map(name => <option key={name} value={name}>{name}</option>)}
-                                </select>
+                                    onChange={(val) => setRankingFilter({ ...rankingFilter, level: val.toString(), classId: '' })}
+                                />
                             </div>
                             <div className="flex flex-col">
                                 <span className="text-[9px] font-black uppercase text-slate-400 mb-1">Stream</span>
-                                <select
-                                    className="select h-8 text-[10px] font-bold py-0 pr-8 min-w-[120px]"
+                                <SearchableSelect
+                                    placeholder="All Streams"
+                                    options={classes.filter(c => c.name === rankingFilter.level).map(c => ({ id: c.id.toString(), label: c.stream }))}
                                     value={rankingFilter.classId}
-                                    onChange={(e) => setRankingFilter({ ...rankingFilter, classId: e.target.value })}
-                                    disabled={!rankingFilter.level}
-                                >
-                                    <option value="">All Streams</option>
-                                    {classes.filter(c => c.name === rankingFilter.level).map(c => (
-                                        <option key={c.id} value={c.id}>{c.stream}</option>
-                                    ))}
-                                </select>
+                                    onChange={(val) => setRankingFilter({ ...rankingFilter, classId: val.toString() })}
+                                />
                             </div>
                             <Button variant="outline" size="sm" className="no-print font-black uppercase text-[10px] h-8 mt-4 bg-white" onClick={() => window.print()} title="Print Ranking Report" icon={<Printer size={14} />}>
                                 PRINT
@@ -1986,24 +1979,28 @@ const Academics = () => {
                             <div className="flex items-center gap-4">
                                 <h3 className="mb-0 text-xs font-black uppercase tracking-wider">Attendance Register</h3>
                                 <div className="flex gap-2">
-                                    <select
-                                        className="select select-sm bg-white"
-                                        value={attendanceSort.field}
-                                        onChange={(e) => setAttendanceSort({ ...attendanceSort, field: e.target.value })}
-                                    >
-                                        <option value="date">Sort by Date</option>
-                                        <option value="student">Sort by Student</option>
-                                        <option value="class">Sort by Class</option>
-                                        <option value="stream">Sort by Stream</option>
-                                    </select>
-                                    <select
-                                        className="select select-sm bg-white min-w-[140px]"
-                                        value={attendanceSort.direction}
-                                        onChange={(e) => setAttendanceSort({ ...attendanceSort, direction: e.target.value as 'asc' | 'desc' })}
-                                    >
-                                        <option value="desc">Descending (Newest/Z-A)</option>
-                                        <option value="asc">Ascending (Oldest/A-Z)</option>
-                                    </select>
+                                    <div className="w-40">
+                                        <SearchableSelect
+                                            options={[
+                                                { id: 'date', label: 'Sort by Date' },
+                                                { id: 'student', label: 'Sort by Student' },
+                                                { id: 'class', label: 'Sort by Class' },
+                                                { id: 'stream', label: 'Sort by Stream' }
+                                            ]}
+                                            value={attendanceSort.field}
+                                            onChange={(val) => setAttendanceSort({ ...attendanceSort, field: val.toString() })}
+                                        />
+                                    </div>
+                                    <div className="w-48">
+                                        <SearchableSelect
+                                            options={[
+                                                { id: 'desc', label: 'Descending (Newest/Z-A)' },
+                                                { id: 'asc', label: 'Ascending (Oldest/A-Z)' }
+                                            ]}
+                                            value={attendanceSort.direction}
+                                            onChange={(val) => setAttendanceSort({ ...attendanceSort, direction: val as 'asc' | 'desc' })}
+                                        />
+                                    </div>
                                 </div>
                             </div>
                             <div className="flex gap-2 w-full sm:w-auto">
@@ -2094,9 +2091,12 @@ const Academics = () => {
                 <form onSubmit={handleTermSubmit} className="space-y-4 form-container-md mx-auto">
                     <div className="form-group">
                         <label className="label text-[10px] font-black uppercase">Academic Year</label>
-                        <select className="select" value={termForm.year} onChange={(e) => setTermForm({ ...termForm, year: e.target.value })} required>
-                            <option value="">Select Year</option>{academicYears.map(y => <option key={y.id} value={y.id}>{y.name}</option>)}
-                        </select>
+                        <SearchableSelect
+                            options={academicYears.map(y => ({ id: y.id.toString(), label: y.name }))}
+                            value={termForm.year}
+                            onChange={(val) => setTermForm({ ...termForm, year: val.toString() })}
+                            required
+                        />
                     </div>
                     <div className="form-group"><label className="label text-[10px] font-black uppercase">Term Name (e.g. Term 1)</label><input type="text" className="input" value={termForm.name} onChange={(e) => setTermForm({ ...termForm, name: e.target.value })} required /></div>
                     <div className="grid grid-cols-2 gap-md">
@@ -2127,12 +2127,12 @@ const Academics = () => {
                     </div>
                     <div className="form-group mb-2">
                         <label className="label text-[10px] font-black uppercase">Class Teacher</label>
-                        <select className="select" value={classForm.class_teacher} onChange={(e) => setClassForm({ ...classForm, class_teacher: e.target.value })}>
-                            <option value="">Select Teacher...</option>
-                            {staff.filter(s => s.role === 'TEACHER').map(s => (
-                                <option key={s.id} value={s.id}>{s.full_name} ({s.employee_id})</option>
-                            ))}
-                        </select>
+                        <SearchableSelect
+                            placeholder="Select Teacher..."
+                            options={staff.filter(s => s.role === 'TEACHER').map(s => ({ id: s.id.toString(), label: `${s.full_name} (${s.employee_id})` }))}
+                            value={classForm.class_teacher}
+                            onChange={(val) => setClassForm({ ...classForm, class_teacher: val.toString() })}
+                        />
                     </div>
                     <div className="grid grid-cols-2 gap-md">
                         <div className="form-group"><label className="label text-[10px] font-black uppercase">Active Year</label><input type="number" className="input" value={classForm.year} readOnly /></div>
@@ -2177,9 +2177,12 @@ const Academics = () => {
                     </div>
                     <div className="form-group">
                         <label className="label text-[10px] font-black uppercase">Department Group</label>
-                        <select className="select" value={subjectForm.group} onChange={(e) => setSubjectForm({ ...subjectForm, group: e.target.value })}>
-                            <option value="">General</option>{subjectGroups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
-                        </select>
+                        <SearchableSelect
+                            placeholder="General"
+                            options={subjectGroups.map(g => ({ id: g.id.toString(), label: g.name }))}
+                            value={subjectForm.group}
+                            onChange={(val) => setSubjectForm({ ...subjectForm, group: val.toString() })}
+                        />
                     </div>
                     <Button type="submit" variant="primary" size="sm" className="w-full mt-2 font-black uppercase" loading={isSubmitting} loadingText="Registering...">Register Subject</Button>
                 </form>
@@ -2207,30 +2210,33 @@ const Academics = () => {
                     <div className="grid grid-cols-2 gap-md mb-4 bg-secondary-light/20 p-2 rounded border">
                         <div>
                             <label className="text-[9px] font-bold uppercase text-secondary">Filter Class</label>
-                            <select className="select text-xs" value={attendanceFilter.level} onChange={(e) => setAttendanceFilter({ ...attendanceFilter, level: e.target.value, classId: '' })}>
-                                <option value="">Level...</option>
-                                {uniqueClassNames.map(name => <option key={name} value={name}>{name}</option>)}
-                            </select>
+                            <SearchableSelect
+                                placeholder="Level..."
+                                options={uniqueClassNames.map(name => ({ id: name, label: name }))}
+                                value={attendanceFilter.level}
+                                onChange={(val) => setAttendanceFilter({ ...attendanceFilter, level: val.toString(), classId: '' })}
+                            />
                         </div>
                         <div>
                             <label className="text-[9px] font-bold uppercase text-secondary">Stream</label>
-                            <select className="select text-xs" value={attendanceFilter.classId} onChange={(e) => {
-                                const newClassId = e.target.value;
-                                setAttendanceFilter({ ...attendanceFilter, classId: newClassId });
-                                if (attendanceFilter.isBulk && newClassId) {
-                                    // Auto-populate bulk list
-                                    const cid = parseInt(newClassId);
-                                    const classStudents = students.filter(s => {
-                                        // Handle both direct ID match and nested object if serializer changes
-                                        const sClassId = typeof (s as any).current_class === 'object' ? (s as any).current_class?.id : (s as any).current_class;
-                                        return Number(sClassId) === cid;
-                                    });
-                                    setBulkAttendanceList(classStudents.map(s => ({ student_id: s.id, status: 'PRESENT', remark: '' })));
-                                }
-                            }} disabled={!attendanceFilter.level}>
-                                <option value="">Stream...</option>
-                                {classes.filter(c => c.name === attendanceFilter.level).map(c => <option key={c.id} value={c.id}>{c.stream}</option>)}
-                            </select>
+                            <SearchableSelect
+                                placeholder="Stream..."
+                                options={classes.filter(c => c.name === attendanceFilter.level).map(c => ({ id: c.id.toString(), label: c.stream }))}
+                                value={attendanceFilter.classId}
+                                onChange={(val) => {
+                                    const newClassId = val.toString();
+                                    setAttendanceFilter({ ...attendanceFilter, classId: newClassId });
+                                    if (attendanceFilter.isBulk && newClassId) {
+                                        const cid = parseInt(newClassId);
+                                        const classStudents = students.filter(s => {
+                                            const sClassId = typeof (s as any).current_class === 'object' ? (s as any).current_class?.id : (s as any).current_class;
+                                            return Number(sClassId) === cid;
+                                        });
+                                        setBulkAttendanceList(classStudents.map(s => ({ student_id: s.id, status: 'PRESENT', remark: '' })));
+                                    }
+                                }}
+                                disabled={!attendanceFilter.level}
+                            />
                         </div>
                     </div>
 
@@ -2251,9 +2257,15 @@ const Academics = () => {
                             />
                             <div className="form-group mt-4">
                                 <label className="label text-[10px] font-black uppercase">Status</label>
-                                <select className="select" value={attendanceForm.status} onChange={(e) => setAttendanceForm({ ...attendanceForm, status: e.target.value })}>
-                                    <option value="PRESENT">Present</option><option value="ABSENT">Absent</option><option value="LATE">Late / Tardy</option>
-                                </select>
+                                <SearchableSelect
+                                    options={[
+                                        { id: 'PRESENT', label: 'Present' },
+                                        { id: 'ABSENT', label: 'Absent' },
+                                        { id: 'LATE', label: 'Late / Tardy' }
+                                    ]}
+                                    value={attendanceForm.status}
+                                    onChange={(v) => setAttendanceForm({ ...attendanceForm, status: v.toString() })}
+                                />
                             </div>
                             <div className="form-group"><label className="label text-[10px] font-black uppercase">Remarks</label><input type="text" className="input" value={attendanceForm.remark} onChange={(e) => setAttendanceForm({ ...attendanceForm, remark: e.target.value })} placeholder="Reason if absent..." /></div>
                         </>
@@ -2275,18 +2287,19 @@ const Academics = () => {
                                             <tr key={item.student_id}>
                                                 <td className="text-xs font-bold">{student?.full_name}</td>
                                                 <td>
-                                                    <select className={`select select-xs w-full ${item.status === 'ABSENT' ? 'text-error font-bold' : ''}`}
+                                                    <SearchableSelect
+                                                        options={[
+                                                            { id: 'PRESENT', label: 'Present' },
+                                                            { id: 'ABSENT', label: 'Absent' },
+                                                            { id: 'LATE', label: 'Late' }
+                                                        ]}
                                                         value={item.status}
-                                                        onChange={(e) => {
+                                                        onChange={(v) => {
                                                             const newList = [...bulkAttendanceList];
-                                                            newList[idx].status = e.target.value;
+                                                            newList[idx].status = v.toString();
                                                             setBulkAttendanceList(newList);
                                                         }}
-                                                    >
-                                                        <option value="PRESENT">Present</option>
-                                                        <option value="ABSENT">Absent</option>
-                                                        <option value="LATE">Late</option>
-                                                    </select>
+                                                    />
                                                 </td>
                                                 <td>
                                                     <input type="text" className="input input-xs w-full" placeholder="..."
@@ -2322,23 +2335,35 @@ const Academics = () => {
 
                         <div className="form-group">
                             <label className="label text-[10px] font-black uppercase">Assessment Type</label>
-                            <select className="select" value={examForm.exam_type} onChange={(e) => setExamForm({ ...examForm, exam_type: e.target.value })}>
-                                <option value="CAT">Continuous Assessment (CAT)</option><option value="MID_TERM">Mid-Term Exam</option><option value="END_TERM">End-Term Exam</option>
-                            </select>
+                            <SearchableSelect
+                                options={[
+                                    { id: 'CAT', label: 'Continuous Assessment (CAT)' },
+                                    { id: 'MID_TERM', label: 'Mid-Term Exam' },
+                                    { id: 'END_TERM', label: 'End-Term Exam' }
+                                ]}
+                                value={examForm.exam_type}
+                                onChange={(v) => setExamForm({ ...examForm, exam_type: v.toString() })}
+                            />
                         </div>
                         <div className="form-group">
                             <label className="label text-[10px] font-black uppercase">Active Term *</label>
-                            <select className="select" value={examForm.term} onChange={(e) => setExamForm({ ...examForm, term: e.target.value })} required>
-                                <option value="">Select Term</option>{terms.map(t => <option key={t.id} value={t.id}>{t.name} ({t.year})</option>)}
-                            </select>
+                            <SearchableSelect
+                                placeholder="Select Term"
+                                options={terms.map(t => ({ id: t.id.toString(), label: `${t.name} (${t.year})` }))}
+                                value={examForm.term}
+                                onChange={(v) => setExamForm({ ...examForm, term: v.toString() })}
+                                required
+                            />
                         </div>
 
                         <div className="form-group">
                             <label className="label text-[10px] font-black uppercase">Grading System</label>
-                            <select className="select" value={examForm.grade_system} onChange={(e) => setExamForm({ ...examForm, grade_system: e.target.value })}>
-                                <option value="">Default Grading System</option>
-                                {gradeSystems.map(gs => <option key={gs.id} value={gs.id}>{gs.name}</option>)}
-                            </select>
+                            <SearchableSelect
+                                placeholder="Default Grading System"
+                                options={gradeSystems.map(gs => ({ id: gs.id.toString(), label: gs.name }))}
+                                value={examForm.grade_system}
+                                onChange={(v) => setExamForm({ ...examForm, grade_system: v.toString() })}
+                            />
                         </div>
                         <div className="form-group col-span-2">
                             <PremiumDateInput
@@ -2417,22 +2442,29 @@ const Academics = () => {
                         <div className="grid grid-cols-2 gap-md">
                             <div>
                                 <label className="text-[9px] font-bold uppercase text-secondary">Class Level</label>
-                                <select className="select text-xs" value={resultContext.level} onChange={(e) => {
-                                    setResultContext({ ...resultContext, level: e.target.value, classId: '' });
-                                }}>
-                                    <option value="">Select Level...</option>
-                                    {uniqueClassNames.map(name => <option key={name} value={name}>{name}</option>)}
-                                </select>
+                                <SearchableSelect
+                                    placeholder="Select Level..."
+                                    options={uniqueClassNames.map(name => ({ id: name, label: name }))}
+                                    value={resultContext.level}
+                                    onChange={(val) => {
+                                        setResultContext({ ...resultContext, level: val.toString(), classId: '' });
+                                    }}
+                                />
                             </div>
                             <div>
                                 <label className="text-[9px] font-bold uppercase text-secondary">Stream</label>
-                                <select className="select text-xs" value={resultContext.classId} onChange={(e) => {
-                                    setResultContext({ ...resultContext, classId: e.target.value });
-                                }} disabled={!resultContext.level}>
-                                    <option value="">Select Stream...</option>
-                                    <option value="all" className="font-bold">ALL STREAMS (Combined)</option>
-                                    {classes.filter(c => c.name === resultContext.level).map(c => <option key={c.id} value={c.id}>{c.stream}</option>)}
-                                </select>
+                                <SearchableSelect
+                                    placeholder="Select Stream..."
+                                    options={[
+                                        { id: 'all', label: 'ALL STREAMS (Combined)' },
+                                        ...classes.filter(c => c.name === resultContext.level).map(c => ({ id: c.id.toString(), label: c.stream }))
+                                    ]}
+                                    value={resultContext.classId}
+                                    onChange={(val) => {
+                                        setResultContext({ ...resultContext, classId: val.toString() });
+                                    }}
+                                    disabled={!resultContext.level}
+                                />
                             </div>
                         </div>
                     </div>
@@ -2538,39 +2570,34 @@ const Academics = () => {
                 <form onSubmit={handleSyllabusSubmit} className="form-container-md mx-auto">
                     <div className="form-group">
                         <label className="label text-[10px] font-black uppercase">Class Level</label>
-                        <select
-                            className="select"
-                            id="syllabus-level-select"
+                        <SearchableSelect
+                            placeholder="Select Level..."
+                            options={uniqueClassNames.map(name => ({ id: name, label: name }))}
                             value={syllabusForm.level}
-                            onChange={(e) => setSyllabusForm({ ...syllabusForm, level: e.target.value, class_grade: '' })}
+                            onChange={(val) => setSyllabusForm({ ...syllabusForm, level: val.toString(), class_grade: '' })}
                             required
-                        >
-                            <option value="">Select Level...</option>
-                            {uniqueClassNames.map(name => <option key={name} value={name}>{name}</option>)}
-                        </select>
+                        />
                     </div>
                     <div className="form-group">
                         <label className="label text-[10px] font-black uppercase">Specific Stream</label>
-                        <select
-                            className="select"
-                            id="syllabus-stream-select"
+                        <SearchableSelect
+                            placeholder="Select Stream..."
+                            options={classes.filter(c => c.name === syllabusForm.level).map(c => ({ id: c.id.toString(), label: c.stream }))}
                             value={syllabusForm.class_grade}
-                            onChange={(e) => setSyllabusForm({ ...syllabusForm, class_grade: e.target.value })}
+                            onChange={(val) => setSyllabusForm({ ...syllabusForm, class_grade: val.toString() })}
                             required
                             disabled={!syllabusForm.level}
-                        >
-                            <option value="">Select Stream...</option>
-                            {classes.filter(c => c.name === syllabusForm.level).map(c => (
-                                <option key={c.id} value={c.id.toString()}>{c.stream}</option>
-                            ))}
-                        </select>
+                        />
                     </div>
                     <div className="form-group">
                         <label className="label text-[10px] font-black uppercase">Subject</label>
-                        <select className="select" value={syllabusForm.subject} onChange={(e) => setSyllabusForm({ ...syllabusForm, subject: e.target.value })} required>
-                            <option value="">Select Subject...</option>
-                            {subjects.map(s => <option key={s.id} value={s.id}>{s.name} ({s.code})</option>)}
-                        </select>
+                        <SearchableSelect
+                            placeholder="Select Subject..."
+                            options={subjects.map(s => ({ id: s.id.toString(), label: s.name, subLabel: `(${s.code})` }))}
+                            value={syllabusForm.subject}
+                            onChange={(val) => setSyllabusForm({ ...syllabusForm, subject: val.toString() })}
+                            required
+                        />
                     </div>
                     <div className="form-group">
                         <label className="label text-[10px] font-black uppercase">Start Pct</label>

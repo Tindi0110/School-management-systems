@@ -3,7 +3,7 @@ import {
     Plus, Edit, Bus, MapPin, Navigation, Wrench, ShieldAlert,
     Droplet, Download, Users, Clock, Trash2, Search
 } from 'lucide-react';
-import { transportAPI, studentsAPI } from '../api/api';
+import { transportAPI, classesAPI, studentsAPI } from '../api/api';
 import { exportToCSV } from '../utils/export';
 import Modal from '../components/Modal';
 import SearchableSelect from '../components/SearchableSelect';
@@ -308,7 +308,7 @@ const Transport = () => {
                 toast.success('Pickup point updated');
             } else {
                 await transportAPI.pickupPoints.create(payload);
-                toast.success(`Service point added. Fee set to KES ${payload.additional_cost}`);
+                toast.success(`Service point added.Fee set to KES ${payload.additional_cost} `);
             }
 
             loadData();
@@ -318,7 +318,7 @@ const Transport = () => {
         } catch (error: any) {
 
             const msg = error.response?.data?.detail || error.message;
-            toast.error(`Failed to save pickup point: ${msg}`);
+            toast.error(`Failed to save pickup point: ${msg} `);
         } finally {
             setIsSaving(false);
         }
@@ -358,7 +358,7 @@ const Transport = () => {
         } catch (error: any) {
 
             const msg = error.response?.data?.detail || error.message;
-            toast.error(`Failed to save trip log: ${msg}`);
+            toast.error(`Failed to save trip log: ${msg} `);
         } finally {
             setIsSaving(false);
         }
@@ -421,7 +421,7 @@ const Transport = () => {
         } catch (error: any) {
 
             const msg = error.response?.data?.detail || error.message;
-            toast.error(`Failed to save maintenance record: ${msg}`);
+            toast.error(`Failed to save maintenance record: ${msg} `);
         } finally {
             setIsSaving(false);
         }
@@ -476,7 +476,7 @@ const Transport = () => {
         } catch (error: any) {
 
             const msg = error.response?.data?.detail || error.message;
-            toast.error(`Failed to save incident report: ${msg}`);
+            toast.error(`Failed to save incident report: ${msg} `);
         } finally {
             setIsSaving(false);
         }
@@ -582,13 +582,13 @@ const Transport = () => {
     const studentOptions = React.useMemo(() => students.map(s => ({
         id: String(s.id),
         label: s.full_name,
-        subLabel: `ID: ${s.admission_number}`
+        subLabel: `ID: ${s.admission_number} `
     })), [students]);
 
     const routeOptions = React.useMemo(() => routes.map(r => ({
         id: String(r.id),
-        label: `${r.route_code} - ${r.name}`,
-        subLabel: `Cost: KES ${parseFloat(r.base_cost).toLocaleString()}`
+        label: `${r.route_code} - ${r.name} `,
+        subLabel: `Cost: KES ${parseFloat(r.base_cost).toLocaleString()} `
     })), [routes]);
 
     if (loading) return <div className="spinner-container"><div className="spinner"></div></div>;
@@ -618,13 +618,13 @@ const Transport = () => {
             <div className="card mb-6 no-print p-4">
                 <div className="flex flex-col lg:flex-row justify-between items-center gap-4 border-b border-slate-100 pb-4 mb-4">
                     <div className="nav-tab-container-ghost !mb-0 p-0 border-none">
-                        <button className={`nav-tab-ghost ${activeTab === 'fleet' ? 'active' : ''}`} onClick={() => setActiveTab('fleet')}>Fleet</button>
-                        <button className={`nav-tab-ghost ${activeTab === 'routes' ? 'active' : ''}`} onClick={() => setActiveTab('routes')}>Routes</button>
-                        <button className={`nav-tab-ghost ${activeTab === 'allocations' ? 'active' : ''}`} onClick={() => setActiveTab('allocations')}>Allocations</button>
-                        <button className={`nav-tab-ghost ${activeTab === 'trips' ? 'active' : ''}`} onClick={() => setActiveTab('trips')}>Trip Logs</button>
-                        <button className={`nav-tab-ghost ${activeTab === 'maintenance' ? 'active' : ''}`} onClick={() => setActiveTab('maintenance')}>Repairs</button>
-                        <button className={`nav-tab-ghost ${activeTab === 'fuel' ? 'active' : ''}`} onClick={() => setActiveTab('fuel')}>Fuel</button>
-                        <button className={`nav-tab-ghost ${activeTab === 'safety' ? 'active' : ''}`} onClick={() => setActiveTab('safety')}>Safety</button>
+                        <button className={`nav - tab - ghost ${activeTab === 'fleet' ? 'active' : ''} `} onClick={() => setActiveTab('fleet')}>Fleet</button>
+                        <button className={`nav - tab - ghost ${activeTab === 'routes' ? 'active' : ''} `} onClick={() => setActiveTab('routes')}>Routes</button>
+                        <button className={`nav - tab - ghost ${activeTab === 'allocations' ? 'active' : ''} `} onClick={() => setActiveTab('allocations')}>Allocations</button>
+                        <button className={`nav - tab - ghost ${activeTab === 'trips' ? 'active' : ''} `} onClick={() => setActiveTab('trips')}>Trip Logs</button>
+                        <button className={`nav - tab - ghost ${activeTab === 'maintenance' ? 'active' : ''} `} onClick={() => setActiveTab('maintenance')}>Repairs</button>
+                        <button className={`nav - tab - ghost ${activeTab === 'fuel' ? 'active' : ''} `} onClick={() => setActiveTab('fuel')}>Fuel</button>
+                        <button className={`nav - tab - ghost ${activeTab === 'safety' ? 'active' : ''} `} onClick={() => setActiveTab('safety')}>Safety</button>
                     </div>
                 </div>
 
@@ -642,7 +642,7 @@ const Transport = () => {
                     <div className="flex gap-2">
                         <Button variant="outline" size="sm" onClick={() => {
                             const dataToExport = activeTab === 'allocations' ? allocations : activeTab === 'routes' ? routes : activeTab === 'trips' ? trips : activeTab === 'maintenance' ? maintenanceRecords : fuelRecords;
-                            exportToCSV(dataToExport, `Transport_${activeTab}`);
+                            exportToCSV(dataToExport, `Transport_${activeTab} `);
                         }} icon={<Download size={14} />}>
                             Export {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
                         </Button>
@@ -664,14 +664,14 @@ const Transport = () => {
                                     <h3 className="mb-0">{v.registration_number}</h3>
                                     <span className="text-xs font-bold text-secondary uppercase tracking-wider">{v.make_model || v.vehicle_type}</span>
                                 </div>
-                                <div className={`p-2 rounded-lg ${v.status === 'ACTIVE' ? 'bg-success-light text-success' : 'bg-warning-light text-warning'}`}>
+                                <div className={`p - 2 rounded - lg ${v.status === 'ACTIVE' ? 'bg-success-light text-success' : 'bg-warning-light text-warning'} `}>
                                     <Bus size={20} />
                                 </div>
                             </div>
                             <div className="space-y-3 text-sm">
                                 <div className="flex justify-between"><span className="text-secondary">Seating Cap:</span><span className="font-semibold">{v.seating_capacity} Seats</span></div>
                                 <div className="flex justify-between"><span className="text-secondary">Condition:</span><span className="font-semibold">{v.current_condition}</span></div>
-                                <div className="flex justify-between"><span className="text-secondary">Insurance Info:</span><span className={`font-semibold ${new Date(v.insurance_expiry) < new Date() ? 'text-error' : ''}`}>{v.insurance_expiry || 'N/A'}</span></div>
+                                <div className="flex justify-between"><span className="text-secondary">Insurance Info:</span><span className={`font - semibold ${new Date(v.insurance_expiry) < new Date() ? 'text-error' : ''} `}>{v.insurance_expiry || 'N/A'}</span></div>
                             </div>
                             <div className="flex gap-2 mt-6 border-top pt-4">
                                 <Button variant="ghost" size="sm" className="flex-1 text-primary" onClick={() => handleEditVehicle(v)} icon={<Edit size={14} />}>Edit</Button>
@@ -772,7 +772,7 @@ const Transport = () => {
                                     </td>
                                     <td><span className="font-mono bg-secondary-light px-2 py-1 rounded text-xs">{a.seat_number || 'TBA'}</span></td>
                                     <td>{a.start_date}</td>
-                                    <td><span className={`status-badge ${a.status === 'ACTIVE' ? 'success' : 'secondary'}`}>{a.status}</span></td>
+                                    <td><span className={`status - badge ${a.status === 'ACTIVE' ? 'success' : 'secondary'} `}>{a.status}</span></td>
                                     <td>
                                         <div className="flex gap-2">
                                             <Button variant="ghost" size="sm" className="text-primary" onClick={() => handleEditAllocation(a)} icon={<Edit size={14} />} />
@@ -834,7 +834,7 @@ const Transport = () => {
                                     <td>{vehicles.find(v => v.id === m.vehicle)?.registration_number || 'N/A'}</td>
                                     <td>{m.description}</td>
                                     <td>{parseFloat(m.cost).toLocaleString()}</td>
-                                    <td><span className={`status-badge ${m.status === 'COMPLETED' ? 'success' : 'secondary'}`}>{m.status}</span></td>
+                                    <td><span className={`status - badge ${m.status === 'COMPLETED' ? 'success' : 'secondary'} `}>{m.status}</span></td>
                                     <td>
                                         <div className="flex gap-2">
                                             <Button variant="ghost" size="sm" className="text-primary" onClick={() => handleEditMaintenance(m)} icon={<Edit size={14} />} />
@@ -864,7 +864,7 @@ const Transport = () => {
                                     <td>{i.date}</td>
                                     <td>{vehicles.find(v => v.id === i.vehicle)?.registration_number || 'N/A'}</td>
                                     <td><span className="font-bold uppercase">{i.incident_type || i.type}</span></td>
-                                    <td><span className={`badge ${i.severity === 'MAJOR' ? 'badge-error' : 'badge-warning'}`}>{i.severity}</span></td>
+                                    <td><span className={`badge ${i.severity === 'MAJOR' ? 'badge-error' : 'badge-warning'} `}>{i.severity}</span></td>
                                     <td>{i.description}</td>
                                     <td>
                                         <div className="flex gap-2">
@@ -923,15 +923,14 @@ const Transport = () => {
                 <form onSubmit={handleEnrollmentSubmit} className="space-y-4">
                     <SearchableSelect label="Select Student *" options={studentOptions} value={enrollmentForm.student} onChange={(val) => setEnrollmentForm({ ...enrollmentForm, student: val.toString() })} required />
                     <SearchableSelect label="Assign Route *" options={routeOptions} value={enrollmentForm.route} onChange={(val) => setEnrollmentForm({ ...enrollmentForm, route: val.toString() })} required />
-                    <div className="form-group">
-                        <label className="label">Pickup Point *</label>
-                        <select className="select" value={enrollmentForm.pickup_point} onChange={(e) => setEnrollmentForm({ ...enrollmentForm, pickup_point: e.target.value })} required>
-                            <option value="">Select from route points...</option>
-                            {pickupPoints.filter(p => p.route === Number(enrollmentForm.route)).map(p => (
-                                <option key={p.id} value={p.id}>{p.point_name} ({p.pickup_time})</option>
-                            ))}
-                        </select>
-                    </div>
+                    <SearchableSelect
+                        label="Pickup Point *"
+                        placeholder="Select from route points..."
+                        options={pickupPoints.filter(p => p.route === Number(enrollmentForm.route)).map(p => ({ id: p.id.toString(), label: p.point_name, subLabel: `(${p.pickup_time})` }))}
+                        value={enrollmentForm.pickup_point}
+                        onChange={(val) => setEnrollmentForm({ ...enrollmentForm, pickup_point: val.toString() })}
+                        required
+                    />
                     <div className="form-group"><label className="label">Start Date</label><input type="date" className="input" value={enrollmentForm.start_date} onChange={e => setEnrollmentForm({ ...enrollmentForm, start_date: e.target.value })} required /></div>
                     <div className="modal-footer"><Button type="submit" variant="primary" className="w-full" loading={isSaving} loadingText={enrollmentId ? "Updating..." : "Enrolling..."}>{enrollmentId ? "Update Enrollment" : "Confirm Enrollment"}</Button></div>
                 </form>
@@ -944,20 +943,33 @@ const Transport = () => {
                         <div className="form-group"><label className="label">Make / Model</label><input type="text" className="input" value={vehicleForm.make_model} onChange={e => setVehicleForm({ ...vehicleForm, make_model: e.target.value })} required /></div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group"><label className="label">Type</label>
-                            <select className="select" value={vehicleForm.vehicle_type} onChange={e => setVehicleForm({ ...vehicleForm, vehicle_type: e.target.value })}>
-                                <option value="BUS">Bus</option><option value="VAN">Van</option><option value="MINIBUS">Minibus</option><option value="OTHER">Other</option>
-                            </select>
+                        <div className="form-group">
+                            <label className="label">Type</label>
+                            <SearchableSelect
+                                options={[
+                                    { id: 'BUS', label: 'Bus' },
+                                    { id: 'VAN', label: 'Van' },
+                                    { id: 'MINIBUS', label: 'Minibus' },
+                                    { id: 'OTHER', label: 'Other' }
+                                ]}
+                                value={vehicleForm.vehicle_type}
+                                onChange={(val) => setVehicleForm({ ...vehicleForm, vehicle_type: val.toString() })}
+                            />
                         </div>
                         <div className="form-group"><label className="label">Capacity</label><input type="number" className="input" value={vehicleForm.seating_capacity} onChange={e => setVehicleForm({ ...vehicleForm, seating_capacity: parseInt(e.target.value) })} required /></div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group"><label className="label">Status</label>
-                            <select className="select" value={vehicleForm.status} onChange={e => setVehicleForm({ ...vehicleForm, status: e.target.value })}>
-                                <option value="ACTIVE">Active / Operational</option>
-                                <option value="MAINTENANCE">In Maintenance</option>
-                                <option value="SUSPENDED">Suspended / Grounded</option>
-                            </select>
+                        <div className="form-group">
+                            <label className="label">Status</label>
+                            <SearchableSelect
+                                options={[
+                                    { id: 'ACTIVE', label: 'Active / Operational' },
+                                    { id: 'MAINTENANCE', label: 'In Maintenance' },
+                                    { id: 'SUSPENDED', label: 'Suspended / Grounded' }
+                                ]}
+                                value={vehicleForm.status}
+                                onChange={(val) => setVehicleForm({ ...vehicleForm, status: val.toString() })}
+                            />
                         </div>
                         <div className="form-group"><label className="label">Insurance Expiry</label><input type="date" className="input" value={vehicleForm.insurance_expiry} onChange={e => setVehicleForm({ ...vehicleForm, insurance_expiry: e.target.value })} /></div>
                     </div>
@@ -1005,12 +1017,14 @@ const Transport = () => {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <SearchableSelect label="Route" options={routeOptions} value={String(tripForm.route)} onChange={(val) => setTripForm({ ...tripForm, route: val.toString() })} required />
-                        <div className="form-group"><label className="label">Vehicle</label>
-                            <select className="select" value={tripForm.vehicle} onChange={e => setTripForm({ ...tripForm, vehicle: e.target.value })} required>
-                                <option value="">Select Vehicle...</option>
-                                {vehicles.map(v => <option key={v.id} value={v.id}>{v.registration_number}</option>)}
-                            </select>
-                        </div>
+                        <SearchableSelect
+                            label="Vehicle"
+                            placeholder="Select Vehicle..."
+                            options={vehicles.map(v => ({ id: v.id.toString(), label: v.registration_number }))}
+                            value={String(tripForm.vehicle)}
+                            onChange={(val) => setTripForm({ ...tripForm, vehicle: val.toString() })}
+                            required
+                        />
                     </div>
                     <div className="grid grid-cols-2 gap-4 bg-secondary-light p-4 rounded text-sm">
                         <div className="form-group"><label className="label">Start Time</label><input type="time" className="input" value={tripForm.start_time} onChange={e => setTripForm({ ...tripForm, start_time: e.target.value })} required /></div>
@@ -1026,19 +1040,26 @@ const Transport = () => {
                         <div className="form-group"><label className="label">Date</label><input type="date" className="input" value={maintenanceForm.date} onChange={e => setMaintenanceForm({ ...maintenanceForm, date: e.target.value })} required /></div>
                         <div className="form-group"><label className="label">Cost (KES)</label><input type="number" className="input" value={maintenanceForm.cost} onChange={e => setMaintenanceForm({ ...maintenanceForm, cost: parseFloat(e.target.value) })} required /></div>
                     </div>
-                    <div className="form-group"><label className="label">Affected Vehicle</label>
-                        <select className="select" value={maintenanceForm.vehicle} onChange={e => setMaintenanceForm({ ...maintenanceForm, vehicle: e.target.value })} required>
-                            <option value="">Select Vehicle...</option>
-                            {vehicles.map(v => <option key={v.id} value={v.id}>{v.registration_number}</option>)}
-                        </select>
-                    </div>
+                    <SearchableSelect
+                        label="Affected Vehicle"
+                        placeholder="Select Vehicle..."
+                        options={vehicles.map(v => ({ id: v.id.toString(), label: v.registration_number }))}
+                        value={String(maintenanceForm.vehicle)}
+                        onChange={(val) => setMaintenanceForm({ ...maintenanceForm, vehicle: val.toString() })}
+                        required
+                    />
                     <div className="form-group"><label className="label">Issue / Service Description</label><textarea className="input" rows={3} value={maintenanceForm.description} onChange={e => setMaintenanceForm({ ...maintenanceForm, description: e.target.value })} required></textarea></div>
-                    <div className="form-group"><label className="label">Status</label>
-                        <select className="select" value={maintenanceForm.status} onChange={e => setMaintenanceForm({ ...maintenanceForm, status: e.target.value })}>
-                            <option value="PENDING">Pending Approval</option>
-                            <option value="IN_PROGRESS">In Progress</option>
-                            <option value="COMPLETED">Completed</option>
-                        </select>
+                    <div className="form-group">
+                        <label className="label">Status</label>
+                        <SearchableSelect
+                            options={[
+                                { id: 'PENDING', label: 'Pending Approval' },
+                                { id: 'IN_PROGRESS', label: 'In Progress' },
+                                { id: 'COMPLETED', label: 'Completed' }
+                            ]}
+                            value={maintenanceForm.status}
+                            onChange={(val) => setMaintenanceForm({ ...maintenanceForm, status: val.toString() })}
+                        />
                     </div>
                     <div className="modal-footer pt-4"><Button type="submit" variant="primary" className="w-full" loading={isSaving} loadingText={maintenanceId ? "Updating..." : "Logging..."}>{maintenanceId ? "Update Maintenance" : "Log Maintenance"}</Button></div>
                 </form>
@@ -1048,28 +1069,40 @@ const Transport = () => {
                 <form onSubmit={handleSafetySubmit} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group"><label className="label">Date</label><input type="date" className="input" value={safetyForm.date} onChange={e => setSafetyForm({ ...safetyForm, date: e.target.value })} required /></div>
-                        <div className="form-group"><label className="label">Severity</label>
-                            <select className="select" value={safetyForm.severity} onChange={e => setSafetyForm({ ...safetyForm, severity: e.target.value })}>
-                                <option value="MINOR">Minor</option>
-                                <option value="MAJOR">Major</option>
-                                <option value="CRITICAL">Critical</option>
-                            </select>
+                        <div className="form-group">
+                            <label className="label">Severity</label>
+                            <SearchableSelect
+                                options={[
+                                    { id: 'MINOR', label: 'Minor' },
+                                    { id: 'MAJOR', label: 'Major' },
+                                    { id: 'CRITICAL', label: 'Critical' }
+                                ]}
+                                value={safetyForm.severity}
+                                onChange={(val) => setSafetyForm({ ...safetyForm, severity: val.toString() })}
+                            />
                         </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group"><label className="label">Vehicle Involved</label>
-                            <select className="select" value={safetyForm.vehicle} onChange={e => setSafetyForm({ ...safetyForm, vehicle: e.target.value })} required>
-                                <option value="">Select Vehicle...</option>
-                                {vehicles.map(v => <option key={v.id} value={v.id}>{v.registration_number}</option>)}
-                            </select>
-                        </div>
-                        <div className="form-group"><label className="label">Type</label>
-                            <select className="select" value={safetyForm.type} onChange={e => setSafetyForm({ ...safetyForm, type: e.target.value })}>
-                                <option value="ACCIDENT">Accident</option>
-                                <option value="BREAKDOWN">Breakdown</option>
-                                <option value="VIOLATION">Traffic Violation</option>
-                                <option value="COMPLAINT">Parent Complaint</option>
-                            </select>
+                        <SearchableSelect
+                            label="Vehicle Involved"
+                            placeholder="Select Vehicle..."
+                            options={vehicles.map(v => ({ id: v.id.toString(), label: v.registration_number }))}
+                            value={String(safetyForm.vehicle)}
+                            onChange={(val) => setSafetyForm({ ...safetyForm, vehicle: val.toString() })}
+                            required
+                        />
+                        <div className="form-group">
+                            <label className="label">Type</label>
+                            <SearchableSelect
+                                options={[
+                                    { id: 'ACCIDENT', label: 'Accident' },
+                                    { id: 'BREAKDOWN', label: 'Breakdown' },
+                                    { id: 'VIOLATION', label: 'Traffic Violation' },
+                                    { id: 'COMPLAINT', label: 'Parent Complaint' }
+                                ]}
+                                value={safetyForm.type}
+                                onChange={(val) => setSafetyForm({ ...safetyForm, type: val.toString() })}
+                            />
                         </div>
                     </div>
                     <div className="form-group"><label className="label">Description of Incident</label><textarea className="input" rows={4} value={safetyForm.description} onChange={e => setSafetyForm({ ...safetyForm, description: e.target.value })} required></textarea></div>
@@ -1081,12 +1114,14 @@ const Transport = () => {
                 <form onSubmit={handleFuelSubmit} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group"><label className="label">Date</label><input type="date" className="input" value={fuelForm.date} onChange={e => setFuelForm({ ...fuelForm, date: e.target.value })} required /></div>
-                        <div className="form-group"><label className="label">Vehicle</label>
-                            <select className="select" value={fuelForm.vehicle} onChange={e => setFuelForm({ ...fuelForm, vehicle: e.target.value })} required>
-                                <option value="">Select Vehicle...</option>
-                                {vehicles.map(v => <option key={v.id} value={v.id}>{v.registration_number}</option>)}
-                            </select>
-                        </div>
+                        <SearchableSelect
+                            label="Vehicle"
+                            placeholder="Select Vehicle..."
+                            options={vehicles.map(v => ({ id: v.id.toString(), label: v.registration_number }))}
+                            value={String(fuelForm.vehicle)}
+                            onChange={(val) => setFuelForm({ ...fuelForm, vehicle: val.toString() })}
+                            required
+                        />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group"><label className="label">Liters</label><input type="number" step="0.01" className="input" value={fuelForm.liters} onChange={e => setFuelForm({ ...fuelForm, liters: parseFloat(e.target.value) })} required /></div>
@@ -1101,74 +1136,74 @@ const Transport = () => {
             </Modal>
 
             <style>{`
-                .tab-link {
-                    display: flex;
-                    align-items: center;
-                    gap: 0.5rem;
-                    padding: 0.75rem 1.5rem;
-                    border-bottom: 2px solid transparent;
-                    color: var(--text-secondary);
-                    font-weight: 700;
-                    transition: all 0.2s;
-                    white-space: nowrap;
-                    background: none;
-                    border-top: none;
-                    border-left: none;
-                    border-right: none;
-                    cursor: pointer;
-                }
-                .tab-link.active { 
-                    border-bottom-color: var(--primary);
-                    color: var(--primary);
-                    background: rgba(30, 60, 114, 0.05);
-                }
-                .tab-link:hover:not(.active) { 
-                    background: var(--bg-secondary);
-                }
-                .status-badge.success { 
-                    background: var(--success-light);
-                    color: var(--success);
-                    padding: 2px 8px;
-                    border-radius: 4px;
-                    font-size: 10px;
-                    font-weight: 700;
-                    text-transform: uppercase;
-                }
-                .status-badge.secondary { 
-                    background: var(--bg-secondary);
-                    color: var(--text-secondary);
-                    padding: 2px 8px;
-                    border-radius: 4px;
-                    font-size: 10px;
-                    font-weight: 700;
-                    text-transform: uppercase;
-                }
-                .avatar-sm { 
-                    width: 2rem;
-                    height: 2rem;
-                    border-radius: 9999px;
-                    background: var(--primary);
-                    color: white;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-weight: 700;
-                    font-size: 0.75rem;
-                }
-                .hover-scale { transition: transform 0.2s; }
-                .hover-scale:hover { transform: translateY(-4px); }
-                .badge { 
-                    padding: 2px 6px;
-                    border-radius: 4px;
-                    font-size: 10px;
-                    font-weight: 700;
-                    text-transform: uppercase;
-                }
-                .badge-primary { 
-                    background: var(--primary);
-                    color: white;
-                }
-            `}</style>
+    .tab - link {
+    display: flex;
+    align - items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border - bottom: 2px solid transparent;
+    color: var(--text - secondary);
+    font - weight: 700;
+    transition: all 0.2s;
+    white - space: nowrap;
+    background: none;
+    border - top: none;
+    border - left: none;
+    border - right: none;
+    cursor: pointer;
+}
+                .tab - link.active {
+    border - bottom - color: var(--primary);
+    color: var(--primary);
+    background: rgba(30, 60, 114, 0.05);
+}
+                .tab - link: hover: not(.active) {
+    background: var(--bg - secondary);
+}
+                .status - badge.success {
+    background: var(--success - light);
+    color: var(--success);
+    padding: 2px 8px;
+    border - radius: 4px;
+    font - size: 10px;
+    font - weight: 700;
+    text - transform: uppercase;
+}
+                .status - badge.secondary {
+    background: var(--bg - secondary);
+    color: var(--text - secondary);
+    padding: 2px 8px;
+    border - radius: 4px;
+    font - size: 10px;
+    font - weight: 700;
+    text - transform: uppercase;
+}
+                .avatar - sm {
+    width: 2rem;
+    height: 2rem;
+    border - radius: 9999px;
+    background: var(--primary);
+    color: white;
+    display: flex;
+    align - items: center;
+    justify - content: center;
+    font - weight: 700;
+    font - size: 0.75rem;
+}
+                .hover - scale { transition: transform 0.2s; }
+                .hover - scale:hover { transform: translateY(-4px); }
+                .badge {
+    padding: 2px 6px;
+    border - radius: 4px;
+    font - size: 10px;
+    font - weight: 700;
+    text - transform: uppercase;
+}
+                .badge - primary {
+    background: var(--primary);
+    color: white;
+}
+`}</style>
         </div >
     );
 };

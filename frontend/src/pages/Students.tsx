@@ -13,6 +13,7 @@ import { useConfirm } from '../context/ConfirmContext';
 import { exportToCSV } from '../utils/export';
 import Button from '../components/common/Button';
 import CountryCodeSelect from '../components/CountryCodeSelect';
+import SearchableSelect from '../components/SearchableSelect';
 
 const Students = () => {
     const navigate = useNavigate();
@@ -353,13 +354,18 @@ const Students = () => {
                 <StatCard title="Enrolled Capacity" value={`${classes.length > 0 ? Math.round((activeCount / classes.reduce((sum, c) => sum + (c.capacity || 40), 0)) * 100) : 0}%`} icon={<TrendingUp size={18} />} gradient="linear-gradient(135deg, #0f172a, #1e293b)" />
             </div>
 
-            {/* Content & Filters */}
-            <div className="card mb-6 no-print p-6">
-                <div className="flex flex-wrap gap-lg items-center">
-                    <div className="search-container flex-grow max-w-md">
-                        <Search className="search-icon" size={18} />
-                        <input type="text" className="input search-input" placeholder="Search by name, identity, or unit..."
-                            value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+            {/* Premium Search & Actions Bar */}
+            <div className="card mb-8 no-print p-4 bg-white/50 backdrop-blur-md border-slate-200/60 shadow-xl">
+                <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
+                    <div className="search-container flex-grow max-w-2xl w-full">
+                        <Search className="search-icon text-primary" size={20} />
+                        <input
+                            type="text"
+                            className="input search-input pl-12 py-6 text-base font-medium bg-white/80 border-none shadow-inner"
+                            placeholder="Search by name, admission number, or class unit..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
                     </div>
                 </div>
             </div>
@@ -512,10 +518,15 @@ const Students = () => {
                                 </div>
                                 <div className="form-group">
                                     <label className="label">Gender *</label>
-                                    <select className="select" value={formData.gender} onChange={(e) => setFormData({ ...formData, gender: e.target.value })} required>
-                                        <option value="M">Male</option>
-                                        <option value="F">Female</option>
-                                    </select>
+                                    <SearchableSelect
+                                        options={[
+                                            { id: 'M', label: 'Male' },
+                                            { id: 'F', label: 'Female' }
+                                        ]}
+                                        value={formData.gender}
+                                        onChange={(val) => setFormData({ ...formData, gender: val.toString() })}
+                                        required
+                                    />
                                 </div>
                             </div>
                             <div className="form-group">
@@ -529,18 +540,25 @@ const Students = () => {
                             <h5 className="text-[10px] font-black text-secondary uppercase border-bottom pb-2 tracking-widest">Academic Placement</h5>
                             <div className="form-group">
                                 <label className="label">Class / Grade *</label>
-                                <select className="select" value={formData.current_class} onChange={(e) => setFormData({ ...formData, current_class: e.target.value })} required>
-                                    <option value="">Select Class</option>
-                                    {classes.map(c => <option key={c.id} value={c.id}>{c.name} {c.stream}</option>)}
-                                </select>
+                                <SearchableSelect
+                                    placeholder="Select Class"
+                                    options={classes.map(c => ({ id: c.id.toString(), label: `${c.name} ${c.stream}` }))}
+                                    value={formData.current_class}
+                                    onChange={(val) => setFormData({ ...formData, current_class: val.toString() })}
+                                    required
+                                />
                             </div>
                             <div className="form-group">
                                 <label className="label">Status</label>
-                                <select className="select" value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })}>
-                                    <option value="ACTIVE">Active Student</option>
-                                    <option value="SUSPENDED">Suspended</option>
-                                    <option value="WITHDRAWN">Withdrawn</option>
-                                </select>
+                                <SearchableSelect
+                                    options={[
+                                        { id: 'ACTIVE', label: 'Active Student' },
+                                        { id: 'SUSPENDED', label: 'Suspended' },
+                                        { id: 'WITHDRAWN', label: 'Withdrawn' }
+                                    ]}
+                                    value={formData.status}
+                                    onChange={(val) => setFormData({ ...formData, status: val.toString() })}
+                                />
                             </div>
                         </div>
 

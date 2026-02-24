@@ -3,6 +3,7 @@ import { Plus, Search, Edit, Trash2, Briefcase, Printer, Download, LayoutGrid, R
 import { staffAPI } from '../api/api';
 import { exportToCSV } from '../utils/export';
 import Modal from '../components/Modal';
+import SearchableSelect from '../components/SearchableSelect';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 import Button from '../components/common/Button';
@@ -229,26 +230,27 @@ const Staff = () => {
                 </div>
             </div>
 
-            <div className="card mb-6 no-print">
-                <div className="flex gap-lg items-center">
-                    <div className="search-container flex-grow">
-                        <Search className="search-icon" size={18} />
+            {/* Premium Search & Tabs Bar */}
+            <div className="card mb-8 no-print p-4 bg-white/50 backdrop-blur-md border-slate-200/60 shadow-xl">
+                <div className="flex flex-col md:flex-row gap-6 justify-between items-center">
+                    <div className="search-container flex-grow max-w-2xl w-full">
+                        <Search className="search-icon text-primary" size={20} />
                         <input
                             type="text"
-                            className="input search-input"
-                            placeholder="Search by name, ID, role, or department..."
+                            className="input search-input pl-12 py-6 text-base font-medium bg-white/80 border-none shadow-inner"
+                            placeholder="Search by name, employee ID, role, or department..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    <div className="nav-tab-container no-print">
+                    <div className="nav-tab-container bg-slate-100/50 p-1.5 rounded-2xl flex-shrink-0">
                         {(['NONE', 'DEPARTMENT', 'ROLE'] as const).map((mode) => (
                             <button
                                 key={mode}
-                                className={`nav-tab ${groupBy === mode ? 'active' : ''}`}
+                                className={`nav-tab px-6 py-2.5 text-[11px] font-black uppercase tracking-widest rounded-xl transition-all ${groupBy === mode ? 'active bg-white shadow-md text-primary' : 'text-slate-500 hover:text-slate-700'}`}
                                 onClick={() => setGroupBy(mode)}
                             >
-                                {mode === 'NONE' ? 'General Directory' : mode === 'DEPARTMENT' ? 'By Department' : 'By Role'}
+                                {mode === 'NONE' ? 'Overview' : mode === 'DEPARTMENT' ? 'Depts' : 'Roles'}
                             </button>
                         ))}
                     </div>
@@ -309,20 +311,25 @@ const Staff = () => {
                         </div>
                         <div className="form-group">
                             <label className="label">Role *</label>
-                            <select className="select" value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })} required>
-                                <option value="TEACHER">Teacher</option>
-                                <option value="PRINCIPAL">Principal</option>
-                                <option value="DEPUTY">Deputy Principal</option>
-                                <option value="DOS">Director of Studies</option>
-                                <option value="REGISTRAR">Admissions Registrar</option>
-                                <option value="WARDEN">Hostel Warden</option>
-                                <option value="NURSE">Nurse</option>
-                                <option value="ACCOUNTANT">Bursar</option>
-                                <option value="LIBRARIAN">Librarian</option>
-                                <option value="DRIVER">Driver</option>
-                                <option value="ADMIN">System Admin</option>
-                                <option value="SUPPORT">Support Staff</option>
-                            </select>
+                            <SearchableSelect
+                                options={[
+                                    { id: 'TEACHER', label: 'Teacher' },
+                                    { id: 'PRINCIPAL', label: 'Principal' },
+                                    { id: 'DEPUTY', label: 'Deputy Principal' },
+                                    { id: 'DOS', label: 'Director of Studies' },
+                                    { id: 'REGISTRAR', label: 'Admissions Registrar' },
+                                    { id: 'WARDEN', label: 'Hostel Warden' },
+                                    { id: 'NURSE', label: 'Nurse' },
+                                    { id: 'ACCOUNTANT', label: 'Bursar' },
+                                    { id: 'LIBRARIAN', label: 'Librarian' },
+                                    { id: 'DRIVER', label: 'Driver' },
+                                    { id: 'ADMIN', label: 'System Admin' },
+                                    { id: 'SUPPORT', label: 'Support Staff' }
+                                ]}
+                                value={formData.role}
+                                onChange={(val) => setFormData({ ...formData, role: val.toString() })}
+                                required
+                            />
                         </div>
                         <div className="form-group">
                             <label className="label">Date Joined *</label>

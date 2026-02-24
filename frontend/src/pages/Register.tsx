@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { User, Mail, Lock as LockIcon, Shield, ArrowRight, School } from 'lucide-react';
 import { authAPI } from '../api/api';
 import { useToast } from '../context/ToastContext';
+import SearchableSelect from '../components/SearchableSelect';
 
 const Register = () => {
     const navigate = useNavigate();
@@ -133,18 +134,22 @@ const Register = () => {
                             <label className="label uppercase text-[10px] font-black mb-1">Institutional Role</label>
                             <div className="auth-input-wrapper">
                                 <Shield size={18} className="auth-input-icon" />
-                                <select className="select auth-input-field cursor-pointer font-bold h-auto"
-                                    value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })}>
-                                    <option value="TEACHER">Academic Staff</option>
-                                    <option value="ACCOUNTANT">Bursar / Accountant</option>
-                                    <option value="DOS">Director of Studies</option>
-                                    <option value="REGISTRAR">Registrar</option>
-                                    <option value="WARDEN">Hostel Warden</option>
-                                    <option value="DRIVER">Institutional Driver</option>
-                                    <option value="NURSE">School Nurse</option>
-                                    <option value="LIBRARIAN">Librarian</option>
-                                    <option value="ADMIN">Administrator</option>
-                                </select>
+                                <SearchableSelect
+                                    placeholder="Select Role..."
+                                    options={[
+                                        { id: 'TEACHER', label: 'Academic Staff' },
+                                        { id: 'ACCOUNTANT', label: 'Bursar / Accountant' },
+                                        { id: 'DOS', label: 'Director of Studies' },
+                                        { id: 'REGISTRAR', label: 'Registrar' },
+                                        { id: 'WARDEN', label: 'Hostel Warden' },
+                                        { id: 'DRIVER', label: 'Institutional Driver' },
+                                        { id: 'NURSE', label: 'School Nurse' },
+                                        { id: 'LIBRARIAN', label: 'Librarian' },
+                                        { id: 'ADMIN', label: 'Administrator' }
+                                    ]}
+                                    value={formData.role}
+                                    onChange={(val) => setFormData({ ...formData, role: val.toString() })}
+                                />
                             </div>
                         </div>
 

@@ -9,6 +9,7 @@ import Modal from '../components/Modal';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 import Button from '../components/common/Button';
+import SearchableSelect from '../components/SearchableSelect';
 import CountryCodeSelect from '../components/CountryCodeSelect';
 
 const Parents = () => {
@@ -243,11 +244,15 @@ const Parents = () => {
                     <div className="grid grid-cols-2 gap-md">
                         <div className="form-group">
                             <label className="label text-[10px] font-black uppercase">Relationship</label>
-                            <select className="select" value={formData.relationship} onChange={(e) => setFormData({ ...formData, relationship: e.target.value })}>
-                                <option value="FATHER">Father</option>
-                                <option value="MOTHER">Mother</option>
-                                <option value="GUARDIAN">Guardian</option>
-                            </select>
+                            <SearchableSelect
+                                options={[
+                                    { id: 'FATHER', label: 'Father' },
+                                    { id: 'MOTHER', label: 'Mother' },
+                                    { id: 'GUARDIAN', label: 'Guardian' }
+                                ]}
+                                value={formData.relationship}
+                                onChange={(val) => setFormData({ ...formData, relationship: val.toString() })}
+                            />
                         </div>
                         <div className="form-group">
                             <label className="label text-[10px] font-black uppercase">Occupation</label>

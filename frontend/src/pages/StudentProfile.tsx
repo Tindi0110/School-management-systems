@@ -1235,10 +1235,13 @@ const StudentProfile = () => {
             <Modal isOpen={isTransferModalOpen} onClose={() => setIsTransferModalOpen(false)} title="Transfer Student Unit" size="sm">
                 <form onSubmit={handleTransfer} className="space-y-4 form-container-sm mx-auto">
                     <p className="text-secondary text-xs">Select the new class/unit for this student.</p>
-                    <select className="select" value={transferClassId} onChange={e => setTransferClassId(e.target.value)} required>
-                        <option value="">Select New Class</option>
-                        {classes.map(c => <option key={c.id} value={c.id}>{c.name} {c.stream}</option>)}
-                    </select>
+                    <SearchableSelect
+                        placeholder="Select New Class"
+                        options={classes.map(c => ({ id: c.id.toString(), label: `${c.name} ${c.stream}` }))}
+                        value={transferClassId}
+                        onChange={(val) => setTransferClassId(val.toString())}
+                        required
+                    />
                     <div className="modal-footer pt-4">
                         <Button type="button" variant="outline" onClick={() => setIsTransferModalOpen(false)}>Cancel</Button>
                         <Button type="submit" variant="primary" loading={isSubmitting} loadingText="Processing...">
@@ -1273,9 +1276,15 @@ const StudentProfile = () => {
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group"><label className="label text-[10px] font-black uppercase">Activity Name</label><input type="text" className="input" placeholder="e.g. Debate Club" value={activityForm.name} onChange={e => setActivityForm({ ...activityForm, name: e.target.value })} required /></div>
                         <div className="form-group"><label className="label text-[10px] font-black uppercase">Type</label>
-                            <select className="select" value={activityForm.activity_type} onChange={e => setActivityForm({ ...activityForm, activity_type: e.target.value })}>
-                                <option>Club</option><option>Sport</option><option>Arts</option>
-                            </select>
+                            <SearchableSelect
+                                options={[
+                                    { id: 'Club', label: 'Club' },
+                                    { id: 'Sport', label: 'Sport' },
+                                    { id: 'Arts', label: 'Arts' }
+                                ]}
+                                value={activityForm.activity_type}
+                                onChange={(val) => setActivityForm({ ...activityForm, activity_type: val.toString() })}
+                            />
                         </div>
                     </div>
                     <div className="form-group"><label className="label text-[10px] font-black uppercase">Role / Position</label><input type="text" className="input" placeholder="e.g. Member, Captain" value={activityForm.role} onChange={e => setActivityForm({ ...activityForm, role: e.target.value })} /></div>
@@ -1291,12 +1300,16 @@ const StudentProfile = () => {
             <Modal isOpen={isDocumentModalOpen} onClose={() => setIsDocumentModalOpen(false)} title="Upload Institutional Document" size="sm">
                 <form onSubmit={handleDocumentSubmit} className="space-y-4 form-container-sm mx-auto">
                     <div className="form-group"><label className="label text-[10px] font-black uppercase">Document Type</label>
-                        <select className="select" value={documentForm.doc_type} onChange={e => setDocumentForm({ ...documentForm, doc_type: e.target.value })}>
-                            <option value="BIRTH_CERT">Birth Certificate</option>
-                            <option value="REPORT_CARD">Report Card</option>
-                            <option value="TRANSFER_LETTER">Transfer Letter</option>
-                            <option value="OTHER">Other</option>
-                        </select>
+                        <SearchableSelect
+                            options={[
+                                { id: 'BIRTH_CERT', label: 'Birth Certificate' },
+                                { id: 'REPORT_CARD', label: 'Report Card' },
+                                { id: 'TRANSFER_LETTER', label: 'Transfer Letter' },
+                                { id: 'OTHER', label: 'Other' }
+                            ]}
+                            value={documentForm.doc_type}
+                            onChange={(val) => setDocumentForm({ ...documentForm, doc_type: val.toString() })}
+                        />
                     </div>
                     <div className="form-group"><label className="label text-[10px] font-black uppercase">Select File</label><input type="file" className="file-input w-full" onChange={e => setDocumentForm({ ...documentForm, file: e.target.files?.[0] || null })} required /></div>
                     <div className="modal-footer pt-4">
@@ -1316,26 +1329,36 @@ const StudentProfile = () => {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group"><label className="label text-[10px] font-black uppercase">Class</label>
-                            <select className="select" value={student?.current_class || ''} onChange={e => setStudent(prev => prev ? { ...prev, current_class: parseInt(e.target.value) || undefined } : null)}>
-                                <option value="">Select Class</option>
-                                {classes.map(c => <option key={c.id} value={c.id}>{c.name} {c.stream}</option>)}
-                            </select>
+                            <SearchableSelect
+                                placeholder="Select Class"
+                                options={classes.map(c => ({ id: c.id.toString(), label: `${c.name} ${c.stream}` }))}
+                                value={student?.current_class?.toString() || ''}
+                                onChange={(val) => setStudent(prev => prev ? { ...prev, current_class: parseInt(val.toString()) || undefined } : null)}
+                            />
                         </div>
                         <div className="form-group"><label className="label text-[10px] font-black uppercase">Category</label>
-                            <select className="select" value={student?.category || ''} onChange={e => setStudent(prev => prev ? { ...prev, category: e.target.value } : null)}>
-                                <option value="DAY">Day Scholar</option>
-                                <option value="BOARDING">Boarding</option>
-                            </select>
+                            <SearchableSelect
+                                options={[
+                                    { id: 'DAY', label: 'Day Scholar' },
+                                    { id: 'BOARDING', label: 'Boarding' }
+                                ]}
+                                value={student?.category || ''}
+                                onChange={(val) => setStudent(prev => prev ? { ...prev, category: val.toString() } : null)}
+                            />
                         </div>
                     </div>
                     <div className="form-group"><label className="label text-[10px] font-black uppercase">Status</label>
-                        <select className="select" value={student?.status} onChange={e => setStudent(prev => prev ? { ...prev, status: e.target.value as any } : null)}>
-                            <option value="ACTIVE">Active</option>
-                            <option value="SUSPENDED">Suspended</option>
-                            <option value="WITHDRAWN">Withdrawn</option>
-                            <option value="ALUMNI">Alumni</option>
-                            <option value="TRANSFERRED">Transferred</option>
-                        </select>
+                        <SearchableSelect
+                            options={[
+                                { id: 'ACTIVE', label: 'Active' },
+                                { id: 'SUSPENDED', label: 'Suspended' },
+                                { id: 'WITHDRAWN', label: 'Withdrawn' },
+                                { id: 'ALUMNI', label: 'Alumni' },
+                                { id: 'TRANSFERRED', label: 'Transferred' }
+                            ]}
+                            value={student?.status || ''}
+                            onChange={(val) => setStudent(prev => prev ? { ...prev, status: val.toString() as any } : null)}
+                        />
                     </div>
                     <div className="modal-footer pt-4">
                         <Button type="submit" variant="primary" className="w-full font-black uppercase" loading={isSubmitting} loadingText="Updating...">
@@ -1561,16 +1584,16 @@ const StudentProfile = () => {
                                 </div>
                                 <div className="form-group">
                                     <label className="label text-[10px] font-black uppercase text-slate-500">Relation</label>
-                                    <select
-                                        className="select h-10 bg-white"
+                                    <SearchableSelect
+                                        options={[
+                                            { id: 'PARENT', label: 'Parent' },
+                                            { id: 'GRANDPARENT', label: 'Grandparent' },
+                                            { id: 'SIBLING', label: 'Sibling' },
+                                            { id: 'OTHER', label: 'Other' }
+                                        ]}
                                         value={newGuardianForm.relation}
-                                        onChange={e => setNewGuardianForm({ ...newGuardianForm, relation: e.target.value })}
-                                    >
-                                        <option value="PARENT">Parent</option>
-                                        <option value="GRANDPARENT">Grandparent</option>
-                                        <option value="SIBLING">Sibling</option>
-                                        <option value="OTHER">Other</option>
-                                    </select>
+                                        onChange={(val) => setNewGuardianForm({ ...newGuardianForm, relation: val.toString() })}
+                                    />
                                 </div>
                             </div>
                             <div className="form-group">

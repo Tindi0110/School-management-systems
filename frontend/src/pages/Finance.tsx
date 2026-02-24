@@ -4,6 +4,7 @@ import { financeAPI, academicsAPI, studentsAPI, classesAPI, mpesaAPI } from '../
 import { CreditCard, FileText, TrendingUp, CheckCircle, Plus, Printer, Bell, Send, Mail, MessageSquare } from 'lucide-react';
 import SearchableSelect from '../components/SearchableSelect';
 import Modal from '../components/Modal';
+import { exportToCSV } from '../utils/export';
 import { StatCard } from '../components/Card';
 import { useToast } from '../context/ToastContext';
 import Button from '../components/common/Button';
@@ -424,7 +425,7 @@ const Finance = () => {
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
-                        className={`nav-tab ${activeTab === tab ? 'active' : ''}`}
+                        className={`nav-tab ${activeTab === tab ? 'active' : ''} `}
                     >
                         {tab.charAt(0).toUpperCase() + tab.slice(1)}
                     </button>
@@ -450,8 +451,8 @@ const Finance = () => {
                         <div className="space-y-20">
                             <div className="flex justify-between items-center mb-4">
                                 <div className="flex items-center gap-3">
-                                    <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${isAllTime ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
-                                        {isAllTime ? '🌐 Global History' : `📅 ${statsContext?.term_name || 'Active Term'} ${statsContext?.year || ''}`}
+                                    <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${isAllTime ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'} `}>
+                                        {isAllTime ? '🌐 Global History' : `📅 ${statsContext?.term_name || 'Active Term'} ${statsContext?.year || ''} `}
                                     </span>
                                     {!isAllTime && <p className="text-[10px] text-gray-400 font-bold uppercase italic border-l pl-3">Performance Optimized</p>}
                                 </div>
@@ -465,17 +466,17 @@ const Finance = () => {
                                 </Button>
                             </div>
                             <div className="grid grid-cols-2 gap-6">
-                                <StatCard title="Total Invoiced" value={`KES ${stats.totalInvoiced.toLocaleString()}`} icon={<FileText size={18} />} gradient="linear-gradient(135deg, #3b82f6, #2563eb)" />
-                                <StatCard title="Total Collected" value={`KES ${stats.totalCollected.toLocaleString()}`} icon={<CheckCircle size={18} />} gradient="linear-gradient(135deg, #10b981, #059669)" />
-                                <StatCard title="Outstanding" value={`KES ${stats.totalOutstanding.toLocaleString()}`} icon={<CreditCard size={18} />} gradient="linear-gradient(135deg, #ef4444, #dc2626)" />
-                                <StatCard title="Daily Collection" value={`KES ${stats.dailyCollection.toLocaleString()}`} icon={<TrendingUp size={18} />} gradient="linear-gradient(135deg, #8b5cf6, #7c3aed)" />
+                                <StatCard title="Total Invoiced" value={`KES ${stats.totalInvoiced.toLocaleString()} `} icon={<FileText size={18} />} gradient="linear-gradient(135deg, #3b82f6, #2563eb)" />
+                                <StatCard title="Total Collected" value={`KES ${stats.totalCollected.toLocaleString()} `} icon={<CheckCircle size={18} />} gradient="linear-gradient(135deg, #10b981, #059669)" />
+                                <StatCard title="Outstanding" value={`KES ${stats.totalOutstanding.toLocaleString()} `} icon={<CreditCard size={18} />} gradient="linear-gradient(135deg, #ef4444, #dc2626)" />
+                                <StatCard title="Daily Collection" value={`KES ${stats.dailyCollection.toLocaleString()} `} icon={<TrendingUp size={18} />} gradient="linear-gradient(135deg, #8b5cf6, #7c3aed)" />
                             </div>
 
                             <div className="grid grid-cols-2 gap-6">
                                 <StatCard title="Enrolled Students" value={stats.enrolledStudents.toLocaleString()} icon={<TrendingUp size={18} />} gradient="linear-gradient(135deg, #06b6d4, #0891b2)" />
                                 <StatCard title="Total Capacity" value={stats.totalCapacity.toLocaleString()} icon={<CheckCircle size={18} />} gradient="linear-gradient(135deg, #6366f1, #4f46e5)" />
-                                <StatCard title="Revenue / Seat" value={`KES ${stats.revenuePerSeat.toLocaleString()}`} icon={<CreditCard size={18} />} gradient="linear-gradient(135deg, #f59e0b, #d97706)" />
-                                <StatCard title="Collection Rate" value={`${stats.collectionRate}%`} icon={<FileText size={18} />} gradient="linear-gradient(135deg, #10b981, #059669)" />
+                                <StatCard title="Revenue / Seat" value={`KES ${stats.revenuePerSeat.toLocaleString()} `} icon={<CreditCard size={18} />} gradient="linear-gradient(135deg, #f59e0b, #d97706)" />
+                                <StatCard title="Collection Rate" value={`${stats.collectionRate}% `} icon={<FileText size={18} />} gradient="linear-gradient(135deg, #10b981, #059669)" />
                             </div>
 
                             <div className="card">
@@ -525,9 +526,9 @@ const Finance = () => {
                                                     <td className="font-bold">#INV-{inv.id}</td>
                                                     <td>{inv.student_name}</td>
                                                     <td>KES {Number(inv.total_amount).toLocaleString()}</td>
-                                                    <td className={`font-bold ${Number(inv.balance) === 0 ? 'text-success' : Number(inv.balance) < 0 ? 'text-info' : 'text-error'}`}>KES {Number(inv.balance).toLocaleString()}</td>
+                                                    <td className={`font - bold ${Number(inv.balance) === 0 ? 'text-success' : Number(inv.balance) < 0 ? 'text-info' : 'text-error'} `}>KES {Number(inv.balance).toLocaleString()}</td>
                                                     <td>
-                                                        <span className={`badge ${inv.status === 'PAID' ? 'badge-success' : inv.status === 'OVERPAID' ? 'badge-info text-white' : inv.status === 'PARTIAL' ? 'badge-warning' : 'badge-error'}`}>
+                                                        <span className={`badge ${inv.status === 'PAID' ? 'badge-success' : inv.status === 'OVERPAID' ? 'badge-info text-white' : inv.status === 'PARTIAL' ? 'badge-warning' : 'badge-error'} `}>
                                                             {inv.status}
                                                         </span>
                                                     </td>
@@ -547,57 +548,59 @@ const Finance = () => {
                                 <h3 className="text-lg font-bold">All Invoices</h3>
 
                                 <div className="flex flex-wrap items-center gap-2">
-                                    <select
-                                        className="select select-sm select-bordered"
-                                        value={invFilters.class_id}
-                                        onChange={(e) => setInvFilters({ ...invFilters, class_id: e.target.value })}
-                                    >
-                                        <option value="">All Classes</option>
-                                        {classes.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
-                                    </select>
+                                    <div className="w-40">
+                                        <SearchableSelect
+                                            placeholder="All Classes"
+                                            options={uniqueClassNames.map(name => ({ id: name, label: name }))}
+                                            value={invFilters.class_id}
+                                            onChange={(val) => setInvFilters({ ...invFilters, class_id: val.toString() })}
+                                        />
+                                    </div>
 
-                                    <select
-                                        className="select select-sm select-bordered"
-                                        value={invFilters.stream}
-                                        onChange={(e) => setInvFilters({ ...invFilters, stream: e.target.value })}
-                                    >
-                                        <option value="">All Streams</option>
-                                        {Array.from(new Set(classes.map((c: any) => c.stream).filter(Boolean))).map((stream: any) => (
-                                            <option key={stream} value={stream}>{stream}</option>
-                                        ))}
-                                    </select>
+                                    <div className="w-40">
+                                        <SearchableSelect
+                                            placeholder="All Streams"
+                                            options={Array.from(new Set(classes.map((c: any) => c.stream).filter(Boolean))).map((stream: any) => ({ id: stream, label: stream }))}
+                                            value={invFilters.stream}
+                                            onChange={(val) => setInvFilters({ ...invFilters, stream: val.toString() })}
+                                        />
+                                    </div>
 
-                                    <select
-                                        className="select select-sm select-bordered"
-                                        value={invFilters.year_id}
-                                        onChange={(e) => setInvFilters({ ...invFilters, year_id: e.target.value })}
-                                    >
-                                        <option value="">All Years</option>
-                                        {years.map((y: any) => <option key={y.id} value={y.id}>{y.name}</option>)}
-                                    </select>
+                                    <div className="w-40">
+                                        <SearchableSelect
+                                            placeholder="All Years"
+                                            options={years.map((y: any) => ({ id: y.id.toString(), label: y.name }))}
+                                            value={invFilters.year_id}
+                                            onChange={(val) => setInvFilters({ ...invFilters, year_id: val.toString() })}
+                                        />
+                                    </div>
 
-                                    <select
-                                        className="select select-sm select-bordered"
-                                        value={invFilters.term}
-                                        onChange={(e) => setInvFilters({ ...invFilters, term: e.target.value })}
-                                    >
-                                        <option value="">All Terms</option>
-                                        <option value="1">Term 1</option>
-                                        <option value="2">Term 2</option>
-                                        <option value="3">Term 3</option>
-                                    </select>
+                                    <div className="w-40">
+                                        <SearchableSelect
+                                            placeholder="All Terms"
+                                            options={[
+                                                { id: '1', label: 'Term 1' },
+                                                { id: '2', label: 'Term 2' },
+                                                { id: '3', label: 'Term 3' }
+                                            ]}
+                                            value={invFilters.term}
+                                            onChange={(val) => setInvFilters({ ...invFilters, term: val.toString() })}
+                                        />
+                                    </div>
 
-                                    <select
-                                        className="select select-sm select-bordered"
-                                        value={invFilters.status}
-                                        onChange={(e) => setInvFilters({ ...invFilters, status: e.target.value })}
-                                    >
-                                        <option value="">All Status</option>
-                                        <option value="UNPAID">Unpaid</option>
-                                        <option value="PARTIAL">Partial</option>
-                                        <option value="PAID">Paid</option>
-                                        <option value="OVERPAID">Overpaid</option>
-                                    </select>
+                                    <div className="w-40">
+                                        <SearchableSelect
+                                            placeholder="All Status"
+                                            options={[
+                                                { id: 'UNPAID', label: 'Unpaid' },
+                                                { id: 'PARTIAL', label: 'Partial' },
+                                                { id: 'PAID', label: 'Paid' },
+                                                { id: 'OVERPAID', label: 'Overpaid' }
+                                            ]}
+                                            value={invFilters.status}
+                                            onChange={(val) => setInvFilters({ ...invFilters, status: val.toString() })}
+                                        />
+                                    </div>
 
                                     <button className="btn btn-sm btn-primary no-print" onClick={() => { setPage(1); loadData(); }}>Apply</button>
                                     <button className="btn btn-sm btn-outline no-print ml-4" onClick={() => window.print()} title="Print Filtered Invoices">
@@ -661,9 +664,9 @@ const Finance = () => {
                                                 <td className="font-bold">#INV-{inv.id}</td>
                                                 <td>{inv.student_name}</td>
                                                 <td>KES {Number(inv.total_amount).toLocaleString()}</td>
-                                                <td className={`font-bold ${Number(inv.balance) === 0 ? 'text-success' : Number(inv.balance) < 0 ? 'text-info' : 'text-error'}`}>KES {Number(inv.balance).toLocaleString()}</td>
+                                                <td className={`font - bold ${Number(inv.balance) === 0 ? 'text-success' : Number(inv.balance) < 0 ? 'text-info' : 'text-error'} `}>KES {Number(inv.balance).toLocaleString()}</td>
                                                 <td>
-                                                    <span className={`badge ${inv.status === 'PAID' ? 'badge-success' : inv.status === 'OVERPAID' ? 'badge-info text-white' : inv.status === 'PARTIAL' ? 'badge-warning' : 'badge-error'}`}>
+                                                    <span className={`badge ${inv.status === 'PAID' ? 'badge-success' : inv.status === 'OVERPAID' ? 'badge-info text-white' : inv.status === 'PARTIAL' ? 'badge-warning' : 'badge-error'} `}>
                                                         {inv.status}
                                                     </span>
                                                 </td>
@@ -800,38 +803,54 @@ const Finance = () => {
                     </p>
                     <div className="form-group">
                         <label className="label">Academic Year *</label>
-                        <select className="select" value={genForm.year_id} onChange={e => setGenForm({ ...genForm, year_id: e.target.value })} required>
-                            <option value="">-- Select Year --</option>
-                            {years.map((y: any) => <option key={y.id} value={y.id}>{y.name}</option>)}
-                        </select>
+                        <SearchableSelect
+                            placeholder="Select Year"
+                            options={years.map((y: any) => ({ id: y.id.toString(), label: y.name }))}
+                            value={genForm.year_id}
+                            onChange={(val) => setGenForm({ ...genForm, year_id: val.toString() })}
+                            required
+                        />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="form-group">
                             <label className="label">Class Level *</label>
-                            <select className="select" value={genForm.level} onChange={e => setGenForm({ ...genForm, level: e.target.value, class_id: '' })} required>
-                                <option value="">-- Select Level --</option>
-                                <option value="all">ALL CLASS LEVELS</option>
-                                {uniqueClassNames.map(name => <option key={name} value={name}>{name}</option>)}
-                            </select>
+                            <SearchableSelect
+                                placeholder="Select Level"
+                                options={[
+                                    { id: 'all', label: 'ALL CLASS LEVELS' },
+                                    ...uniqueClassNames.map(name => ({ id: name, label: name }))
+                                ]}
+                                value={genForm.level}
+                                onChange={(val) => setGenForm({ ...genForm, level: val.toString(), class_id: '' })}
+                                required
+                            />
                         </div>
                         <div className="form-group">
                             <label className="label">Stream *</label>
-                            <select className="select" value={genForm.class_id} onChange={e => setGenForm({ ...genForm, class_id: e.target.value })} disabled={!genForm.level || genForm.level === 'all'} required={genForm.level !== 'all'}>
-                                <option value="">-- Select Stream --</option>
-                                {genForm.level && genForm.level !== 'all' && <option value="all">ALL STREAMS</option>}
-                                {classes.filter((c: any) => c.name === genForm.level).map((c: any) => (
-                                    <option key={c.id} value={c.id}>{c.stream}</option>
-                                ))}
-                            </select>
+                            <SearchableSelect
+                                placeholder="Select Stream"
+                                options={[
+                                    { id: 'all', label: 'ALL STREAMS' },
+                                    ...classes.filter((c: any) => c.name === genForm.level).map((c: any) => ({ id: c.id.toString(), label: c.stream }))
+                                ]}
+                                value={genForm.class_id}
+                                onChange={(val) => setGenForm({ ...genForm, class_id: val.toString() })}
+                                disabled={!genForm.level || genForm.level === 'all'}
+                                required={genForm.level !== 'all'}
+                            />
                         </div>
                     </div>
                     <div className="form-group">
                         <label className="label">Term *</label>
-                        <select className="select" value={genForm.term} onChange={e => setGenForm({ ...genForm, term: e.target.value })}>
-                            <option value="1">Term 1</option>
-                            <option value="2">Term 2</option>
-                            <option value="3">Term 3</option>
-                        </select>
+                        <SearchableSelect
+                            options={[
+                                { id: '1', label: 'Term 1' },
+                                { id: '2', label: 'Term 2' },
+                                { id: '3', label: 'Term 3' }
+                            ]}
+                            value={genForm.term}
+                            onChange={(val) => setGenForm({ ...genForm, term: val.toString() })}
+                        />
                     </div>
                     <div className="modal-footer pt-6 border-top mt-4 flex justify-end gap-3">
                         <Button type="button" variant="outline" onClick={() => setShowInvoiceModal(false)}>Cancel</Button>
@@ -861,8 +880,8 @@ const Finance = () => {
                             placeholder="Type Name or Admission Number..."
                             options={students.map((s: any) => ({
                                 id: s.id,
-                                label: `${s.admission_number} - ${s.full_name}`,
-                                subLabel: `Balance: KES ${Number(s.fee_balance).toLocaleString()}`
+                                label: `${s.admission_number} - ${s.full_name} `,
+                                subLabel: `Balance: KES ${Number(s.fee_balance).toLocaleString()} `
                             }))}
                             value={payForm.student_id}
                             onChange={(val) => {
@@ -886,10 +905,18 @@ const Finance = () => {
                         {payForm.student_id && (
                             <div className="form-group fade-in">
                                 <label className="label text-[10px] font-black uppercase tracking-widest text-secondary">Target Invoice / Period *</label>
-                                <select className="select border-2 border-primary/20 focus:border-primary transition-all font-bold"
+                                <SearchableSelect
+                                    placeholder="Select Active Invoice"
+                                    options={invoices
+                                        .filter((i: any) => String(i.student) === String(payForm.student_id) && i.status !== 'PAID')
+                                        .map((i: any) => ({
+                                            id: i.id.toString(),
+                                            label: `Invoice #${i.id} | ${i.academic_year_name} T${i.term} `,
+                                            subLabel: `Remaining: KES ${Number(i.balance).toLocaleString()} `
+                                        }))}
                                     value={payForm.invoice_id}
-                                    onChange={e => {
-                                        const invId = e.target.value;
+                                    onChange={(val) => {
+                                        const invId = val.toString();
                                         const inv = invoices.find(i => String(i.id) === invId);
                                         setPayForm({
                                             ...payForm,
@@ -898,16 +925,7 @@ const Finance = () => {
                                         });
                                     }}
                                     required
-                                >
-                                    <option value="">-- Select Active Invoice --</option>
-                                    {invoices
-                                        .filter((i: any) => String(i.student) === String(payForm.student_id) && i.status !== 'PAID')
-                                        .map((i: any) => (
-                                            <option key={i.id} value={i.id}>
-                                                Invoice #{i.id} | {i.academic_year_name} T{i.term} (Remaining: {Number(i.balance).toLocaleString()})
-                                            </option>
-                                        ))}
-                                </select>
+                                />
                             </div>
                         )}
                     </div>
@@ -921,11 +939,15 @@ const Finance = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="form-group">
                             <label className="label">Payment Method *</label>
-                            <select className="select" value={payForm.method} onChange={e => setPayForm({ ...payForm, method: e.target.value })}>
-                                <option value="CASH">Cash</option>
-                                <option value="MPESA">M-Pesa</option>
-                                <option value="BANK">Bank Transfer</option>
-                            </select>
+                            <SearchableSelect
+                                options={[
+                                    { id: 'CASH', label: 'Cash' },
+                                    { id: 'MPESA', label: 'M-Pesa' },
+                                    { id: 'BANK', label: 'Bank Transfer' }
+                                ]}
+                                value={payForm.method}
+                                onChange={(val) => setPayForm({ ...payForm, method: val.toString() })}
+                            />
                         </div>
                         <div className="form-group">
                             <label className="label">Reference No.</label>
@@ -956,17 +978,22 @@ const Finance = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="form-group">
                             <label className="label">Academic Year *</label>
-                            <select className="select" value={feeForm.year_id} onChange={e => setFeeForm({ ...feeForm, year_id: e.target.value })} required>
-                                <option value="">-- Select Year --</option>
-                                {years.map((y: any) => <option key={y.id} value={y.id}>{y.name}</option>)}
-                            </select>
+                            <SearchableSelect
+                                placeholder="Select Year"
+                                options={years.map((y: any) => ({ id: y.id.toString(), label: y.name }))}
+                                value={feeForm.year_id}
+                                onChange={(val) => setFeeForm({ ...feeForm, year_id: val.toString() })}
+                                required
+                            />
                         </div>
                         <div className="form-group">
                             <label className="label">Class Level</label>
-                            <select className="select" value={feeForm.class_id} onChange={e => setFeeForm({ ...feeForm, class_id: e.target.value })}>
-                                <option value="">-- All Levels --</option>
-                                {classes.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
-                            </select>
+                            <SearchableSelect
+                                placeholder="All Levels"
+                                options={classes.map((c: any) => ({ id: c.id.toString(), label: c.name }))}
+                                value={feeForm.class_id}
+                                onChange={(val) => setFeeForm({ ...feeForm, class_id: val.toString() })}
+                            />
                         </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -978,11 +1005,15 @@ const Finance = () => {
                         </div>
                         <div className="form-group">
                             <label className="label">Term *</label>
-                            <select className="select" value={feeForm.term} onChange={e => setFeeForm({ ...feeForm, term: e.target.value })}>
-                                <option value="1">Term 1</option>
-                                <option value="2">Term 2</option>
-                                <option value="3">Term 3</option>
-                            </select>
+                            <SearchableSelect
+                                options={[
+                                    { id: '1', label: 'Term 1' },
+                                    { id: '2', label: 'Term 2' },
+                                    { id: '3', label: 'Term 3' }
+                                ]}
+                                value={feeForm.term}
+                                onChange={(val) => setFeeForm({ ...feeForm, term: val.toString() })}
+                            />
                         </div>
                     </div>
                     <div className="modal-footer pt-6 border-top mt-4 flex justify-end gap-3">
@@ -993,7 +1024,7 @@ const Finance = () => {
                     </div>
                 </form>
             </Modal>
-            <Modal isOpen={!!selectedInvoice} onClose={() => setSelectedInvoice(null)} title={`Invoice Details - #INV-${selectedInvoice?.id}`}>
+            <Modal isOpen={!!selectedInvoice} onClose={() => setSelectedInvoice(null)} title={`Invoice Details - #INV - ${selectedInvoice?.id} `}>
                 {selectedInvoice && (
                     <div className="space-y-6">
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pb-4 border-b">
@@ -1026,7 +1057,7 @@ const Finance = () => {
                                                 {selectedInvoice.adjustments.map((adj: any) => (
                                                     <tr key={adj.id}>
                                                         <td>{adj.reason} <span className="text-xs text-gray-400">({adj.adjustment_type})</span></td>
-                                                        <td className={`text-right font-mono ${adj.adjustment_type === 'DEBIT' ? 'text-error' : 'text-success'}`}>
+                                                        <td className={`text - right font - mono ${adj.adjustment_type === 'DEBIT' ? 'text-error' : 'text-success'} `}>
                                                             {adj.adjustment_type === 'DEBIT' ? '+' : '-'} KES {Number(adj.amount).toLocaleString()}
                                                         </td>
                                                     </tr>
@@ -1065,7 +1096,7 @@ const Finance = () => {
                             </div>
                             <div className="flex justify-between items-center border-t pt-2 text-lg">
                                 <span className="font-bold">Balance Due</span>
-                                <span className={`font-black ${Number(selectedInvoice.balance) === 0 ? 'text-success' : Number(selectedInvoice.balance) < 0 ? 'text-info' : 'text-error'}`}>KES {Number(selectedInvoice.balance).toLocaleString()}</span>
+                                <span className={`font - black ${Number(selectedInvoice.balance) === 0 ? 'text-success' : Number(selectedInvoice.balance) < 0 ? 'text-info' : 'text-error'} `}>KES {Number(selectedInvoice.balance).toLocaleString()}</span>
                             </div>
                         </div>
 
@@ -1083,13 +1114,18 @@ const Finance = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="form-group">
                             <label className="label">Category *</label>
-                            <select className="select" value={expenseForm.category} onChange={e => setExpenseForm({ ...expenseForm, category: e.target.value })} required>
-                                <option value="SUPPLIES">Supplies</option>
-                                <option value="UTILITIES">Utilities</option>
-                                <option value="SALARIES">Salaries</option>
-                                <option value="MAINTENANCE">Maintenance</option>
-                                <option value="OTHER">Other</option>
-                            </select>
+                            <SearchableSelect
+                                options={[
+                                    { id: 'SUPPLIES', label: 'Supplies' },
+                                    { id: 'UTILITIES', label: 'Utilities' },
+                                    { id: 'SALARIES', label: 'Salaries' },
+                                    { id: 'MAINTENANCE', label: 'Maintenance' },
+                                    { id: 'OTHER', label: 'Other' }
+                                ]}
+                                value={expenseForm.category}
+                                onChange={(val) => setExpenseForm({ ...expenseForm, category: val.toString() })}
+                                required
+                            />
                         </div>
                         <div className="form-group">
                             <label className="label">Amount (KES) *</label>
@@ -1136,8 +1172,8 @@ const Finance = () => {
                         placeholder="Type Name or Admission Number..."
                         options={students.map((s: any) => ({
                             id: s.admission_number,
-                            label: `${s.admission_number} - ${s.full_name}`,
-                            subLabel: `Arrears: KES ${Number(s.fee_balance).toLocaleString()}`
+                            label: `${s.admission_number} - ${s.full_name} `,
+                            subLabel: `Arrears: KES ${Number(s.fee_balance).toLocaleString()} `
                         }))}
                         value={mpesaForm.admission_number}
                         onChange={(val) => {
@@ -1187,7 +1223,7 @@ const Finance = () => {
                     <div className="form-control">
                         <label className="label">
                             <span className="label-text font-bold">Message Template</span>
-                            <span className="label-text-alt text-gray-400">Use {`{student_name}`} and {`{balance}`} as placeholders</span>
+                            <span className="label-text-alt text-gray-400">Use {`{ student_name } `} and {`{ balance } `} as placeholders</span>
                         </label>
                         <textarea
                             className="textarea textarea-bordered h-32 text-sm leading-relaxed"

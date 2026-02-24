@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import SearchableSelect from '../components/SearchableSelect';
 import {
     Users, DollarSign, BookOpen, Plus,
     ArrowRight, Bell, Calendar, ShieldCheck, Activity,
@@ -284,12 +285,16 @@ const Dashboard = () => {
                         </div>
                         <div>
                             <label className="text-[10px] font-black text-secondary uppercase mb-1 block">Primary Role</label>
-                            <select className="input" value={staffFormData.role} onChange={e => setStaffFormData({ ...staffFormData, role: e.target.value })}>
-                                <option value="TEACHER">Academic Staff</option>
-                                <option value="DOS">Director of Studies</option>
-                                <option value="ACCOUNTANT">Bursar</option>
-                                <option value="ADMIN">System Admin</option>
-                            </select>
+                            <SearchableSelect
+                                options={[
+                                    { id: 'TEACHER', label: 'Academic Staff' },
+                                    { id: 'DOS', label: 'Director of Studies' },
+                                    { id: 'ACCOUNTANT', label: 'Bursar' },
+                                    { id: 'ADMIN', label: 'System Admin' }
+                                ]}
+                                value={staffFormData.role}
+                                onChange={(val) => setStaffFormData({ ...staffFormData, role: val.toString() })}
+                            />
                         </div>
                     </div>
                     <div className="pt-4">

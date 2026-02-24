@@ -731,30 +731,40 @@ const Library = () => {
 
             <Modal isOpen={isCopyModalOpen} onClose={() => setIsCopyModalOpen(false)} title={copyId ? "Edit Copy Details" : "Add Inventory Copy"}>
                 <form onSubmit={handleCopySubmit} className="space-y-4">
-                    <div className="form-group"><label className="label">Book Title</label>
-                        <select className="select" value={copyForm.book} onChange={e => setCopyForm({ ...copyForm, book: e.target.value })} required>
-                            <option value="">Select Book...</option>
-                            {books.map(b => <option key={b.id} value={b.id}>{b.title}</option>)}
-                        </select>
-                    </div>
+                    <SearchableSelect
+                        label="Book Title"
+                        placeholder="Select Book..."
+                        options={books.map(b => ({ id: b.id.toString(), label: b.title }))}
+                        value={copyForm.book}
+                        onChange={(val) => setCopyForm({ ...copyForm, book: val.toString() })}
+                        required
+                    />
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group"><label className="label">Copy Number / Barcode</label><input type="text" className="input" value={copyForm.copy_number} onChange={e => setCopyForm({ ...copyForm, copy_number: e.target.value })} required /></div>
                         <div className="form-group"><label className="label">Condition</label>
-                            <select className="select" value={copyForm.condition} onChange={e => setCopyForm({ ...copyForm, condition: e.target.value })}>
-                                <option value="NEW">New</option>
-                                <option value="GOOD">Good</option>
-                                <option value="FAIR">Fair</option>
-                                <option value="POOR">Poor</option>
-                            </select>
+                            <SearchableSelect
+                                options={[
+                                    { id: 'NEW', label: 'New' },
+                                    { id: 'GOOD', label: 'Good' },
+                                    { id: 'FAIR', label: 'Fair' },
+                                    { id: 'POOR', label: 'Poor' }
+                                ]}
+                                value={copyForm.condition}
+                                onChange={(val) => setCopyForm({ ...copyForm, condition: val.toString() })}
+                            />
                         </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group"><label className="label">Status</label>
-                            <select className="select" value={copyForm.status} onChange={e => setCopyForm({ ...copyForm, status: e.target.value })}>
-                                <option value="AVAILABLE">Available</option>
-                                <option value="MAINTENANCE">Maintenance</option>
-                                <option value="LOST">Lost</option>
-                            </select>
+                            <SearchableSelect
+                                options={[
+                                    { id: 'AVAILABLE', label: 'Available' },
+                                    { id: 'MAINTENANCE', label: 'Maintenance' },
+                                    { id: 'LOST', label: 'Lost' }
+                                ]}
+                                value={copyForm.status}
+                                onChange={(val) => setCopyForm({ ...copyForm, status: val.toString() })}
+                            />
                         </div>
                         <div className="form-group"><label className="label">Purchase Date</label><input type="date" className="input" value={copyForm.purchase_date} onChange={e => setCopyForm({ ...copyForm, purchase_date: e.target.value })} required /></div>
                     </div>
@@ -784,22 +794,30 @@ const Library = () => {
                     <SearchableSelect label="Student *" options={studentOptions} value={String(fineForm.student)} onChange={(val) => setFineForm({ ...fineForm, student: val.toString() })} required />
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group"><label className="label">Fine Type</label>
-                            <select className="select" value={(fineForm as any).fine_type || 'LATE'} onChange={e => setFineForm({ ...fineForm, fine_type: e.target.value } as any)}>
-                                <option value="LATE">Late Return</option>
-                                <option value="LOST">Lost Book</option>
-                                <option value="DAMAGE">Damage Penalty</option>
-                            </select>
+                            <SearchableSelect
+                                options={[
+                                    { id: 'LATE', label: 'Late Return' },
+                                    { id: 'LOST', label: 'Lost Book' },
+                                    { id: 'DAMAGE', label: 'Damage Penalty' }
+                                ]}
+                                value={(fineForm as any).fine_type || 'LATE'}
+                                onChange={(val) => setFineForm({ ...fineForm, fine_type: val.toString() } as any)}
+                            />
                         </div>
                         <div className="form-group"><label className="label">Amount (KES)</label><input type="number" className="input" value={fineForm.amount} onChange={e => setFineForm({ ...fineForm, amount: parseFloat(e.target.value) })} required /></div>
                     </div>
                     <div className="form-group"><label className="label">Reason</label><textarea className="input" rows={3} value={fineForm.reason} onChange={e => setFineForm({ ...fineForm, reason: e.target.value })} required></textarea></div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group"><label className="label">Status</label>
-                            <select className="select" value={fineForm.status} onChange={e => setFineForm({ ...fineForm, status: e.target.value })}>
-                                <option value="PENDING">Pending</option>
-                                <option value="PAID">Paid</option>
-                                <option value="WAIVED">Waived</option>
-                            </select>
+                            <SearchableSelect
+                                options={[
+                                    { id: 'PENDING', label: 'Pending' },
+                                    { id: 'PAID', label: 'Paid' },
+                                    { id: 'WAIVED', label: 'Waived' }
+                                ]}
+                                value={fineForm.status}
+                                onChange={(val) => setFineForm({ ...fineForm, status: val.toString() })}
+                            />
                         </div>
                         <div className="form-group"><label className="label">Date Issued</label><input type="date" className="input" value={fineForm.date_issued} onChange={e => setFineForm({ ...fineForm, date_issued: e.target.value })} required /></div>
                     </div>

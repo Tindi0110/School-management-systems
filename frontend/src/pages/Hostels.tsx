@@ -3,7 +3,7 @@ import {
     Plus, Building, Edit, Trash2, Users, Users as UsersIcon, Printer, Wrench, Bed as BedIcon,
     Layout, ShieldAlert, Search
 } from 'lucide-react';
-import { hostelAPI, studentsAPI, staffAPI } from '../api/api';
+import { hostelAPI, studentsAPI, staffAPI, academicsAPI } from '../api/api';
 import { exportToCSV } from '../utils/export';
 import Modal from '../components/Modal';
 import SearchableSelect from '../components/SearchableSelect';
@@ -353,9 +353,9 @@ const Hostels = () => {
                 }
                 successCount++;
             } catch (err: any) {
-                console.error(`Failed for student ${sId}`, err);
+                console.error(`Failed for student ${studentId}`, err);
                 const msg = err.response?.data?.detail || JSON.stringify(err.response?.data) || err.message;
-                errors.push(`Student ${sId}: ${msg}`);
+                errors.push(`Student ${studentId}: ${msg} `);
             }
         }
 
@@ -365,7 +365,7 @@ const Hostels = () => {
         setBulkAttendanceData({});
 
         if (successCount === studentIds.length) {
-            success(`Roll call complete. Processed ${successCount}/${studentIds.length} students successfully.`);
+            success(`Roll call complete.Processed ${successCount}/${studentIds.length} students successfully.`);
         } else {
             toastError(`Roll call complete. Processed ${successCount}/${studentIds.length}.\n\nErrors potentially due to validation:\n${errors.slice(0, 3).join('\n')}${errors.length > 3 ? '\n...' : ''}`);
         }
@@ -668,20 +668,20 @@ const Hostels = () => {
                             <div className="flex items-center gap-4">
                                 <h3>Hostel Assets</h3>
                                 <div className="flex gap-2">
-                                    <select
-                                        className="select select-xs select-bordered"
+                                    <SearchableSelect
+                                        options={[
+                                            { id: 'asset_code', label: 'Sort by Code' },
+                                            { id: 'asset_type', label: 'Sort by Type' },
+                                            { id: 'condition', label: 'Sort by Condition' }
+                                        ]}
                                         value={assetSort.field}
-                                        onChange={(e) => setAssetSort({ ...assetSort, field: e.target.value })}
-                                    >
-                                        <option value="asset_code">Sort by Code</option>
-                                        <option value="asset_type">Sort by Type</option>
-                                        <option value="condition">Sort by Condition</option>
-                                    </select>
+                                        onChange={(val) => setAssetSort({ ...assetSort, field: val.toString() })}
+                                    />
                                     <button
                                         className="btn btn-xs btn-ghost"
                                         onClick={() => setAssetSort({ ...assetSort, direction: assetSort.direction === 'asc' ? 'desc' : 'asc' })}
                                     >
-                                        {assetSort.direction === 'asc' ? 'Γåæ' : 'Γåô'}
+                                        {assetSort.direction === 'asc' ? '↑' : '↓'}
                                     </button>
                                 </div>
                             </div>
@@ -887,8 +887,29 @@ const Hostels = () => {
                 <form onSubmit={handleHostelSubmit} className="space-y-4">
                     <div className="form-group"><label className="label">Name</label><input type="text" className="input" value={hostelFormData.name} onChange={e => setHostelFormData({ ...hostelFormData, name: e.target.value })} required /></div>
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group"><label className="label">Type</label><select className="select" value={hostelFormData.hostel_type} onChange={e => setHostelFormData({ ...hostelFormData, hostel_type: e.target.value })}><option value="BOARDING">Boarding</option><option value="DAY">Day Scholar</option></select></div>
-                        <div className="form-group"><label className="label">Gender</label><select className="select" value={hostelFormData.gender_allowed} onChange={e => setHostelFormData({ ...hostelFormData, gender_allowed: e.target.value })}><option value="M">Male</option><option value="F">Female</option><option value="MIXED">Mixed</option></select></div>
+                        <div className="form-group">
+                            <label className="label">Type</label>
+                            <SearchableSelect
+                                options={[
+                                    { id: 'BOARDING', label: 'Boarding' },
+                                    { id: 'DAY', label: 'Day Scholar' }
+                                ]}
+                                value={hostelFormData.hostel_type}
+                                onChange={(val) => setHostelFormData({ ...hostelFormData, hostel_type: val.toString() })}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label className="label">Gender</label>
+                            <SearchableSelect
+                                options={[
+                                    { id: 'M', label: 'Male' },
+                                    { id: 'F', label: 'Female' },
+                                    { id: 'MIXED', label: 'Mixed' }
+                                ]}
+                                value={hostelFormData.gender_allowed}
+                                onChange={(val) => setHostelFormData({ ...hostelFormData, gender_allowed: val.toString() })}
+                            />
+                        </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group"><label className="label">Capacity</label><input type="number" className="input" value={hostelFormData.capacity} onChange={e => setHostelFormData({ ...hostelFormData, capacity: parseInt(e.target.value) })} required /></div>
@@ -922,18 +943,31 @@ const Hostels = () => {
 
             <Modal isOpen={isRoomModalOpen} onClose={() => setIsRoomModalOpen(false)} title={roomId ? "Edit Room" : "Add New Room"}>
                 <form onSubmit={handleRoomSubmit} className="space-y-4">
-                    <div className="form-group"><label className="label">Hostel</label>
-                        <select className="select" value={roomFormData.hostel} onChange={e => setRoomFormData({ ...roomFormData, hostel: e.target.value })} required>
-                            <option value="">Select Hostel...</option>
-                            {hostels.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
-                        </select>
-                    </div>
+                    <SearchableSelect
+                        label="Hostel"
+                        placeholder="Select Hostel..."
+                        options={hostels.map(h => ({ id: h.id.toString(), label: h.name }))}
+                        value={roomFormData.hostel}
+                        onChange={(val) => setRoomFormData({ ...roomFormData, hostel: val.toString() })}
+                        required
+                    />
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group"><label className="label">Room Number</label><input type="text" className="input" value={roomFormData.room_number} onChange={e => setRoomFormData({ ...roomFormData, room_number: e.target.value })} required /></div>
                         <div className="form-group"><label className="label">Floor</label><input type="text" className="input" value={roomFormData.floor} onChange={e => setRoomFormData({ ...roomFormData, floor: e.target.value })} /></div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group"><label className="label">Type</label><select className="select" value={roomFormData.room_type} onChange={e => setRoomFormData({ ...roomFormData, room_type: e.target.value })}><option value="DORM">Dormitory</option><option value="CUBICLE">Cubicle</option><option value="SINGLE">Single</option></select></div>
+                        <div className="form-group">
+                            <label className="label">Type</label>
+                            <SearchableSelect
+                                options={[
+                                    { id: 'DORM', label: 'Dormitory' },
+                                    { id: 'CUBICLE', label: 'Cubicle' },
+                                    { id: 'SINGLE', label: 'Single' }
+                                ]}
+                                value={roomFormData.room_type}
+                                onChange={(val) => setRoomFormData({ ...roomFormData, room_type: val.toString() })}
+                            />
+                        </div>
                         <div className="form-group"><label className="label">Capacity</label><input type="number" className="input" value={roomFormData.capacity} onChange={e => setRoomFormData({ ...roomFormData, capacity: parseInt(e.target.value) })} required /></div>
                     </div>
                     <div className="modal-footer">
@@ -1028,21 +1062,49 @@ const Hostels = () => {
                     <div className="form-group"><label className="label">Asset Code/Name</label><input type="text" className="input" value={assetFormData.asset_code} onChange={e => setAssetFormData({ ...assetFormData, asset_code: e.target.value })} placeholder="e.g. BED-001" /></div>
 
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group"><label className="label">Hostel</label><select className="select" value={assetFormData.hostel} onChange={e => {
-                            setAssetFormData({ ...assetFormData, hostel: e.target.value, room: '' });
-                        }} required><option value="">Select Hostel...</option>{hostels.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}</select></div>
-                        <div className="form-group">
-                            <label className="label">Room (Optional)</label>
-                            <select className="select" value={assetFormData.room} onChange={e => setAssetFormData({ ...assetFormData, room: e.target.value })} disabled={!assetFormData.hostel}>
-                                <option value="">General / Store</option>
-                                {rooms.filter(r => String(r.hostel) === assetFormData.hostel).map(r => <option key={r.id} value={r.id}>{r.room_number}</option>)}
-                            </select>
-                        </div>
+                        <SearchableSelect
+                            label="Hostel"
+                            placeholder="Select Hostel..."
+                            options={hostels.map(h => ({ id: h.id.toString(), label: h.name }))}
+                            value={String(assetFormData.hostel)}
+                            onChange={(val) => setAssetFormData({ ...assetFormData, hostel: val.toString(), room: '' })}
+                            required
+                        />
+                        <SearchableSelect
+                            label="Room (Optional)"
+                            placeholder="General / Store"
+                            options={rooms.filter(r => String(r.hostel) === assetFormData.hostel).map(r => ({ id: r.id.toString(), label: r.room_number }))}
+                            value={String(assetFormData.room)}
+                            onChange={(val) => setAssetFormData({ ...assetFormData, room: val.toString() })}
+                            disabled={!assetFormData.hostel}
+                        />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group"><label className="label">Type</label><select className="select" value={assetFormData.type} onChange={e => setAssetFormData({ ...assetFormData, type: e.target.value })}><option value="FURNITURE">Furniture</option><option value="ELECTRONIC">Electronic</option><option value="OTHER">Other</option></select></div>
-                        <div className="form-group"><label className="label">Condition</label><select className="select" value={assetFormData.condition} onChange={e => setAssetFormData({ ...assetFormData, condition: e.target.value })}><option value="GOOD">Good</option><option value="FAIR">Fair</option><option value="POOR">Poor</option></select></div>
+                        <div className="form-group">
+                            <label className="label">Type</label>
+                            <SearchableSelect
+                                options={[
+                                    { id: 'FURNITURE', label: 'Furniture' },
+                                    { id: 'ELECTRONIC', label: 'Electronic' },
+                                    { id: 'OTHER', label: 'Other' }
+                                ]}
+                                value={assetFormData.type}
+                                onChange={(val) => setAssetFormData({ ...assetFormData, type: val.toString() })}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label className="label">Condition</label>
+                            <SearchableSelect
+                                options={[
+                                    { id: 'GOOD', label: 'Good' },
+                                    { id: 'FAIR', label: 'Fair' },
+                                    { id: 'POOR', label: 'Poor' }
+                                ]}
+                                value={assetFormData.condition}
+                                onChange={(val) => setAssetFormData({ ...assetFormData, condition: val.toString() })}
+                            />
+                        </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group"><label className="label">Quantity</label><input type="number" className="input" value={assetFormData.quantity} onChange={e => setAssetFormData({ ...assetFormData, quantity: parseInt(e.target.value) })} min="1" required /></div>
@@ -1073,10 +1135,33 @@ const Hostels = () => {
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="form-group"><label className="label">Date</label><input type="date" className="input" value={attendanceFormData.date} onChange={e => setAttendanceFormData({ ...attendanceFormData, date: e.target.value })} required /></div>
-                            <div className="form-group"><label className="label">Session</label><select className="select" value={attendanceFormData.session} onChange={e => setAttendanceFormData({ ...attendanceFormData, session: e.target.value })} required><option value="MORNING">Morning</option><option value="EVENING">Evening</option><option value="NIGHT">Night</option></select></div>
+                            <div className="form-group">
+                                <label className="label">Session</label>
+                                <SearchableSelect
+                                    options={[
+                                        { id: 'MORNING', label: 'Morning' },
+                                        { id: 'EVENING', label: 'Evening' },
+                                        { id: 'NIGHT', label: 'Night' }
+                                    ]}
+                                    value={attendanceFormData.session}
+                                    onChange={(val) => setAttendanceFormData({ ...attendanceFormData, session: val.toString() })}
+                                    required
+                                />
+                            </div>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="form-group"><label className="label">Status</label><select className="select" value={attendanceFormData.status} onChange={e => setAttendanceFormData({ ...attendanceFormData, status: e.target.value })}><option value="PRESENT">Present</option><option value="ABSENT">Absent</option><option value="PERMITTED">Permitted</option></select></div>
+                            <div className="form-group">
+                                <label className="label">Status</label>
+                                <SearchableSelect
+                                    options={[
+                                        { id: 'PRESENT', label: 'Present' },
+                                        { id: 'ABSENT', label: 'Absent' },
+                                        { id: 'PERMITTED', label: 'Permitted' }
+                                    ]}
+                                    value={attendanceFormData.status}
+                                    onChange={(val) => setAttendanceFormData({ ...attendanceFormData, status: val.toString() })}
+                                />
+                            </div>
                             <div className="form-group"><label className="label">Remarks</label><input type="text" className="input" value={attendanceFormData.remarks} onChange={e => setAttendanceFormData({ ...attendanceFormData, remarks: e.target.value })} /></div>
                         </div>
                         <div className="modal-footer">
@@ -1094,38 +1179,35 @@ const Hostels = () => {
                     <div className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                             {/* ... (Hostel/Room selects unchanged) ... */}
-                            <div className="form-group">
-                                <label className="label">Hostel</label>
-                                <select className="select" value={filterHostel} onChange={e => {
-                                    setFilterHostel(e.target.value);
-                                    setBulkAttendanceRoom(null); // Reset room on hostel change
+                            <SearchableSelect
+                                label="Hostel"
+                                placeholder="Select Hostel..."
+                                options={hostels.map(h => ({ id: h.id.toString(), label: h.name }))}
+                                value={filterHostel}
+                                onChange={(val) => {
+                                    setFilterHostel(val.toString());
+                                    setBulkAttendanceRoom(null);
                                     setBulkAttendanceData({});
-                                }}>
-                                    <option value="">Select Hostel...</option>
-                                    {hostels.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
-                                </select>
-                            </div>
+                                }}
+                            />
 
-                            <div className="form-group">
-                                <label className="label">Room</label>
-                                <select className="select" value={bulkAttendanceRoom || ''} onChange={e => {
-                                    const rId = parseInt(e.target.value);
+                            <SearchableSelect
+                                label="Room"
+                                placeholder="Select Room..."
+                                options={rooms.filter(r => String(r.hostel) === filterHostel).map(r => ({ id: r.id.toString(), label: r.room_number }))}
+                                value={String(bulkAttendanceRoom || '')}
+                                onChange={(val) => {
+                                    const rId = parseInt(val.toString());
                                     setBulkAttendanceRoom(rId);
-                                    // Pre-fill bulk data using STRICT ID comparison
                                     const residents = allocations.filter(a => a.room === rId && a.status === 'ACTIVE');
                                     const initialData: any = {};
                                     residents.forEach(r => {
                                         initialData[r.student] = { status: 'PRESENT', remarks: '' };
                                     });
                                     setBulkAttendanceData(initialData);
-                                }} disabled={!filterHostel}>
-                                    <option value="">Select Room...</option>
-                                    {rooms
-                                        .filter(r => String(r.hostel) === filterHostel) // Strict Filter
-                                        .map(r => <option key={r.id} value={r.id}>{r.room_number}</option>)
-                                    }
-                                </select>
-                            </div>
+                                }}
+                                disabled={!filterHostel}
+                            />
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
@@ -1135,11 +1217,15 @@ const Hostels = () => {
                             </div>
                             <div className="form-group">
                                 <label className="label">Session</label>
-                                <select className="select" value={attendanceFormData.session} onChange={e => setAttendanceFormData({ ...attendanceFormData, session: e.target.value })}>
-                                    <option value="MORNING">Morning Call</option>
-                                    <option value="EVENING">Evening Call</option>
-                                    <option value="NIGHT">Night Call</option>
-                                </select>
+                                <SearchableSelect
+                                    options={[
+                                        { id: 'MORNING', label: 'Morning Call' },
+                                        { id: 'EVENING', label: 'Evening Call' },
+                                        { id: 'NIGHT', label: 'Night Call' }
+                                    ]}
+                                    value={attendanceFormData.session}
+                                    onChange={(val) => setAttendanceFormData({ ...attendanceFormData, session: val.toString() })}
+                                />
                             </div>
                         </div>
 
@@ -1209,7 +1295,18 @@ const Hostels = () => {
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group"><label className="label">Date</label><input type="date" className="input" value={disciplineFormData.date} onChange={e => setDisciplineFormData({ ...disciplineFormData, date: e.target.value })} required /></div>
-                        <div className="form-group"><label className="label">Severity</label><select className="select" value={disciplineFormData.severity} onChange={e => setDisciplineFormData({ ...disciplineFormData, severity: e.target.value })}><option value="MINOR">Minor</option><option value="MAJOR">Major</option><option value="CRITICAL">Critical</option></select></div>
+                        <div className="form-group">
+                            <label className="label">Severity</label>
+                            <SearchableSelect
+                                options={[
+                                    { id: 'MINOR', label: 'Minor' },
+                                    { id: 'MAJOR', label: 'Major' },
+                                    { id: 'CRITICAL', label: 'Critical' }
+                                ]}
+                                value={disciplineFormData.severity}
+                                onChange={(val) => setDisciplineFormData({ ...disciplineFormData, severity: val.toString() })}
+                            />
+                        </div>
                     </div>
                     <div className="form-group"><label className="label">Offence</label><input type="text" className="input" value={disciplineFormData.offence} onChange={e => setDisciplineFormData({ ...disciplineFormData, offence: e.target.value })} placeholder="e.g. Late coming" /></div>
                     <div className="form-group"><label className="label">Description</label><textarea className="input" rows={2} value={disciplineFormData.description} onChange={e => setDisciplineFormData({ ...disciplineFormData, description: e.target.value })} required placeholder="Details of what happened..." /></div>
@@ -1231,17 +1328,25 @@ const Hostels = () => {
             <Modal isOpen={isMaintenanceModalOpen} onClose={() => setIsMaintenanceModalOpen(false)} title={maintenanceId ? "Edit Repair Request" : "Log Maintenance"}>
                 <form onSubmit={handleMaintenanceSubmit} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group"><label className="label">Hostel</label><select className="select" value={maintenanceFormData.hostel} onChange={e => {
-                            setMaintenanceFormData({ ...maintenanceFormData, hostel: e.target.value });
-                            setFilterHostel(e.target.value); // Sync filter
-                        }} required><option value="">Select Hostel...</option>{hostels.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}</select></div>
-                        <div className="form-group">
-                            <label className="label">Room (Optional)</label>
-                            <select className="select" value={maintenanceFormData.room} onChange={e => setMaintenanceFormData({ ...maintenanceFormData, room: e.target.value })} disabled={!maintenanceFormData.hostel}>
-                                <option value="">General Area</option>
-                                {rooms.filter(r => String(r.hostel) === maintenanceFormData.hostel).map(r => <option key={r.id} value={r.id}>{r.room_number}</option>)}
-                            </select>
-                        </div>
+                        <SearchableSelect
+                            label="Hostel"
+                            placeholder="Select Hostel..."
+                            options={hostels.map(h => ({ id: h.id.toString(), label: h.name }))}
+                            value={maintenanceFormData.hostel}
+                            onChange={(val) => {
+                                setMaintenanceFormData({ ...maintenanceFormData, hostel: val.toString() });
+                                setFilterHostel(val.toString());
+                            }}
+                            required
+                        />
+                        <SearchableSelect
+                            label="Room (Optional)"
+                            placeholder="General Area"
+                            options={rooms.filter(r => String(r.hostel) === maintenanceFormData.hostel).map(r => ({ id: r.id.toString(), label: r.room_number }))}
+                            value={maintenanceFormData.room}
+                            onChange={(val) => setMaintenanceFormData({ ...maintenanceFormData, room: val.toString() })}
+                            disabled={!maintenanceFormData.hostel}
+                        />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
@@ -1249,7 +1354,18 @@ const Hostels = () => {
                         <div className="form-group"><label className="label">Cost (KES)</label><input type="number" className="input" value={maintenanceFormData.repair_cost} onChange={e => setMaintenanceFormData({ ...maintenanceFormData, repair_cost: parseFloat(e.target.value) })} /></div>
                     </div>
                     <div className="form-group"><label className="label">Description</label><textarea className="input" rows={3} value={maintenanceFormData.issue} onChange={e => setMaintenanceFormData({ ...maintenanceFormData, issue: e.target.value })} required placeholder="Describe the maintenance issue..."></textarea></div>
-                    <div className="form-group"><label className="label">Status</label><select className="select" value={maintenanceFormData.status} onChange={e => setMaintenanceFormData({ ...maintenanceFormData, status: e.target.value })}><option value="PENDING">Pending</option><option value="IN_PROGRESS">In Progress</option><option value="COMPLETED">Completed</option></select></div>
+                    <div className="form-group">
+                        <label className="label">Status</label>
+                        <SearchableSelect
+                            options={[
+                                { id: 'PENDING', label: 'Pending' },
+                                { id: 'IN_PROGRESS', label: 'In Progress' },
+                                { id: 'COMPLETED', label: 'Completed' }
+                            ]}
+                            value={maintenanceFormData.status}
+                            onChange={(val) => setMaintenanceFormData({ ...maintenanceFormData, status: val.toString() })}
+                        />
+                    </div>
                     <div className="modal-footer">
                         <Button
                             type="submit"
@@ -1339,8 +1455,9 @@ const Hostels = () => {
                                     </tbody>
                                 </table>
                             </div>
+                        </>
                     )}
-                        </div>
+                </div>
             </Modal>
 
 
