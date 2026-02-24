@@ -1,7 +1,7 @@
 ﻿import React, { useEffect, useState } from 'react';
 import {
-    Plus, Building, Edit, Trash2, Users, Users as UsersIcon, Printer, Package, Wrench, Bed as BedIcon,
-    Layout, Clock, ShieldAlert
+    Plus, Building, Edit, Trash2, Users, Users as UsersIcon, Printer, Wrench, Bed as BedIcon,
+    Layout, ShieldAlert
 } from 'lucide-react';
 import { hostelAPI, studentsAPI, staffAPI } from '../api/api';
 import { exportToCSV } from '../utils/export';
