@@ -124,7 +124,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
             onKeyDown={handleKeyDown}
         >
             {label && (
-                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">
+                <label className="text-[11px] font-medium text-slate-500 uppercase tracking-wider ml-1">
                     {label} {required && <span className="text-error">*</span>}
                 </label>
             )}
@@ -141,7 +141,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                 >
                     <div className="flex items-center gap-3 overflow-hidden">
                         <Search size={18} className={`flex-shrink-0 ${isOpen ? 'text-primary' : 'text-slate-400'}`} />
-                        <span className={`text-sm truncate ${selectedOption ? 'text-slate-900 font-medium' : 'text-slate-400'}`}>
+                        <span className={`text-sm truncate ${selectedOption ? 'text-slate-900' : 'text-slate-400'}`}>
                             {selectedOption ? selectedOption.label : placeholder}
                         </span>
                     </div>
@@ -194,11 +194,11 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                                         onClick={() => handleSelect(opt)}
                                         onMouseEnter={() => setActiveIndex(index)}
                                     >
-                                        <div className={`text-sm font-semibold ${value?.toString() === opt.id.toString() ? 'text-primary' : 'text-slate-700'}`}>
+                                        <div className={`text-sm ${value?.toString() === opt.id.toString() ? 'text-primary' : 'text-slate-700'}`}>
                                             {opt.label}
                                         </div>
                                         {opt.subLabel && (
-                                            <div className="text-[10px] uppercase font-bold text-slate-400 tracking-tight">
+                                            <div className="text-[10px] uppercase font-medium text-slate-400 tracking-tight">
                                                 {opt.subLabel}
                                             </div>
                                         )}
