@@ -1,14 +1,14 @@
 ﻿import React, { useEffect, useState } from 'react';
 import {
     Plus, Edit, Trash2, BookOpen,
-    Book, Layers, ShieldAlert,
-    Printer, Download, ArrowRight, Bookmark, Archive, Receipt, RefreshCw
+    Book, Layers, Printer,
+    Download, ArrowRight, Bookmark, Receipt, RefreshCw
 } from 'lucide-react';
 import { libraryAPI, studentsAPI } from '../api/api';
 import { exportToCSV } from '../utils/export';
 import Modal from '../components/Modal';
 import SearchableSelect from '../components/SearchableSelect';
-import StatCard from '../components/StatCard';
+import { StatCard } from '../components/Card';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 import Button from '../components/common/Button';
@@ -404,6 +404,16 @@ const Library = () => {
                     value={stats.totalBooks}
                     icon={<Book />}
                     gradient="linear-gradient(135deg, #8b5cf6, #7c3aed)"
+                />
+            </div>
+
+            <div className="mb-4 no-print flex justify-end">
+                <input
+                    type="text"
+                    placeholder="Search..."
+                    className="input input-sm w-64 shadow-sm"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
                 />
             </div>
 
