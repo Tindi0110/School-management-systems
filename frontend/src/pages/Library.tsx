@@ -373,7 +373,7 @@ const Library = () => {
                 </div>
                 <div className="flex flex-wrap gap-2 w-full lg:w-auto justify-start lg:justify-end no-print">
                     {!isReadOnly && (
-                        <Button variant="primary" className="flex-1 sm:flex-none" onClick={() => setIsLendModalOpen(true)} icon={<BookOpen size={18} />}>Lend Book</Button>
+                        <Button variant="primary" className="flex-1 sm:flex-none h-12 px-6 text-base shadow-lg hover:shadow-xl transition-all" onClick={() => setIsLendModalOpen(true)} icon={<BookOpen size={20} />}>Lend Book</Button>
                     )}
                 </div>
             </div>

@@ -164,18 +164,18 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                                 if (!isOpen) setIsOpen(true);
                             }}
                         />
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                        {loading && <Loader2 size={16} className="animate-spin text-primary" />}
                         {value && !disabled && (
                             <button
                                 onClick={handleClear}
-                                className="bg-transparent border-0 p-0 shadow-none outline-none text-slate-300 hover:text-error transition-colors flex items-center justify-center p-0.5"
+                                className="bg-transparent border-0 p-1 shadow-none outline-none text-slate-300 hover:text-error transition-colors flex items-center justify-center cursor-pointer"
                             >
                                 <X size={16} />
                             </button>
                         )}
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        {loading && <Loader2 size={16} className="animate-spin text-primary" />}
                         {isOpen ? <ChevronUp size={18} className="text-primary" /> : <ChevronDown size={18} className="text-slate-400" />}
                     </div>
                 </div>

@@ -602,8 +602,8 @@ const Transport = () => {
                     <p className="text-secondary text-sm font-medium">Fleet management, route optimization, and student safety</p>
                 </div>
                 <div className="flex gap-3 w-full lg:w-auto overflow-x-auto pb-2 lg:pb-0">
-                    <Button variant="outline" size="sm" onClick={() => setIsAllocationModalOpen(true)} icon={<Plus size={14} />}>Enroll Student</Button>
-                    <Button variant="outline" size="sm" className="flex-1 sm:flex-none" onClick={() => { setVehicleId(null); setIsVehicleModalOpen(true); }} icon={<Bus size={14} />}>Add Bus</Button>
+                    <Button variant="outline" className="flex-1 sm:flex-none h-12 px-6" onClick={() => setIsAllocationModalOpen(true)} icon={<Plus size={18} />}>Enroll Student</Button>
+                    <Button variant="primary" className="flex-1 sm:flex-none h-12 px-6 shadow-lg hover:shadow-xl transition-all" onClick={() => { setVehicleId(null); setIsVehicleModalOpen(true); }} icon={<Bus size={20} />}>Add Bus</Button>
                 </div>
             </div>
 
