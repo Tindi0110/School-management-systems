@@ -60,8 +60,8 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
             </div>
 
             {isOpen && (
-                <div className="select-dropdown fade-in">
-                    <div className="sticky top-0 bg-primary-light p-2 mb-2 rounded-t-lg z-10 border-b">
+                <div className="select-dropdown absolute top-[calc(100%+4px)] left-0 w-full z-50 bg-white shadow-2xl shadow-primary/10 rounded-xl border border-slate-100 fade-in overflow-hidden">
+                    <div className="sticky top-0 bg-slate-50 p-2 border-b border-slate-100 z-10">
                         <div className="relative">
                             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary opacity-50" />
                             <input

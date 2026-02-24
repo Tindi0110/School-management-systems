@@ -65,15 +65,15 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
                     </div>
                 </div>
 
-                <div className="flex border-t border-slate-100 h-14">
+                <div className="flex gap-4 px-8 pb-8 pt-2">
                     <button
-                        className="flex-1 text-xs font-black uppercase text-slate-400 hover:bg-slate-50 transition-colors border-r border-slate-100"
+                        className="flex-1 py-3 text-sm font-black uppercase rounded-xl transition-all hover:bg-slate-100 text-slate-500 bg-slate-50 border border-slate-200 active:scale-95"
                         onClick={onCancel}
                     >
                         {cancelLabel}
                     </button>
                     <button
-                        className={`flex-1 text-xs font-black uppercase transition-colors hover:bg-slate-50 ${type === 'danger' ? 'text-red-600' : 'text-primary'}`}
+                        className={`flex-1 py-3 text-sm font-black uppercase rounded-xl transition-all text-white active:scale-95 ${type === 'danger' ? 'bg-red-600 hover:bg-red-700 shadow-lg shadow-red-200' : type === 'warning' ? 'bg-amber-500 hover:bg-amber-600 shadow-lg shadow-amber-200' : 'bg-primary hover:opacity-90 shadow-lg shadow-primary/30'}`}
                         onClick={onConfirm}
                     >
                         {confirmLabel}
