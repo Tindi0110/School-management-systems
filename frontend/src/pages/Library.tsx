@@ -417,6 +417,13 @@ const Library = () => {
                 />
             </div>
 
+            <div className="tabs mb-6 no-print overflow-x-auto">
+                <button className={`tab-link ${activeTab === 'catalog' ? 'active' : ''}`} onClick={() => setActiveTab('catalog')}><Book size={16} /> Catalog</button>
+                <button className={`tab-link ${activeTab === 'copies' ? 'active' : ''}`} onClick={() => setActiveTab('copies')}><Layers size={16} /> Inventory</button>
+                <button className={`tab-link ${activeTab === 'lendings' ? 'active' : ''}`} onClick={() => setActiveTab('lendings')}><Bookmark size={16} /> Circulation</button>
+                <button className={`tab-link ${activeTab === 'fines' ? 'active' : ''}`} onClick={() => setActiveTab('fines')}><Receipt size={16} /> Fines</button>
+            </div>
+
             {/* Catalog Content */}
             {activeTab === 'catalog' && (
                 <div className="table-container fade-in">
