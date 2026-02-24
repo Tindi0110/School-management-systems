@@ -21,6 +21,8 @@ class FeeStructureViewSet(viewsets.ModelViewSet):
     queryset = FeeStructure.objects.select_related('academic_year', 'class_level').all()
     serializer_class = FeeStructureSerializer
     permission_classes = [IsAuthenticated, IsAdminToDelete]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name', 'class_level__name']
 
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -32,7 +34,7 @@ class InvoiceViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, IsAdminToDelete]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['student', 'student__current_class', 'student__current_class__stream', 'academic_year', 'term', 'status']
-    search_fields = ['student__first_name', 'student__last_name', 'student__admission_number']
+    search_fields = ['student__full_name', 'student__admission_number', 'student__user__username']
     ordering_fields = ['date_generated', 'total_amount', 'balance']
 
     @action(detail=False, methods=['get'])
@@ -292,6 +294,7 @@ class PaymentViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, IsAdminToDelete]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['invoice__student', 'invoice', 'method']
+    search_fields = ['invoice__student__full_name', 'invoice__student__admission_number', 'reference_number']
 
     def create(self, request, *args, **kwargs):
         method = request.data.get('method')
@@ -330,6 +333,8 @@ class ExpenseViewSet(viewsets.ModelViewSet):
     queryset = Expense.objects.select_related('approved_by').all()
     serializer_class = ExpenseSerializer
     permission_classes = [IsAuthenticated, IsAdminToDelete]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['category', 'description', 'paid_to']
 
     def perform_create(self, serializer):
         serializer.save(approved_by=self.request.user)
