@@ -63,6 +63,11 @@ class HostelAllocationViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
+        student = serializer.validated_data.get('student')
+        if student and student.category != 'BOARDING':
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError({"detail": "Student is not a boarder."})
+
         bed = serializer.validated_data.get('bed')
         if bed:
             room = bed.room

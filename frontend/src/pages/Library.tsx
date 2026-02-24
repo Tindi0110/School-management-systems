@@ -1,6 +1,6 @@
 ﻿import React, { useEffect, useState } from 'react';
 import {
-    Plus, Edit, Trash2, BookOpen,
+    Plus, Edit, Trash2,
     Book, Layers, Printer,
     Download, ArrowRight, Bookmark, Receipt, RefreshCw, Search
 } from 'lucide-react';
@@ -372,9 +372,6 @@ const Library = () => {
                     <p className="text-secondary text-sm font-medium">Resource archiving, circulation, and digital tracking</p>
                 </div>
                 <div className="flex flex-wrap gap-2 w-full lg:w-auto justify-start lg:justify-end no-print">
-                    {!isReadOnly && (
-                        <Button variant="primary" size="sm" className="flex-1 sm:flex-none" onClick={() => setIsLendModalOpen(true)} icon={<BookOpen size={16} />}>Lend Book</Button>
-                    )}
                 </div>
             </div>
 

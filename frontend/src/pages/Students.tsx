@@ -195,6 +195,13 @@ const Students = () => {
     const openModal = (student?: any) => {
         if (student) {
             setEditingStudent(student);
+
+            // Extract primary parent if exists to auto-populate guardian details
+            const primaryParent = student.parents_detail?.find((p: any) => p.is_primary) || student.parents_detail?.[0];
+            const autoGuardianName = student.guardian_name || primaryParent?.full_name || '';
+            const autoGuardianPhone = student.guardian_phone || primaryParent?.phone || '';
+            const autoGuardianEmail = student.guardian_email || primaryParent?.email || '';
+
             setFormData({
                 admission_number: student.admission_number,
                 full_name: student.full_name,
@@ -203,10 +210,10 @@ const Students = () => {
                 category: student.category || 'DAY',
                 status: student.status || 'ACTIVE',
                 current_class: student.current_class?.toString() || '',
-                guardian_name: student.guardian_name || '',
-                guardian_phone: student.guardian_phone || '',
-                country_code: (student.guardian_phone || '').startsWith('+') ? student.guardian_phone.slice(0, 4) : '+254',
-                guardian_email: student.guardian_email || '',
+                guardian_name: autoGuardianName,
+                guardian_phone: autoGuardianPhone,
+                country_code: (autoGuardianPhone || '').startsWith('+') ? autoGuardianPhone.slice(0, 4) : '+254',
+                guardian_email: autoGuardianEmail,
                 is_active: student.is_active
             });
         } else {

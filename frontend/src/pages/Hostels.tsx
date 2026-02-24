@@ -59,11 +59,8 @@ const Hostels = () => {
     const [roomFormData, setRoomFormData] = useState({ hostel: '', room_number: '', room_type: 'DORM', floor: 'Ground', capacity: 4 });
     const [allocationFormData, setAllocationFormData] = useState({ student: '', hostel: '', room: '', bed: '', status: 'ACTIVE' }); // Added hostel for cascading
     const [isTransferMode, setIsTransferMode] = useState(false); // New State
-    const [allocationSort, setAllocationSort] = useState<'HOSTEL' | 'ROOM' | 'STATUS'>('HOSTEL'); // New State
-    const [attendanceSort, setAttendanceSort] = useState<'DATE' | 'HOSTEL' | 'SESSION'>('DATE'); // New State
     const [assetFormData, setAssetFormData] = useState<any>({ asset_code: '', asset_type: 'FURNITURE', type: 'FURNITURE', condition: 'GOOD', value: 0, quantity: 1, hostel: '', room: '' });
     const [attendanceFormData, setAttendanceFormData] = useState<any>({ student: '', date: new Date().toISOString().split('T')[0], status: 'PRESENT', session: 'EVENING', remarks: '' });
-    const [assetSort, setAssetSort] = useState({ field: 'asset_code', direction: 'asc' });
     const [disciplineFormData, setDisciplineFormData] = useState({ student: '', offence: '', description: '', date: new Date().toISOString().split('T')[0], action_taken: '', severity: 'MINOR' });
     const [maintenanceFormData, setMaintenanceFormData] = useState({ hostel: '', room: '', issue: '', repair_cost: 0, status: 'PENDING', date: new Date().toISOString().split('T')[0] });
 
@@ -594,12 +591,6 @@ const Hostels = () => {
                         <div className="flex justify-between items-center mb-4">
                             <h3>Student Allocations</h3>
                             <div className="flex gap-2 items-center">
-                                <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest mr-2">Sort By</span>
-                                <div className="flex gap-1 bg-slate-50 border border-slate-100 p-1 rounded-lg">
-                                    <button className={`px-3 py-1 text-[10px] font-black uppercase rounded-md transition-all ${allocationSort === 'HOSTEL' ? 'bg-white text-primary shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-600 bg-transparent'}`} onClick={() => setAllocationSort('HOSTEL')}>Hostel</button>
-                                    <button className={`px-3 py-1 text-[10px] font-black uppercase rounded-md transition-all ${allocationSort === 'ROOM' ? 'bg-white text-primary shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-600 bg-transparent'}`} onClick={() => setAllocationSort('ROOM')}>Room</button>
-                                    <button className={`px-3 py-1 text-[10px] font-black uppercase rounded-md transition-all ${allocationSort === 'STATUS' ? 'bg-white text-primary shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-600 bg-transparent'}`} onClick={() => setAllocationSort('STATUS')}>Status</button>
-                                </div>
                                 <div className="flex gap-2 ml-4">
                                     <button className="btn btn-outline btn-sm" onClick={() => exportToCSV(allocations.map(a => ({
                                         Student: students.find(s => s.id === a.student)?.full_name,
@@ -623,11 +614,6 @@ const Hostels = () => {
                                         (a.hostel_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
                                         (a.room_number || '').toLowerCase().includes(searchTerm.toLowerCase())
                                     )
-                                    .sort((a, b) => {
-                                        if (allocationSort === 'HOSTEL') return (a.hostel_name || '').localeCompare(b.hostel_name || '');
-                                        if (allocationSort === 'ROOM') return (a.room_number || '').localeCompare(b.room_number || '');
-                                        return (a.status || '').localeCompare(b.status || '');
-                                    })
                                     .map(a => (
                                         <tr key={a.id}>
                                             <td className="font-bold">{a.student_name || students.find(s => s.id === a.student)?.full_name}</td>
@@ -654,27 +640,8 @@ const Hostels = () => {
             {
                 activeTab === 'assets' && (
                     <div className="table-container fade-in">
-                        <div className="flex justify-between items-center mb-4 no-print">
-                            <div className="flex items-center gap-4">
-                                <h3>Hostel Assets</h3>
-                                <div className="flex gap-2">
-                                    <SearchableSelect
-                                        options={[
-                                            { id: 'asset_code', label: 'Sort by Code' },
-                                            { id: 'asset_type', label: 'Sort by Type' },
-                                            { id: 'condition', label: 'Sort by Condition' }
-                                        ]}
-                                        value={assetSort.field}
-                                        onChange={(val) => setAssetSort({ ...assetSort, field: val.toString() })}
-                                    />
-                                    <button
-                                        className="btn btn-xs btn-ghost"
-                                        onClick={() => setAssetSort({ ...assetSort, direction: assetSort.direction === 'asc' ? 'desc' : 'asc' })}
-                                    >
-                                        {assetSort.direction === 'asc' ? '↑' : '↓'}
-                                    </button>
-                                </div>
-                            </div>
+                        <div className="flex items-center gap-4">
+                            <h3>Hostel Assets</h3>
                             <div className="flex gap-2">
                                 <button className="btn btn-outline btn-sm" onClick={() => exportToCSV(assets, 'hostel_assets')}><UsersIcon size={14} /> CSV</button>
                                 <button className="btn btn-outline btn-sm" onClick={() => window.print()}><Printer size={14} /> Print</button>
@@ -689,13 +656,7 @@ const Hostels = () => {
                                     !searchTerm ||
                                     (a.asset_code || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
                                     (a.asset_type || '').toLowerCase().includes(searchTerm.toLowerCase())
-                                ).sort((a, b) => {
-                                    const valA = String(a[assetSort.field] || '');
-                                    const valB = String(b[assetSort.field] || '');
-                                    return assetSort.direction === 'asc'
-                                        ? valA.localeCompare(valB)
-                                        : valB.localeCompare(valA);
-                                }).map(a => (
+                                ).map(a => (
                                     <tr key={a.id}>
                                         <td className="font-bold">{a.asset_code}</td>
                                         <td><span className="badge badge-info">{a.asset_type}</span></td>
@@ -724,12 +685,6 @@ const Hostels = () => {
                             <h3>Hostel Attendance</h3>
 
                             <div className="flex gap-2 items-center">
-                                <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest mr-2">Sort By</span>
-                                <div className="flex gap-1 bg-slate-50 border border-slate-100 p-1 rounded-lg mr-4">
-                                    <button className={`px-3 py-1 text-[10px] font-black uppercase rounded-md transition-all ${attendanceSort === 'DATE' ? 'bg-white text-primary shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-600 bg-transparent'}`} onClick={() => setAttendanceSort('DATE')}>Date</button>
-                                    <button className={`px-3 py-1 text-[10px] font-black uppercase rounded-md transition-all ${attendanceSort === 'HOSTEL' ? 'bg-white text-primary shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-600 bg-transparent'}`} onClick={() => setAttendanceSort('HOSTEL')}>Hostel</button>
-                                    <button className={`px-3 py-1 text-[10px] font-black uppercase rounded-md transition-all ${attendanceSort === 'SESSION' ? 'bg-white text-primary shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-600 bg-transparent'}`} onClick={() => setAttendanceSort('SESSION')}>Session</button>
-                                </div>
 
                                 <button className="btn btn-outline btn-sm" onClick={() => exportToCSV(attendance.map(a => ({
                                     Date: a.date,
@@ -752,12 +707,6 @@ const Hostels = () => {
                                         (a.date || '').includes(searchTerm) ||
                                         (a.session || '').toLowerCase().includes(searchTerm.toLowerCase())
                                     )
-                                    .sort((a, b) => {
-                                        if (attendanceSort === 'HOSTEL') return (a.hostel_name || '').localeCompare(b.hostel_name || '');
-                                        if (attendanceSort === 'SESSION') return (a.session || '').localeCompare(b.session || '');
-                                        // Default Date Sort
-                                        return new Date(b.date).getTime() - new Date(a.date).getTime();
-                                    })
                                     .map(a => (
                                         <tr key={a.id}>
                                             <td>{a.date}</td>
