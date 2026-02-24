@@ -151,7 +151,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                         {value && !disabled && (
                             <button
                                 onClick={handleClear}
-                                className="text-slate-300 hover:text-error transition-colors p-0.5"
+                                className="bg-transparent border-0 p-0 shadow-none outline-none text-slate-300 hover:text-error transition-colors flex items-center justify-center"
                             >
                                 <X size={14} />
                             </button>
