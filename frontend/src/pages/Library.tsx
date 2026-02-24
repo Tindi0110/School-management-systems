@@ -25,6 +25,17 @@ const Library = () => {
     const { confirm } = useConfirm();
     const [searchTerm, setSearchTerm] = useState('');
 
+    // Pagination state — per tab
+    const PAGE_SIZE = 25;
+    const [booksPage, setBooksPage] = useState(1);
+    const [_booksTotal, setBooksTotal] = useState(0);
+    const [copiesPage, setCopiesPage] = useState(1);
+    const [_copiesTotal, setCopiesTotal] = useState(0);
+    const [lendingsPage, setLendingsPage] = useState(1);
+    const [lendingsTotal, setLendingsTotal] = useState(0);
+    const [finesPage, setFinesPage] = useState(1);
+    const [finesTotal, setFinesTotal] = useState(0);
+
     const userString = localStorage.getItem('user');
     const user = userString ? JSON.parse(userString) : null;
     const isTeacher = user?.role === 'TEACHER';
@@ -78,6 +89,37 @@ const Library = () => {
         }
     };
 
+    // Reset page on tab change
+    useEffect(() => {
+        setBooksPage(1);
+        setCopiesPage(1);
+        setLendingsPage(1);
+        setFinesPage(1);
+    }, [activeTab]);
+
+    // Debounced search — reset pages and reload active tab
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setBooksPage(1);
+            setCopiesPage(1);
+            setLendingsPage(1);
+            setFinesPage(1);
+        }, 400);
+        return () => clearTimeout(handler);
+    }, [searchTerm]);
+
+    useEffect(() => {
+        if (activeTab === 'catalog') loadCatalog();
+    }, [booksPage, copiesPage, searchTerm]);
+
+    useEffect(() => {
+        if (activeTab === 'lendings') loadLendings();
+    }, [lendingsPage, searchTerm]);
+
+    useEffect(() => {
+        if (activeTab === 'fines') loadFines();
+    }, [finesPage, searchTerm]);
+
     useEffect(() => {
         fetchAllData();
     }, []);
@@ -91,23 +133,36 @@ const Library = () => {
     };
 
     const loadCatalog = async () => {
-        const [b, c] = await Promise.all([libraryAPI.books.getAll(), libraryAPI.copies.getAll()]);
+        const params: any = { page_size: PAGE_SIZE };
+        if (searchTerm) params.search = searchTerm;
+        const [b, c] = await Promise.all([
+            libraryAPI.books.getAll({ ...params, page: booksPage }),
+            libraryAPI.copies.getAll({ ...params, page: copiesPage }),
+        ]);
         setBooks(b.data?.results ?? b.data ?? []);
+        setBooksTotal(b.data?.count ?? 0);
         setCopies(c.data?.results ?? c.data ?? []);
+        setCopiesTotal(c.data?.count ?? 0);
     };
 
     const loadLendings = async () => {
-        const res = await libraryAPI.lendings.getAll();
+        const params: any = { page: lendingsPage, page_size: PAGE_SIZE };
+        if (searchTerm) params.search = searchTerm;
+        const res = await libraryAPI.lendings.getAll(params);
         setLendings(res.data?.results ?? res.data ?? []);
+        setLendingsTotal(res.data?.count ?? 0);
     };
 
     const loadFines = async () => {
-        const res = await libraryAPI.fines.getAll();
+        const params: any = { page: finesPage, page_size: PAGE_SIZE };
+        if (searchTerm) params.search = searchTerm;
+        const res = await libraryAPI.fines.getAll(params);
         setFines(res.data?.results ?? res.data ?? []);
+        setFinesTotal(res.data?.count ?? 0);
     };
 
     const loadStudents = async () => {
-        const res = await studentsAPI.getAll();
+        const res = await studentsAPI.getAll({ page_size: 500 });
         setStudents(res.data?.results ?? res.data ?? []);
     };
 
@@ -637,6 +692,19 @@ const Library = () => {
                             ))}
                         </tbody>
                     </table>
+                    {/* Lendings Pagination */}
+                    {lendingsTotal > PAGE_SIZE && (
+                        <div className="flex items-center justify-between mt-4 pt-4 border-t">
+                            <span className="text-sm text-secondary">
+                                Showing {((lendingsPage - 1) * PAGE_SIZE) + 1}–{Math.min(lendingsPage * PAGE_SIZE, lendingsTotal)} of {lendingsTotal} records
+                            </span>
+                            <div className="flex gap-2">
+                                <button className="btn btn-outline btn-sm" onClick={() => setLendingsPage(p => Math.max(1, p - 1))} disabled={lendingsPage === 1}>← Prev</button>
+                                <span className="btn btn-ghost btn-sm pointer-events-none">Page {lendingsPage} / {Math.ceil(lendingsTotal / PAGE_SIZE)}</span>
+                                <button className="btn btn-outline btn-sm" onClick={() => setLendingsPage(p => p + 1)} disabled={lendingsPage * PAGE_SIZE >= lendingsTotal}>Next →</button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -689,6 +757,19 @@ const Library = () => {
                             ))}
                         </tbody>
                     </table>
+                    {/* Fines Pagination */}
+                    {finesTotal > PAGE_SIZE && (
+                        <div className="flex items-center justify-between mt-4 pt-4 border-t">
+                            <span className="text-sm text-secondary">
+                                Showing {((finesPage - 1) * PAGE_SIZE) + 1}–{Math.min(finesPage * PAGE_SIZE, finesTotal)} of {finesTotal} fines
+                            </span>
+                            <div className="flex gap-2">
+                                <button className="btn btn-outline btn-sm" onClick={() => setFinesPage(p => Math.max(1, p - 1))} disabled={finesPage === 1}>← Prev</button>
+                                <span className="btn btn-ghost btn-sm pointer-events-none">Page {finesPage} / {Math.ceil(finesTotal / PAGE_SIZE)}</span>
+                                <button className="btn btn-outline btn-sm" onClick={() => setFinesPage(p => p + 1)} disabled={finesPage * PAGE_SIZE >= finesTotal}>Next →</button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
 

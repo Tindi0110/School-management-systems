@@ -73,6 +73,30 @@ const Hostels = () => {
     const [viewHostelResidents, setViewHostelResidents] = useState<any[]>([]);
     const [isViewResidentsModalOpen, setIsViewResidentsModalOpen] = useState(false);
 
+    // Pagination state for large tables
+    const HOSTEL_PAGE_SIZE = 25;
+    const [allocPage, setAllocPage] = useState(1);
+    const [_allocTotal, setAllocTotal] = useState(0);
+    const [discPage, setDiscPage] = useState(1);
+    const [_discTotal, setDiscTotal] = useState(0);
+
+    // Debounced search resets pages
+    useEffect(() => {
+        const h = setTimeout(() => {
+            setAllocPage(1);
+            setDiscPage(1);
+        }, 400);
+        return () => clearTimeout(h);
+    }, [searchTerm]);
+
+    useEffect(() => {
+        if (!loading) loadAllocations();
+    }, [allocPage]);
+
+    useEffect(() => {
+        if (!loading) loadDiscipline();
+    }, [discPage]);
+
     useEffect(() => {
         loadData();
     }, []);
@@ -80,38 +104,61 @@ const Hostels = () => {
     const loadData = async () => {
         try {
             const [
-                hostelsRes, roomsRes, bedsRes, allocationsRes,
-                attendanceRes, disciplineRes, assetsRes,
+                hostelsRes, roomsRes, bedsRes,
+                attendanceRes, assetsRes,
                 maintenanceRes, studentsRes, staffRes
             ] = await Promise.all([
                 hostelAPI.hostels.getAll(),
-                hostelAPI.rooms.getAll(),
-                hostelAPI.beds.getAll(),
-                hostelAPI.allocations.getAll(),
-                hostelAPI.attendance.getAll(),
-                hostelAPI.discipline.getAll(),
-                hostelAPI.assets.getAll(),
-                hostelAPI.maintenance.getAll(),
-                studentsAPI.getAll(),
-                staffAPI.getAll(),
+                hostelAPI.rooms.getAll({ page_size: 200 }),
+                hostelAPI.beds.getAll({ page_size: 1000 }),
+                hostelAPI.attendance.getAll({ page_size: 100, ordering: '-date' }),
+                hostelAPI.assets.getAll({ page_size: 500 }),
+                hostelAPI.maintenance.getAll({ page_size: 200 }),
+                studentsAPI.getAll({ page_size: 500 }),
+                staffAPI.getAll({ page_size: 100 }),
             ]);
             const d = (r: any) => r?.data?.results ?? r?.data ?? [];
             setHostels(d(hostelsRes));
             setRooms(d(roomsRes));
             setBeds(d(bedsRes));
-            setAllocations(d(allocationsRes));
             setAttendance(d(attendanceRes));
-            setDiscipline(d(disciplineRes));
             setAssets(d(assetsRes));
             setMaintenance(d(maintenanceRes));
             setStudents(d(studentsRes));
             setStaff(d(staffRes));
+            // Load paginated tables separately
+            await Promise.all([loadAllocations(), loadDiscipline()]);
         } catch (error) {
             console.error('Error loading hostel data:', error);
         } finally {
             setLoading(false);
         }
     };
+
+    const loadAllocations = async () => {
+        try {
+            const res = await hostelAPI.allocations.getAll({
+                page: allocPage,
+                page_size: HOSTEL_PAGE_SIZE,
+                ...(searchTerm ? { search: searchTerm } : {}),
+            });
+            setAllocations(res?.data?.results ?? res?.data ?? []);
+            setAllocTotal(res?.data?.count ?? 0);
+        } catch (error) { console.error('Error loading allocations:', error); }
+    };
+
+    const loadDiscipline = async () => {
+        try {
+            const res = await hostelAPI.discipline.getAll({
+                page: discPage,
+                page_size: HOSTEL_PAGE_SIZE,
+                ...(searchTerm ? { search: searchTerm } : {}),
+            });
+            setDiscipline(res?.data?.results ?? res?.data ?? []);
+            setDiscTotal(res?.data?.count ?? 0);
+        } catch (error) { console.error('Error loading discipline:', error); }
+    };
+
 
     const handleAllocationSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
