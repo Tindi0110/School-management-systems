@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, ChevronDown, ChevronUp, X, Loader2 } from 'lucide-react';
+import { X } from 'lucide-react';
 
 interface Option {
     id: string | number;
@@ -17,7 +17,6 @@ interface SearchableSelectProps {
     required?: boolean;
     disabled?: boolean;
     className?: string;
-    loading?: boolean;
 }
 
 const SearchableSelect: React.FC<SearchableSelectProps> = ({
@@ -28,8 +27,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
     label,
     required = false,
     disabled = false,
-    className = '',
-    loading = false
+    className = ''
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
@@ -140,44 +138,37 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                 </label>
             )}
 
-            <div className="relative">
+            <div className="relative group">
                 <div
                     className={`
-                        flex items-center justify-between px-[14px] py-3 min-h-[52px]
-                        bg-white border-2 rounded-[8px] cursor-text transition-all duration-200
-                        ${isOpen ? 'border-primary shadow-[0_0_0_4px_rgba(var(--primary-rgb),0.1)]' : 'border-slate-100 hover:border-slate-300'}
+                        flex items-center px-4 py-3 min-h-[52px]
+                        bg-white border-0 rounded-[8px] cursor-text transition-all duration-200
+                        ${isOpen ? 'shadow-[0_0_0_4px_rgba(var(--primary-rgb),0.1)]' : 'hover:bg-slate-50'}
                         ${disabled ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}
                     `}
                     onClick={handleTriggerClick}
                 >
-                    <div className="flex items-center gap-3 w-full overflow-hidden">
-                        <Search size={18} className={`flex-shrink-0 ${isOpen ? 'text-primary' : 'text-slate-400'}`} />
-                        <input
-                            ref={inputRef}
-                            type="text"
-                            autoComplete="off"
-                            className="bg-transparent border-0 p-0 text-sm focus:ring-0 outline-none text-slate-900 placeholder:text-slate-400 font-normal w-full"
-                            placeholder={selectedOption ? selectedOption.label : placeholder}
-                            value={isOpen ? searchTerm : (selectedOption ? selectedOption.label : '')}
-                            onChange={(e) => {
-                                setSearchTerm(e.target.value);
-                                if (!isOpen) setIsOpen(true);
-                            }}
-                        />
-                        {value && !disabled && (
-                            <button
-                                onClick={handleClear}
-                                className="bg-transparent border-0 p-1 shadow-none outline-none text-slate-300 hover:text-error transition-colors flex items-center justify-center cursor-pointer"
-                            >
-                                <X size={16} />
-                            </button>
-                        )}
-                    </div>
+                    <input
+                        ref={inputRef}
+                        type="text"
+                        autoComplete="off"
+                        className="bg-transparent border-0 p-0 text-sm focus:ring-0 outline-none text-slate-900 placeholder:text-slate-400 font-normal w-full"
+                        placeholder={selectedOption ? selectedOption.label : placeholder}
+                        value={isOpen ? searchTerm : (selectedOption ? selectedOption.label : '')}
+                        onChange={(e) => {
+                            setSearchTerm(e.target.value);
+                            if (!isOpen) setIsOpen(true);
+                        }}
+                    />
 
-                    <div className="flex items-center gap-2">
-                        {loading && <Loader2 size={16} className="animate-spin text-primary" />}
-                        {isOpen ? <ChevronUp size={18} className="text-primary" /> : <ChevronDown size={18} className="text-slate-400" />}
-                    </div>
+                    {value && !disabled && (
+                        <button
+                            onClick={handleClear}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 bg-transparent border-0 p-1 shadow-none outline-none text-slate-300 hover:text-error transition-colors flex items-center justify-center cursor-pointer"
+                        >
+                            <X size={16} />
+                        </button>
+                    )}
                 </div>
 
                 {isOpen && (

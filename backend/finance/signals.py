@@ -99,11 +99,10 @@ def sync_hostel_fee(sender, instance, created, **kwargs):
         return
     """
     When a student is allocated a room (ACTIVE), add Hostel Fee to invoice.
+    ONLY if student is marked as 'BOARDING'.
     """
-    if instance.status == 'ACTIVE':
+    if instance.status == 'ACTIVE' and instance.student.category == 'BOARDING':
         # Find Fee Structure for Hostel
-        # We look for a FeeStructure that looks like 'Boarding' or 'Hostel'
-        # This is a heuristic. In a real app, maybe Linked to HostelType.
         fee_structure = FeeStructure.objects.filter(name__icontains='Boarding').first()
         if not fee_structure:
             fee_structure = FeeStructure.objects.filter(name__icontains='Hostel').first()
@@ -113,9 +112,15 @@ def sync_hostel_fee(sender, instance, created, **kwargs):
 
         invoice = get_or_create_invoice(instance.student)
         
-        # Check if item already exists to avoid duplicates
-        # Use filter().first() instead of get_or_create with __icontains to avoid MultipleObjectsReturned
-        item = InvoiceItem.objects.filter(invoice=invoice, description__icontains="Hostel Fee").first()
+        # IMPROVED DEDUPLICATION:
+        # Check for ANY existing item that looks like a Hostel/Boarding fee
+        # We check by fee_structure OR by fuzzy description match
+        item = InvoiceItem.objects.filter(
+            models.Q(invoice=invoice, fee_structure=fee_structure) |
+            models.Q(invoice=invoice, description__icontains="Hostel Fee") |
+            models.Q(invoice=invoice, description__icontains="Boarding")
+        ).first()
+
         if not item:
             InvoiceItem.objects.create(
                 invoice=invoice,
@@ -124,11 +129,12 @@ def sync_hostel_fee(sender, instance, created, **kwargs):
                 fee_structure=fee_structure
             )
         else:
-            # Update existing if needed
-            item.amount = amount
-            item.description = description
-            item.fee_structure = fee_structure
-            item.save()
+            # Update existing if needed, but avoid redundant saves
+            if item.amount != amount:
+                item.amount = amount
+                item.description = description
+                item.fee_structure = fee_structure
+                item.save()
         
         # Recalculate invoice totals
         update_invoice_totals(invoice)

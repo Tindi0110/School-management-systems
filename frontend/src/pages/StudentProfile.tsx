@@ -99,7 +99,7 @@ const StudentProfile = () => {
             const [studentRes, parentsRes, libRes, resRes] = await Promise.all([
                 studentsAPI.getOne(Number(id)),
                 studentsAPI.parents.getForStudent(Number(id)),
-                libraryAPI.lendings.getAll({ user: Number(id) }), // Fetch all lendings for this student's user
+                libraryAPI.lendings.getAll({ student_id: Number(id) }), // Fetch all lendings for this student
                 academicsAPI.results.getAll({ student_id: Number(id) })
             ]);
 

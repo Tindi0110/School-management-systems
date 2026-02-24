@@ -11,6 +11,7 @@ from students.models import Student
 from academics.models import Class
 from communication.utils import send_sms, send_email, send_whatsapp
 from django.db.models import Sum, Q
+from django.db import transaction
 from django.utils import timezone
 import threading
 
@@ -175,6 +176,10 @@ class InvoiceViewSet(viewsets.ModelViewSet):
 
                     total = 0
                     for fee in student_fees:
+                        is_hostel_fee = 'board' in fee.name.lower() or 'hostel' in fee.name.lower()
+                        if is_hostel_fee and student.category != 'BOARDING':
+                            continue
+                            
                         InvoiceItem.objects.create(
                             invoice=inv,
                             fee_structure=fee,

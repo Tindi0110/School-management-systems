@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { financeAPI, academicsAPI, studentsAPI, classesAPI, mpesaAPI } from '../api/api';
-import { CreditCard, FileText, TrendingUp, CheckCircle, Plus, Printer, Bell, Send, Mail, MessageSquare } from 'lucide-react';
+import { CreditCard, FileText, TrendingUp, CheckCircle, Plus, Printer, Bell, Send, Mail, MessageSquare, Edit } from 'lucide-react';
 import SearchableSelect from '../components/SearchableSelect';
+import SearchInput from '../components/common/SearchInput';
 import Modal from '../components/Modal';
 import { StatCard } from '../components/Card';
 import { useToast } from '../context/ToastContext';
@@ -164,7 +165,9 @@ const Finance = () => {
                 setPayments(d(res));
                 setTotalItems(res.data?.count ?? (res.data?.results ? res.data.results.length : 0));
             } else if (activeTab === 'fees') {
-                const res = await financeAPI.feeStructures.getAll(); // Usually small
+                const res = await financeAPI.feeStructures.getAll({
+                    search: searchTerm
+                });
                 setFeeStructures(d(res));
                 setTotalItems(res.data?.count ?? (res.data?.results ? res.data.results.length : 0));
             } else if (activeTab === 'expenses') {
@@ -437,12 +440,11 @@ const Finance = () => {
                 <div className="space-y-6">
                     {activeTab !== 'dashboard' && (
                         <div className="mb-4 no-print flex justify-end">
-                            <input
-                                type="text"
-                                placeholder={`Search ${activeTab.toLowerCase()}...`}
-                                className="input input-sm w-64 shadow-sm"
+                            <SearchInput
+                                placeholder={`Search ${activeTab}...`}
                                 value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
+                                onChange={setSearchTerm}
+                                className="w-80"
                             />
                         </div>
                     )}
@@ -508,32 +510,36 @@ const Finance = () => {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {invoices.slice(0, 5).map((inv: any) => (
-                                                <tr key={inv.id} className="hover:bg-gray-50 cursor-pointer" onClick={(e) => {
-                                                    if ((e.target as HTMLElement).tagName === 'INPUT') return;
-                                                    setSelectedInvoice(inv);
-                                                }}>
-                                                    <td>
-                                                        <input
-                                                            type="checkbox"
-                                                            className="checkbox checkbox-xs"
-                                                            checked={selectedInvoices.has(inv.id)}
-                                                            onChange={() => toggleInvoiceSelection(inv.id)}
-                                                            disabled={Number(inv.balance) <= 0}
-                                                        />
-                                                    </td>
-                                                    <td className="font-bold">#INV-{inv.id}</td>
-                                                    <td>{inv.student_name}</td>
-                                                    <td>KES {Number(inv.total_amount).toLocaleString()}</td>
-                                                    <td className={`font - bold ${Number(inv.balance) === 0 ? 'text-success' : Number(inv.balance) < 0 ? 'text-info' : 'text-error'} `}>KES {Number(inv.balance).toLocaleString()}</td>
-                                                    <td>
-                                                        <span className={`badge ${inv.status === 'PAID' ? 'badge-success' : inv.status === 'OVERPAID' ? 'badge-info text-white' : inv.status === 'PARTIAL' ? 'badge-warning' : 'badge-error'} `}>
-                                                            {inv.status}
-                                                        </span>
-                                                    </td>
-                                                    <td className="text-xs text-gray-500">{formatDate(inv.date_generated)}</td>
-                                                </tr>
-                                            ))}
+                                            {invoices.length === 0 ? (
+                                                <tr><td colSpan={7} className="text-center py-10 text-slate-400 italic">No recent invoices found</td></tr>
+                                            ) : (
+                                                invoices.slice(0, 5).map((inv: any) => (
+                                                    <tr key={inv.id} className="hover:bg-gray-50 cursor-pointer" onClick={(e) => {
+                                                        if ((e.target as HTMLElement).tagName === 'INPUT') return;
+                                                        setSelectedInvoice(inv);
+                                                    }}>
+                                                        <td>
+                                                            <input
+                                                                type="checkbox"
+                                                                className="checkbox checkbox-xs"
+                                                                checked={selectedInvoices.has(inv.id)}
+                                                                onChange={() => toggleInvoiceSelection(inv.id)}
+                                                                disabled={Number(inv.balance) <= 0}
+                                                            />
+                                                        </td>
+                                                        <td className="font-bold">#INV-{inv.id}</td>
+                                                        <td>{inv.student_name}</td>
+                                                        <td>KES {Number(inv.total_amount).toLocaleString()}</td>
+                                                        <td className={`font-bold ${Number(inv.balance) === 0 ? 'text-success' : Number(inv.balance) < 0 ? 'text-info' : 'text-error'}`}>KES {Number(inv.balance).toLocaleString()}</td>
+                                                        <td>
+                                                            <span className={`badge ${inv.status === 'PAID' ? 'badge-success' : inv.status === 'OVERPAID' ? 'badge-info text-white' : inv.status === 'PARTIAL' ? 'badge-warning' : 'badge-error'}`}>
+                                                                {inv.status}
+                                                            </span>
+                                                        </td>
+                                                        <td className="text-xs text-gray-500">{formatDate(inv.date_generated)}</td>
+                                                    </tr>
+                                                ))
+                                            )}
                                         </tbody>
                                     </table>
                                 </div>
@@ -646,32 +652,36 @@ const Finance = () => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {filteredInvoices.map((inv: any) => (
-                                            <tr key={inv.id} className="hover:bg-gray-50 cursor-pointer" onClick={(e) => {
-                                                if ((e.target as HTMLElement).tagName === 'INPUT') return;
-                                                setSelectedInvoice(inv);
-                                            }}>
-                                                <td>
-                                                    <input
-                                                        type="checkbox"
-                                                        className="checkbox checkbox-xs"
-                                                        checked={selectedInvoices.has(inv.id)}
-                                                        onChange={() => toggleInvoiceSelection(inv.id)}
-                                                        disabled={Number(inv.balance) <= 0}
-                                                    />
-                                                </td>
-                                                <td className="font-bold">#INV-{inv.id}</td>
-                                                <td>{inv.student_name}</td>
-                                                <td>KES {Number(inv.total_amount).toLocaleString()}</td>
-                                                <td className={`font - bold ${Number(inv.balance) === 0 ? 'text-success' : Number(inv.balance) < 0 ? 'text-info' : 'text-error'} `}>KES {Number(inv.balance).toLocaleString()}</td>
-                                                <td>
-                                                    <span className={`badge ${inv.status === 'PAID' ? 'badge-success' : inv.status === 'OVERPAID' ? 'badge-info text-white' : inv.status === 'PARTIAL' ? 'badge-warning' : 'badge-error'} `}>
-                                                        {inv.status}
-                                                    </span>
-                                                </td>
-                                                <td className="text-xs text-gray-500">{formatDate(inv.date_generated || inv.created_at)}</td>
-                                            </tr>
-                                        ))}
+                                        {filteredInvoices.length === 0 ? (
+                                            <tr><td colSpan={7} className="text-center py-10 text-slate-400 italic">No invoices match your search criteria</td></tr>
+                                        ) : (
+                                            filteredInvoices.map((inv: any) => (
+                                                <tr key={inv.id} className="hover:bg-gray-50 cursor-pointer" onClick={(e) => {
+                                                    if ((e.target as HTMLElement).tagName === 'INPUT') return;
+                                                    setSelectedInvoice(inv);
+                                                }}>
+                                                    <td>
+                                                        <input
+                                                            type="checkbox"
+                                                            className="checkbox checkbox-xs"
+                                                            checked={selectedInvoices.has(inv.id)}
+                                                            onChange={() => toggleInvoiceSelection(inv.id)}
+                                                            disabled={Number(inv.balance) <= 0}
+                                                        />
+                                                    </td>
+                                                    <td className="font-bold">#INV-{inv.id}</td>
+                                                    <td>{inv.student_name}</td>
+                                                    <td>KES {Number(inv.total_amount).toLocaleString()}</td>
+                                                    <td className={`font-bold ${Number(inv.balance) === 0 ? 'text-success' : Number(inv.balance) < 0 ? 'text-info' : 'text-error'}`}>KES {Number(inv.balance).toLocaleString()}</td>
+                                                    <td>
+                                                        <span className={`badge ${inv.status === 'PAID' ? 'badge-success' : inv.status === 'OVERPAID' ? 'badge-info text-white' : inv.status === 'PARTIAL' ? 'badge-warning' : 'badge-error'}`}>
+                                                            {inv.status}
+                                                        </span>
+                                                    </td>
+                                                    <td className="text-xs text-gray-500">{formatDate(inv.date_generated || inv.created_at)}</td>
+                                                </tr>
+                                            ))
+                                        )}
                                     </tbody>
                                 </table>
                             </div>
@@ -697,16 +707,20 @@ const Finance = () => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {filteredPayments.map((p: any) => (
-                                            <tr key={p.id}>
-                                                <td>{formatDate(p.date_received)}</td>
-                                                <td className="font-bold">#{p.reference_number || p.id}</td>
-                                                <td>{p.student_name}</td>
-                                                <td className="font-bold text-success">KES {Number(p.amount).toLocaleString()}</td>
-                                                <td>{p.method}</td>
-                                                <td><span className="badge badge-success">COMPLETED</span></td>
-                                            </tr>
-                                        ))}
+                                        {filteredPayments.length === 0 ? (
+                                            <tr><td colSpan={6} className="text-center py-10 text-slate-400 italic">No payment transactions found</td></tr>
+                                        ) : (
+                                            filteredPayments.map((p: any) => (
+                                                <tr key={p.id}>
+                                                    <td>{formatDate(p.date_received)}</td>
+                                                    <td className="font-bold">#{p.reference_number || p.id}</td>
+                                                    <td>{p.student_name}</td>
+                                                    <td className="font-bold text-success">KES {Number(p.amount).toLocaleString()}</td>
+                                                    <td>{p.method}</td>
+                                                    <td><span className="badge badge-success">COMPLETED</span></td>
+                                                </tr>
+                                            ))
+                                        )}
                                     </tbody>
                                 </table>
                             </div>
@@ -735,15 +749,19 @@ const Finance = () => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {filteredExpenses.map((exp: any) => (
-                                            <tr key={exp.id}>
-                                                <td>{formatDate(exp.date_occurred)}</td>
-                                                <td><span className="badge badge-outline">{exp.category}</span></td>
-                                                <td>{exp.description}</td>
-                                                <td>{exp.paid_to}</td>
-                                                <td className="font-bold">KES {Number(exp.amount).toLocaleString()}</td>
-                                            </tr>
-                                        ))}
+                                        {filteredExpenses.length === 0 ? (
+                                            <tr><td colSpan={5} className="text-center py-10 text-slate-400 italic">No expenses recorded for this selection</td></tr>
+                                        ) : (
+                                            filteredExpenses.map((exp: any) => (
+                                                <tr key={exp.id}>
+                                                    <td>{formatDate(exp.date_occurred)}</td>
+                                                    <td><span className="badge badge-outline">{exp.category}</span></td>
+                                                    <td>{exp.description}</td>
+                                                    <td>{exp.paid_to}</td>
+                                                    <td className="font-bold">KES {Number(exp.amount).toLocaleString()}</td>
+                                                </tr>
+                                            ))
+                                        )}
                                     </tbody>
                                 </table>
                             </div>
@@ -772,17 +790,21 @@ const Finance = () => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {filteredFees.map((fee: any) => (
-                                            <tr key={fee.id}>
-                                                <td className="font-bold">{fee.name}</td>
-                                                <td>{fee.class_level_name || 'All Levels'}</td>
-                                                <td>Term {fee.term} ({fee.academic_year_name})</td>
-                                                <td className="font-bold">KES {Number(fee.amount).toLocaleString()}</td>
-                                                <td>
-                                                    {!isReadOnly && <Button variant="ghost" size="sm" onClick={() => handleEditFee(fee)} icon={<TrendingUp size={14} />} />}
-                                                </td>
-                                            </tr>
-                                        ))}
+                                        {filteredFees.length === 0 ? (
+                                            <tr><td colSpan={5} className="text-center py-10 text-slate-400 italic">No fee structures match your search</td></tr>
+                                        ) : (
+                                            filteredFees.map((fee: any) => (
+                                                <tr key={fee.id}>
+                                                    <td className="font-bold">{fee.name}</td>
+                                                    <td>{fee.class_level_name || 'All Levels'}</td>
+                                                    <td>Term {fee.term} ({fee.academic_year_name})</td>
+                                                    <td className="font-bold">KES {Number(fee.amount).toLocaleString()}</td>
+                                                    <td>
+                                                        {!isReadOnly && <Button variant="ghost" size="sm" onClick={() => handleEditFee(fee)} icon={<Edit size={14} />} />}
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
                                     </tbody>
                                 </table>
                             </div>

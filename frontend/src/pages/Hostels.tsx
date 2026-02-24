@@ -505,7 +505,7 @@ const Hostels = () => {
                 </div>
                 <div className="flex flex-wrap gap-2 w-full lg:w-auto justify-start lg:justify-end no-print">
                     <Button variant="outline" className="flex-1 sm:flex-none" onClick={() => window.print()} icon={<Printer size={18} />}>Reports</Button>
-                    <Button variant="primary" className="flex-1 sm:flex-none" onClick={() => setIsAllocationModalOpen(true)} icon={<Plus size={18} />}>New Admission</Button>
+                    <Button variant="primary" size="sm" className="flex-1 sm:flex-none" onClick={() => setIsAllocationModalOpen(true)} icon={<Plus size={18} />}>New Admission</Button>
                 </div>
             </div>
 
@@ -539,16 +539,7 @@ const Hostels = () => {
                         />
                     </div>
 
-                    {activeTab === 'allocations' && (
-                        <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest mr-2">Sort By</span>
-                            <div className="flex gap-1 bg-slate-100 p-1 rounded-lg">
-                                <button className={`px-3 py-1.5 text-[10px] font-black uppercase rounded-md transition-all ${allocationSort === 'HOSTEL' ? 'bg-white text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`} onClick={() => setAllocationSort('HOSTEL')}>Hostel</button>
-                                <button className={`px-3 py-1.5 text-[10px] font-black uppercase rounded-md transition-all ${allocationSort === 'ROOM' ? 'bg-white text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`} onClick={() => setAllocationSort('ROOM')}>Room</button>
-                                <button className={`px-3 py-1.5 text-[10px] font-black uppercase rounded-md transition-all ${allocationSort === 'STATUS' ? 'bg-white text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`} onClick={() => setAllocationSort('STATUS')}>Status</button>
-                            </div>
-                        </div>
-                    )}
+                    {/* Top sort removed as requested to eliminate redundancy */}
                 </div>
             </div>
 
@@ -603,11 +594,11 @@ const Hostels = () => {
                         <div className="flex justify-between items-center mb-4">
                             <h3>Student Allocations</h3>
                             <div className="flex gap-2 items-center">
-                                <span className="text-xs text-secondary font-bold">Sort By:</span>
-                                <div className="join">
-                                    <button className={`join-item btn btn-xs ${allocationSort === 'HOSTEL' ? 'btn-active' : ''}`} onClick={() => setAllocationSort('HOSTEL')}>Hostel</button>
-                                    <button className={`join-item btn btn-xs ${allocationSort === 'ROOM' ? 'btn-active' : ''}`} onClick={() => setAllocationSort('ROOM')}>Room</button>
-                                    <button className={`join-item btn btn-xs ${allocationSort === 'STATUS' ? 'btn-active' : ''}`} onClick={() => setAllocationSort('STATUS')}>Status</button>
+                                <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest mr-2">Sort By</span>
+                                <div className="flex gap-1 bg-slate-50 border border-slate-100 p-1 rounded-lg">
+                                    <button className={`px-3 py-1 text-[10px] font-black uppercase rounded-md transition-all ${allocationSort === 'HOSTEL' ? 'bg-white text-primary shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-600 bg-transparent'}`} onClick={() => setAllocationSort('HOSTEL')}>Hostel</button>
+                                    <button className={`px-3 py-1 text-[10px] font-black uppercase rounded-md transition-all ${allocationSort === 'ROOM' ? 'bg-white text-primary shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-600 bg-transparent'}`} onClick={() => setAllocationSort('ROOM')}>Room</button>
+                                    <button className={`px-3 py-1 text-[10px] font-black uppercase rounded-md transition-all ${allocationSort === 'STATUS' ? 'bg-white text-primary shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-600 bg-transparent'}`} onClick={() => setAllocationSort('STATUS')}>Status</button>
                                 </div>
                                 <div className="flex gap-2 ml-4">
                                     <button className="btn btn-outline btn-sm" onClick={() => exportToCSV(allocations.map(a => ({
@@ -733,11 +724,11 @@ const Hostels = () => {
                             <h3>Hostel Attendance</h3>
 
                             <div className="flex gap-2 items-center">
-                                <span className="text-xs text-secondary font-bold">Sort By:</span>
-                                <div className="join mr-4">
-                                    <button className={`join-item btn btn-xs ${attendanceSort === 'DATE' ? 'btn-active' : ''}`} onClick={() => setAttendanceSort('DATE')}>Date</button>
-                                    <button className={`join-item btn btn-xs ${attendanceSort === 'HOSTEL' ? 'btn-active' : ''}`} onClick={() => setAttendanceSort('HOSTEL')}>Hostel</button>
-                                    <button className={`join-item btn btn-xs ${attendanceSort === 'SESSION' ? 'btn-active' : ''}`} onClick={() => setAttendanceSort('SESSION')}>Session</button>
+                                <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest mr-2">Sort By</span>
+                                <div className="flex gap-1 bg-slate-50 border border-slate-100 p-1 rounded-lg mr-4">
+                                    <button className={`px-3 py-1 text-[10px] font-black uppercase rounded-md transition-all ${attendanceSort === 'DATE' ? 'bg-white text-primary shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-600 bg-transparent'}`} onClick={() => setAttendanceSort('DATE')}>Date</button>
+                                    <button className={`px-3 py-1 text-[10px] font-black uppercase rounded-md transition-all ${attendanceSort === 'HOSTEL' ? 'bg-white text-primary shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-600 bg-transparent'}`} onClick={() => setAttendanceSort('HOSTEL')}>Hostel</button>
+                                    <button className={`px-3 py-1 text-[10px] font-black uppercase rounded-md transition-all ${attendanceSort === 'SESSION' ? 'bg-white text-primary shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-600 bg-transparent'}`} onClick={() => setAttendanceSort('SESSION')}>Session</button>
                                 </div>
 
                                 <button className="btn btn-outline btn-sm" onClick={() => exportToCSV(attendance.map(a => ({

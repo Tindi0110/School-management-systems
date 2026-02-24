@@ -34,6 +34,16 @@ class BookLendingViewSet(viewsets.ModelViewSet):
     serializer_class = BookLendingSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        student_id = self.request.query_params.get('student_id')
+        user_id = self.request.query_params.get('user')
+        if student_id:
+            qs = qs.filter(user__student_profile__id=student_id)
+        elif user_id:
+            qs = qs.filter(user_id=user_id)
+        return qs
+
     def create(self, request, *args, **kwargs):
         from rest_framework.exceptions import ValidationError
         from django.db import transaction
