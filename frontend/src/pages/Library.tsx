@@ -372,8 +372,6 @@ const Library = () => {
                     <p className="text-secondary text-sm font-medium">Resource archiving, circulation, and digital tracking</p>
                 </div>
                 <div className="flex flex-wrap gap-2 w-full lg:w-auto justify-start lg:justify-end no-print">
-                    <Button variant="outline" className="flex-1 sm:flex-none" onClick={() => exportToCSV(books, 'Library_Catalog')} icon={<Download size={18} />}>Export</Button>
-                    <Button variant="outline" className="flex-1 sm:flex-none" onClick={() => window.print()} icon={<Printer size={18} />}>Reports</Button>
                     {!isReadOnly && (
                         <Button variant="primary" className="flex-1 sm:flex-none" onClick={() => setIsLendModalOpen(true)} icon={<BookOpen size={18} />}>Lend Book</Button>
                     )}
@@ -407,21 +405,33 @@ const Library = () => {
                 />
             </div>
 
-            <div className="mb-4 no-print flex justify-end">
-                <input
-                    type="text"
-                    placeholder={`Search ${activeTab.toLowerCase()}...`}
-                    className="input input-sm w-64 shadow-sm"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
-            </div>
+            {/* Tabs & Search Area */}
+            <div className="card mb-6 no-print p-4">
+                <div className="flex flex-col lg:flex-row justify-between items-center gap-4 border-b border-slate-100 pb-4 mb-4">
+                    <div className="nav-tab-container-ghost !mb-0 p-0 border-none">
+                        <button className={`nav-tab-ghost ${activeTab === 'catalog' ? 'active' : ''}`} onClick={() => setActiveTab('catalog')}>Catalog</button>
+                        <button className={`nav-tab-ghost ${activeTab === 'copies' ? 'active' : ''}`} onClick={() => setActiveTab('copies')}>Inventory</button>
+                        <button className={`nav-tab-ghost ${activeTab === 'lendings' ? 'active' : ''}`} onClick={() => setActiveTab('lendings')}>Circulation</button>
+                        <button className={`nav-tab-ghost ${activeTab === 'fines' ? 'active' : ''}`} onClick={() => setActiveTab('fines')}>Fines</button>
+                    </div>
+                </div>
 
-            <div className="nav-tab-container no-print">
-                <button className={`nav-tab ${activeTab === 'catalog' ? 'active' : ''}`} onClick={() => setActiveTab('catalog')}>Catalog</button>
-                <button className={`nav-tab ${activeTab === 'copies' ? 'active' : ''}`} onClick={() => setActiveTab('copies')}>Inventory</button>
-                <button className={`nav-tab ${activeTab === 'lendings' ? 'active' : ''}`} onClick={() => setActiveTab('lendings')}>Circulation</button>
-                <button className={`nav-tab ${activeTab === 'fines' ? 'active' : ''}`} onClick={() => setActiveTab('fines')}>Fines</button>
+                <div className="flex flex-col lg:flex-row justify-between items-center gap-4">
+                    <div className="relative flex-grow w-full max-w-md">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary opacity-50" size={18} />
+                        <input
+                            type="text"
+                            placeholder={`Search ${activeTab}...`}
+                            className="input pl-10 h-11 bg-slate-50 border-transparent focus:bg-white"
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+
+                    <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={() => exportToCSV(books, 'Library_Catalog')} icon={<Download size={14} />}>Export</Button>
+                        <Button variant="outline" size="sm" onClick={() => window.print()} icon={<Printer size={14} />}>Reports</Button>
+                    </div>
+                </div>
             </div>
 
             {/* Catalog Content */}

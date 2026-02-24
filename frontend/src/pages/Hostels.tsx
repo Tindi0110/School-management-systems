@@ -1,7 +1,7 @@
 ﻿import React, { useEffect, useState } from 'react';
 import {
     Plus, Building, Edit, Trash2, Users, Users as UsersIcon, Printer, Wrench, Bed as BedIcon,
-    Layout, ShieldAlert
+    Layout, ShieldAlert, Search
 } from 'lucide-react';
 import { hostelAPI, studentsAPI, staffAPI } from '../api/api';
 import { exportToCSV } from '../utils/export';
@@ -72,6 +72,7 @@ const Hostels = () => {
 
 
     const [selectedHostel, setSelectedHostel] = useState<any>(null);
+    const [searchTerm, setSearchTerm] = useState('');
     const [viewHostelResidents, setViewHostelResidents] = useState<any[]>([]);
     const [isViewResidentsModalOpen, setIsViewResidentsModalOpen] = useState(false);
 
@@ -515,20 +516,51 @@ const Hostels = () => {
                 <StatCard title="Maintenance" value={stats.maintenanceIssues} icon={<Wrench />} gradient="linear-gradient(135deg, #ef4444, #dc2626)" />
             </div>
 
-            {/* Tabs */}
-            <div className="nav-tab-container no-print">
-                <button className={`nav-tab ${activeTab === 'registry' ? 'active' : ''}`} onClick={() => setActiveTab('registry')}>Registry</button>
-                <button className={`nav-tab ${activeTab === 'allocations' ? 'active' : ''}`} onClick={() => setActiveTab('allocations')}>Allocations</button>
-                <button className={`nav-tab ${activeTab === 'attendance' ? 'active' : ''}`} onClick={() => setActiveTab('attendance')}>Attendance</button>
-                <button className={`nav-tab ${activeTab === 'discipline' ? 'active' : ''}`} onClick={() => setActiveTab('discipline')}>Discipline</button>
-                <button className={`nav-tab ${activeTab === 'assets' ? 'active' : ''}`} onClick={() => setActiveTab('assets')}>Assets</button>
-                <button className={`nav-tab ${activeTab === 'maintenance' ? 'active' : ''}`} onClick={() => setActiveTab('maintenance')}>Maintenance</button>
+            {/* Tabs & Search Area */}
+            <div className="card mb-6 no-print p-4">
+                <div className="flex flex-col lg:flex-row justify-between items-center gap-4 border-b border-slate-100 pb-4 mb-4">
+                    <div className="nav-tab-container-ghost !mb-0 p-0 border-none">
+                        <button className={`nav-tab-ghost ${activeTab === 'registry' ? 'active' : ''}`} onClick={() => setActiveTab('registry')}>Registry</button>
+                        <button className={`nav-tab-ghost ${activeTab === 'allocations' ? 'active' : ''}`} onClick={() => setActiveTab('allocations')}>Allocations</button>
+                        <button className={`nav-tab-ghost ${activeTab === 'attendance' ? 'active' : ''}`} onClick={() => setActiveTab('attendance')}>Attendance</button>
+                        <button className={`nav-tab-ghost ${activeTab === 'discipline' ? 'active' : ''}`} onClick={() => setActiveTab('discipline')}>Discipline</button>
+                        <button className={`nav-tab-ghost ${activeTab === 'assets' ? 'active' : ''}`} onClick={() => setActiveTab('assets')}>Assets</button>
+                        <button className={`nav-tab-ghost ${activeTab === 'maintenance' ? 'active' : ''}`} onClick={() => setActiveTab('maintenance')}>Maintenance</button>
+                    </div>
+                </div>
+
+                <div className="flex flex-col lg:flex-row justify-between items-center gap-4">
+                    <div className="relative flex-grow w-full max-w-md">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary opacity-50" size={18} />
+                        <input
+                            type="text"
+                            placeholder={`Search ${activeTab}...`}
+                            className="input pl-10 h-11 bg-slate-50 border-transparent focus:bg-white"
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+
+                    {activeTab === 'allocations' && (
+                        <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest mr-2">Sort By</span>
+                            <div className="flex gap-1 bg-slate-100 p-1 rounded-lg">
+                                <button className={`px-3 py-1.5 text-[10px] font-black uppercase rounded-md transition-all ${allocationSort === 'HOSTEL' ? 'bg-white text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`} onClick={() => setAllocationSort('HOSTEL')}>Hostel</button>
+                                <button className={`px-3 py-1.5 text-[10px] font-black uppercase rounded-md transition-all ${allocationSort === 'ROOM' ? 'bg-white text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`} onClick={() => setAllocationSort('ROOM')}>Room</button>
+                                <button className={`px-3 py-1.5 text-[10px] font-black uppercase rounded-md transition-all ${allocationSort === 'STATUS' ? 'bg-white text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`} onClick={() => setAllocationSort('STATUS')}>Status</button>
+                            </div>
+                        </div>
+                    )}
+                </div>
             </div>
 
             {/* Tab Content */}
             {activeTab === 'registry' && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-lg">
-                    {hostels.map(h => (
+                    {hostels.filter(h =>
+                        !searchTerm ||
+                        h.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        (h.warden_name || '').toLowerCase().includes(searchTerm.toLowerCase())
+                    ).map(h => (
                         <div key={h.id} className="card p-6 border-top-4 border-primary hover-scale">
                             <div className="flex justify-between items-start mb-4">
                                 <div><h3 className="mb-0">{h.name}</h3><span className={`badge ${h.gender_allowed === 'M' ? 'badge-primary' : 'badge-error'}`}>{h.gender_allowed === 'M' ? 'BOYS' : 'GIRLS'}</span></div>
@@ -595,6 +627,12 @@ const Hostels = () => {
                             <thead><tr><th>Student</th><th>Hostel</th><th>Room</th><th>Bed</th><th>Status</th><th>Actions</th></tr></thead>
                             <tbody>
                                 {allocations
+                                    .filter(a =>
+                                        !searchTerm ||
+                                        (a.student_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                        (a.hostel_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                        (a.room_number || '').toLowerCase().includes(searchTerm.toLowerCase())
+                                    )
                                     .sort((a, b) => {
                                         if (allocationSort === 'HOSTEL') return (a.hostel_name || '').localeCompare(b.hostel_name || '');
                                         if (allocationSort === 'ROOM') return (a.room_number || '').localeCompare(b.room_number || '');
@@ -657,7 +695,11 @@ const Hostels = () => {
                             <thead><tr><th>Name</th><th>Type</th><th>Condition</th><th>Hostel</th><th>Value</th><th>Actions</th></tr></thead>
                             <tbody>
                                 {assets.length === 0 && <tr><td colSpan={6} className="text-center italic">No assets recorded.</td></tr>}
-                                {[...assets].sort((a, b) => {
+                                {[...assets].filter(a =>
+                                    !searchTerm ||
+                                    (a.asset_code || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                    (a.asset_type || '').toLowerCase().includes(searchTerm.toLowerCase())
+                                ).sort((a, b) => {
                                     const valA = String(a[assetSort.field] || '');
                                     const valB = String(b[assetSort.field] || '');
                                     return assetSort.direction === 'asc'
@@ -714,6 +756,12 @@ const Hostels = () => {
                             <thead><tr><th>Date</th><th>Session</th><th>Student</th><th>Hostel</th><th>Status</th><th>Remarks</th><th>Actions</th></tr></thead>
                             <tbody>
                                 {attendance
+                                    .filter(a =>
+                                        !searchTerm ||
+                                        (a.student_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                        (a.date || '').includes(searchTerm) ||
+                                        (a.session || '').toLowerCase().includes(searchTerm.toLowerCase())
+                                    )
                                     .sort((a, b) => {
                                         if (attendanceSort === 'HOSTEL') return (a.hostel_name || '').localeCompare(b.hostel_name || '');
                                         if (attendanceSort === 'SESSION') return (a.session || '').localeCompare(b.session || '');
@@ -766,7 +814,11 @@ const Hostels = () => {
                             <thead><tr><th>Date</th><th>Student</th><th>Infraction</th><th>Severity</th><th>Action Taken</th><th>Actions</th></tr></thead>
                             <tbody>
                                 {discipline.length === 0 && <tr><td colSpan={6} className="text-center italic">No discipline records.</td></tr>}
-                                {discipline.map(d => (
+                                {discipline.filter(d =>
+                                    !searchTerm ||
+                                    (students.find(s => s.id === d.student)?.full_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                    (d.offence || '').toLowerCase().includes(searchTerm.toLowerCase())
+                                ).map(d => (
                                     <tr key={d.id}>
                                         <td>{d.date || d.incident_date}</td>
                                         <td className="font-bold">{students.find(s => s.id === d.student)?.full_name}</td>
@@ -803,7 +855,12 @@ const Hostels = () => {
                             <thead><tr><th>Date</th><th>Hostel</th><th>Description</th><th>Cost</th><th>Status</th><th>Actions</th></tr></thead>
                             <tbody>
                                 {maintenance.length === 0 && <tr><td colSpan={6} className="text-center italic">No maintenance requests.</td></tr>}
-                                {maintenance.map(m => (
+                                {maintenance.filter(m =>
+                                    !searchTerm ||
+                                    (hostels.find(h => String(h.id) === String(m.hostel))?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                    (m.issue || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                    (m.status || '').toLowerCase().includes(searchTerm.toLowerCase())
+                                ).map(m => (
                                     <tr key={m.id}>
                                         <td>{m.date_reported || m.date}</td>
                                         <td className="font-bold">{hostels.find(h => String(h.id) === String(m.hostel))?.name || 'N/A'}</td>
@@ -837,12 +894,17 @@ const Hostels = () => {
                         <div className="form-group"><label className="label">Capacity</label><input type="number" className="input" value={hostelFormData.capacity} onChange={e => setHostelFormData({ ...hostelFormData, capacity: parseInt(e.target.value) })} required /></div>
                         <div className="form-group">
                             <label className="label">Warden In-Charge</label>
-                            <select className="select" value={hostelFormData.warden} onChange={(e) => setHostelFormData({ ...hostelFormData, warden: e.target.value })}>
-                                <option value="">Select Warden...</option>
-                                {staff.filter(s => s.role === 'WARDEN').map(s => (
-                                    <option key={s.id} value={s.id}>{s.user.first_name} {s.user.last_name} ({s.employee_id})</option>
-                                ))}
-                            </select>
+                            <SearchableSelect
+                                label="Warden In-Charge"
+                                placeholder="Search Warden..."
+                                options={staff.filter(s => s.role === 'WARDEN').map(s => ({
+                                    id: String(s.id),
+                                    label: `${s.user.first_name} ${s.user.last_name}`,
+                                    subLabel: s.employee_id
+                                }))}
+                                value={String(hostelFormData.warden)}
+                                onChange={(val) => setHostelFormData({ ...hostelFormData, warden: val.toString() })}
+                            />
                         </div>
                     </div>
                     <div className="modal-footer">
@@ -900,32 +962,52 @@ const Hostels = () => {
 
 
                     <div className="form-group">
-                        <label className="label">Hostel</label>
-                        <select className="select" value={allocationFormData.hostel} onChange={e => setAllocationFormData({ ...allocationFormData, hostel: e.target.value, room: '', bed: '' })} required>
-                            <option value="">Select Hostel...</option>
-                            {hostels.map(h => <option key={h.id} value={h.id}>{h.name} ({h.gender_allowed === 'M' ? 'Boys' : h.gender_allowed === 'F' ? 'Girls' : 'Mixed'})</option>)}
-                        </select>
+                        <SearchableSelect
+                            label="Hostel"
+                            placeholder="Select Hostel..."
+                            options={hostels.map(h => ({
+                                id: String(h.id),
+                                label: h.name,
+                                subLabel: h.gender_allowed === 'M' ? 'Boys' : h.gender_allowed === 'F' ? 'Girls' : 'Mixed'
+                            }))}
+                            value={String(allocationFormData.hostel)}
+                            onChange={(val) => setAllocationFormData({ ...allocationFormData, hostel: val.toString(), room: '', bed: '' })}
+                            required
+                        />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group">
-                            <label className="label">Room</label>
-                            <select className="select" value={allocationFormData.room} onChange={e => setAllocationFormData({ ...allocationFormData, room: e.target.value, bed: '' })} required disabled={!allocationFormData.hostel}>
-                                <option value="">Select Room...</option>
-                                {rooms
+                            <SearchableSelect
+                                label="Room"
+                                placeholder="Select Room..."
+                                options={rooms
                                     .filter(r => String(r.hostel) === allocationFormData.hostel)
-                                    .map(r => <option key={r.id} value={r.id}>{r.room_number} ({r.available_beds || '?'} free)</option>)}
-                            </select>
+                                    .map(r => ({
+                                        id: String(r.id),
+                                        label: r.room_number,
+                                        subLabel: `${r.available_beds || '?'} free beds`
+                                    }))}
+                                value={String(allocationFormData.room)}
+                                onChange={(val) => setAllocationFormData({ ...allocationFormData, room: val.toString(), bed: '' })}
+                                required
+                            />
                         </div>
                         <div className="form-group">
-                            <label className="label">Bed</label>
-                            <select className="select" value={allocationFormData.bed} onChange={e => setAllocationFormData({ ...allocationFormData, bed: e.target.value })} required disabled={!allocationFormData.room}>
-                                <option value="">Select Bed...</option>
-                                {beds
+                            <SearchableSelect
+                                label="Bed"
+                                placeholder="Select Bed..."
+                                options={beds
                                     .filter(b => String(b.room) === allocationFormData.room && (b.status === 'AVAILABLE' || String(b.id) === String(allocationFormData.bed)))
-                                    .map(b => <option key={b.id} value={b.id}>{b.bed_number} {b.status !== 'AVAILABLE' ? '(Current)' : ''}</option>)
-                                }
-                            </select>
+                                    .map(b => ({
+                                        id: String(b.id),
+                                        label: b.bed_number,
+                                        subLabel: b.status !== 'AVAILABLE' ? 'Current' : 'Available'
+                                    }))}
+                                value={String(allocationFormData.bed)}
+                                onChange={(val) => setAllocationFormData({ ...allocationFormData, bed: val.toString() })}
+                                required
+                            />
                         </div>
                     </div>
                     <div className="modal-footer">
@@ -1129,7 +1211,7 @@ const Hostels = () => {
                         <div className="form-group"><label className="label">Date</label><input type="date" className="input" value={disciplineFormData.date} onChange={e => setDisciplineFormData({ ...disciplineFormData, date: e.target.value })} required /></div>
                         <div className="form-group"><label className="label">Severity</label><select className="select" value={disciplineFormData.severity} onChange={e => setDisciplineFormData({ ...disciplineFormData, severity: e.target.value })}><option value="MINOR">Minor</option><option value="MAJOR">Major</option><option value="CRITICAL">Critical</option></select></div>
                     </div>
-                    <div className="form-group"><label className="label">Offence</label><input type="text" className="input" value={disciplineFormData.offence} onChange={e => setDisciplineFormData({ ...disciplineFormData, offence: e.target.value })} required placeholder="e.g. Late coming" /></div>
+                    <div className="form-group"><label className="label">Offence</label><input type="text" className="input" value={disciplineFormData.offence} onChange={e => setDisciplineFormData({ ...disciplineFormData, offence: e.target.value })} placeholder="e.g. Late coming" /></div>
                     <div className="form-group"><label className="label">Description</label><textarea className="input" rows={2} value={disciplineFormData.description} onChange={e => setDisciplineFormData({ ...disciplineFormData, description: e.target.value })} required placeholder="Details of what happened..." /></div>
                     <div className="form-group"><label className="label">Action Taken</label><input type="text" className="input" value={disciplineFormData.action_taken} onChange={e => setDisciplineFormData({ ...disciplineFormData, action_taken: e.target.value })} required /></div>
                     <div className="modal-footer">
@@ -1185,6 +1267,10 @@ const Hostels = () => {
             <Modal isOpen={isViewRoomsModalOpen} onClose={() => setIsViewRoomsModalOpen(false)} title={`Rooms: ${selectedHostel?.name || ''}`}>
                 <div className="p-1">
                     <div className="flex justify-between items-center mb-4 p-2 bg-secondary-light rounded-lg">
+                        <div className="flex gap-2">
+                            <Button variant="outline" size="sm" onClick={() => window.print()}><Printer size={12} /></Button>
+                            <Button variant="outline" size="sm" onClick={() => exportToCSV(rooms.filter(r => r.hostel === selectedHostel?.id), `${selectedHostel?.name}_rooms`)} icon={<Layout size={12} />}>CSV</Button>
+                        </div>
                         <p className="mb-0 text-sm font-bold">Total Rooms: {rooms.filter(r => r.hostel === selectedHostel?.id).length}</p>
                         <Button variant="primary" size="sm" onClick={() => { setIsViewRoomsModalOpen(false); openAddRoom(selectedHostel); }}>+ Add Room</Button>
                     </div>
@@ -1227,26 +1313,34 @@ const Hostels = () => {
                     {viewHostelResidents.length === 0 ? (
                         <p className="text-secondary text-center p-4 italic">No active residents in this hostel.</p>
                     ) : (
-                        <div className="overflow-auto max-h-[400px]">
-                            <table className="table w-full">
-                                <thead>
-                                    <tr>
-                                        <th className="text-left text-xs uppercase p-2">Student</th>
-                                        <th className="text-left text-xs uppercase p-2">Room/Bed</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {viewHostelResidents.map(r => (
-                                        <tr key={r.id} className="border-b">
-                                            <td className="p-2 text-sm font-bold">{r.student_name}</td>
-                                            <td className="p-2 text-xs font-mono">{r.room_number} / Bed {r.bed_number}</td>
+                        <>
+                            <div className="p-2 mb-4 bg-slate-50 flex justify-between items-center rounded-xl">
+                                <div className="flex gap-2">
+                                    <Button variant="outline" size="sm" onClick={() => window.print()} icon={<Printer size={12} />}>Print</Button>
+                                    <Button variant="outline" size="sm" onClick={() => exportToCSV(viewHostelResidents, `${selectedHostel?.name}_residents`)} icon={<UsersIcon size={12} />}>Export</Button>
+                                </div>
+                                <span className="text-[10px] font-black uppercase text-slate-400">Total: {viewHostelResidents.length} Residents</span>
+                            </div>
+                            <div className="overflow-auto max-h-[400px]">
+                                <table className="table w-full">
+                                    <thead>
+                                        <tr>
+                                            <th className="text-left text-xs uppercase p-2">Student</th>
+                                            <th className="text-left text-xs uppercase p-2">Room/Bed</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                                    </thead>
+                                    <tbody>
+                                        {viewHostelResidents.map(r => (
+                                            <tr key={r.id} className="border-b">
+                                                <td className="p-2 text-sm font-bold">{r.student_name}</td>
+                                                <td className="p-2 text-xs font-mono">{r.room_number} / Bed {r.bed_number}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                     )}
-                </div>
+                        </div>
             </Modal>
 
 

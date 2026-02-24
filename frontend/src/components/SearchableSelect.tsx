@@ -47,13 +47,13 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
     );
 
     return (
-        <div className="form-group relative" ref={wrapperRef}>
+        <div className="form-group relative w-full" ref={wrapperRef}>
             {label && <label className="label">{label} {required && '*'}</label>}
             <div
-                className={`input min-h-[42px] flex items-center justify-between cursor-pointer ${isOpen ? 'active' : ''}`}
+                className={`select min-h-[42px] flex items-center justify-between cursor-pointer ${isOpen ? 'ring-2 ring-primary/20 border-primary' : ''}`}
                 onClick={() => setIsOpen(!isOpen)}
             >
-                <span className={selectedOption ? '' : 'text-light'}>
+                <span className={selectedOption ? '' : 'text-slate-400'}>
                     {selectedOption ? selectedOption.label : placeholder}
                 </span>
                 <ChevronDown size={18} className="text-secondary" />

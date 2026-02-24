@@ -1,7 +1,7 @@
 ﻿import React, { useEffect, useState } from 'react';
 import {
     Plus, Edit, Bus, MapPin, Navigation, Wrench, ShieldAlert,
-    Droplet, Download, Users, Clock, Trash2
+    Droplet, Download, Users, Clock, Trash2, Search
 } from 'lucide-react';
 import { transportAPI, studentsAPI } from '../api/api';
 import { exportToCSV } from '../utils/export';
@@ -21,6 +21,7 @@ const Transport = () => {
     const [fuelRecords, setFuelRecords] = useState<any[]>([]);
     const [students, setStudents] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
 
     // Modals
     const [isAllocationModalOpen, setIsAllocationModalOpen] = useState(false);
@@ -613,30 +614,50 @@ const Transport = () => {
                 <StatCard title="Fuel Term" value={stats.fuelCostTerm.toLocaleString()} icon={<Droplet />} gradient="linear-gradient(135deg, #f093fb, #f5576c)" />
             </div>
 
-            {/* Navigation Tabs */}
-            <div className="nav-tab-container no-print">
-                <button className={`nav-tab ${activeTab === 'fleet' ? 'active' : ''}`} onClick={() => setActiveTab('fleet')}>Fleet</button>
-                <button className={`nav-tab ${activeTab === 'routes' ? 'active' : ''}`} onClick={() => setActiveTab('routes')}>Routes</button>
-                <button className={`nav-tab ${activeTab === 'allocations' ? 'active' : ''}`} onClick={() => setActiveTab('allocations')}>Allocations</button>
-                <button className={`nav-tab ${activeTab === 'trips' ? 'active' : ''}`} onClick={() => setActiveTab('trips')}>Trip Logs</button>
-                <button className={`nav-tab ${activeTab === 'maintenance' ? 'active' : ''}`} onClick={() => setActiveTab('maintenance')}>Repairs</button>
-                <button className={`nav-tab ${activeTab === 'fuel' ? 'active' : ''}`} onClick={() => setActiveTab('fuel')}>Fuel</button>
-                <button className={`nav-tab ${activeTab === 'safety' ? 'active' : ''}`} onClick={() => setActiveTab('safety')}>Safety</button>
-            </div>
+            {/* Tabs & Search Area */}
+            <div className="card mb-6 no-print p-4">
+                <div className="flex flex-col lg:flex-row justify-between items-center gap-4 border-b border-slate-100 pb-4 mb-4">
+                    <div className="nav-tab-container-ghost !mb-0 p-0 border-none">
+                        <button className={`nav-tab-ghost ${activeTab === 'fleet' ? 'active' : ''}`} onClick={() => setActiveTab('fleet')}>Fleet</button>
+                        <button className={`nav-tab-ghost ${activeTab === 'routes' ? 'active' : ''}`} onClick={() => setActiveTab('routes')}>Routes</button>
+                        <button className={`nav-tab-ghost ${activeTab === 'allocations' ? 'active' : ''}`} onClick={() => setActiveTab('allocations')}>Allocations</button>
+                        <button className={`nav-tab-ghost ${activeTab === 'trips' ? 'active' : ''}`} onClick={() => setActiveTab('trips')}>Trip Logs</button>
+                        <button className={`nav-tab-ghost ${activeTab === 'maintenance' ? 'active' : ''}`} onClick={() => setActiveTab('maintenance')}>Repairs</button>
+                        <button className={`nav-tab-ghost ${activeTab === 'fuel' ? 'active' : ''}`} onClick={() => setActiveTab('fuel')}>Fuel</button>
+                        <button className={`nav-tab-ghost ${activeTab === 'safety' ? 'active' : ''}`} onClick={() => setActiveTab('safety')}>Safety</button>
+                    </div>
+                </div>
 
-            <div className="mb-4 no-print flex justify-end">
-                <Button variant="outline" size="sm" onClick={() => {
-                    const dataToExport = activeTab === 'allocations' ? allocations : activeTab === 'routes' ? routes : activeTab === 'trips' ? trips : activeTab === 'maintenance' ? maintenanceRecords : fuelRecords;
-                    exportToCSV(dataToExport, `Transport_${activeTab}`);
-                }} icon={<Download size={14} />}>
-                    Export {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
-                </Button>
+                <div className="flex flex-col lg:flex-row justify-between items-center gap-4">
+                    <div className="relative flex-grow w-full max-w-md">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary opacity-50" size={18} />
+                        <input
+                            type="text"
+                            placeholder={`Search ${activeTab}...`}
+                            className="input pl-10 h-11 bg-slate-50 border-transparent focus:bg-white"
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+
+                    <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={() => {
+                            const dataToExport = activeTab === 'allocations' ? allocations : activeTab === 'routes' ? routes : activeTab === 'trips' ? trips : activeTab === 'maintenance' ? maintenanceRecords : fuelRecords;
+                            exportToCSV(dataToExport, `Transport_${activeTab}`);
+                        }} icon={<Download size={14} />}>
+                            Export {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+                        </Button>
+                    </div>
+                </div>
             </div>
 
             {/* Fleet Content */}
             {activeTab === 'fleet' && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {vehicles.map(v => (
+                    {vehicles.filter(v =>
+                        !searchTerm ||
+                        v.registration_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        (v.make_model || '').toLowerCase().includes(searchTerm.toLowerCase())
+                    ).map(v => (
                         <div key={v.id} className="card p-6 hover-scale border-top-4 border-primary">
                             <div className="flex justify-between items-start mb-4">
                                 <div>
@@ -669,7 +690,11 @@ const Transport = () => {
             {/* Routes Content */}
             {activeTab === 'routes' && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {routes.map(r => (
+                    {routes.filter(r =>
+                        !searchTerm ||
+                        r.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        r.route_code.toLowerCase().includes(searchTerm.toLowerCase())
+                    ).map(r => (
                         <div key={r.id} className="card p-6 border-left-4 border-primary">
                             <div className="flex justify-between items-start mb-4">
                                 <div>
@@ -731,7 +756,12 @@ const Transport = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {allocations.map(a => (
+                            {allocations.filter(a =>
+                                !searchTerm ||
+                                (a.student_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                (a.route_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                (a.pickup_point_name || '').toLowerCase().includes(searchTerm.toLowerCase())
+                            ).map(a => (
                                 <tr key={a.id}>
                                     <td><div className="flex items-center gap-4"><div className="avatar-sm">{a.student_name[0]}</div><span className="font-bold">{a.student_name}</span></div></td>
                                     <td>
