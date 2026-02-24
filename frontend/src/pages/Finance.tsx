@@ -4,7 +4,6 @@ import { financeAPI, academicsAPI, studentsAPI, classesAPI, mpesaAPI } from '../
 import { CreditCard, FileText, TrendingUp, CheckCircle, Plus, Printer, Bell, Send, Mail, MessageSquare } from 'lucide-react';
 import SearchableSelect from '../components/SearchableSelect';
 import Modal from '../components/Modal';
-import { exportToCSV } from '../utils/export';
 import { StatCard } from '../components/Card';
 import { useToast } from '../context/ToastContext';
 import Button from '../components/common/Button';

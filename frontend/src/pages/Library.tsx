@@ -2,7 +2,7 @@
 import {
     Plus, Edit, Trash2, BookOpen,
     Book, Layers, Printer,
-    Download, ArrowRight, Bookmark, Receipt, RefreshCw
+    Download, ArrowRight, Bookmark, Receipt, RefreshCw, Search
 } from 'lucide-react';
 import { libraryAPI, studentsAPI } from '../api/api';
 import { exportToCSV } from '../utils/export';

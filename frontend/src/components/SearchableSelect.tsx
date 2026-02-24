@@ -15,6 +15,8 @@ interface SearchableSelectProps {
     placeholder?: string;
     label?: string;
     required?: boolean;
+    disabled?: boolean;
+    className?: string;
 }
 
 const SearchableSelect: React.FC<SearchableSelectProps> = ({
@@ -23,7 +25,9 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
     onChange,
     placeholder = 'Search...',
     label,
-    required = false
+    required = false,
+    disabled = false,
+    className = ''
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
@@ -47,11 +51,11 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
     );
 
     return (
-        <div className="form-group relative w-full" ref={wrapperRef}>
+        <div className={`form-group relative w-full ${className}`} ref={wrapperRef}>
             {label && <label className="label">{label} {required && '*'}</label>}
             <div
-                className={`select min-h-[42px] flex items-center justify-between cursor-pointer ${isOpen ? 'ring-2 ring-primary/20 border-primary' : ''}`}
-                onClick={() => setIsOpen(!isOpen)}
+                className={`select min-h-[42px] flex items-center justify-between cursor-pointer ${isOpen ? 'ring-2 ring-primary/20 border-primary' : ''} ${disabled ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
+                onClick={() => !disabled && setIsOpen(!isOpen)}
             >
                 <span className={selectedOption ? '' : 'text-slate-400'}>
                     {selectedOption ? selectedOption.label : placeholder}

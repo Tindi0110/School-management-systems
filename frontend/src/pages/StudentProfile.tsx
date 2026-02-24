@@ -9,6 +9,7 @@ import {
 import { studentsAPI, academicsAPI, financeAPI, libraryAPI } from '../api/api';
 import Modal from '../components/Modal';
 import { StatCard } from '../components/Card';
+import SearchableSelect from '../components/SearchableSelect';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 import Button from '../components/common/Button';
@@ -1239,7 +1240,7 @@ const StudentProfile = () => {
                         placeholder="Select New Class"
                         options={classes.map(c => ({ id: c.id.toString(), label: `${c.name} ${c.stream}` }))}
                         value={transferClassId}
-                        onChange={(val) => setTransferClassId(val.toString())}
+                        onChange={(val: string | number) => setTransferClassId(val.toString())}
                         required
                     />
                     <div className="modal-footer pt-4">
@@ -1283,7 +1284,7 @@ const StudentProfile = () => {
                                     { id: 'Arts', label: 'Arts' }
                                 ]}
                                 value={activityForm.activity_type}
-                                onChange={(val) => setActivityForm({ ...activityForm, activity_type: val.toString() })}
+                                onChange={(val: string | number) => setActivityForm({ ...activityForm, activity_type: val.toString() })}
                             />
                         </div>
                     </div>
@@ -1308,7 +1309,7 @@ const StudentProfile = () => {
                                 { id: 'OTHER', label: 'Other' }
                             ]}
                             value={documentForm.doc_type}
-                            onChange={(val) => setDocumentForm({ ...documentForm, doc_type: val.toString() })}
+                            onChange={(val: string | number) => setDocumentForm({ ...documentForm, doc_type: val.toString() })}
                         />
                     </div>
                     <div className="form-group"><label className="label text-[10px] font-black uppercase">Select File</label><input type="file" className="file-input w-full" onChange={e => setDocumentForm({ ...documentForm, file: e.target.files?.[0] || null })} required /></div>
@@ -1333,7 +1334,7 @@ const StudentProfile = () => {
                                 placeholder="Select Class"
                                 options={classes.map(c => ({ id: c.id.toString(), label: `${c.name} ${c.stream}` }))}
                                 value={student?.current_class?.toString() || ''}
-                                onChange={(val) => setStudent(prev => prev ? { ...prev, current_class: parseInt(val.toString()) || undefined } : null)}
+                                onChange={(val: string | number) => setStudent(prev => prev ? { ...prev, current_class: parseInt(val.toString()) || undefined } : null)}
                             />
                         </div>
                         <div className="form-group"><label className="label text-[10px] font-black uppercase">Category</label>
@@ -1343,7 +1344,7 @@ const StudentProfile = () => {
                                     { id: 'BOARDING', label: 'Boarding' }
                                 ]}
                                 value={student?.category || ''}
-                                onChange={(val) => setStudent(prev => prev ? { ...prev, category: val.toString() } : null)}
+                                onChange={(val: string | number) => setStudent(prev => prev ? { ...prev, category: val.toString() } : null)}
                             />
                         </div>
                     </div>
@@ -1357,7 +1358,7 @@ const StudentProfile = () => {
                                 { id: 'TRANSFERRED', label: 'Transferred' }
                             ]}
                             value={student?.status || ''}
-                            onChange={(val) => setStudent(prev => prev ? { ...prev, status: val.toString() as any } : null)}
+                            onChange={(val: string | number) => setStudent(prev => prev ? { ...prev, status: val.toString() as any } : null)}
                         />
                     </div>
                     <div className="modal-footer pt-4">
@@ -1592,7 +1593,7 @@ const StudentProfile = () => {
                                             { id: 'OTHER', label: 'Other' }
                                         ]}
                                         value={newGuardianForm.relation}
-                                        onChange={(val) => setNewGuardianForm({ ...newGuardianForm, relation: val.toString() })}
+                                        onChange={(val: string | number) => setNewGuardianForm({ ...newGuardianForm, relation: val.toString() })}
                                     />
                                 </div>
                             </div>

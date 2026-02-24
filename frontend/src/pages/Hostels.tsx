@@ -3,7 +3,7 @@ import {
     Plus, Building, Edit, Trash2, Users, Users as UsersIcon, Printer, Wrench, Bed as BedIcon,
     Layout, ShieldAlert, Search
 } from 'lucide-react';
-import { hostelAPI, studentsAPI, staffAPI, academicsAPI } from '../api/api';
+import { hostelAPI, studentsAPI, staffAPI } from '../api/api';
 import { exportToCSV } from '../utils/export';
 import Modal from '../components/Modal';
 import SearchableSelect from '../components/SearchableSelect';
