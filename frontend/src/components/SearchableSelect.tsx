@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Search, ChevronDown } from 'lucide-react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Search, ChevronDown, ChevronUp, X, Loader2 } from 'lucide-react';
 
 interface Option {
     id: string | number;
@@ -17,6 +17,7 @@ interface SearchableSelectProps {
     required?: boolean;
     disabled?: boolean;
     className?: string;
+    loading?: boolean;
 }
 
 const SearchableSelect: React.FC<SearchableSelectProps> = ({
@@ -27,14 +28,28 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
     label,
     required = false,
     disabled = false,
-    className = ''
+    className = '',
+    loading = false
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
+    const [activeIndex, setActiveIndex] = useState(-1);
     const wrapperRef = useRef<HTMLDivElement>(null);
+    const optionsRef = useRef<HTMLDivElement>(null);
 
     const selectedOption = options.find(opt => opt.id.toString() === value?.toString());
 
+    // Debounce search term
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedSearch(searchTerm);
+            setActiveIndex(-1);
+        }, 300);
+        return () => clearTimeout(handler);
+    }, [searchTerm]);
+
+    // Handle clicks outside to close
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
@@ -46,31 +61,111 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
     }, []);
 
     const filteredOptions = options.filter(opt =>
-        opt.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        opt.subLabel?.toLowerCase().includes(searchTerm.toLowerCase())
+        opt.label.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        opt.subLabel?.toLowerCase().includes(debouncedSearch.toLowerCase())
     );
 
-    return (
-        <div className={`form-group relative w-full ${className}`} ref={wrapperRef}>
-            {label && <label className="label">{label} {required && '*'}</label>}
-            <div
-                className={`select min-h-[42px] flex items-center justify-between cursor-pointer ${isOpen ? 'ring-2 ring-primary/20 border-primary' : ''} ${disabled ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
-                onClick={() => !disabled && setIsOpen(!isOpen)}
-            >
-                <span className={selectedOption ? '' : 'text-slate-400'}>
-                    {selectedOption ? selectedOption.label : placeholder}
-                </span>
-                <ChevronDown size={18} className="text-secondary" />
-            </div>
+    // Keyboard navigation
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (!isOpen) {
+            if (e.key === 'ArrowDown' || e.key === 'Enter') {
+                setIsOpen(true);
+            }
+            return;
+        }
 
-            {isOpen && (
-                <div className="select-dropdown absolute top-[calc(100%+4px)] left-0 w-full z-50 bg-white shadow-2xl shadow-primary/10 rounded-xl border border-slate-100 fade-in overflow-hidden">
-                    <div className="sticky top-0 bg-slate-50 p-2 border-b border-slate-100 z-10">
-                        <div className="relative">
-                            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary opacity-50" />
+        switch (e.key) {
+            case 'ArrowDown':
+                e.preventDefault();
+                setActiveIndex(prev => (prev < filteredOptions.length - 1 ? prev + 1 : prev));
+                break;
+            case 'ArrowUp':
+                e.preventDefault();
+                setActiveIndex(prev => (prev > 0 ? prev - 1 : 0));
+                break;
+            case 'Enter':
+                e.preventDefault();
+                if (activeIndex >= 0 && activeIndex < filteredOptions.length) {
+                    handleSelect(filteredOptions[activeIndex]);
+                }
+                break;
+            case 'Escape':
+                setIsOpen(false);
+                break;
+        }
+    };
+
+    // Auto-scroll to active item
+    useEffect(() => {
+        if (activeIndex >= 0 && optionsRef.current) {
+            const activeItem = optionsRef.current.children[activeIndex] as HTMLElement;
+            if (activeItem) {
+                activeItem.scrollIntoView({ block: 'nearest' });
+            }
+        }
+    }, [activeIndex]);
+
+    const handleSelect = (opt: Option) => {
+        onChange(opt.id);
+        setIsOpen(false);
+        setSearchTerm('');
+    };
+
+    const handleClear = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        onChange('');
+        setSearchTerm('');
+    };
+
+    return (
+        <div
+            className={`flex flex-col gap-1.5 w-full mb-4 ${className}`}
+            ref={wrapperRef}
+            onKeyDown={handleKeyDown}
+        >
+            {label && (
+                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">
+                    {label} {required && <span className="text-error">*</span>}
+                </label>
+            )}
+
+            <div className="relative">
+                <div
+                    className={`
+                        flex items-center justify-between px-[14px] py-3 min-h-[52px]
+                        bg-white border-2 rounded-[8px] cursor-pointer transition-all duration-200
+                        ${isOpen ? 'border-primary shadow-[0_0_0_4px_rgba(var(--primary-rgb),0.1)]' : 'border-slate-100 hover:border-slate-300'}
+                        ${disabled ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}
+                    `}
+                    onClick={() => setIsOpen(!isOpen)}
+                >
+                    <div className="flex items-center gap-3 overflow-hidden">
+                        <Search size={18} className={`flex-shrink-0 ${isOpen ? 'text-primary' : 'text-slate-400'}`} />
+                        <span className={`text-sm truncate ${selectedOption ? 'text-slate-900 font-medium' : 'text-slate-400'}`}>
+                            {selectedOption ? selectedOption.label : placeholder}
+                        </span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        {loading && <Loader2 size={16} className="animate-spin text-primary" />}
+                        {value && !disabled && (
+                            <button
+                                onClick={handleClear}
+                                className="p-1 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-colors"
+                            >
+                                <X size={14} />
+                            </button>
+                        )}
+                        {isOpen ? <ChevronUp size={18} className="text-primary" /> : <ChevronDown size={18} className="text-slate-400" />}
+                    </div>
+                </div>
+
+                {isOpen && (
+                    <div className="absolute top-[calc(100%+8px)] left-0 w-full z-[100] bg-white shadow-[0_4px_20px_rgba(0,0,0,0.15)] rounded-[12px] border border-slate-100 animate-in fade-in slide-in-from-top-2 duration-200 overflow-hidden">
+                        <div className="p-2 border-b border-slate-50 bg-slate-50/50">
                             <input
                                 type="text"
-                                className="input input-sm pl-9 rounded-full bg-white border-primary/20 focus:border-primary"
+                                className="w-full px-3 py-3 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary transition-colors min-h-[44px]"
                                 placeholder="Type to search..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -78,34 +173,43 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                                 autoFocus
                             />
                         </div>
-                    </div>
-                    <div className="options-list max-h-[250px] overflow-y-auto">
-                        {filteredOptions.length === 0 ? (
-                            <div className="p-4 text-center text-secondary italic text-xs">No results matching "{searchTerm}"</div>
-                        ) : (
-                            filteredOptions.map((opt) => (
-                                <div
-                                    key={opt.id}
-                                    className={`select-option px-4 py-2 hover:bg-primary/5 cursor-pointer border-b border-secondary/5 last:border-0 ${value?.toString() === opt.id.toString() ? 'bg-primary/10' : ''}`}
-                                    onClick={() => {
-                                        onChange(opt.id);
-                                        setIsOpen(false);
-                                        setSearchTerm('');
-                                    }}
-                                >
-                                    <div className="font-bold text-sm text-primary">{opt.label}</div>
-                                    <div className="flex justify-between items-center text-[10px] uppercase font-black tracking-widest opacity-60">
-                                        <span>{opt.subLabel}</span>
-                                        <span className="text-secondary">{opt.id}</span>
-                                    </div>
-                                </div>
-                            ))
-                        )}
-                    </div>
-                </div>
-            )}
-        </div>
 
+                        <div
+                            ref={optionsRef}
+                            className="max-h-[300px] overflow-y-auto overscroll-contain py-1"
+                        >
+                            {filteredOptions.length === 0 ? (
+                                <div className="px-4 py-8 text-center text-slate-500 italic text-sm">
+                                    No results found matching "{searchTerm}"
+                                </div>
+                            ) : (
+                                filteredOptions.map((opt, index) => (
+                                    <div
+                                        key={opt.id}
+                                        className={`
+                                            px-3 py-3 cursor-pointer transition-colors flex flex-col gap-0.5
+                                            ${index === activeIndex ? 'bg-primary/5' : 'hover:bg-slate-50'}
+                                            ${value?.toString() === opt.id.toString() ? 'bg-primary/10' : ''}
+                                        `}
+                                        onClick={() => handleSelect(opt)}
+                                        onMouseEnter={() => setActiveIndex(index)}
+                                    >
+                                        <div className={`text-sm font-semibold ${value?.toString() === opt.id.toString() ? 'text-primary' : 'text-slate-700'}`}>
+                                            {opt.label}
+                                        </div>
+                                        {opt.subLabel && (
+                                            <div className="text-[10px] uppercase font-bold text-slate-400 tracking-tight">
+                                                {opt.subLabel}
+                                            </div>
+                                        )}
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
     );
 };
 
