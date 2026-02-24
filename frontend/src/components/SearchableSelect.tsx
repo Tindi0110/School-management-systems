@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Search, ChevronDown, ChevronUp, X, Loader2 } from 'lucide-react';
 
 interface Option {
