@@ -94,7 +94,56 @@ const SystemHealth = () => {
                 </div>
             </div>
 
+            <div className="grid grid-cols-2 gap-10 mb-8">
+                {/* Overall Status */}
+                <StatCard
+                    title="Overall State"
+                    value={healthData?.status || 'Unknown'}
+                    icon={<Activity />}
+                    gradient={healthData?.status?.toUpperCase() === 'HEALTHY' ? "linear-gradient(135deg, #10b981, #059669)" : "linear-gradient(135deg, #f59e0b, #d97706)"}
+                />
 
+                {/* Server Time */}
+                <StatCard
+                    title="Server Time"
+                    value={healthData?.timestamp ? new Date(healthData.timestamp).toLocaleTimeString() : '--:--:--'}
+                    icon={<Clock />}
+                    gradient="linear-gradient(135deg, #3b82f6, #2563eb)"
+                />
+
+                {/* Environment */}
+                <StatCard
+                    title="Environment"
+                    value={healthData?.services?.backend?.environment || 'PROD'}
+                    icon={<Globe />}
+                    gradient="linear-gradient(135deg, #6366f1, #4f46e5)"
+                />
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Services Status */}
+                <div className="space-y-6">
+                    <h3 className="text-xs font-black uppercase tracking-widest text-secondary flex items-center gap-2">
+                        <Server size={16} /> Backend Services
+                    </h3>
+                    <div className="card table-wrapper">
+                        <table className="table w-full text-left">
+                            <thead className="bg-secondary-light">
+                                <tr>
+                                    <th className="px-6 py-4 text-[10px] font-black uppercase text-secondary">Service</th>
+                                    <th className="px-6 py-4 text-[10px] font-black uppercase text-secondary">Endpoint</th>
+                                    <th className="px-6 py-4 text-[10px] font-black uppercase text-secondary text-right">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-secondary-light">
+                                <tr>
+                                    <td className="px-6 py-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 rounded bg-primary/10 text-primary"><Server size={14} /></div>
+                                            <span className="text-sm font-bold">API Server (Python/Django)</span>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 text-[11px] font-mono text-secondary">/api/audit/status/</td>
                                     <td className="px-6 py-4 text-right">
                                         <span className={`text-[10px] font-black uppercase px-2 py-1 rounded-full ${getStatusBg(healthData?.services?.backend?.status)} ${getStatusColor(healthData?.services?.backend?.status)}`}>
                                             {healthData?.services?.backend?.status || 'UP'}
@@ -115,13 +164,13 @@ const SystemHealth = () => {
                                         </span>
                                     </td>
                                 </tr>
-                            </tbody >
-                        </table >
-                    </div >
-                </div >
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
-    {/* Frontend Health */ }
-    < div className = "space-y-6" >
+                {/* Frontend Health */}
+                <div className="space-y-6">
                     <h3 className="text-xs font-black uppercase tracking-widest text-secondary flex items-center gap-2">
                         <Smartphone size={16} /> Client Environment
                     </h3>
@@ -152,9 +201,9 @@ const SystemHealth = () => {
                             </p>
                         </div>
                     </div>
-                </div >
-            </div >
-        </div >
+                </div>
+            </div>
+        </div>
     );
 };
 
