@@ -1524,6 +1524,18 @@ table.table {
     margin-top: 0.125rem;
   }
 
+  .bg-slate-500 {
+    background-color: #64748b;
+  }
+
+  .bg-slate-400 {
+    background-color: #94a3b8;
+  }
+
+  .bg-slate-300 {
+    background-color: #cbd5e1;
+  }
+
   .bg-slate-200 {
     background-color: #e2e8f0;
   }
@@ -1536,12 +1548,36 @@ table.table {
     background-color: #f8fafc;
   }
 
+  .hover\:bg-slate-300:hover {
+    background-color: #cbd5e1;
+  }
+
+  .hover\:bg-slate-200:hover {
+    background-color: #e2e8f0;
+  }
+
   .hover\:bg-slate-100:hover {
     background-color: #f1f5f9;
   }
 
   .hover\:bg-slate-50:hover {
     background-color: #f8fafc;
+  }
+
+  .border-slate-500 {
+    border-color: #64748b;
+  }
+
+  .border-slate-400 {
+    border-color: #94a3b8;
+  }
+
+  .border-slate-300 {
+    border-color: #cbd5e1;
+  }
+
+  .border-slate-200 {
+    border-color: #e2e8f0;
   }
 
   .rounded-md {

@@ -525,7 +525,7 @@ export const communicationAPI = {
 
 export const auditAPI = {
   health: {
-    get: () => api.get('audit/health/'),
+    get: () => api.get('audit/status/'),
   }
 };
 

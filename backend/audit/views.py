@@ -11,12 +11,12 @@ class HealthCheckView(APIView):
     """
     API endpoint that returns the health status of the system.
     """
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     
     def get(self, request):
         health_data = {
             "status": "healthy",
-            "timestamp": timezone.now(),
+            "timestamp": timezone.now().isoformat(),
             "services": {
                 "backend": {
                     "status": "up",

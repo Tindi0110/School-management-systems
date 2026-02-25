@@ -100,7 +100,7 @@ const SystemHealth = () => {
                     title="Overall State"
                     value={healthData?.status || 'Unknown'}
                     icon={<Activity />}
-                    gradient={healthData?.status === 'HEALTHY' ? "linear-gradient(135deg, #10b981, #059669)" : "linear-gradient(135deg, #f59e0b, #d97706)"}
+                    gradient={healthData?.status?.toUpperCase() === 'HEALTHY' ? "linear-gradient(135deg, #10b981, #059669)" : "linear-gradient(135deg, #f59e0b, #d97706)"}
                 />
 
                 {/* Server Time */}
