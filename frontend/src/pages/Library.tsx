@@ -12,6 +12,7 @@ import { StatCard } from '../components/Card';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 import Button from '../components/common/Button';
+import PremiumDateInput from '../components/common/DatePicker';
 
 const Library = () => {
     const [activeTab, setActiveTab] = useState('catalog');
@@ -861,7 +862,14 @@ const Library = () => {
                                 onChange={(val) => setCopyForm({ ...copyForm, status: val.toString() })}
                             />
                         </div>
-                        <div className="form-group"><label className="label">Purchase Date</label><input type="date" className="input" value={copyForm.purchase_date} onChange={e => setCopyForm({ ...copyForm, purchase_date: e.target.value })} required /></div>
+                        <div className="form-group pb-2">
+                            <PremiumDateInput
+                                label="Purchase Date"
+                                value={copyForm.purchase_date}
+                                onChange={(val) => setCopyForm({ ...copyForm, purchase_date: val })}
+                                required
+                            />
+                        </div>
                     </div>
                     <div className="modal-footer">
                         <Button type="submit" variant="primary" className="w-full" loading={isSubmitting} loadingText="Saving...">
@@ -875,7 +883,14 @@ const Library = () => {
                 <form onSubmit={handleLendSubmit} className="space-y-4">
                     <SearchableSelect label="Select Copy *" options={copyOptions} value={String(lendingForm.copy)} onChange={(val) => setLendingForm({ ...lendingForm, copy: val.toString() })} required />
                     <SearchableSelect label="Assign to Student *" options={studentOptions} value={String(lendingForm.student)} onChange={(val) => setLendingForm({ ...lendingForm, student: val.toString() })} required />
-                    <div className="form-group"><label className="label">Return Deadline *</label><input type="date" className="input" value={lendingForm.due_date} onChange={e => setLendingForm({ ...lendingForm, due_date: e.target.value })} required /></div>
+                    <div className="form-group pb-2">
+                        <PremiumDateInput
+                            label="Return Deadline"
+                            value={lendingForm.due_date}
+                            onChange={(val) => setLendingForm({ ...lendingForm, due_date: val })}
+                            required
+                        />
+                    </div>
                     <div className="modal-footer">
                         <Button type="submit" variant="primary" className="w-full" loading={isSubmitting} loadingText="Processing Issue...">
                             {lendingId ? "Update Lending" : "Finalize Lending"}
@@ -914,7 +929,14 @@ const Library = () => {
                                 onChange={(val) => setFineForm({ ...fineForm, status: val.toString() })}
                             />
                         </div>
-                        <div className="form-group"><label className="label">Date Issued</label><input type="date" className="input" value={fineForm.date_issued} onChange={e => setFineForm({ ...fineForm, date_issued: e.target.value })} required /></div>
+                        <div className="form-group pb-2">
+                            <PremiumDateInput
+                                label="Date Issued"
+                                value={fineForm.date_issued}
+                                onChange={(val) => setFineForm({ ...fineForm, date_issued: val })}
+                                required
+                            />
+                        </div>
                     </div>
                     <div className="modal-footer">
                         <Button type="submit" variant="danger" className="w-full" loading={isSubmitting} loadingText="Recording...">

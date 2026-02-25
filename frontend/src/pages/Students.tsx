@@ -14,6 +14,7 @@ import { exportToCSV } from '../utils/export';
 import Button from '../components/common/Button';
 import CountryCodeSelect from '../components/CountryCodeSelect';
 import SearchableSelect from '../components/SearchableSelect';
+import PremiumDateInput from '../components/common/DatePicker';
 
 const Students = () => {
     const navigate = useNavigate();
@@ -536,9 +537,13 @@ const Students = () => {
                                     />
                                 </div>
                             </div>
-                            <div className="form-group">
-                                <label className="label">Date of Birth *</label>
-                                <input type="date" className="input" value={formData.date_of_birth} onChange={(e) => setFormData({ ...formData, date_of_birth: e.target.value })} required />
+                            <div className="form-group pb-2">
+                                <PremiumDateInput
+                                    label="Date of Birth"
+                                    value={formData.date_of_birth}
+                                    onChange={(val) => setFormData({ ...formData, date_of_birth: val })}
+                                    required
+                                />
                             </div>
                         </div>
 

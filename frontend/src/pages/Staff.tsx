@@ -7,6 +7,7 @@ import SearchableSelect from '../components/SearchableSelect';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 import Button from '../components/common/Button';
+import PremiumDateInput from '../components/common/DatePicker';
 
 const Staff = () => {
     const [staff, setStaff] = useState<any[]>([]);
@@ -331,9 +332,13 @@ const Staff = () => {
                                 required
                             />
                         </div>
-                        <div className="form-group">
-                            <label className="label">Date Joined *</label>
-                            <input type="date" className="input" value={formData.date_joined} onChange={(e) => setFormData({ ...formData, date_joined: e.target.value })} required />
+                        <div className="form-group pb-2">
+                            <PremiumDateInput
+                                label="Date Joined"
+                                value={formData.date_joined}
+                                onChange={(val) => setFormData({ ...formData, date_joined: val })}
+                                required
+                            />
                         </div>
                     </div>
                     <div className="form-group">

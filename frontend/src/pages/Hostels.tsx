@@ -11,6 +11,7 @@ import { StatCard } from '../components/Card';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 import Button from '../components/common/Button';
+import PremiumDateInput from '../components/common/DatePicker';
 
 const Hostels = () => {
     const [activeTab, setActiveTab] = useState('registry');
@@ -87,16 +88,20 @@ const Hostels = () => {
         maintenanceIssues: 0
     });
 
-    // Debounced search resets pages
+    // Unified Search & Page Reset Effect
     useEffect(() => {
-        const h = setTimeout(() => {
-            setAllocPage(1);
-            setDiscPage(1);
-            if (activeTab === 'allocations') loadAllocations();
-            if (activeTab === 'discipline') loadDiscipline();
+        const handler = setTimeout(() => {
+            // Only trigger server-side search for paginated tabs
+            if (activeTab === 'allocations') {
+                setAllocPage(1);
+                loadAllocations();
+            } else if (activeTab === 'discipline') {
+                setDiscPage(1);
+                loadDiscipline();
+            }
         }, 400);
-        return () => clearTimeout(h);
-    }, [searchTerm]);
+        return () => clearTimeout(handler);
+    }, [searchTerm, activeTab]); // Trigger when tab changes too, to catch existing search term
 
     useEffect(() => {
         if (activeTab === 'allocations') loadAllocations();
@@ -111,37 +116,47 @@ const Hostels = () => {
     }, []);
 
     const loadData = async () => {
+        setLoading(true);
         try {
-            const [
-                hostelsRes, roomsRes, bedsRes,
-                attendanceRes, assetsRes,
-                maintenanceRes, studentsRes, staffRes, statsRes
-            ] = await Promise.all([
+            // Phase 1: Core Essentials (Quickest & Most Important)
+            const [hostelsRes, statsRes, studentsRes] = await Promise.all([
                 hostelAPI.hostels.getAll(),
-                hostelAPI.rooms.getAll({ page_size: 200 }),
-                hostelAPI.beds.getAll({ page_size: 1000 }),
-                hostelAPI.attendance.getAll({ page_size: 500, ordering: '-date' }),
-                hostelAPI.assets.getAll({ page_size: 500 }),
-                hostelAPI.maintenance.getAll({ page_size: 200 }),
-                studentsAPI.getAll({ page_size: 500 }),
-                staffAPI.getAll({ page_size: 100 }),
-                hostelAPI.hostels.getStats()
+                hostelAPI.hostels.getStats(),
+                studentsAPI.getAll({ page_size: 500 })
             ]);
+
             const d = (r: any) => r?.data?.results ?? r?.data ?? [];
             setHostels(d(hostelsRes));
+            setStats(statsRes.data);
+            setStudents(d(studentsRes));
+
+            // Phase 2: Tab-Specific & Background Data
+            // We fire these and let them finish ASAP
+            const backgroundPromises = [
+                hostelAPI.rooms.getAll({ page_size: 500 }),
+                hostelAPI.beds.getAll({ page_size: 1000 }),
+                staffAPI.getAll({ page_size: 100 }),
+                hostelAPI.attendance.getAll({ page_size: 300, ordering: '-date' }),
+                hostelAPI.assets.getAll({ page_size: 500 }),
+                hostelAPI.maintenance.getAll({ page_size: 200 })
+            ];
+
+            const [roomsRes, bedsRes, staffRes, attendanceRes, assetsRes, maintenanceRes] = await Promise.all(backgroundPromises);
+
             setRooms(d(roomsRes));
             setBeds(d(bedsRes));
+            setStaff(d(staffRes));
             setAttendance(d(attendanceRes));
             setAssets(d(assetsRes));
             setMaintenance(d(maintenanceRes));
-            setStudents(d(studentsRes));
-            setStaff(d(staffRes));
-            setStats(statsRes.data);
 
-            loadAllocations();
-            loadDiscipline();
+            // Paginated data initialized separately by side-effects
+            if (activeTab !== 'allocations') loadAllocations();
+            if (activeTab !== 'discipline') loadDiscipline();
+
         } catch (error) {
             console.error('Error loading hostel data:', error);
+            toastError("Modular data synchronization lag detected. Please refresh if issues persist.");
         } finally {
             setLoading(false);
         }
@@ -589,39 +604,45 @@ const Hostels = () => {
             {/* Tab Content */}
             {activeTab === 'registry' && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-lg">
-                    {hostels.filter(h =>
-                        !searchTerm ||
-                        h.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                        (h.warden_name || '').toLowerCase().includes(searchTerm.toLowerCase())
-                    ).map(h => (
-                        <div key={h.id} className="card p-6 border-top-4 border-primary hover-scale">
-                            <div className="flex justify-between items-start mb-4">
-                                <div><h3 className="mb-0">{h.name}</h3><span className={`badge ${h.gender_allowed === 'M' ? 'badge-primary' : 'badge-error'}`}>{h.gender_allowed === 'M' ? 'BOYS' : 'GIRLS'}</span></div>
-                                <Building className="text-secondary opacity-20" size={40} />
-                            </div>
-                            <div className="space-y-3 text-sm">
-                                <div className="flex justify-between">
-                                    <span className="text-secondary">Warden:</span>
-                                    <span className="font-semibold text-primary">
-                                        {staff.find(s => s.id === h.warden)?.full_name || h.warden_name || 'Not Assigned'}
-                                    </span>
+                    {hostels.length > 0 ? (
+                        hostels.filter(h =>
+                            !searchTerm ||
+                            h.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            (h.warden_name || '').toLowerCase().includes(searchTerm.toLowerCase())
+                        ).map(h => (
+                            <div key={h.id} className="card p-6 border-top-4 border-primary hover-scale">
+                                <div className="flex justify-between items-start mb-4">
+                                    <div><h3 className="mb-0">{h.name}</h3><span className={`badge ${h.gender_allowed === 'M' ? 'badge-primary' : 'badge-error'}`}>{h.gender_allowed === 'M' ? 'BOYS' : 'GIRLS'}</span></div>
+                                    <Building className="text-secondary opacity-20" size={40} />
                                 </div>
-                                <div className="flex justify-between"><span className="text-secondary">Type:</span><span className="font-semibold">{h.hostel_type}</span></div>
-                                <div className="flex justify-between"><span className="text-secondary">Rooms:</span><span className="font-semibold">{rooms.filter(r => r.hostel === h.id).length} Units</span></div>
-                                <div className="w-full bg-secondary-light rounded-full h-2 mt-4">
-                                    <div className="bg-primary h-2 rounded-full" style={{ width: `${h.occupancy_rate || 0}%` }}></div>
+                                <div className="space-y-3 text-sm">
+                                    <div className="flex justify-between">
+                                        <span className="text-secondary">Warden:</span>
+                                        <span className="font-semibold text-primary">
+                                            {staff.find(s => String(s.id) === String(h.warden))?.full_name || h.warden_name || 'Not Assigned'}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between"><span className="text-secondary">Type:</span><span className="font-semibold">{h.hostel_type}</span></div>
+                                    <div className="flex justify-between"><span className="text-secondary">Rooms:</span><span className="font-semibold">{rooms.filter(r => String(r.hostel) === String(h.id)).length} Units</span></div>
+                                    <div className="w-full bg-secondary-light rounded-full h-2 mt-4">
+                                        <div className="bg-primary h-2 rounded-full" style={{ width: `${h.occupancy_rate || 0}%` }}></div>
+                                    </div>
+                                    <p className="text-right text-xs font-bold text-primary mt-1">{h.occupancy_rate || 0}% Occupied</p>
                                 </div>
-                                <p className="text-right text-xs font-bold text-primary mt-1">{h.occupancy_rate || 0}% Occupied</p>
+                                <div className="flex gap-2 mt-6 pt-4 border-top">
+                                    <button className="btn btn-sm btn-outline flex-1 gap-1" onClick={() => openViewRooms(h)} title="View Rooms"><BedIcon size={14} /> Rooms</button>
+                                    <button className="btn btn-sm btn-outline flex-1 gap-2" onClick={() => handleEditHostel(h)} title="Edit Details"><Edit size={14} /> Edit</button>
+                                    <button className="btn btn-sm btn-outline flex-1 gap-2" onClick={() => openViewResidents(h)} title="View Residents"><Users size={14} /> Users</button>
+                                    <button className="btn btn-sm btn-outline text-error" onClick={(e) => { e.stopPropagation(); handleDeleteHostel(h.id); }} title="Delete Hostel"><Trash2 size={14} /></button>
+                                </div>
                             </div>
-                            <div className="flex gap-2 mt-6 pt-4 border-top">
-                                <button className="btn btn-sm btn-outline flex-1 gap-1" onClick={() => openViewRooms(h)} title="View Rooms"><BedIcon size={14} /> Rooms</button>
-                                <button className="btn btn-sm btn-outline flex-1 gap-2" onClick={() => handleEditHostel(h)} title="Edit Details"><Edit size={14} /> Edit</button>
-                                <button className="btn btn-sm btn-outline flex-1 gap-2" onClick={() => openViewResidents(h)} title="View Residents"><Users size={14} /> Users</button>
-                                <button className="btn btn-sm btn-outline text-error" onClick={(e) => { e.stopPropagation(); handleDeleteHostel(h.id); }} title="Delete Hostel"><Trash2 size={14} /></button>
-
-                            </div>
+                        ))
+                    ) : (
+                        <div className="col-span-full py-12 text-center opacity-40">
+                            <Building size={48} className="mx-auto mb-2" />
+                            <p className="font-medium italic">No hostels registered.</p>
                         </div>
-                    ))}
+                    )}
                     <div className="card p-6 flex flex-col items-center justify-center border-dashed border-2 text-secondary cursor-pointer hover-bg-secondary" onClick={() => setIsHostelModalOpen(true)}>
                         <Plus size={32} className="mb-2" />
                         <p className="font-bold">Add New Hostel</p>
@@ -653,9 +674,21 @@ const Hostels = () => {
                         <table className="table">
                             <thead><tr><th>Student</th><th>Hostel</th><th>Room</th><th>Bed</th><th>Status</th><th>Actions</th></tr></thead>
                             <tbody>
+                                {allocations.length === 0 && (
+                                    <tr>
+                                        <td colSpan={6} className="text-center py-10">
+                                            <div className="flex flex-col items-center opacity-40">
+                                                <UsersIcon size={40} className="mb-2" />
+                                                <p className="font-medium">No student allocations found.</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                )}
                                 {allocations.map((a: any) => (
                                     <tr key={a.id}>
-                                        <td className="font-bold">{a.student_name || students.find(s => s.id === a.student)?.full_name}</td>
+                                        <td className="font-bold">
+                                            {a.student_name || students.find(s => String(s.id) === String(a.student))?.full_name || `ID: ${a.student}`}
+                                        </td>
                                         <td>{a.hostel_name || 'N/A'}</td>
                                         <td>{a.room_number || 'N/A'}</td>
                                         <td>{a.bed_number || 'N/A'}</td>
@@ -713,7 +746,7 @@ const Hostels = () => {
                                         <td className="font-bold">{a.asset_code}</td>
                                         <td><span className="badge badge-info">{a.asset_type}</span></td>
                                         <td>{a.condition}</td>
-                                        <td>{hostels.find(h => h.id === a.hostel)?.name || (a.room ? hostels.find(h => h.id === rooms.find(r => r.id === a.room)?.hostel)?.name : 'General')}</td>
+                                        <td>{hostels.find(h => String(h.id) === String(a.hostel))?.name || (a.room ? hostels.find(h => String(h.id) === String(rooms.find(r => String(r.id) === String(a.room))?.hostel))?.name : 'General')}</td>
                                         <td>{a.value?.toLocaleString()}</td>
                                         <td>
                                             <div className="flex gap-2">
@@ -752,6 +785,13 @@ const Hostels = () => {
                         <table className="table">
                             <thead><tr><th>Date</th><th>Session</th><th>Student</th><th>Hostel</th><th>Status</th><th>Remarks</th><th>Actions</th></tr></thead>
                             <tbody>
+                                {attendance.length === 0 && (
+                                    <tr>
+                                        <td colSpan={7} className="text-center py-10 opacity-40 italic">
+                                            No attendance records for the selected period.
+                                        </td>
+                                    </tr>
+                                )}
                                 {attendance
                                     .filter(a =>
                                         !searchTerm ||
@@ -763,7 +803,7 @@ const Hostels = () => {
                                         <tr key={a.id}>
                                             <td>{a.date}</td>
                                             <td><span className="badge badge-ghost text-xs">{a.session || 'N/A'}</span></td>
-                                            <td className="font-bold">{a.student_name || students.find(s => s.id === a.student)?.full_name}</td>
+                                            <td className="font-bold">{a.student_name || students.find(s => String(s.id) === String(a.student))?.full_name}</td>
                                             <td className="text-sm text-secondary">{a.hostel_name || 'N/A'}</td>
                                             <td><span className={`badge ${a.status === 'PRESENT' ? 'badge-success' : a.status === 'ABSENT' ? 'badge-error' : 'badge-info'}`}>{a.status}</span></td>
                                             <td>{a.remarks}</td>
@@ -804,11 +844,17 @@ const Hostels = () => {
                         <table className="table">
                             <thead><tr><th>Date</th><th>Student</th><th>Infraction</th><th>Severity</th><th>Action Taken</th><th>Actions</th></tr></thead>
                             <tbody>
-                                {discipline.length === 0 && <tr><td colSpan={6} className="text-center italic">No discipline records.</td></tr>}
+                                {discipline.length === 0 && (
+                                    <tr>
+                                        <td colSpan={6} className="text-center py-10 opacity-40 italic">
+                                            No discipline records found.
+                                        </td>
+                                    </tr>
+                                )}
                                 {discipline.map((d: any) => (
                                     <tr key={d.id}>
                                         <td>{d.date || d.incident_date}</td>
-                                        <td className="font-bold">{students.find(s => s.id === d.student)?.full_name}</td>
+                                        <td className="font-bold">{students.find(s => String(s.id) === String(d.student))?.full_name}</td>
                                         <td>{d.offence}</td>
                                         <td><span className={`badge ${d.severity === 'MAJOR' ? 'badge-error' : 'badge-warning'}`}>{d.severity}</span></td>
                                         <td>{d.action_taken}</td>
@@ -1134,7 +1180,14 @@ const Hostels = () => {
                         <SearchableSelect label="Student" options={students.map(s => ({ id: String(s.id), label: s.full_name, subLabel: s.admission_number }))} value={String(attendanceFormData.student || '')} onChange={(val) => setAttendanceFormData({ ...attendanceFormData, student: val })} required />
 
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="form-group"><label className="label">Date</label><input type="date" className="input" value={attendanceFormData.date} onChange={e => setAttendanceFormData({ ...attendanceFormData, date: e.target.value })} required /></div>
+                            <div className="form-group pb-2">
+                                <PremiumDateInput
+                                    label="Date"
+                                    value={attendanceFormData.date}
+                                    onChange={(val) => setAttendanceFormData({ ...attendanceFormData, date: val })}
+                                    required
+                                />
+                            </div>
                             <div className="form-group">
                                 <label className="label">Session</label>
                                 <SearchableSelect
@@ -1211,9 +1264,13 @@ const Hostels = () => {
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="form-group">
-                                <label className="label">Date</label>
-                                <input type="date" className="input" value={attendanceFormData.date} onChange={e => setAttendanceFormData({ ...attendanceFormData, date: e.target.value })} />
+                            <div className="form-group pb-2">
+                                <PremiumDateInput
+                                    label="Date"
+                                    value={attendanceFormData.date}
+                                    onChange={(val) => setAttendanceFormData({ ...attendanceFormData, date: val })}
+                                    required
+                                />
                             </div>
                             <div className="form-group">
                                 <label className="label">Session</label>
@@ -1294,7 +1351,14 @@ const Hostels = () => {
                     <SearchableSelect label="Student" options={students.map(s => ({ id: String(s.id), label: s.full_name, subLabel: s.admission_number }))} value={String(disciplineFormData.student || '')} onChange={(val) => setDisciplineFormData({ ...disciplineFormData, student: String(val) })} required />
 
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group"><label className="label">Date</label><input type="date" className="input" value={disciplineFormData.date} onChange={e => setDisciplineFormData({ ...disciplineFormData, date: e.target.value })} required /></div>
+                        <div className="form-group pb-2">
+                            <PremiumDateInput
+                                label="Date"
+                                value={disciplineFormData.date}
+                                onChange={(val) => setDisciplineFormData({ ...disciplineFormData, date: val })}
+                                required
+                            />
+                        </div>
                         <div className="form-group">
                             <label className="label">Severity</label>
                             <SearchableSelect
@@ -1350,7 +1414,14 @@ const Hostels = () => {
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group"><label className="label">Date</label><input type="date" className="input" value={maintenanceFormData.date} onChange={e => setMaintenanceFormData({ ...maintenanceFormData, date: e.target.value })} required /></div>
+                        <div className="form-group pb-2">
+                            <PremiumDateInput
+                                label="Date"
+                                value={maintenanceFormData.date}
+                                onChange={(val) => setMaintenanceFormData({ ...maintenanceFormData, date: val })}
+                                required
+                            />
+                        </div>
                         <div className="form-group"><label className="label">Cost (KES)</label><input type="number" className="input" value={maintenanceFormData.repair_cost} onChange={e => setMaintenanceFormData({ ...maintenanceFormData, repair_cost: parseFloat(e.target.value) })} /></div>
                     </div>
                     <div className="form-group"><label className="label">Description</label><textarea className="input" rows={3} value={maintenanceFormData.issue} onChange={e => setMaintenanceFormData({ ...maintenanceFormData, issue: e.target.value })} required placeholder="Describe the maintenance issue..."></textarea></div>
@@ -1404,7 +1475,7 @@ const Hostels = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {rooms.filter(r => r.hostel === selectedHostel?.id).map(r => (
+                                    {rooms.filter(r => String(r.hostel) === String(selectedHostel?.id)).map(r => (
                                         <tr key={r.id} className="border-b hover:bg-gray-50">
                                             <td className="p-2 text-sm font-bold">{r.room_number}</td>
                                             <td className="p-2 text-xs">{r.room_type}</td>

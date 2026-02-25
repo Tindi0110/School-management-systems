@@ -46,10 +46,16 @@ const PremiumDateInput: React.FC<DatePickerProps> = ({
                 <input
                     type="text"
                     placeholder="YYYY-MM-DD"
-                    pattern="\d{4}-\d{2}-\d{2}"
-                    className="input w-full pl-10 pr-4 h-11 bg-slate-50/50 border-2 border-slate-100 hover:border-slate-200 focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/5 transition-all outline-none font-bold text-sm text-slate-800"
-                    value={value}
-                    onChange={(e) => onChange(e.target.value)}
+                    inputMode="numeric"
+                    className="input w-full pl-10 pr-4 h-11 bg-slate-50 border-2 border-slate-100 hover:border-slate-200 focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/5 transition-all outline-none font-bold text-sm text-slate-800 rounded-lg placeholder:text-slate-400"
+                    value={value || ''}
+                    onChange={(e) => {
+                        let val = e.target.value;
+                        // Basic auto-hyphenation for YYYY-MM-DD
+                        if (val.length === 4 && !val.includes('-')) val += '-';
+                        if (val.length === 7 && val.split('-').length === 2) val += '-';
+                        onChange(val);
+                    }}
                     required={required}
                     disabled={disabled}
                     title="Format: YYYY-MM-DD"
@@ -58,7 +64,7 @@ const PremiumDateInput: React.FC<DatePickerProps> = ({
                 <input
                     type="date"
                     className="absolute w-0 h-0 opacity-0 pointer-events-none"
-                    value={value}
+                    value={value || ''}
                     onChange={(e) => onChange(e.target.value)}
                     min={minDate}
                     disabled={disabled}

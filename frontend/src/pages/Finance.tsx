@@ -8,6 +8,7 @@ import Modal from '../components/Modal';
 import { StatCard } from '../components/Card';
 import { useToast } from '../context/ToastContext';
 import Button from '../components/common/Button';
+import PremiumDateInput from '../components/common/DatePicker';
 
 const Finance = () => {
     const [activeTab, setActiveTab] = useState('dashboard');
@@ -1152,14 +1153,11 @@ const Finance = () => {
                             <label className="label">Amount (KES) *</label>
                             <input type="number" className="input" value={expenseForm.amount} onChange={e => setExpenseForm({ ...expenseForm, amount: e.target.value })} required />
                         </div>
-                        <div className="form-group">
-                            <label className="label">Date *</label>
-                            <input
-                                type="date"
-                                className="input"
+                        <div className="form-group pb-2">
+                            <PremiumDateInput
+                                label="Date Occurred"
                                 value={expenseForm.date_occurred}
-                                onChange={e => setExpenseForm({ ...expenseForm, date_occurred: e.target.value })}
-                                min={new Date().toISOString().split('T')[0]}
+                                onChange={(val) => setExpenseForm({ ...expenseForm, date_occurred: val })}
                                 required
                             />
                         </div>

@@ -11,6 +11,7 @@ import { StatCard } from '../components/Card';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 import Button from '../components/common/Button';
+import PremiumDateInput from '../components/common/DatePicker';
 
 const Transport = () => {
     const [activeTab, setActiveTab] = useState('fleet');
@@ -932,7 +933,14 @@ const Transport = () => {
                         onChange={(val) => setEnrollmentForm({ ...enrollmentForm, pickup_point: val.toString() })}
                         required
                     />
-                    <div className="form-group"><label className="label">Start Date</label><input type="date" className="input" value={enrollmentForm.start_date} onChange={e => setEnrollmentForm({ ...enrollmentForm, start_date: e.target.value })} required /></div>
+                    <div className="form-group pb-2">
+                        <PremiumDateInput
+                            label="Start Date"
+                            value={enrollmentForm.start_date}
+                            onChange={(val) => setEnrollmentForm({ ...enrollmentForm, start_date: val })}
+                            required
+                        />
+                    </div>
                     <div className="modal-footer"><Button type="submit" variant="primary" className="w-full" loading={isSaving} loadingText={enrollmentId ? "Updating..." : "Enrolling..."}>{enrollmentId ? "Update Enrollment" : "Confirm Enrollment"}</Button></div>
                 </form>
             </Modal>
@@ -972,7 +980,13 @@ const Transport = () => {
                                 onChange={(val) => setVehicleForm({ ...vehicleForm, status: val.toString() })}
                             />
                         </div>
-                        <div className="form-group"><label className="label">Insurance Expiry</label><input type="date" className="input" value={vehicleForm.insurance_expiry} onChange={e => setVehicleForm({ ...vehicleForm, insurance_expiry: e.target.value })} /></div>
+                        <div className="form-group pb-2">
+                            <PremiumDateInput
+                                label="Insurance Expiry"
+                                value={vehicleForm.insurance_expiry}
+                                onChange={(val) => setVehicleForm({ ...vehicleForm, insurance_expiry: val })}
+                            />
+                        </div>
                     </div>
                     <div className="modal-footer pt-4"><Button type="submit" variant="primary" className="w-full uppercase font-black" loading={isSaving} loadingText={vehicleId ? "Updating..." : "Registering..."}>{vehicleId ? 'Update Vehicle' : 'Register Vehicle'}</Button></div>
                 </form>
@@ -1013,7 +1027,14 @@ const Transport = () => {
             <Modal isOpen={isTripModalOpen} onClose={() => setIsTripModalOpen(false)} title={tripId ? "Edit Trip Log" : "Log New Trip"}>
                 <form onSubmit={handleTripSubmit} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group"><label className="label">Date</label><input type="date" className="input" value={tripForm.date} onChange={e => setTripForm({ ...tripForm, date: e.target.value })} required /></div>
+                        <div className="form-group pb-2">
+                            <PremiumDateInput
+                                label="Date"
+                                value={tripForm.date}
+                                onChange={(val) => setTripForm({ ...tripForm, date: val })}
+                                required
+                            />
+                        </div>
                         <div className="form-group"><label className="label">Driver Name</label><input type="text" className="input" value={tripForm.driver_name} onChange={e => setTripForm({ ...tripForm, driver_name: e.target.value })} required /></div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
@@ -1038,7 +1059,14 @@ const Transport = () => {
             <Modal isOpen={isMaintenanceModalOpen} onClose={() => setIsMaintenanceModalOpen(false)} title={maintenanceId ? "Edit Maintenance Record" : "Log Maintenance"}>
                 <form onSubmit={handleMaintenanceSubmit} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group"><label className="label">Date</label><input type="date" className="input" value={maintenanceForm.date} onChange={e => setMaintenanceForm({ ...maintenanceForm, date: e.target.value })} required /></div>
+                        <div className="form-group pb-2">
+                            <PremiumDateInput
+                                label="Date"
+                                value={maintenanceForm.date}
+                                onChange={(val) => setMaintenanceForm({ ...maintenanceForm, date: val })}
+                                required
+                            />
+                        </div>
                         <div className="form-group"><label className="label">Cost (KES)</label><input type="number" className="input" value={maintenanceForm.cost} onChange={e => setMaintenanceForm({ ...maintenanceForm, cost: parseFloat(e.target.value) })} required /></div>
                     </div>
                     <SearchableSelect
@@ -1069,7 +1097,14 @@ const Transport = () => {
             <Modal isOpen={isSafetyModalOpen} onClose={() => setIsSafetyModalOpen(false)} title={incidentId ? "Edit Incident Report" : "Report Safety Incident"}>
                 <form onSubmit={handleSafetySubmit} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group"><label className="label">Date</label><input type="date" className="input" value={safetyForm.date} onChange={e => setSafetyForm({ ...safetyForm, date: e.target.value })} required /></div>
+                        <div className="form-group pb-2">
+                            <PremiumDateInput
+                                label="Date"
+                                value={safetyForm.date}
+                                onChange={(val) => setSafetyForm({ ...safetyForm, date: val })}
+                                required
+                            />
+                        </div>
                         <div className="form-group">
                             <label className="label">Severity</label>
                             <SearchableSelect
@@ -1114,7 +1149,14 @@ const Transport = () => {
             <Modal isOpen={isFuelModalOpen} onClose={() => setIsFuelModalOpen(false)} title="Log Fuel Consumption">
                 <form onSubmit={handleFuelSubmit} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group"><label className="label">Date</label><input type="date" className="input" value={fuelForm.date} onChange={e => setFuelForm({ ...fuelForm, date: e.target.value })} required /></div>
+                        <div className="form-group pb-2">
+                            <PremiumDateInput
+                                label="Date"
+                                value={fuelForm.date}
+                                onChange={(val) => setFuelForm({ ...fuelForm, date: val })}
+                                required
+                            />
+                        </div>
                         <SearchableSelect
                             label="Vehicle"
                             placeholder="Select Vehicle..."
