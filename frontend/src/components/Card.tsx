@@ -33,8 +33,8 @@ export const StatCard: React.FC<StatCardProps> = ({ title, value, icon, gradient
                 {icon && React.cloneElement(icon as React.ReactElement<any>, { size: 22, strokeWidth: 2.5 })}
             </div>
             <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/90 mb-0.5">{title}</p>
-                <div className="text-2xl font-black tracking-tight text-white drop-shadow-sm">{value}</div>
+                <p style={{ color: 'white', opacity: 0.9 }} className="text-[10px] font-black uppercase tracking-[0.15em] mb-0.5">{title}</p>
+                <div style={{ color: 'white' }} className="text-2xl font-black tracking-tight">{value}</div>
             </div>
         </div>
     );
