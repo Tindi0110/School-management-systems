@@ -142,8 +142,8 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                 <div
                     className={`
                         flex items-center px-4 py-3 min-h-[52px]
-                        bg-white border-0 rounded-[8px] cursor-text transition-all duration-200
-                        ${isOpen ? 'shadow-[0_0_0_4px_rgba(var(--primary-rgb),0.1)]' : 'hover:bg-slate-50'}
+                        bg-slate-50 border border-slate-200 rounded-[8px] cursor-text transition-all duration-200
+                        ${isOpen ? 'bg-white shadow-[0_0_0_4px_rgba(var(--primary-rgb),0.1)] border-primary/20' : 'hover:bg-slate-100 hover:border-slate-300'}
                         ${disabled ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}
                     `}
                     onClick={handleTriggerClick}
@@ -152,7 +152,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                         ref={inputRef}
                         type="text"
                         autoComplete="off"
-                        className="bg-transparent border-0 p-0 text-sm focus:ring-0 outline-none text-slate-900 placeholder:text-slate-400 font-normal w-full"
+                        className="bg-transparent border-0 p-0 text-sm focus:ring-0 outline-none text-slate-900 placeholder:text-slate-400 font-medium w-full"
                         placeholder={selectedOption ? selectedOption.label : placeholder}
                         value={isOpen ? searchTerm : (selectedOption ? selectedOption.label : '')}
                         onChange={(e) => {
@@ -164,7 +164,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                     {value && !disabled && (
                         <button
                             onClick={handleClear}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 bg-transparent border-0 p-1 shadow-none outline-none text-slate-300 hover:text-error transition-colors flex items-center justify-center cursor-pointer"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 bg-transparent border-0 p-1 shadow-none outline-none text-slate-400 hover:text-error transition-colors flex items-center justify-center cursor-pointer"
                         >
                             <X size={16} />
                         </button>
@@ -188,7 +188,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                                         className={`
                                             px-4 py-3 cursor-pointer transition-all duration-200 flex flex-col gap-0.5 mx-1
                                             ${index === activeIndex ? 'bg-slate-100 rounded-md scale-[0.99]' : 'hover:bg-slate-50 hover:rounded-md hover:scale-[0.99]'}
-                                            ${value?.toString() === opt.id.toString() ? 'bg-slate-100 border-l-4 border-primary rounded-r-md' : 'border-l-4 border-transparent'}
+                                            ${value?.toString() === opt.id.toString() ? 'bg-slate-200 border-l-4 border-primary rounded-r-md' : 'border-l-4 border-transparent'}
                                         `}
                                         onClick={() => handleSelect(opt)}
                                         onMouseEnter={() => setActiveIndex(index)}

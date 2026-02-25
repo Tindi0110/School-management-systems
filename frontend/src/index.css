@@ -1524,12 +1524,20 @@ table.table {
     margin-top: 0.125rem;
   }
 
+  .bg-slate-200 {
+    background-color: #e2e8f0;
+  }
+
   .bg-slate-100 {
     background-color: #f1f5f9;
   }
 
   .bg-slate-50 {
     background-color: #f8fafc;
+  }
+
+  .hover\:bg-slate-100:hover {
+    background-color: #f1f5f9;
   }
 
   .hover\:bg-slate-50:hover {

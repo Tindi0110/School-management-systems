@@ -11,14 +11,9 @@ class HealthCheckView(APIView):
     """
     API endpoint that returns the health status of the system.
     """
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAuthenticated]
     
     def get(self, request):
-        from accounts.models import User
-        from students.models import Student
-        from staff.models import Staff
-        from academics.models import Class
-        
         health_data = {
             "status": "healthy",
             "timestamp": timezone.now(),
@@ -37,6 +32,11 @@ class HealthCheckView(APIView):
         
         # Check database connection and get some stats
         try:
+            from accounts.models import User
+            from students.models import Student
+            from staff.models import Staff
+            from academics.models import Class
+            
             connection.ensure_connection()
             health_data["services"]["database"]["status"] = "connected"
             health_data["services"]["database"]["stats"] = {
