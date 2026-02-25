@@ -10,17 +10,76 @@ const api = axios.create({
   },
 });
 
-// Request interceptor to add auth token
+// --- Simple In-Memory Cache Setup ---
+const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
+let apiCache = new Map<string, { data: any; timestamp: number }>();
+
+// Expose a way to clear cache manually if needed
+export const clearApiCache = () => {
+  apiCache.clear();
+};
+// ------------------------------------
+
+// Request interceptor to add auth token AND handle caching for GET
 api.interceptors.request.use(
   (config) => {
+    // 1. Auth Headers
     const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Token ${token}`;
     }
+
+    // 2. Cache Strategy
+    const method = config.method?.toLowerCase();
+
+    // Clear cache immediately on mutation
+    if (method && ['post', 'put', 'patch', 'delete'].includes(method)) {
+      clearApiCache();
+    }
+
     return config;
   },
   (error) => Promise.reject(error)
 );
+
+// We need a custom adapter to intercept GET requests BEFORE they hit the network
+// Since axios normal interceptors only run AFTER the network request is initiated.
+const defaultAdapter = api.defaults.adapter;
+api.defaults.adapter = async function (config) {
+  const method = config.method?.toLowerCase();
+
+  if (method === 'get') {
+    // Generate a unique cache key based on URL + Params
+    const key = `${config.url}?${new URLSearchParams(config.params || {}).toString()}`;
+    const cachedResponse = apiCache.get(key);
+
+    // If cache exists and isn't expired, return it instantly
+    if (cachedResponse && Date.now() - cachedResponse.timestamp < CACHE_EXPIRY) {
+      return {
+        data: cachedResponse.data,
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+        request: {}
+      };
+    }
+  }
+
+  // Proceed with actual network request
+  const response = await (defaultAdapter as any)(config);
+
+  // Save successful GET requests to cache
+  if (method === 'get' && response.status === 200) {
+    const key = `${config.url}?${new URLSearchParams(config.params || {}).toString()}`;
+    apiCache.set(key, {
+      data: response.data,
+      timestamp: Date.now()
+    });
+  }
+
+  return response;
+};
 
 // Response interceptor for error handling
 api.interceptors.response.use(
