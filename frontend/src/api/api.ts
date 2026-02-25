@@ -37,53 +37,43 @@ api.interceptors.request.use(
       clearApiCache();
     }
 
+    // If it's a GET request, check the cache
+    if (method === 'get') {
+      const key = `${config.url}?${new URLSearchParams(config.params as any || {}).toString()}`;
+      const cachedResponse = apiCache.get(key);
+
+      // If cache exists and isn't expired, override the adapter to return it instantly
+      if (cachedResponse && Date.now() - cachedResponse.timestamp < CACHE_EXPIRY) {
+        config.adapter = () => Promise.resolve({
+          data: cachedResponse.data,
+          status: 200,
+          statusText: 'OK',
+          headers: {} as any,
+          config,
+          request: {}
+        });
+      }
+    }
+
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// We need a custom adapter to intercept GET requests BEFORE they hit the network
-// Since axios normal interceptors only run AFTER the network request is initiated.
-const defaultAdapter = api.defaults.adapter;
-api.defaults.adapter = async function (config) {
-  const method = config.method?.toLowerCase();
-
-  if (method === 'get') {
-    // Generate a unique cache key based on URL + Params
-    const key = `${config.url}?${new URLSearchParams(config.params || {}).toString()}`;
-    const cachedResponse = apiCache.get(key);
-
-    // If cache exists and isn't expired, return it instantly
-    if (cachedResponse && Date.now() - cachedResponse.timestamp < CACHE_EXPIRY) {
-      return {
-        data: cachedResponse.data,
-        status: 200,
-        statusText: 'OK',
-        headers: {},
-        config,
-        request: {}
-      };
-    }
-  }
-
-  // Proceed with actual network request
-  const response = await (defaultAdapter as any)(config);
-
-  // Save successful GET requests to cache
-  if (method === 'get' && response.status === 200) {
-    const key = `${config.url}?${new URLSearchParams(config.params || {}).toString()}`;
-    apiCache.set(key, {
-      data: response.data,
-      timestamp: Date.now()
-    });
-  }
-
-  return response;
-};
-
-// Response interceptor for error handling
+// Response interceptor for error handling and cache saving
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Save successful GET requests to cache
+    const method = response.config?.method?.toLowerCase();
+    if (method === 'get' && response.status === 200) {
+      const key = `${response.config.url}?${new URLSearchParams(response.config.params as any || {}).toString()}`;
+      apiCache.set(key, {
+        data: response.data,
+        timestamp: Date.now()
+      });
+    }
+    return response;
+  },
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
