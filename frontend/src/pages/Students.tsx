@@ -134,7 +134,7 @@ const Students = () => {
                 // Ensure class is sent as integer if selected, or null/undefined if empty
                 current_class: formData.current_class ? parseInt(formData.current_class.toString()) : null,
                 // Ensure Admission Number is present (Auto-gen if empty)
-                admission_number: formData.admission_number || `${Math.floor(100000 + Math.random() * 900000)}`
+                admission_number: formData.admission_number || ""
             };
 
 
@@ -219,7 +219,7 @@ const Students = () => {
         } else {
             setEditingStudent(null);
             setFormData({
-                admission_number: `${Math.floor(100000 + Math.random() * 900000)}`,
+                admission_number: '',
                 full_name: '',
                 gender: 'M',
                 date_of_birth: '',
@@ -521,7 +521,7 @@ const Students = () => {
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="form-group">
                                     <label className="label">ADM No.</label>
-                                    <input type="text" className="input font-mono" value={formData.admission_number} onChange={(e) => setFormData({ ...formData, admission_number: e.target.value })} placeholder="ADM-..." />
+                                    <input type="text" className="input font-mono" value={formData.admission_number} onChange={(e) => setFormData({ ...formData, admission_number: e.target.value })} placeholder="YY/XXXX (Auto-gen)" />
                                 </div>
                                 <div className="form-group">
                                     <label className="label">Gender *</label>
