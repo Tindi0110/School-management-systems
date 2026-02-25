@@ -247,7 +247,7 @@ const Staff = () => {
                         {(['NONE', 'DEPARTMENT', 'ROLE'] as const).map((mode) => (
                             <button
                                 key={mode}
-                                className={`nav-tab px-6 py-2.5 text-[11px] font-black uppercase tracking-widest rounded-xl transition-all ${groupBy === mode ? 'active bg-white shadow-md text-primary' : 'text-slate-500 hover:text-slate-700'}`}
+                                className={`nav-tab px-6 py-2.5 text-[11px] font-black uppercase tracking-widest rounded-xl transition-all ${groupBy === mode ? 'active bg-primary text-white shadow-lg' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'}`}
                                 onClick={() => setGroupBy(mode)}
                             >
                                 {mode === 'NONE' ? 'Overview' : mode === 'DEPARTMENT' ? 'Depts' : 'Roles'}

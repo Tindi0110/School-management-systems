@@ -1,8 +1,9 @@
 /* Design System: Classic & Professional */
 
 @media print {
+
   /* Hide all system UI elements */
-  nav, 
+  nav,
   aside,
   header,
   footer,
@@ -64,7 +65,8 @@
     border: 1px solid #eee !important;
   }
 
-  th, td {
+  th,
+  td {
     border: 1px solid #eee !important;
     padding: 8px !important;
   }
@@ -94,11 +96,15 @@
   }
 
   /* Typography for print */
-  h1, h2, h3, h4 {
+  h1,
+  h2,
+  h3,
+  h4 {
     color: black !important;
   }
 
-  .text-secondary, .text-muted {
+  .text-secondary,
+  .text-muted {
     color: #444 !important;
   }
 
@@ -1517,6 +1523,26 @@ table.table {
   .mt-0\.5 {
     margin-top: 0.125rem;
   }
+
+  .bg-slate-100 {
+    background-color: #f1f5f9;
+  }
+
+  .bg-slate-50 {
+    background-color: #f8fafc;
+  }
+
+  .hover\:bg-slate-50:hover {
+    background-color: #f8fafc;
+  }
+
+  .rounded-md {
+    border-radius: 0.375rem;
+  }
+
+  .scale-\[0\.99\] {
+    transform: scale(0.99);
+  }
 }
 
 /* Print Styles: Clean Document Export */
@@ -1911,10 +1937,10 @@ table.table {
 }
 
 .nav-tab.active {
-  background: var(--primary);
-  color: white;
+  background: var(--primary) !important;
+  color: white !important;
   border: 1px solid rgba(0, 0, 0, 0.1);
-  box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.2);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
 }
 
 .border-left-4 {
@@ -2082,7 +2108,7 @@ table.table {
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
-.stat-card p, 
+.stat-card p,
 .stat-card div {
   color: white !important;
 }

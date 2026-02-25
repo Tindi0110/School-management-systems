@@ -1,19 +1,63 @@
-from rest_framework import viewsets, status, filters
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from django_filters.rest_framework import DjangoFilterBackend
-from django.utils import timezone
-from .models import (
-    LibraryConfig, Book, BookCopy, BookLending, 
-    LibraryFine, BookReservation
-)
-from .serializers import (
-    LibraryConfigSerializer, BookSerializer, BookCopySerializer,
-    BookLendingSerializer, LibraryFineSerializer, BookReservationSerializer
-)
-from finance.models import Invoice, Adjustment, FeeStructure
-from students.models import Student
+import logging
+logger = logging.getLogger(__name__)
+
+def sync_fine_to_finance(fine, approved_by):
+    """
+    Helper function to create a Finance Adjustment for a LibraryFine.
+    """
+    try:
+        # Resolve student from user profile
+        student = None
+        if hasattr(fine.user, 'student_profile'):
+            student = fine.user.student_profile
+        elif hasattr(fine.user, 'student'):
+            student = fine.user.student
+        
+        if not student:
+            return False, "Student link not found for this user."
+
+        # Find latest unpaid or partial invoice
+        invoice = Invoice.objects.filter(
+            student=student,
+            status__in=['UNPAID', 'PARTIAL']
+        ).order_by('-date_generated').first()
+
+        if not invoice:
+            # Fall back to any latest invoice
+            invoice = Invoice.objects.filter(student=student).order_by('-date_generated').first()
+
+        if not invoice:
+            return False, "No invoice found to sync the fine."
+
+        # Build reason string
+        if fine.lending and fine.lending.copy:
+            book_title = fine.lending.copy.book.title
+            reason = f"Library Fine ({fine.get_fine_type_display()}): {book_title}"
+        else:
+            reason = f"Library Fine ({fine.get_fine_type_display()}): {fine.reason or 'Manual fine'}"
+
+        from django.db import transaction
+        with transaction.atomic():
+            # Use update_or_create with origin tracking
+            from finance.models import Adjustment
+            adjustment, _ = Adjustment.objects.update_or_create(
+                origin_model='library.LibraryFine',
+                origin_id=fine.id,
+                defaults={
+                    'invoice': invoice,
+                    'adjustment_type': 'DEBIT',
+                    'amount': fine.amount,
+                    'reason': reason,
+                    'date': fine.date_issued,
+                    'approved_by': approved_by,
+                }
+            )
+            fine.adjustment = adjustment
+            fine.save(update_fields=['adjustment'])
+            return True, "Synced successfully."
+    except Exception as e:
+        logger.error(f"Finance Sync Error: {e}")
+        return False, f"Finance Sync failed: {str(e)}"
 
 class LibraryConfigViewSet(viewsets.ModelViewSet):
     queryset = LibraryConfig.objects.all()
@@ -153,54 +197,13 @@ class BookLendingViewSet(viewsets.ModelViewSet):
                     reason=f"Auto-Fine: Returned {days_late} days late."
                 )
                 
-                # SYNC TO FINANCE (Debit Adjustment)
-                try:
-                    student = Student.objects.filter(full_name=lending.user.get_full_name()).first() # Best effort link
-                    # Or better: assuming User is linked to Student via a Profile or similar. 
-                    # For now, relying on name match or explicit link if available.
-                    # CHECK: Does User model have student link?
-                    # Re-checking User model or assuming Student is the User for now.
-                    # In this system, User != Student. User is a login. Student is a record.
-                    # We need to find the Student record associated with this User.
-                    # Usually: student.user or user.student_profile
-                    
-                    # Assuming basic link for now or skipping if not found
-                    if hasattr(lending.user, 'student_profile'): 
-                         student = lending.user.student_profile
-                    elif hasattr(lending.user, 'student'): # Common pattern
-                         student = lending.user.student
-                    
-                    if student:
-                        # Find Active Invoice
-                        # Logic: Get invoice for current academic year/term or just the latest UNPAID/PARTIAL
-                        latest_invoice = Invoice.objects.filter(student=student).order_by('-date_generated').first()
-                        
-                        if latest_invoice:
-                            # Use update_or_create with origin tracking for robustness
-                            adjustment, _ = Adjustment.objects.update_or_create(
-                                origin_model='library.LibraryFine',
-                                origin_id=fine.id,
-                                defaults={
-                                    'invoice': latest_invoice,
-                                    'adjustment_type': 'DEBIT',
-                                    'amount': amount,
-                                    'reason': f"Library Fine: {lending.copy.book.title} ({days_late} days late)",
-                                    'date': timezone.now().date(),
-                                    'approved_by': request.user
-                                }
-                            )
-                            fine.adjustment = adjustment
-                            fine.save()
-                            fine_msg = f" Book returned {days_late} days late. Fine of KES {amount} added to Fee Balance."
-                        else:
-                             fine_msg = f" Book returned {days_late} days late. Fine of KES {amount} recorded (No Invoice found to sync)."
-                    else:
-                         fine_msg = f" Book returned {days_late} days late. Fine of KES {amount} recorded (Student link not found)."
-                except Exception as e:
-                    logger.error(f"Finance Sync Error: {e}")
-                    fine_msg = f" Book returned late. Fine recorded but Finance Sync failed."
+                # SYNC TO FINANCE
+                success, msg = sync_fine_to_finance(fine, request.user)
+                if success:
+                    fine_msg = f" Book returned {days_late} days late. Fine of KES {amount} added to Fee Balance."
+                else:
+                    fine_msg = f" Book returned {days_late} days late. Fine of KES {amount} recorded ({msg})."
 
-        
         return Response({'status': f'Book returned successfully.{fine_msg}'})
 
     @action(detail=False, methods=['post'])
@@ -254,87 +257,36 @@ class LibraryFineViewSet(viewsets.ModelViewSet):
     serializer_class = LibraryFineSerializer
     permission_classes = [IsAuthenticated]
 
+    def perform_create(self, serializer):
+        fine = serializer.save()
+        # Automatically sync manual fines to finance
+        sync_fine_to_finance(fine, self.request.user)
+
     @action(detail=False, methods=['post'])
     def sync_to_finance(self, request):
         """
         Bulk-syncs all PENDING library fines that have no finance adjustment yet.
         Creates a DEBIT Adjustment on the student's latest UNPAID/PARTIAL invoice.
         """
-        from django.db import transaction
-
         pending_fines = LibraryFine.objects.filter(
             status='PENDING',
             adjustment__isnull=True
         ).select_related('lending__copy__book', 'user')
 
         synced = 0
-        skipped_no_student = 0
-        skipped_no_invoice = 0
-        already_synced = 0
+        skipped = 0
 
         for fine in pending_fines:
-            # Resolve student from user profile
-            student = None
-            try:
-                if hasattr(fine.user, 'student_profile'):
-                    student = fine.user.student_profile
-            except Exception:
-                pass
-
-            if not student:
-                skipped_no_student += 1
-                continue
-
-            # Find latest unpaid or partial invoice
-            invoice = Invoice.objects.filter(
-                student=student,
-                status__in=['UNPAID', 'PARTIAL']
-            ).order_by('-date_generated').first()
-
-            if not invoice:
-                # Fall back to any latest invoice
-                invoice = Invoice.objects.filter(
-                    student=student
-                ).order_by('-date_generated').first()
-
-            if not invoice:
-                skipped_no_invoice += 1
-                continue
-
-            # Build reason string
-            if fine.lending and fine.lending.copy:
-                book_title = fine.lending.copy.book.title
-                reason = f"Library Fine ({fine.get_fine_type_display()}): {book_title}"
+            success, _ = sync_fine_to_finance(fine, request.user)
+            if success:
+                synced += 1
             else:
-                reason = f"Library Fine ({fine.get_fine_type_display()}): {fine.reason or 'No details'}"
-
-            try:
-                with transaction.atomic():
-                    # Use update_or_create with origin tracking
-                    adjustment, _ = Adjustment.objects.update_or_create(
-                        origin_model='library.LibraryFine',
-                        origin_id=fine.id,
-                        defaults={
-                            'invoice': invoice,
-                            'adjustment_type': 'DEBIT',
-                            'amount': fine.amount,
-                            'reason': reason,
-                            'date': fine.date_issued,
-                            'approved_by': request.user,
-                        }
-                    )
-                    fine.adjustment = adjustment
-                    fine.save(update_fields=['adjustment'])
-                    synced += 1
-            except Exception as e:
-                skipped_no_invoice += 1
-                continue
+                skipped += 1
 
         return Response({
             'message': f'Sync complete. {synced} fine(s) synced to finance.',
             'synced': synced,
-            'skipped_no_student': skipped_no_student,
-            'skipped_no_invoice': skipped_no_invoice,
+            'skipped': skipped
         })
 
 class BookReservationViewSet(viewsets.ModelViewSet):

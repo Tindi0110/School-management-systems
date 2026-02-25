@@ -59,7 +59,7 @@ const ExamBroadsheet: React.FC<ExamBroadsheetProps> = ({
     }, [students, resultContext.level, classes, examResults, gradeSystems, selectedExam]);
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title={`Broadsheet: ${selectedExam?.name || ''}`} size="full">
+        <Modal isOpen={isOpen} onClose={onClose} title={`Broadsheet: ${selectedExam?.name || ''}`} size="lg">
             <div className="flex justify-between items-center mb-4">
                 <div className="flex gap-2">
                     <select
