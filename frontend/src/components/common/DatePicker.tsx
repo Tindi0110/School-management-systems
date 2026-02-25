@@ -29,25 +29,37 @@ const PremiumDateInput: React.FC<DatePickerProps> = ({
                 </label>
             )}
 
-            <div className="relative group">
+            <div className="relative group flex items-center">
                 <div
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary hover:text-primary transition-colors cursor-pointer z-10 p-1 -ml-1"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary hover:text-primary transition-colors cursor-pointer z-20 p-1 -ml-1"
                     onClick={(e) => {
-                        const input = e.currentTarget.nextElementSibling as HTMLInputElement;
-                        if (input && 'showPicker' in input) {
-                            try { input.showPicker(); } catch (err) { }
+                        const hiddenDateInput = e.currentTarget.parentElement?.querySelector('input[type="date"]') as HTMLInputElement;
+                        if (hiddenDateInput && 'showPicker' in hiddenDateInput) {
+                            try { hiddenDateInput.showPicker(); } catch (err) { }
                         }
                     }}
                     title="Open calendar"
                 >
                     <CalendarIcon size={14} />
                 </div>
+                {/* Visible input for direct typing */}
                 <input
-                    type="date"
+                    type="text"
+                    placeholder="YYYY-MM-DD"
+                    pattern="\d{4}-\d{2}-\d{2}"
                     className="input w-full pl-10 pr-4 h-11 bg-slate-50/50 border-2 border-slate-100 hover:border-slate-200 focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/5 transition-all outline-none font-bold text-sm text-slate-800"
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
                     required={required}
+                    disabled={disabled}
+                    title="Format: YYYY-MM-DD"
+                />
+                {/* Hidden native date input for the calendar popup */}
+                <input
+                    type="date"
+                    className="absolute w-0 h-0 opacity-0 pointer-events-none"
+                    value={value}
+                    onChange={(e) => onChange(e.target.value)}
                     min={minDate}
                     disabled={disabled}
                 />

@@ -28,13 +28,22 @@ const Library = () => {
     // Pagination state — per tab
     const PAGE_SIZE = 25;
     const [booksPage, setBooksPage] = useState(1);
-    const [booksTotal, setBooksTotal] = useState(0);
     const [copiesPage, setCopiesPage] = useState(1);
-    const [_copiesTotal, setCopiesTotal] = useState(0);
     const [lendingsPage, setLendingsPage] = useState(1);
-    const [lendingsTotal, setLendingsTotal] = useState(0);
     const [finesPage, setFinesPage] = useState(1);
+
+    const [booksTotal, setBooksTotal] = useState(0);
+    const [lendingsTotal, setLendingsTotal] = useState(0);
     const [finesTotal, setFinesTotal] = useState(0);
+
+    const [stats, setStats] = useState({
+        totalBooks: 0,
+        totalCopies: 0,
+        totalFines: 0,
+        activeLendings: 0,
+        available: 0,
+        overdue: 0
+    });
 
     const userString = localStorage.getItem('user');
     const user = userString ? JSON.parse(userString) : null;
@@ -104,21 +113,39 @@ const Library = () => {
             setCopiesPage(1);
             setLendingsPage(1);
             setFinesPage(1);
+            if (activeTab === 'catalog') loadCatalog();
+            if (activeTab === 'lendings') loadLendings();
+            if (activeTab === 'fines') loadFines();
+        }, 400);
+        return () => clearTimeout(handler);
+    }, [searchTerm]);
+
+
+    // Debounced search — reset pages and reload active tab
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setBooksPage(1);
+            setCopiesPage(1);
+            setLendingsPage(1);
+            setFinesPage(1);
+            if (activeTab === 'catalog') loadCatalog();
+            if (activeTab === 'lendings') loadLendings();
+            if (activeTab === 'fines') loadFines();
         }, 400);
         return () => clearTimeout(handler);
     }, [searchTerm]);
 
     useEffect(() => {
         if (activeTab === 'catalog') loadCatalog();
-    }, [booksPage, copiesPage, searchTerm]);
+    }, [booksPage, copiesPage]);
 
     useEffect(() => {
         if (activeTab === 'lendings') loadLendings();
-    }, [lendingsPage, searchTerm]);
+    }, [lendingsPage]);
 
     useEffect(() => {
         if (activeTab === 'fines') loadFines();
-    }, [finesPage, searchTerm]);
+    }, [finesPage]);
 
     useEffect(() => {
         fetchAllData();
@@ -127,22 +154,23 @@ const Library = () => {
     // Split loading to avoid slow re-fetches
     const fetchAllData = async () => {
         try {
+            const statsRes = await libraryAPI.books.getDashboardStats();
+            setStats(statsRes.data);
             await Promise.all([loadCatalog(), loadLendings(), loadFines(), loadStudents()]);
         } catch (error) { console.error('Error initializing library:', error); }
         finally { setLoading(false); }
     };
 
     const loadCatalog = async () => {
-        const params: any = { page_size: PAGE_SIZE };
+        const params: any = { page_size: PAGE_SIZE, page: booksPage };
         if (searchTerm) params.search = searchTerm;
         const [b, c] = await Promise.all([
-            libraryAPI.books.getAll({ ...params, page: booksPage }),
+            libraryAPI.books.getAll(params),
             libraryAPI.copies.getAll({ page_size: 2000 }),
         ]);
         setBooks(b.data?.results ?? b.data ?? []);
         setBooksTotal(b.data?.count ?? 0);
         setCopies(c.data?.results ?? c.data ?? []);
-        setCopiesTotal(c.data?.count ?? 0);
     };
 
     const loadLendings = async () => {
@@ -359,15 +387,7 @@ const Library = () => {
     };
     const handleEditFine = (f: any) => { setFineId(f.id); setFineForm({ ...f, student: String(f.student) }); setIsFineModalOpen(true); };
 
-    // Memoized Stats & Options to prevent render lag
-    const stats = React.useMemo(() => ({
-        totalBooks: books.length,
-        totalCopies: copies.length,
-        activeLendings: lendings.filter(l => !l.date_returned).length,
-        available: copies.filter(c => c.status === 'AVAILABLE').length,
-        overdue: lendings.filter(l => !l.date_returned && new Date(l.due_date) < new Date()).length,
-        totalFines: fines.filter(f => f.status === 'PENDING').reduce((acc, f) => acc + (Number(f.amount) || 0), 0)
-    }), [books, copies, lendings, fines]);
+
 
     const studentOptions = React.useMemo(() =>
         students.map(s => ({ id: String(s.id), label: `${s.admission_number || 'No ADM'} - ${s.full_name}`, value: String(s.id) })),
@@ -377,16 +397,6 @@ const Library = () => {
         copies.filter(c => c.status === 'AVAILABLE').map(c => ({ id: String(c.id), label: `${c.copy_number} - ${books.find(b => b.id === c.book)?.title}`, value: String(c.id) })),
         [copies, books]);
 
-    const filteredBooks = React.useMemo(() => {
-        const lowerSearch = searchTerm.toLowerCase();
-        return books.filter(b =>
-            !searchTerm ||
-            (b.title || '').toLowerCase().includes(lowerSearch) ||
-            (b.author || '').toLowerCase().includes(lowerSearch) ||
-            (b.isbn && b.isbn.includes(searchTerm)) ||
-            (b.category && b.category.toLowerCase().includes(lowerSearch))
-        );
-    }, [books, searchTerm]);
 
     const filteredCopies = React.useMemo(() => {
         const lowerSearch = searchTerm.toLowerCase();
@@ -397,24 +407,6 @@ const Library = () => {
         );
     }, [copies, searchTerm]);
 
-    const filteredLendings = React.useMemo(() => {
-        const lowerSearch = searchTerm.toLowerCase();
-        return lendings.filter(l =>
-            !searchTerm ||
-            (l.book_title || '').toLowerCase().includes(lowerSearch) ||
-            (l.copy_number || '').toLowerCase().includes(lowerSearch) ||
-            (l.user_name || l.student_name || '').toLowerCase().includes(lowerSearch)
-        );
-    }, [lendings, searchTerm]);
-
-    const filteredFines = React.useMemo(() => {
-        const lowerSearch = searchTerm.toLowerCase();
-        return fines.filter(f =>
-            !searchTerm ||
-            (f.user_name || '').toLowerCase().includes(lowerSearch) ||
-            (f.reason || '').toLowerCase().includes(lowerSearch)
-        );
-    }, [fines, searchTerm]);
 
     if (loading) return <div className="spinner-container"><div className="spinner"></div></div>;
 
@@ -508,7 +500,7 @@ const Library = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredBooks.map(b => {
+                            {books.map((b: any) => {
                                 const bookCopies = copies.filter(c => c.book === b.id);
                                 const available = bookCopies.filter(c => c.status === 'AVAILABLE').length;
                                 return (
@@ -576,7 +568,7 @@ const Library = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filteredBooks.map(b => {
+                                    {books.map(b => {
                                         const bookCopies = copies.filter(c => c.book === b.id);
                                         const available = bookCopies.filter(c => c.status === 'AVAILABLE').length;
                                         const issued = bookCopies.filter(c => c.status === 'ISSUED').length;
@@ -685,7 +677,7 @@ const Library = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredLendings.map(l => (
+                            {lendings.map((l: any) => (
                                 <tr key={l.id}>
                                     <td className="font-bold">{l.book_title}</td>
                                     <td><span className="font-mono text-xs bg-secondary-light px-2 py-1 rounded">{l.copy_number}</span></td>
@@ -761,8 +753,8 @@ const Library = () => {
                     <table className="table">
                         <thead><tr><th>Student</th><th>Amount (KES)</th><th>Reason</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
                         <tbody>
-                            {filteredFines.length === 0 && <tr><td colSpan={6} className="text-center italic">No fines found.</td></tr>}
-                            {filteredFines.map(f => (
+                            {fines.length === 0 && <tr><td colSpan={6} className="text-center italic">No fines found.</td></tr>}
+                            {fines.map((f: any) => (
                                 <tr key={f.id}>
                                     <td>{f.user_name || 'Unknown Student'}</td>
                                     <td className="font-bold">{parseFloat(f.amount).toLocaleString()}</td>

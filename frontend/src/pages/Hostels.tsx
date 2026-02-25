@@ -80,21 +80,30 @@ const Hostels = () => {
     const [discPage, setDiscPage] = useState(1);
     const [discTotal, setDiscTotal] = useState(0);
 
+    const [stats, setStats] = useState({
+        totalHostels: 0,
+        totalCapacity: 0,
+        totalResidents: 0,
+        maintenanceIssues: 0
+    });
+
     // Debounced search resets pages
     useEffect(() => {
         const h = setTimeout(() => {
             setAllocPage(1);
             setDiscPage(1);
+            if (activeTab === 'allocations') loadAllocations();
+            if (activeTab === 'discipline') loadDiscipline();
         }, 400);
         return () => clearTimeout(h);
     }, [searchTerm]);
 
     useEffect(() => {
-        if (!loading) loadAllocations();
+        if (activeTab === 'allocations') loadAllocations();
     }, [allocPage]);
 
     useEffect(() => {
-        if (!loading) loadDiscipline();
+        if (activeTab === 'discipline') loadDiscipline();
     }, [discPage]);
 
     useEffect(() => {
@@ -106,16 +115,17 @@ const Hostels = () => {
             const [
                 hostelsRes, roomsRes, bedsRes,
                 attendanceRes, assetsRes,
-                maintenanceRes, studentsRes, staffRes
+                maintenanceRes, studentsRes, staffRes, statsRes
             ] = await Promise.all([
                 hostelAPI.hostels.getAll(),
                 hostelAPI.rooms.getAll({ page_size: 200 }),
                 hostelAPI.beds.getAll({ page_size: 1000 }),
-                hostelAPI.attendance.getAll({ page_size: 100, ordering: '-date' }),
+                hostelAPI.attendance.getAll({ page_size: 500, ordering: '-date' }),
                 hostelAPI.assets.getAll({ page_size: 500 }),
                 hostelAPI.maintenance.getAll({ page_size: 200 }),
                 studentsAPI.getAll({ page_size: 500 }),
                 staffAPI.getAll({ page_size: 100 }),
+                hostelAPI.hostels.getStats()
             ]);
             const d = (r: any) => r?.data?.results ?? r?.data ?? [];
             setHostels(d(hostelsRes));
@@ -126,8 +136,10 @@ const Hostels = () => {
             setMaintenance(d(maintenanceRes));
             setStudents(d(studentsRes));
             setStaff(d(staffRes));
-            // Load paginated tables separately
-            await Promise.all([loadAllocations(), loadDiscipline()]);
+            setStats(statsRes.data);
+
+            loadAllocations();
+            loadDiscipline();
         } catch (error) {
             console.error('Error loading hostel data:', error);
         } finally {
@@ -136,27 +148,19 @@ const Hostels = () => {
     };
 
     const loadAllocations = async () => {
-        try {
-            const res = await hostelAPI.allocations.getAll({
-                page: allocPage,
-                page_size: HOSTEL_PAGE_SIZE,
-                ...(searchTerm ? { search: searchTerm } : {}),
-            });
-            setAllocations(res?.data?.results ?? res?.data ?? []);
-            setAllocTotal(res?.data?.count ?? 0);
-        } catch (error) { console.error('Error loading allocations:', error); }
+        const params: any = { page: allocPage, page_size: HOSTEL_PAGE_SIZE };
+        if (searchTerm) params.search = searchTerm;
+        const res = await hostelAPI.allocations.getAll(params);
+        setAllocations(res.data?.results ?? res.data ?? []);
+        setAllocTotal(res.data?.count ?? 0);
     };
 
     const loadDiscipline = async () => {
-        try {
-            const res = await hostelAPI.discipline.getAll({
-                page: discPage,
-                page_size: HOSTEL_PAGE_SIZE,
-                ...(searchTerm ? { search: searchTerm } : {}),
-            });
-            setDiscipline(res?.data?.results ?? res?.data ?? []);
-            setDiscTotal(res?.data?.count ?? 0);
-        } catch (error) { console.error('Error loading discipline:', error); }
+        const params: any = { page: discPage, page_size: HOSTEL_PAGE_SIZE };
+        if (searchTerm) params.search = searchTerm;
+        const res = await hostelAPI.discipline.getAll(params);
+        setDiscipline(res.data?.results ?? res.data ?? []);
+        setDiscTotal(res.data?.count ?? 0);
     };
 
 
@@ -528,12 +532,7 @@ const Hostels = () => {
         setIsRoomModalOpen(true);
     };
 
-    const stats = {
-        totalHostels: hostels.length,
-        totalCapacity: hostels.reduce((acc, h) => acc + (h.capacity || 0), 0),
-        totalResidents: allocations.filter(a => a.status === 'ACTIVE').length,
-        maintenanceIssues: maintenance.filter(m => m.status === 'PENDING').length
-    };
+    // using stats from state
 
 
 
@@ -654,29 +653,22 @@ const Hostels = () => {
                         <table className="table">
                             <thead><tr><th>Student</th><th>Hostel</th><th>Room</th><th>Bed</th><th>Status</th><th>Actions</th></tr></thead>
                             <tbody>
-                                {allocations
-                                    .filter(a =>
-                                        !searchTerm ||
-                                        (a.student_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                        (a.hostel_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                        (a.room_number || '').toLowerCase().includes(searchTerm.toLowerCase())
-                                    )
-                                    .map(a => (
-                                        <tr key={a.id}>
-                                            <td className="font-bold">{a.student_name || students.find(s => s.id === a.student)?.full_name}</td>
-                                            <td>{a.hostel_name || 'N/A'}</td>
-                                            <td>{a.room_number || 'N/A'}</td>
-                                            <td>{a.bed_number || 'N/A'}</td>
-                                            <td><span className={`badge ${a.status === 'ACTIVE' ? 'badge-success' : 'badge-ghost'}`}>{a.status}</span></td>
-                                            <td>
-                                                <div className="flex gap-2">
-                                                    <button className="btn btn-sm btn-outline text-info" onClick={() => openTransferModal(a)} title="Transfer Room">Transfer</button>
-                                                    <button className="btn btn-sm btn-ghost text-primary" onClick={() => handleEditAllocation(a)}><Edit size={14} /></button>
-                                                    <button className="btn btn-sm btn-ghost text-error" onClick={() => handleDeleteAllocation(a.id)}><Trash2 size={14} /></button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
+                                {allocations.map((a: any) => (
+                                    <tr key={a.id}>
+                                        <td className="font-bold">{a.student_name || students.find(s => s.id === a.student)?.full_name}</td>
+                                        <td>{a.hostel_name || 'N/A'}</td>
+                                        <td>{a.room_number || 'N/A'}</td>
+                                        <td>{a.bed_number || 'N/A'}</td>
+                                        <td><span className={`badge ${a.status === 'ACTIVE' ? 'badge-success' : 'badge-ghost'}`}>{a.status}</span></td>
+                                        <td>
+                                            <div className="flex gap-2">
+                                                <button className="btn btn-sm btn-outline text-info" onClick={() => openTransferModal(a)} title="Transfer Room">Transfer</button>
+                                                <button className="btn btn-sm btn-ghost text-primary" onClick={() => handleEditAllocation(a)}><Edit size={14} /></button>
+                                                <button className="btn btn-sm btn-ghost text-error" onClick={() => handleDeleteAllocation(a.id)}><Trash2 size={14} /></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
                             </tbody>
                         </table>
                         {/* Allocations Pagination */}
@@ -813,11 +805,7 @@ const Hostels = () => {
                             <thead><tr><th>Date</th><th>Student</th><th>Infraction</th><th>Severity</th><th>Action Taken</th><th>Actions</th></tr></thead>
                             <tbody>
                                 {discipline.length === 0 && <tr><td colSpan={6} className="text-center italic">No discipline records.</td></tr>}
-                                {discipline.filter(d =>
-                                    !searchTerm ||
-                                    (students.find(s => s.id === d.student)?.full_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                    (d.offence || '').toLowerCase().includes(searchTerm.toLowerCase())
-                                ).map(d => (
+                                {discipline.map((d: any) => (
                                     <tr key={d.id}>
                                         <td>{d.date || d.incident_date}</td>
                                         <td className="font-bold">{students.find(s => s.id === d.student)?.full_name}</td>

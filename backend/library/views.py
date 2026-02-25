@@ -29,6 +29,24 @@ class BookViewSet(viewsets.ModelViewSet):
     search_fields = ['title', 'author', 'isbn', 'category', 'publisher']
     ordering_fields = ['title', 'author', 'year']
 
+    @action(detail=False, methods=['get'])
+    def dashboard_stats(self, request):
+        total_books = Book.objects.count()
+        total_copies = BookCopy.objects.count()
+        total_fines = sum(fine.amount for fine in LibraryFine.objects.filter(status='PENDING'))
+        active_lendings = BookLending.objects.filter(date_returned__isnull=True).count()
+        available_copies = BookCopy.objects.filter(status='AVAILABLE').count()
+        overdue_lendings = BookLending.objects.filter(date_returned__isnull=True, due_date__lt=timezone.now().date()).count()
+
+        return Response({
+            'totalBooks': total_books,
+            'totalCopies': total_copies,
+            'totalFines': total_fines,
+            'activeLendings': active_lendings,
+            'available': available_copies,
+            'overdue': overdue_lendings
+        })
+
 class BookCopyViewSet(viewsets.ModelViewSet):
     queryset = BookCopy.objects.select_related('book').all()
     serializer_class = BookCopySerializer

@@ -363,6 +363,7 @@ export const libraryAPI = {
     create: (data: any) => api.post('books/', data),
     update: (id: number, data: any) => api.put(`books/${id}/`, data),
     delete: (id: number) => api.delete(`books/${id}/`),
+    getDashboardStats: () => api.get('books/dashboard_stats/'),
   },
   copies: {
     getAll: (params?: Record<string, any>) => api.get('book-copies/', allWith(params)),
