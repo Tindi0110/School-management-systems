@@ -69,8 +69,8 @@ api.interceptors.response.use(
 // Helper configs for different data needs
 export const RECENT = { params: { page_size: 10 } };
 export const SUMMARY = { params: { page_size: 50 } };
-export const ALL = { params: { page_size: 200 } };
-export const allWith = (extra?: Record<string, any>) => ({ params: { page_size: 200, ...extra } });
+export const ALL = { params: { page_size: 2000 } };
+export const allWith = (extra?: Record<string, any>) => ({ params: { page_size: 2000, ...extra } });
 export const recentWith = (extra?: Record<string, any>) => ({ params: { page_size: 10, ...extra } });
 export const summaryWith = (extra?: Record<string, any>) => ({ params: { page_size: 50, ...extra } });
 
