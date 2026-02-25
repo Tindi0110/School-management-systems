@@ -76,9 +76,9 @@ const Hostels = () => {
     // Pagination state for large tables
     const HOSTEL_PAGE_SIZE = 25;
     const [allocPage, setAllocPage] = useState(1);
-    const [_allocTotal, setAllocTotal] = useState(0);
+    const [allocTotal, setAllocTotal] = useState(0);
     const [discPage, setDiscPage] = useState(1);
-    const [_discTotal, setDiscTotal] = useState(0);
+    const [discTotal, setDiscTotal] = useState(0);
 
     // Debounced search resets pages
     useEffect(() => {
@@ -679,6 +679,19 @@ const Hostels = () => {
                                     ))}
                             </tbody>
                         </table>
+                        {/* Allocations Pagination */}
+                        {allocTotal > HOSTEL_PAGE_SIZE && (
+                            <div className="flex items-center justify-between mt-4 pt-4 border-t">
+                                <span className="text-sm text-secondary">
+                                    Showing {((allocPage - 1) * HOSTEL_PAGE_SIZE) + 1}–{Math.min(allocPage * HOSTEL_PAGE_SIZE, allocTotal)} of {allocTotal} allocations
+                                </span>
+                                <div className="flex gap-2">
+                                    <button className="btn btn-outline btn-sm" onClick={() => setAllocPage(p => Math.max(1, p - 1))} disabled={allocPage === 1}>← Prev</button>
+                                    <span className="btn btn-ghost btn-sm pointer-events-none">Page {allocPage} / {Math.ceil(allocTotal / HOSTEL_PAGE_SIZE)}</span>
+                                    <button className="btn btn-outline btn-sm" onClick={() => setAllocPage(p => p + 1)} disabled={allocPage * HOSTEL_PAGE_SIZE >= allocTotal}>Next →</button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )
             }
@@ -821,6 +834,19 @@ const Hostels = () => {
                                 ))}
                             </tbody>
                         </table>
+                        {/* Discipline Pagination */}
+                        {discTotal > HOSTEL_PAGE_SIZE && (
+                            <div className="flex items-center justify-between mt-4 pt-4 border-t">
+                                <span className="text-sm text-secondary">
+                                    Showing {((discPage - 1) * HOSTEL_PAGE_SIZE) + 1}–{Math.min(discPage * HOSTEL_PAGE_SIZE, discTotal)} of {discTotal} records
+                                </span>
+                                <div className="flex gap-2">
+                                    <button className="btn btn-outline btn-sm" onClick={() => setDiscPage(p => Math.max(1, p - 1))} disabled={discPage === 1}>← Prev</button>
+                                    <span className="btn btn-ghost btn-sm pointer-events-none">Page {discPage} / {Math.ceil(discTotal / HOSTEL_PAGE_SIZE)}</span>
+                                    <button className="btn btn-outline btn-sm" onClick={() => setDiscPage(p => p + 1)} disabled={discPage * HOSTEL_PAGE_SIZE >= discTotal}>Next →</button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )
             }

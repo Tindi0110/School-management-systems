@@ -30,7 +30,16 @@ const PremiumDateInput: React.FC<DatePickerProps> = ({
             )}
 
             <div className="relative group">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors pointer-events-none">
+                <div
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary hover:text-primary transition-colors cursor-pointer z-10 p-1 -ml-1"
+                    onClick={(e) => {
+                        const input = e.currentTarget.nextElementSibling as HTMLInputElement;
+                        if (input && 'showPicker' in input) {
+                            try { input.showPicker(); } catch (err) { }
+                        }
+                    }}
+                    title="Open calendar"
+                >
                     <CalendarIcon size={14} />
                 </div>
                 <input

@@ -291,13 +291,13 @@ const Academics = () => {
                 yearsRes, termsRes, classesRes, subjectsRes, groupsRes,
                 gradesRes, staffRes, studentRes, resultsRes, examsRes, syllabusRes
             ] = await Promise.allSettled([
-                academicsAPI.years.getAll(),
-                academicsAPI.terms.getAll(),
-                academicsAPI.classes.getAll(),
-                academicsAPI.subjects.getAll(),
-                academicsAPI.subjectGroups.getAll(),
-                academicsAPI.gradeSystems.getAll(),
-                staffAPI.getAll(),
+                academicsAPI.years.getAll({ page_size: 50 }),
+                academicsAPI.terms.getAll({ page_size: 50 }),
+                academicsAPI.classes.getAll({ page_size: 100 }),
+                academicsAPI.subjects.getAll({ page_size: 200 }),
+                academicsAPI.subjectGroups.getAll({ page_size: 100 }),
+                academicsAPI.gradeSystems.getAll({ page_size: 20 }),
+                staffAPI.getAll({ page_size: 200 }),
                 studentsAPI.getAll({ page_size: 200 }),
                 academicsAPI.results.getAll({ page_size: 500 }),
                 academicsAPI.exams.getAll(),
@@ -338,13 +338,13 @@ const Academics = () => {
         try {
             const d = (r: PromiseSettledResult<any>) => r.status === 'fulfilled' ? (r.value.data?.results ?? r.value.data ?? []) : [];
             const [yearsRes, termsRes, classesRes, subjectsRes, groupsRes, gradesRes, staffRes] = await Promise.allSettled([
-                academicsAPI.years.getAll(),
-                academicsAPI.terms.getAll(),
-                academicsAPI.classes.getAll(),
-                academicsAPI.subjects.getAll(),
-                academicsAPI.subjectGroups.getAll(),
-                academicsAPI.gradeSystems.getAll(),
-                staffAPI.getAll(),
+                academicsAPI.years.getAll({ page_size: 50 }),
+                academicsAPI.terms.getAll({ page_size: 50 }),
+                academicsAPI.classes.getAll({ page_size: 100 }),
+                academicsAPI.subjects.getAll({ page_size: 200 }),
+                academicsAPI.subjectGroups.getAll({ page_size: 100 }),
+                academicsAPI.gradeSystems.getAll({ page_size: 20 }),
+                staffAPI.getAll({ page_size: 200 }),
             ]);
 
             setAcademicYears(d(yearsRes));
@@ -385,7 +385,7 @@ const Academics = () => {
                 setExams(d(res));
             } else if (activeTab === 'ATTENDANCE') {
                 const [attRes, studentRes] = await Promise.all([
-                    academicsAPI.attendance.getAll(),
+                    academicsAPI.attendance.getAll({ page_size: 500, ordering: '-date' }),
                     studentsAPI.getAll({ page_size: 200 })
                 ]);
                 setAttendanceRecords(d(attRes));

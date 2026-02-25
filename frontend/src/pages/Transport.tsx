@@ -110,19 +110,21 @@ const Transport = () => {
         };
 
         try {
+            // Reference data — fully loaded for dropdowns and forms
             await Promise.all([
-                fetchData(transportAPI.vehicles.getAll(), setVehicles),
-                fetchData(transportAPI.routes.getAll(), setRoutes),
-                fetchData(transportAPI.pickupPoints.getAll(), setPickupPoints),
-                fetchData(transportAPI.allocations.getAll(), setAllocations),
-                fetchData(studentsAPI.getAll(), setStudents)
+                fetchData(transportAPI.vehicles.getAll({ page_size: 100 }), setVehicles),
+                fetchData(transportAPI.routes.getAll({ page_size: 200 }), setRoutes),
+                fetchData(transportAPI.pickupPoints.getAll({ page_size: 500 }), setPickupPoints),
+                fetchData(transportAPI.allocations.getAll({ page_size: 500 }), setAllocations),
+                fetchData(studentsAPI.getAll({ page_size: 500 }), setStudents)
             ]);
 
+            // Operational logs — capped to most recent 50, ordered newest first
             await Promise.all([
-                fetchData(transportAPI.fuel.getAll(), setFuelRecords),
-                fetchData(transportAPI.tripLogs.getAll(), setTrips),
-                fetchData(transportAPI.maintenance.getAll(), setMaintenanceRecords),
-                fetchData(transportAPI.incidents.getAll(), setIncidents)
+                fetchData(transportAPI.fuel.getAll({ page_size: 50, ordering: '-date' }), setFuelRecords),
+                fetchData(transportAPI.tripLogs.getAll({ page_size: 50, ordering: '-date' }), setTrips),
+                fetchData(transportAPI.maintenance.getAll({ page_size: 50, ordering: '-date' }), setMaintenanceRecords),
+                fetchData(transportAPI.incidents.getAll({ page_size: 50, ordering: '-date' }), setIncidents)
             ]);
 
         } catch (error) {

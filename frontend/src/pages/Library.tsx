@@ -28,7 +28,7 @@ const Library = () => {
     // Pagination state — per tab
     const PAGE_SIZE = 25;
     const [booksPage, setBooksPage] = useState(1);
-    const [_booksTotal, setBooksTotal] = useState(0);
+    const [booksTotal, setBooksTotal] = useState(0);
     const [copiesPage, setCopiesPage] = useState(1);
     const [_copiesTotal, setCopiesTotal] = useState(0);
     const [lendingsPage, setLendingsPage] = useState(1);
@@ -137,7 +137,7 @@ const Library = () => {
         if (searchTerm) params.search = searchTerm;
         const [b, c] = await Promise.all([
             libraryAPI.books.getAll({ ...params, page: booksPage }),
-            libraryAPI.copies.getAll({ ...params, page: copiesPage }),
+            libraryAPI.copies.getAll({ page_size: 2000 }),
         ]);
         setBooks(b.data?.results ?? b.data ?? []);
         setBooksTotal(b.data?.count ?? 0);
@@ -538,6 +538,19 @@ const Library = () => {
                             })}
                         </tbody>
                     </table>
+                    {/* Books Pagination */}
+                    {booksTotal > PAGE_SIZE && (
+                        <div className="flex items-center justify-between mt-4 pt-4 border-t">
+                            <span className="text-sm text-secondary">
+                                Showing {((booksPage - 1) * PAGE_SIZE) + 1}–{Math.min(booksPage * PAGE_SIZE, booksTotal)} of {booksTotal} titles
+                            </span>
+                            <div className="flex gap-2">
+                                <button className="btn btn-outline btn-sm" onClick={() => setBooksPage(p => Math.max(1, p - 1))} disabled={booksPage === 1}>← Prev</button>
+                                <span className="btn btn-ghost btn-sm pointer-events-none">Page {booksPage} / {Math.ceil(booksTotal / PAGE_SIZE)}</span>
+                                <button className="btn btn-outline btn-sm" onClick={() => setBooksPage(p => p + 1)} disabled={booksPage * PAGE_SIZE >= booksTotal}>Next →</button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -584,6 +597,19 @@ const Library = () => {
                                     })}
                                 </tbody>
                             </table>
+                            {/* Inventory Summary Pagination (Uses Books Pagination) */}
+                            {booksTotal > PAGE_SIZE && (
+                                <div className="flex items-center justify-between mt-4 pt-4 border-t">
+                                    <span className="text-sm text-secondary">
+                                        Showing {((booksPage - 1) * PAGE_SIZE) + 1}–{Math.min(booksPage * PAGE_SIZE, booksTotal)} of {booksTotal} titles
+                                    </span>
+                                    <div className="flex gap-2">
+                                        <button className="btn btn-outline btn-sm" onClick={() => setBooksPage(p => Math.max(1, p - 1))} disabled={booksPage === 1}>← Prev</button>
+                                        <span className="btn btn-ghost btn-sm pointer-events-none">Page {booksPage} / {Math.ceil(booksTotal / PAGE_SIZE)}</span>
+                                        <button className="btn btn-outline btn-sm" onClick={() => setBooksPage(p => p + 1)} disabled={booksPage * PAGE_SIZE >= booksTotal}>Next →</button>
+                                    </div>
+                                </div>
+                            )}
                         </>
                     ) : (
                         <>
