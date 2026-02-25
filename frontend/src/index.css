@@ -1524,6 +1524,10 @@ table.table {
     margin-top: 0.125rem;
   }
 
+  .bg-slate-600 {
+    background-color: #475569;
+  }
+
   .bg-slate-500 {
     background-color: #64748b;
   }
@@ -1548,6 +1552,10 @@ table.table {
     background-color: #f8fafc;
   }
 
+  .hover\:bg-slate-400:hover {
+    background-color: #94a3b8;
+  }
+
   .hover\:bg-slate-300:hover {
     background-color: #cbd5e1;
   }
@@ -1564,8 +1572,8 @@ table.table {
     background-color: #f8fafc;
   }
 
-  .border-slate-500 {
-    border-color: #64748b;
+  .border-slate-600 {
+    border-color: #475569;
   }
 
   .border-slate-400 {

@@ -131,7 +131,7 @@ const Dashboard = () => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-6 mb-10">
+            <div className="grid grid-cols-2 gap-10 mb-10">
                 {(user?.role === 'ADMIN' || user?.role === 'DOS' || user?.role === 'REGISTRAR' || user?.role === 'TEACHER') && (
                     <div className="transform hover:-translate-y-1 transition-all">
                         <StatCard
@@ -302,7 +302,7 @@ const Dashboard = () => {
                     </div>
                 </form>
             </Modal>
-        </div>
+        </div >
     );
 };
 
