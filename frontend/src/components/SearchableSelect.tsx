@@ -186,9 +186,9 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                                     <div
                                         key={opt.id}
                                         className={`
-                                            px-4 py-3 cursor-pointer transition-colors flex flex-col gap-0.5
-                                            ${index === activeIndex ? 'bg-primary/15' : 'hover:bg-primary/10'}
-                                            ${value?.toString() === opt.id.toString() ? 'bg-primary/20' : ''}
+                                            px-4 py-3 cursor-pointer transition-all duration-200 flex flex-col gap-0.5 mx-1
+                                            ${index === activeIndex ? 'bg-slate-100 rounded-md scale-[0.99]' : 'hover:bg-slate-50 hover:rounded-md hover:scale-[0.99]'}
+                                            ${value?.toString() === opt.id.toString() ? 'bg-slate-100 border-l-4 border-primary rounded-r-md' : 'border-l-4 border-transparent'}
                                         `}
                                         onClick={() => handleSelect(opt)}
                                         onMouseEnter={() => setActiveIndex(index)}
