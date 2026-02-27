@@ -51,12 +51,19 @@ def get_or_create_invoice(student, year_name=None, term_name=None):
     )
 
     # --- AUTO-APPLY STANDARD FEES (Tuition) ---
+    # We exclude hostel/boarding fees from blanket auto-application 
+    # because they are applied specifically by finance/signals.py when a room is allocated.
     std_fees = FeeStructure.objects.filter(
         is_active=True,
         term=term_int,
         academic_year=active_year
     ).filter(
         models.Q(class_level__isnull=True) | models.Q(class_level=student.current_class)
+    ).exclude(
+        models.Q(name__icontains='Hostel') | 
+        models.Q(name__icontains='Boarding') | 
+        models.Q(name__icontains='Accomondation') | 
+        models.Q(name__icontains='Accommodation')
     )
 
     for fee in std_fees:
