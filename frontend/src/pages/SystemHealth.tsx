@@ -94,7 +94,7 @@ const SystemHealth = () => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-10 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-10 mb-8">
                 {/* Overall Status */}
                 <StatCard
                     title="Overall State"
@@ -126,8 +126,8 @@ const SystemHealth = () => {
                     <h3 className="text-xs font-black uppercase tracking-widest text-secondary flex items-center gap-2">
                         <Server size={16} /> Backend Services
                     </h3>
-                    <div className="card table-wrapper">
-                        <table className="table w-full text-left">
+                    <div className="card table-wrapper overflow-x-auto">
+                        <table className="table min-w-[600px] w-full text-left">
                             <thead className="bg-secondary-light">
                                 <tr>
                                     <th className="px-6 py-4 text-[10px] font-black uppercase text-secondary">Service</th>
