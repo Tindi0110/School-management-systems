@@ -5,7 +5,7 @@ import { useToast } from '../context/ToastContext';
 import { StatCard } from '../components/Card';
 
 const SystemHealth = () => {
-    const { error } = useToast();
+    const { error, success } = useToast();
     const [healthData, setHealthData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [browserInfo, setBrowserInfo] = useState<any>(null);
@@ -21,11 +21,14 @@ const SystemHealth = () => {
         });
     }, []);
 
-    const fetchHealth = async () => {
+    const fetchHealth = async (isManualRefresh = false) => {
         setLoading(true);
         try {
             const res = await auditAPI.health.get();
             setHealthData(res.data);
+            if (isManualRefresh) {
+                success("System status refreshed successfully");
+            }
         } catch (err: any) {
             console.error(err);
             error("Failed to fetch system health status");
@@ -84,7 +87,7 @@ const SystemHealth = () => {
                         <p className="text-sm opacity-70">Real-time status of your school management infrastructure</p>
                     </div>
                     <button
-                        onClick={fetchHealth}
+                        onClick={() => fetchHealth(true)}
                         disabled={loading}
                         className="btn bg-white/10 hover:bg-white/20 border-white/20 text-white flex items-center gap-2"
                     >
@@ -122,7 +125,7 @@ const SystemHealth = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Services Status */}
-                <div className="space-y-6">
+                <div className="space-y-6 min-w-0">
                     <h3 className="text-xs font-black uppercase tracking-widest text-secondary flex items-center gap-2">
                         <Server size={16} /> Backend Services
                     </h3>
@@ -170,7 +173,7 @@ const SystemHealth = () => {
                 </div>
 
                 {/* Frontend Health */}
-                <div className="space-y-6">
+                <div className="space-y-6 min-w-0">
                     <h3 className="text-xs font-black uppercase tracking-widest text-secondary flex items-center gap-2">
                         <Smartphone size={16} /> Client Environment
                     </h3>

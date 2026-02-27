@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { financeAPI, academicsAPI, studentsAPI, classesAPI, mpesaAPI } from '../api/api';
-import { CreditCard, FileText, TrendingUp, CheckCircle, Plus, Printer, Bell, Send, Mail, MessageSquare, Edit } from 'lucide-react';
+import { CreditCard, FileText, TrendingUp, CheckCircle, Plus, Printer, Bell, Send, Mail, MessageSquare, Edit, Trash2 } from 'lucide-react';
 import SearchableSelect from '../components/SearchableSelect';
 import SearchInput from '../components/common/SearchInput';
 import Modal from '../components/Modal';
@@ -1265,11 +1265,16 @@ const Finance = () => {
                         }))}
                         value={mpesaForm.admission_number}
                         onChange={(val) => {
-                            const stud = students.find((s: any) => String(s.admission_number) === String(val));
+                            const stud: any = students.find((s: any) => String(s.admission_number) === String(val));
+                            const studentInvoices = invoices.filter(
+                                (i: any) => String(i.student) === String(stud?.id) && i.status !== 'PAID'
+                            );
+                            const latestInvoice = studentInvoices.length > 0 ? studentInvoices[0] : null;
+
                             setMpesaForm({
                                 ...mpesaForm,
                                 admission_number: String(val),
-                                amount: stud ? String((stud as any).fee_balance) : mpesaForm.amount
+                                amount: latestInvoice ? String(latestInvoice.balance) : (stud ? String((stud as any).fee_balance) : mpesaForm.amount)
                             });
                         }}
                         required
