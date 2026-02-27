@@ -587,12 +587,34 @@ const Hostels = () => {
 
     const openViewResidents = (h: any) => {
         setSelectedHostel(h);
-        // Filter from full list (not paginated)
-        let residents = allAllocations.filter(a => (a.hostel === h.id || a.hostel_name === h.name) && a.status === 'ACTIVE');
+
+        // Filter active allocations that belong to the selected hostel (by tracing room -> hostel)
+        let residents = allAllocations.filter((a: any) => {
+            if (a.status !== 'ACTIVE') return false;
+            const room = rooms.find(r => String(r.id) === String(a.room));
+            return room && String(room.hostel) === String(h.id);
+        });
+
+        // Apply specific room filter if viewing from the Rooms modal
         if (h.roomFilter) {
-            residents = residents.filter(a => a.room === h.roomFilter);
+            residents = residents.filter((a: any) => String(a.room) === String(h.roomFilter));
         }
-        setViewHostelResidents(residents);
+
+        // Map data to display format
+        const displayData = residents.map((a: any) => {
+            const student = students.find(s => String(s.id) === String(a.student));
+            const room = rooms.find(r => String(r.id) === String(a.room));
+            const bed = beds.find(b => String(b.id) === String(a.bed));
+            return {
+                id: a.id,
+                student_name: student?.full_name || 'Unknown Student',
+                admission_number: student?.admission_number || '',
+                room_number: room?.room_number || 'Unknown Room',
+                bed_number: bed?.bed_number || 'Unknown Bed'
+            };
+        });
+
+        setViewHostelResidents(displayData);
         setIsViewResidentsModalOpen(true);
     };
 
