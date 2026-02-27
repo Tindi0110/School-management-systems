@@ -9,6 +9,8 @@ from .models import (
     StudentResult, Attendance, LearningResource, SyllabusCoverage,
     ClassSubject, StudentSubject
 )
+from .utils import sync_academic_statuses
+
 from .serializers import (
     AcademicYearSerializer, TermSerializer, SubjectGroupSerializer,
     SubjectSerializer, GradeSystemSerializer, GradeBoundarySerializer,
@@ -23,12 +25,22 @@ class AcademicYearViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['is_active']
 
+    def list(self, request, *args, **kwargs):
+        sync_academic_statuses()
+        return super().list(request, *args, **kwargs)
+
+
 class TermViewSet(viewsets.ModelViewSet):
     queryset = Term.objects.select_related('year').all()
     serializer_class = TermSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['is_active', 'year']
     search_fields = ['name']
+
+    def list(self, request, *args, **kwargs):
+        sync_academic_statuses()
+        return super().list(request, *args, **kwargs)
+
 
 
 class SubjectGroupViewSet(viewsets.ModelViewSet):
@@ -87,6 +99,21 @@ class StudentResultViewSet(viewsets.ModelViewSet):
         if self.action in ['list', 'create', 'sync_grades']:
             return [permissions.IsAuthenticated()]
         return super().get_permissions()
+
+    def perform_create(self, serializer):
+        exam = serializer.validated_data.get('exam')
+        if exam.is_locked or not exam.is_active:
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError("Marks entry is locked for this exam.")
+        serializer.save()
+
+    def perform_update(self, serializer):
+        instance = self.get_object()
+        if instance.exam.is_locked or not instance.exam.is_active:
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError("Results for this exam are locked and cannot be modified.")
+        serializer.save()
+
 
     def get_queryset(self):
         queryset = StudentResult.objects.select_related('student', 'exam', 'subject').all()

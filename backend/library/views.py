@@ -42,7 +42,16 @@ def sync_fine_to_finance(fine, approved_by):
             invoice = Invoice.objects.filter(student=student).order_by('-date_generated').first()
 
         if not invoice:
-            return False, "No invoice found to sync the fine."
+            # Fall back to creating a new invoice based on the active term using the finance util
+            from finance.utils import get_or_create_invoice
+            try:
+                invoice = get_or_create_invoice(student)
+            except Exception as e:
+                logger.error(f"Failed to generate invoice for student in Library Sync: {e}")
+                pass
+
+        if not invoice:
+            return False, "No active invoice found to sync the fine."
 
         # Build reason string
         if fine.lending and fine.lending.copy:
@@ -289,19 +298,24 @@ class LibraryFineViewSet(viewsets.ModelViewSet):
         ).select_related('lending__copy__book', 'user')
 
         synced = 0
-        skipped = 0
+        skipped_no_student = 0
+        skipped_no_invoice = 0
 
         for fine in pending_fines:
-            success, _ = sync_fine_to_finance(fine, request.user)
+            success, msg = sync_fine_to_finance(fine, request.user)
             if success:
                 synced += 1
             else:
-                skipped += 1
+                if "Student link not found" in msg:
+                    skipped_no_student += 1
+                else:
+                    skipped_no_invoice += 1
 
         return Response({
             'message': f'Sync complete. {synced} fine(s) synced to finance.',
             'synced': synced,
-            'skipped': skipped
+            'skipped_no_student': skipped_no_student,
+            'skipped_no_invoice': skipped_no_invoice
         })
 
 class BookReservationViewSet(viewsets.ModelViewSet):

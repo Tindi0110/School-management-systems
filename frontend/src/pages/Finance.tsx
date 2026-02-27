@@ -158,15 +158,25 @@ const Finance = () => {
                 setInvoices(d(res));
                 setTotalItems(res.data?.count ?? (res.data?.results ? res.data.results.length : 0));
             } else if (activeTab === 'payments') {
-                const res = await financeAPI.payments.getAll({
+                const params: any = {
                     page,
                     page_size: pageSize,
                     search: searchTerm
-                });
+                };
+
+                // Default to active term if no search or specific filter
+                if (!searchTerm && statsContext?.year_id) {
+                    params.invoice__academic_year = statsContext.year_id;
+                    params.invoice__term = statsContext.term_num;
+                }
+
+                const res = await financeAPI.payments.getAll(params);
                 setPayments(d(res));
                 setTotalItems(res.data?.count ?? (res.data?.results ? res.data.results.length : 0));
             } else if (activeTab === 'fees') {
                 const res = await financeAPI.feeStructures.getAll({
+                    page,
+                    page_size: pageSize,
                     search: searchTerm
                 });
                 setFeeStructures(d(res));
@@ -686,6 +696,16 @@ const Finance = () => {
                                     </tbody>
                                 </table>
                             </div>
+                            <div className="flex justify-between items-center mt-4 no-print px-2">
+                                <div className="text-xs text-secondary font-medium">
+                                    Showing <span className="text-primary font-bold">{filteredInvoices.length}</span> of <span className="text-primary font-bold">{totalItems}</span> invoices
+                                </div>
+                                <div className="flex gap-2">
+                                    <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>Previous</Button>
+                                    <div className="flex items-center px-4 text-xs font-bold bg-slate-100 rounded-lg">Page {page}</div>
+                                    <Button variant="outline" size="sm" onClick={() => setPage(p => p + 1)} disabled={filteredInvoices.length < pageSize}>Next</Button>
+                                </div>
+                            </div>
                         </div>
                     )}
 
@@ -724,6 +744,16 @@ const Finance = () => {
                                         )}
                                     </tbody>
                                 </table>
+                            </div>
+                            <div className="flex justify-between items-center mt-4 no-print px-2">
+                                <div className="text-xs text-secondary font-medium">
+                                    Showing <span className="text-primary font-bold">{filteredPayments.length}</span> of <span className="text-primary font-bold">{totalItems}</span> payments
+                                </div>
+                                <div className="flex gap-2">
+                                    <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>Previous</Button>
+                                    <div className="flex items-center px-4 text-xs font-bold bg-slate-100 rounded-lg">Page {page}</div>
+                                    <Button variant="outline" size="sm" onClick={() => setPage(p => p + 1)} disabled={filteredPayments.length < pageSize}>Next</Button>
+                                </div>
                             </div>
                         </div>
                     )}
@@ -765,6 +795,16 @@ const Finance = () => {
                                         )}
                                     </tbody>
                                 </table>
+                            </div>
+                            <div className="flex justify-between items-center mt-4 no-print px-2">
+                                <div className="text-xs text-secondary font-medium">
+                                    Showing <span className="text-primary font-bold">{filteredExpenses.length}</span> of <span className="text-primary font-bold">{totalItems}</span> expenses
+                                </div>
+                                <div className="flex gap-2">
+                                    <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>Previous</Button>
+                                    <div className="flex items-center px-4 text-xs font-bold bg-slate-100 rounded-lg">Page {page}</div>
+                                    <Button variant="outline" size="sm" onClick={() => setPage(p => p + 1)} disabled={filteredExpenses.length < pageSize}>Next</Button>
+                                </div>
                             </div>
                         </div>
                     )}
@@ -808,6 +848,16 @@ const Finance = () => {
                                         )}
                                     </tbody>
                                 </table>
+                            </div>
+                            <div className="flex justify-between items-center mt-4 no-print px-2">
+                                <div className="text-xs text-secondary font-medium">
+                                    Showing <span className="text-primary font-bold">{filteredFees.length}</span> of <span className="text-primary font-bold">{totalItems}</span> fee structures
+                                </div>
+                                <div className="flex gap-2">
+                                    <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>Previous</Button>
+                                    <div className="flex items-center px-4 text-xs font-bold bg-slate-100 rounded-lg">Page {page}</div>
+                                    <Button variant="outline" size="sm" onClick={() => setPage(p => p + 1)} disabled={filteredFees.length < pageSize}>Next</Button>
+                                </div>
                             </div>
                         </div>
                     )}

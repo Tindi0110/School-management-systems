@@ -359,8 +359,15 @@ const Library = () => {
         setIsSubmitting(true);
         try {
             const selectedStudent = students.find(s => s.id === Number(fineForm.student));
+            if (!selectedStudent || (!selectedStudent.user && !selectedStudent.student_user_id)) {
+                toast.error(`Student ${selectedStudent?.full_name || 'selected'} needs a linked User Account to have a fine recorded.`);
+                setIsSubmitting(false);
+                return;
+            }
+            const userId = selectedStudent.user || selectedStudent.student_user_id;
+
             const payload = {
-                user: selectedStudent?.user || Number(fineForm.student),
+                user: userId,
                 amount: fineForm.amount,
                 reason: fineForm.reason,
                 status: fineForm.status,

@@ -19,6 +19,8 @@ class Term(models.Model):
     start_date = models.DateField()
     end_date = models.DateField()
     is_active = models.BooleanField(default=False)
+    is_final_term = models.BooleanField(default=False, help_text="If true, reaching the end_date will trigger end-of-year processes (promotion).")
+
 
     def save(self, *args, **kwargs):
         if self.is_active:
@@ -45,7 +47,9 @@ class Class(models.Model):
     name = models.CharField(max_length=50, db_index=True) 
     stream = models.CharField(max_length=50)
     year = models.IntegerField() # Deprecating in favor of AcademicYear relation soon
+    level = models.IntegerField(default=1, help_text="Numeric level for promotion logic (e.g. 1 for Form 1, 4 for Form 4)")
     class_teacher = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='classes_managed')
+
     subjects = models.ManyToManyField(Subject, related_name='classes')
     capacity = models.IntegerField(default=40)
     

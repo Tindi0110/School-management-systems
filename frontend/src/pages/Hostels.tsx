@@ -19,6 +19,7 @@ const Hostels = () => {
     const [rooms, setRooms] = useState<any[]>([]);
     const [beds, setBeds] = useState<any[]>([]);
     const [allocations, setAllocations] = useState<any[]>([]);
+    const [allAllocations, setAllAllocations] = useState<any[]>([]);
     const [attendance, setAttendance] = useState<any[]>([]);
     const [discipline, setDiscipline] = useState<any[]>([]);
     const [assets, setAssets] = useState<any[]>([]);
@@ -80,6 +81,12 @@ const Hostels = () => {
     const [allocTotal, setAllocTotal] = useState(0);
     const [discPage, setDiscPage] = useState(1);
     const [discTotal, setDiscTotal] = useState(0);
+    const [assetPage, setAssetPage] = useState(1);
+    const [assetTotal, setAssetTotal] = useState(0);
+    const [attnPage, setAttnPage] = useState(1);
+    const [attnTotal, setAttnTotal] = useState(0);
+    const [maintPage, setMaintPage] = useState(1);
+    const [maintTotal, setMaintTotal] = useState(0);
 
     const [stats, setStats] = useState({
         totalHostels: 0,
@@ -98,6 +105,15 @@ const Hostels = () => {
             } else if (activeTab === 'discipline') {
                 setDiscPage(1);
                 loadDiscipline();
+            } else if (activeTab === 'assets') {
+                setAssetPage(1);
+                loadAssets();
+            } else if (activeTab === 'attendance') {
+                setAttnPage(1);
+                loadAttendance();
+            } else if (activeTab === 'maintenance') {
+                setMaintPage(1);
+                loadMaintenance();
             }
         }, 400);
         return () => clearTimeout(handler);
@@ -110,6 +126,18 @@ const Hostels = () => {
     useEffect(() => {
         if (activeTab === 'discipline') loadDiscipline();
     }, [discPage]);
+
+    useEffect(() => {
+        if (activeTab === 'assets') loadAssets();
+    }, [assetPage]);
+
+    useEffect(() => {
+        if (activeTab === 'attendance') loadAttendance();
+    }, [attnPage]);
+
+    useEffect(() => {
+        if (activeTab === 'maintenance') loadMaintenance();
+    }, [maintPage]);
 
     useEffect(() => {
         loadData();
@@ -138,10 +166,12 @@ const Hostels = () => {
                 staffAPI.getAll({ page_size: 100 }),
                 hostelAPI.attendance.getAll({ page_size: 300, ordering: '-date' }),
                 hostelAPI.assets.getAll({ page_size: 500 }),
-                hostelAPI.maintenance.getAll({ page_size: 200 })
+                hostelAPI.assets.getAll({ page_size: 500 }),
+                hostelAPI.maintenance.getAll({ page_size: 200 }),
+                hostelAPI.allocations.getAll({ status: 'ACTIVE' }) // Fetch all active for lookups
             ];
 
-            const [roomsRes, bedsRes, staffRes, attendanceRes, assetsRes, maintenanceRes] = await Promise.all(backgroundPromises);
+            const [roomsRes, bedsRes, staffRes, attendanceRes, assetsRes, maintenanceRes, allAllocRes] = await Promise.all(backgroundPromises);
 
             setRooms(d(roomsRes));
             setBeds(d(bedsRes));
@@ -149,6 +179,7 @@ const Hostels = () => {
             setAttendance(d(attendanceRes));
             setAssets(d(assetsRes));
             setMaintenance(d(maintenanceRes));
+            setAllAllocations(d(allAllocRes));
 
             // Paginated data initialized separately by side-effects
             if (activeTab !== 'allocations') loadAllocations();
@@ -176,6 +207,30 @@ const Hostels = () => {
         const res = await hostelAPI.discipline.getAll(params);
         setDiscipline(res.data?.results ?? res.data ?? []);
         setDiscTotal(res.data?.count ?? 0);
+    };
+
+    const loadAssets = async () => {
+        const params: any = { page: assetPage, page_size: HOSTEL_PAGE_SIZE };
+        if (searchTerm) params.search = searchTerm;
+        const res = await hostelAPI.assets.getAll(params);
+        setAssets(res.data?.results ?? res.data ?? []);
+        setAssetTotal(res.data?.count ?? 0);
+    };
+
+    const loadAttendance = async () => {
+        const params: any = { page: attnPage, page_size: HOSTEL_PAGE_SIZE };
+        if (searchTerm) params.search = searchTerm;
+        const res = await hostelAPI.attendance.getAll(params);
+        setAttendance(res.data?.results ?? res.data ?? []);
+        setAttnTotal(res.data?.count ?? 0);
+    };
+
+    const loadMaintenance = async () => {
+        const params: any = { page: maintPage, page_size: HOSTEL_PAGE_SIZE };
+        if (searchTerm) params.search = searchTerm;
+        const res = await hostelAPI.maintenance.getAll(params);
+        setMaintenance(res.data?.results ?? res.data ?? []);
+        setMaintTotal(res.data?.count ?? 0);
     };
 
 
@@ -532,14 +587,15 @@ const Hostels = () => {
 
     const openViewResidents = (h: any) => {
         setSelectedHostel(h);
-        // Filter allocations for this hostel (and room if specified)
-        let residents = allocations.filter(a => a.hostel_name === h.name && a.status === 'ACTIVE');
+        // Filter from full list (not paginated)
+        let residents = allAllocations.filter(a => (a.hostel === h.id || a.hostel_name === h.name) && a.status === 'ACTIVE');
         if (h.roomFilter) {
             residents = residents.filter(a => a.room === h.roomFilter);
         }
         setViewHostelResidents(residents);
         setIsViewResidentsModalOpen(true);
     };
+
 
     const openAddRoom = (h: any) => {
         setFilterHostel(h.id.toString());
@@ -737,11 +793,7 @@ const Hostels = () => {
                             <thead><tr><th>Name</th><th>Type</th><th>Condition</th><th>Hostel</th><th>Value</th><th>Actions</th></tr></thead>
                             <tbody>
                                 {assets.length === 0 && <tr><td colSpan={6} className="text-center italic">No assets recorded.</td></tr>}
-                                {[...assets].filter(a =>
-                                    !searchTerm ||
-                                    (a.asset_code || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                    (a.asset_type || '').toLowerCase().includes(searchTerm.toLowerCase())
-                                ).map(a => (
+                                {assets.map(a => (
                                     <tr key={a.id}>
                                         <td className="font-bold">{a.asset_code}</td>
                                         <td><span className="badge badge-info">{a.asset_type}</span></td>
@@ -758,6 +810,18 @@ const Hostels = () => {
                                 ))}
                             </tbody>
                         </table>
+                        {assetTotal > HOSTEL_PAGE_SIZE && (
+                            <div className="flex items-center justify-between mt-4 pt-4 border-t">
+                                <span className="text-sm text-secondary">
+                                    Showing {((assetPage - 1) * HOSTEL_PAGE_SIZE) + 1}–{Math.min(assetPage * HOSTEL_PAGE_SIZE, assetTotal)} of {assetTotal} assets
+                                </span>
+                                <div className="flex gap-2">
+                                    <button className="btn btn-outline btn-sm" onClick={() => setAssetPage(p => Math.max(1, p - 1))} disabled={assetPage === 1}>← Prev</button>
+                                    <span className="btn btn-ghost btn-sm pointer-events-none">Page {assetPage}</span>
+                                    <button className="btn btn-outline btn-sm" onClick={() => setAssetPage(p => p + 1)} disabled={assetPage * HOSTEL_PAGE_SIZE >= assetTotal}>Next →</button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )
             }
@@ -792,32 +856,36 @@ const Hostels = () => {
                                         </td>
                                     </tr>
                                 )}
-                                {attendance
-                                    .filter(a =>
-                                        !searchTerm ||
-                                        (a.student_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                        (a.date || '').includes(searchTerm) ||
-                                        (a.session || '').toLowerCase().includes(searchTerm.toLowerCase())
-                                    )
-                                    .map(a => (
-                                        <tr key={a.id}>
-                                            <td>{a.date}</td>
-                                            <td><span className="badge badge-ghost text-xs">{a.session || 'N/A'}</span></td>
-                                            <td className="font-bold">{a.student_name || students.find(s => String(s.id) === String(a.student))?.full_name}</td>
-                                            <td className="text-sm text-secondary">{a.hostel_name || 'N/A'}</td>
-                                            <td><span className={`badge ${a.status === 'PRESENT' ? 'badge-success' : a.status === 'ABSENT' ? 'badge-error' : 'badge-info'}`}>{a.status}</span></td>
-                                            <td>{a.remarks}</td>
-                                            <td className="no-print">
-                                                <div className="flex gap-2">
-                                                    <button className="btn btn-sm btn-ghost text-primary" onClick={() => handleEditAttendance(a)}><Edit size={14} /></button>
-                                                    <button className="btn btn-sm btn-ghost text-error" onClick={() => handleDeleteAttendance(a.id)}><Trash2 size={14} /></button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))
-                                }
+                                {attendance.map(a => (
+                                    <tr key={a.id}>
+                                        <td>{a.date}</td>
+                                        <td><span className="badge badge-ghost text-xs">{a.session || 'N/A'}</span></td>
+                                        <td className="font-bold">{a.student_name || students.find(s => String(s.id) === String(a.student))?.full_name}</td>
+                                        <td className="text-sm text-secondary">{a.hostel_name || 'N/A'}</td>
+                                        <td><span className={`badge ${a.status === 'PRESENT' ? 'badge-success' : a.status === 'ABSENT' ? 'badge-error' : 'badge-info'}`}>{a.status}</span></td>
+                                        <td>{a.remarks}</td>
+                                        <td className="no-print">
+                                            <div className="flex gap-2">
+                                                <button className="btn btn-sm btn-ghost text-primary" onClick={() => handleEditAttendance(a)}><Edit size={14} /></button>
+                                                <button className="btn btn-sm btn-ghost text-error" onClick={() => handleDeleteAttendance(a.id)}><Trash2 size={14} /></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
                             </tbody>
                         </table>
+                        {attnTotal > HOSTEL_PAGE_SIZE && (
+                            <div className="flex items-center justify-between mt-4 pt-4 border-t">
+                                <span className="text-sm text-secondary">
+                                    Showing {((attnPage - 1) * HOSTEL_PAGE_SIZE) + 1}–{Math.min(attnPage * HOSTEL_PAGE_SIZE, attnTotal)} of {attnTotal} records
+                                </span>
+                                <div className="flex gap-2">
+                                    <button className="btn btn-outline btn-sm" onClick={() => setAttnPage(p => Math.max(1, p - 1))} disabled={attnPage === 1}>← Prev</button>
+                                    <span className="btn btn-ghost btn-sm pointer-events-none">Page {attnPage}</span>
+                                    <button className="btn btn-outline btn-sm" onClick={() => setAttnPage(p => p + 1)} disabled={attnPage * HOSTEL_PAGE_SIZE >= attnTotal}>Next →</button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )
             }
@@ -901,12 +969,7 @@ const Hostels = () => {
                             <thead><tr><th>Date</th><th>Hostel</th><th>Description</th><th>Cost</th><th>Status</th><th>Actions</th></tr></thead>
                             <tbody>
                                 {maintenance.length === 0 && <tr><td colSpan={6} className="text-center italic">No maintenance requests.</td></tr>}
-                                {maintenance.filter(m =>
-                                    !searchTerm ||
-                                    (hostels.find(h => String(h.id) === String(m.hostel))?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                    (m.issue || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                    (m.status || '').toLowerCase().includes(searchTerm.toLowerCase())
-                                ).map(m => (
+                                {maintenance.map(m => (
                                     <tr key={m.id}>
                                         <td>{m.date_reported || m.date}</td>
                                         <td className="font-bold">{hostels.find(h => String(h.id) === String(m.hostel))?.name || 'N/A'}</td>
@@ -923,6 +986,18 @@ const Hostels = () => {
                                 ))}
                             </tbody>
                         </table>
+                        {maintTotal > HOSTEL_PAGE_SIZE && (
+                            <div className="flex items-center justify-between mt-4 pt-4 border-t">
+                                <span className="text-sm text-secondary">
+                                    Showing {((maintPage - 1) * HOSTEL_PAGE_SIZE) + 1}–{Math.min(maintPage * HOSTEL_PAGE_SIZE, maintTotal)} of {maintTotal} records
+                                </span>
+                                <div className="flex gap-2">
+                                    <button className="btn btn-outline btn-sm" onClick={() => setMaintPage(p => Math.max(1, p - 1))} disabled={maintPage === 1}>← Prev</button>
+                                    <span className="btn btn-ghost btn-sm pointer-events-none">Page {maintPage}</span>
+                                    <button className="btn btn-outline btn-sm" onClick={() => setMaintPage(p => p + 1)} disabled={maintPage * HOSTEL_PAGE_SIZE >= maintTotal}>Next →</button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )
             }
