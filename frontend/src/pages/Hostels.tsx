@@ -168,7 +168,7 @@ const Hostels = () => {
                 hostelAPI.assets.getAll({ page_size: 500 }),
                 hostelAPI.assets.getAll({ page_size: 500 }),
                 hostelAPI.maintenance.getAll({ page_size: 200 }),
-                hostelAPI.allocations.getAll({ status: 'ACTIVE' }) // Fetch all active for lookups
+                hostelAPI.allocations.getAll({ status: 'ACTIVE', page_size: 500 }) // Fetch all active for lookups
             ];
 
             const [roomsRes, bedsRes, staffRes, attendanceRes, assetsRes, maintenanceRes, allAllocRes] = await Promise.all(backgroundPromises);
@@ -737,13 +737,16 @@ const Hostels = () => {
                             <h3>Student Allocations</h3>
                             <div className="flex gap-2 items-center">
                                 <div className="flex gap-2 ml-4">
-                                    <button className="btn btn-outline btn-sm" onClick={() => exportToCSV(allocations.map(a => ({
-                                        Student: students.find(s => s.id === a.student)?.full_name,
-                                        Hostel: hostels.find(h => h.id === rooms.find(r => r.id === a.room)?.hostel)?.name,
-                                        Room: rooms.find(r => r.id === a.room)?.room_number,
-                                        Bed: beds.find(b => b.id === a.bed)?.bed_number,
-                                        Status: a.status
-                                    })), 'allocations_report')}><UsersIcon size={14} /> CSV</button>
+                                    <button className="btn btn-outline btn-sm" onClick={() => exportToCSV(allocations.map(a => {
+                                        const room = rooms.find(r => String(r.id) === String(a.room));
+                                        return {
+                                            Student: students.find(s => String(s.id) === String(a.student))?.full_name,
+                                            Hostel: room ? hostels.find(h => String(h.id) === String(room.hostel))?.name : 'N/A',
+                                            Room: room?.room_number || 'N/A',
+                                            Bed: beds.find(b => String(b.id) === String(a.bed))?.bed_number || 'N/A',
+                                            Status: a.status
+                                        };
+                                    }), 'allocations_report')}><UsersIcon size={14} /> CSV</button>
                                     <button className="btn btn-outline btn-sm" onClick={() => window.print()}><Printer size={14} /> Print</button>
                                 </div>
                                 <button className="btn btn-primary btn-sm ml-2" onClick={() => { setAllocationId(null); setIsTransferMode(false); setIsAllocationModalOpen(true); }}><Plus size={14} /> Assign Student</button>
@@ -857,14 +860,18 @@ const Hostels = () => {
 
                             <div className="flex gap-2 items-center">
 
-                                <button className="btn btn-outline btn-sm" onClick={() => exportToCSV(attendance.map(a => ({
-                                    Date: a.date,
-                                    Session: a.session || 'N/A',
-                                    Student: students.find(s => s.id === a.student)?.full_name,
-                                    Hostel: hostels.find(h => h.id === rooms.find(r => r.id === allocations.find(al => al.student === a.student && al.status === 'ACTIVE')?.room)?.hostel)?.name || 'N/A',
-                                    Status: a.status,
-                                    Remarks: a.remarks
-                                })), 'attendance_report')}><UsersIcon size={14} /> CSV</button>
+                                <button className="btn btn-outline btn-sm" onClick={() => exportToCSV(attendance.map(a => {
+                                    const alloc = allocations.find((al: any) => String(al.student) === String(a.student) && al.status === 'ACTIVE');
+                                    const room = alloc ? rooms.find(r => String(r.id) === String(alloc.room)) : null;
+                                    return {
+                                        Date: a.date,
+                                        Session: a.session || 'N/A',
+                                        Student: students.find(s => String(s.id) === String(a.student))?.full_name,
+                                        Hostel: room ? hostels.find(h => String(h.id) === String(room.hostel))?.name : 'N/A',
+                                        Status: a.status,
+                                        Remarks: a.remarks
+                                    };
+                                }), 'attendance_report')}><UsersIcon size={14} /> CSV</button>
                                 <button className="btn btn-primary btn-sm" onClick={() => { setAttendanceId(null); setIsAttendanceModalOpen(true); }}><Plus size={14} /> Log Attendance</button>
                             </div>
                         </div>
@@ -919,14 +926,18 @@ const Hostels = () => {
                         <div className="flex justify-between items-center mb-4 no-print">
                             <h3>Discipline Records</h3>
                             <div className="flex gap-2">
-                                <button className="btn btn-outline btn-sm" onClick={() => exportToCSV(discipline.map(d => ({
-                                    Date: d.date,
-                                    Student: students.find(s => s.id === d.student)?.full_name,
-                                    Hostel: hostels.find(h => h.id === rooms.find(r => r.id === allocations.find(al => al.student === d.student && al.status === 'ACTIVE')?.room)?.hostel)?.name || 'N/A',
-                                    Infraction: d.infraction,
-                                    Severity: d.severity,
-                                    Action: d.action_taken
-                                })), 'discipline_report')}><UsersIcon size={14} /> CSV</button>
+                                <button className="btn btn-outline btn-sm" onClick={() => exportToCSV(discipline.map(d => {
+                                    const alloc = allocations.find((al: any) => String(al.student) === String(d.student) && al.status === 'ACTIVE');
+                                    const room = alloc ? rooms.find(r => String(r.id) === String(alloc.room)) : null;
+                                    return {
+                                        Date: d.date,
+                                        Student: students.find(s => String(s.id) === String(d.student))?.full_name,
+                                        Hostel: room ? hostels.find(h => String(h.id) === String(room.hostel))?.name : 'N/A',
+                                        Infraction: d.infraction,
+                                        Severity: d.severity,
+                                        Action: d.action_taken
+                                    };
+                                }), 'discipline_report')}><UsersIcon size={14} /> CSV</button>
                                 <button className="btn btn-outline btn-sm" onClick={() => window.print()}><Printer size={14} /> Print</button>
                                 <button className="btn btn-error btn-sm text-white" onClick={() => { setDisciplineId(null); setIsDisciplineModalOpen(true); }}><ShieldAlert size={14} /> Report Incident</button>
                             </div>

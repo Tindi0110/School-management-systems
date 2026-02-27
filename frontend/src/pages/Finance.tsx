@@ -96,6 +96,7 @@ const Finance = () => {
     const [loading, setLoading] = useState(true);
     const [students, setStudents] = useState([]);
     const [years, setYears] = useState([]);
+    const [activeStudentInvoices, setActiveStudentInvoices] = useState<any[]>([]);
 
     // Unified data loading effect
     useEffect(() => {
@@ -975,31 +976,37 @@ const Finance = () => {
                                 subLabel: `Balance: KES ${Number(s.fee_balance).toLocaleString()} `
                             }))}
                             value={payForm.student_id}
-                            onChange={(val) => {
+                            onChange={async (val) => {
                                 const studentId = String(val);
-                                // Auto-select most recent unpaid invoice for this student
-                                const studentInvoices = invoices.filter(
-                                    (i: any) => String(i.student) === studentId && i.status !== 'PAID'
-                                );
-                                const latestInvoice = studentInvoices.length > 0 ? studentInvoices[0] : null;
+                                // Dynamically fetch all invoices for this specific student regardless of global pagination
+                                try {
+                                    const res = await financeAPI.invoices.getAll({ student: studentId, page_size: 100 });
+                                    const studentInvoices = res.data?.results ?? res.data ?? [];
+                                    setActiveStudentInvoices(studentInvoices);
 
-                                setPayForm({
-                                    ...payForm,
-                                    student_id: studentId,
-                                    invoice_id: latestInvoice ? String(latestInvoice.id) : '',
-                                    amount: latestInvoice ? String(latestInvoice.balance) : ''
-                                });
+                                    const validInvoices = studentInvoices.filter((i: any) => i.status !== 'PAID' && Number(i.balance) !== 0);
+                                    const latestInvoice = validInvoices.length > 0 ? validInvoices[0] : null;
+
+                                    setPayForm({
+                                        ...payForm,
+                                        student_id: studentId,
+                                        invoice_id: latestInvoice ? String(latestInvoice.id) : '',
+                                        amount: latestInvoice ? String(latestInvoice.balance) : ''
+                                    });
+                                } catch (err) {
+                                    console.error("Failed to load specific student invoices:", err);
+                                }
                             }}
                             required
                         />
 
                         {payForm.student_id && (
-                            <div className="form-group fade-in">
-                                <label className="label text-[10px] font-black uppercase tracking-widest text-secondary">Target Invoice / Period *</label>
+                            <div className="bg-primary/5 p-4 rounded-xl border border-primary/10 mt-2">
+                                <label className="label">Select Invoice *</label>
                                 <SearchableSelect
                                     placeholder="Select Active Invoice"
-                                    options={invoices
-                                        .filter((i: any) => String(i.student) === String(payForm.student_id) && i.status !== 'PAID')
+                                    options={activeStudentInvoices
+                                        .filter((i: any) => i.status !== 'PAID' && Number(i.balance) !== 0)
                                         .map((i: any) => ({
                                             id: i.id.toString(),
                                             label: `Invoice #${i.id} | ${i.academic_year_name} T${i.term} `,
@@ -1008,7 +1015,7 @@ const Finance = () => {
                                     value={payForm.invoice_id}
                                     onChange={(val) => {
                                         const invId = val.toString();
-                                        const inv = invoices.find(i => String(i.id) === invId);
+                                        const inv = activeStudentInvoices.find(i => String(i.id) === invId);
                                         setPayForm({
                                             ...payForm,
                                             invoice_id: invId,
@@ -1264,18 +1271,29 @@ const Finance = () => {
                             subLabel: `Arrears: KES ${Number(s.fee_balance).toLocaleString()} `
                         }))}
                         value={mpesaForm.admission_number}
-                        onChange={(val) => {
-                            const stud: any = students.find((s: any) => String(s.admission_number) === String(val));
-                            const studentInvoices = invoices.filter(
-                                (i: any) => String(i.student) === String(stud?.id) && i.status !== 'PAID'
-                            );
-                            const latestInvoice = studentInvoices.length > 0 ? studentInvoices[0] : null;
+                        onChange={async (val) => {
+                            const adminNum = String(val);
+                            const stud: any = students.find((s: any) => String(s.admission_number) === adminNum);
 
-                            setMpesaForm({
-                                ...mpesaForm,
-                                admission_number: String(val),
-                                amount: latestInvoice ? String(latestInvoice.balance) : (stud ? String((stud as any).fee_balance) : mpesaForm.amount)
-                            });
+                            if (stud) {
+                                try {
+                                    const res = await financeAPI.invoices.getAll({ student: stud.id, page_size: 100 });
+                                    const studentInvoices = res.data?.results ?? res.data ?? [];
+                                    const validInvoices = studentInvoices.filter((i: any) => i.status !== 'PAID' && Number(i.balance) !== 0);
+                                    const latestInvoice = validInvoices.length > 0 ? validInvoices[0] : null;
+
+                                    setMpesaForm({
+                                        ...mpesaForm,
+                                        admission_number: adminNum,
+                                        amount: latestInvoice ? String(latestInvoice.balance) : String(stud.fee_balance || mpesaForm.amount)
+                                    });
+                                } catch (err) {
+                                    console.error("Failed to load specific student invoices:", err);
+                                    setMpesaForm({ ...mpesaForm, admission_number: adminNum });
+                                }
+                            } else {
+                                setMpesaForm({ ...mpesaForm, admission_number: adminNum });
+                            }
                         }}
                         required
                     />

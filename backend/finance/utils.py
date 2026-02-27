@@ -50,6 +50,47 @@ def get_or_create_invoice(student, year_name=None, term_name=None):
         }
     )
 
+    # --- AUTO-ROLLOVER PREVIOUS BALANCES ---
+    # Only roll over if this invoice is brand new
+    if created:
+        from .models import Adjustment
+        
+        # Get all prior invoices that have a non-zero balance
+        previous_invoices = Invoice.objects.filter(
+            student=student
+        ).exclude(id=invoice.id).exclude(balance=0)
+        
+        for prior in previous_invoices:
+            amount = abs(prior.balance)
+            if prior.balance > 0:
+                # Arrears: Zero out old, charge new
+                Adjustment.objects.create(
+                    invoice=prior,
+                    adjustment_type='CREDIT',
+                    amount=amount,
+                    reason=f"Carried forward to INV-{invoice.id}"
+                )
+                InvoiceItem.objects.create(
+                    invoice=invoice,
+                    description=f"Previous Term Arrears (INV-{prior.id})",
+                    amount=amount
+                )
+            elif prior.balance < 0:
+                # Overpayment: Zero out old, credit new
+                Adjustment.objects.create(
+                    invoice=prior,
+                    adjustment_type='DEBIT',
+                    amount=amount,
+                    reason=f"Credit carried forward to INV-{invoice.id}"
+                )
+                Adjustment.objects.create(
+                    invoice=invoice,
+                    adjustment_type='CREDIT',
+                    amount=amount,
+                    reason=f"Previous Term Overpayment (INV-{prior.id})"
+                )
+
+
     # --- AUTO-APPLY STANDARD FEES (Tuition) ---
     # We exclude hostel/boarding fees from blanket auto-application 
     # because they are applied specifically by finance/signals.py when a room is allocated.

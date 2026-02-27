@@ -23,15 +23,19 @@ def sync_hostel_fee(sender, instance, created, **kwargs):
     ONLY if student is marked as 'BOARDING'.
     """
     if instance.status == 'ACTIVE' and instance.student.category == 'BOARDING':
-        # Find Fee Structure for Hostel
-        fee_structure = FeeStructure.objects.filter(name__icontains='Boarding').first()
-        if not fee_structure:
-            fee_structure = FeeStructure.objects.filter(name__icontains='Hostel').first()
+        invoice = get_or_create_invoice(instance.student)
         
+        # Find Fee Structure for Hostel matching this specific term and year
+        fee_structure = FeeStructure.objects.filter(
+            academic_year=invoice.academic_year,
+            term=invoice.term,
+            is_active=True
+        ).filter(
+            models.Q(name__icontains='Boarding') | models.Q(name__icontains='Hostel')
+        ).first()
+
         amount = fee_structure.amount if fee_structure else 0
         description = f"Hostel Fee: {instance.room.hostel.name} ({instance.room.room_number})"
-
-        invoice = get_or_create_invoice(instance.student)
         
         # IMPROVED DEDUPLICATION:
         # Check for ANY existing item that looks like a Hostel/Boarding fee
