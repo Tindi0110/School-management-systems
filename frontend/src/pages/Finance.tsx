@@ -324,6 +324,20 @@ const Finance = () => {
         setShowFeeModal(true);
     };
 
+    const handleDeleteFee = async (feeId: number) => {
+        if (!window.confirm("Are you sure you want to delete this fee structure? This action cannot be undone.")) return;
+        setIsSubmitting(true);
+        try {
+            await financeAPI.feeStructures.delete(feeId);
+            success("Fee structure deleted successfully");
+            loadData();
+        } catch (err: any) {
+            toastError("Failed to delete fee structure");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     const handleExpenseSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
@@ -841,7 +855,12 @@ const Finance = () => {
                                                     <td>Term {fee.term} ({fee.academic_year_name})</td>
                                                     <td className="font-bold">KES {Number(fee.amount).toLocaleString()}</td>
                                                     <td>
-                                                        {!isReadOnly && <Button variant="ghost" size="sm" onClick={() => handleEditFee(fee)} icon={<Edit size={14} />} />}
+                                                        {!isReadOnly && (
+                                                            <div className="flex gap-2">
+                                                                <Button variant="ghost" size="sm" onClick={() => handleEditFee(fee)} icon={<Edit size={14} />} />
+                                                                <Button variant="ghost" size="sm" onClick={() => handleDeleteFee(fee.id)} icon={<Trash2 size={14} className="text-red-500" />} />
+                                                            </div>
+                                                        )}
                                                     </td>
                                                 </tr>
                                             ))
@@ -926,7 +945,7 @@ const Finance = () => {
                     </div>
                     <div className="modal-footer pt-6 border-top mt-4 flex justify-end gap-3">
                         <Button type="button" variant="outline" onClick={() => setShowInvoiceModal(false)}>Cancel</Button>
-                        <Button type="submit" variant="primary" className="px-8 font-black shadow-lg" loading={isSubmitting} loadingText="GENERATING...">
+                        <Button type="submit" variant="primary" className="px-8 font-black shadow-lg" loading={isSubmitting} disabled={isSubmitting} loadingText="GENERATING...">
                             GENERATE BATCH
                         </Button>
                     </div>
@@ -1031,7 +1050,7 @@ const Finance = () => {
                     </div>
                     <div className="modal-footer pt-6 border-top mt-4 flex justify-end gap-3">
                         <Button type="button" variant="outline" onClick={() => setShowPaymentModal(false)}>Cancel</Button>
-                        <Button type="submit" variant="primary" className="px-8 font-black shadow-lg" loading={isSubmitting} loadingText="PROCESSING...">
+                        <Button type="submit" variant="primary" className="px-8 font-black shadow-lg" loading={isSubmitting} disabled={isSubmitting} loadingText="PROCESSING...">
                             RECORD PAYMENT
                         </Button>
                     </div>
@@ -1090,7 +1109,7 @@ const Finance = () => {
                     </div>
                     <div className="modal-footer pt-6 border-top mt-4 flex justify-end gap-3">
                         <Button type="button" variant="outline" onClick={() => setShowFeeModal(false)}>Cancel</Button>
-                        <Button type="submit" variant="primary" className="px-8 font-black shadow-lg" loading={isSubmitting} loadingText="SAVING...">
+                        <Button type="submit" variant="primary" className="px-8 font-black shadow-lg" loading={isSubmitting} disabled={isSubmitting} loadingText="SAVING...">
                             SAVE STRUCTURE
                         </Button>
                     </div>
@@ -1269,7 +1288,7 @@ const Finance = () => {
                     </div>
                     <div className="modal-footer pt-6 border-top mt-4 flex justify-end gap-3">
                         <Button type="button" variant="outline" onClick={() => setShowMpesaModal(false)}>Cancel</Button>
-                        <Button type="submit" variant="primary" className="bg-green-600 hover:bg-green-700 border-none px-8 font-black shadow-lg" loading={isSubmitting} loadingText="SENDING...">
+                        <Button type="submit" variant="primary" className="bg-green-600 hover:bg-green-700 border-none px-8 font-black shadow-lg" loading={isSubmitting} disabled={isSubmitting} loadingText="SENDING...">
                             SEND STK PUSH
                         </Button>
                     </div>
