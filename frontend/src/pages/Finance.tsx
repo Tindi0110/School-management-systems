@@ -64,7 +64,7 @@ const Finance = () => {
 
     // Pagination State
     const [page, setPage] = useState(1);
-    const [_totalItems, setTotalItems] = useState(0);
+    const [__totalItems, set_totalItems] = useState(0);
     const pageSize = 50;
 
     // Perf & Context Optimization
@@ -156,7 +156,7 @@ const Finance = () => {
 
                 const res = await financeAPI.invoices.getAll(params);
                 setInvoices(d(res));
-                setTotalItems(res.data?.count ?? (res.data?.results ? res.data.results.length : 0));
+                set_totalItems(res.data?.count ?? (res.data?.results ? res.data.results.length : 0));
             } else if (activeTab === 'payments') {
                 const params: any = {
                     page,
@@ -172,7 +172,7 @@ const Finance = () => {
 
                 const res = await financeAPI.payments.getAll(params);
                 setPayments(d(res));
-                setTotalItems(res.data?.count ?? (res.data?.results ? res.data.results.length : 0));
+                set_totalItems(res.data?.count ?? (res.data?.results ? res.data.results.length : 0));
             } else if (activeTab === 'fees') {
                 const res = await financeAPI.feeStructures.getAll({
                     page,
@@ -180,7 +180,7 @@ const Finance = () => {
                     search: searchTerm
                 });
                 setFeeStructures(d(res));
-                setTotalItems(res.data?.count ?? (res.data?.results ? res.data.results.length : 0));
+                set_totalItems(res.data?.count ?? (res.data?.results ? res.data.results.length : 0));
             } else if (activeTab === 'expenses') {
                 const res = await financeAPI.expenses.getAll({
                     page,
@@ -188,7 +188,7 @@ const Finance = () => {
                     search: searchTerm
                 });
                 setExpenses(d(res));
-                setTotalItems(res.data?.count ?? (res.data?.results ? res.data.results.length : 0));
+                set_totalItems(res.data?.count ?? (res.data?.results ? res.data.results.length : 0));
             }
         } catch (error: any) {
             console.error('Error loading finance data:', error);
@@ -698,7 +698,7 @@ const Finance = () => {
                             </div>
                             <div className="flex justify-between items-center mt-4 no-print px-2">
                                 <div className="text-xs text-secondary font-medium">
-                                    Showing <span className="text-primary font-bold">{filteredInvoices.length}</span> of <span className="text-primary font-bold">{totalItems}</span> invoices
+                                    Showing <span className="text-primary font-bold">{filteredInvoices.length}</span> of <span className="text-primary font-bold">{__totalItems}</span> invoices
                                 </div>
                                 <div className="flex gap-2">
                                     <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>Previous</Button>
@@ -747,7 +747,7 @@ const Finance = () => {
                             </div>
                             <div className="flex justify-between items-center mt-4 no-print px-2">
                                 <div className="text-xs text-secondary font-medium">
-                                    Showing <span className="text-primary font-bold">{filteredPayments.length}</span> of <span className="text-primary font-bold">{totalItems}</span> payments
+                                    Showing <span className="text-primary font-bold">{filteredPayments.length}</span> of <span className="text-primary font-bold">{__totalItems}</span> payments
                                 </div>
                                 <div className="flex gap-2">
                                     <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>Previous</Button>
@@ -798,7 +798,7 @@ const Finance = () => {
                             </div>
                             <div className="flex justify-between items-center mt-4 no-print px-2">
                                 <div className="text-xs text-secondary font-medium">
-                                    Showing <span className="text-primary font-bold">{filteredExpenses.length}</span> of <span className="text-primary font-bold">{totalItems}</span> expenses
+                                    Showing <span className="text-primary font-bold">{filteredExpenses.length}</span> of <span className="text-primary font-bold">{__totalItems}</span> expenses
                                 </div>
                                 <div className="flex gap-2">
                                     <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>Previous</Button>
@@ -851,7 +851,7 @@ const Finance = () => {
                             </div>
                             <div className="flex justify-between items-center mt-4 no-print px-2">
                                 <div className="text-xs text-secondary font-medium">
-                                    Showing <span className="text-primary font-bold">{filteredFees.length}</span> of <span className="text-primary font-bold">{totalItems}</span> fee structures
+                                    Showing <span className="text-primary font-bold">{filteredFees.length}</span> of <span className="text-primary font-bold">{__totalItems}</span> fee structures
                                 </div>
                                 <div className="flex gap-2">
                                     <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>Previous</Button>
