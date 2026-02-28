@@ -14,6 +14,9 @@ from django.db.models import Sum, Q
 from django.db import transaction
 from django.utils import timezone
 import threading
+import logging
+
+logger = logging.getLogger(__name__)
 
 from .permissions import IsAdminToDelete
 
@@ -186,22 +189,11 @@ class InvoiceViewSet(viewsets.ModelViewSet):
 
                     total = 0
                     
-                    # --- BALANCE BROUGHT FORWARD LOGIC ---
-                    # Find previous invoices for this student to check for arrears/overpayments
-                    # We look for the most recent invoice BEFORE this one (different term or year)
-                    prev_inv = Invoice.objects.filter(student=student).exclude(id=inv.id).order_by('-academic_year__name', '-term', '-id').first()
+                    # --- BALANCE BROUGHT FORWARD LOGIC REMOVED ---
+                    # Debt is now tracked globally via Student.fee_balance abstractly rather
+                    # than hardcoded into new invoices to prevent double-counting.
+                    # ---------------------------------------------
                     
-                    if prev_inv and prev_inv.balance != 0:
-                        desc = "Balance Brought Forward (Arrears)" if prev_inv.balance > 0 else "Overpayment Credit"
-                        InvoiceItem.objects.create(
-                            invoice=inv,
-                            description=desc,
-                            amount=prev_inv.balance, # Positive for debt, Negative for credit
-                            fee_structure=None
-                        )
-                        total += prev_inv.balance
-                    # -------------------------------------
-
                     for fee in student_fees:
                         is_hostel_fee = 'board' in fee.name.lower() or 'hostel' in fee.name.lower()
                         if is_hostel_fee and student.category != 'BOARDING':

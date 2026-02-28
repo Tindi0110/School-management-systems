@@ -74,6 +74,7 @@ const Finance = () => {
     // Invoice Filters
     const [invFilters, setInvFilters] = useState({ class_id: '', stream: '', year_id: '', term: '', status: '' });
     const [searchTerm, setSearchTerm] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
     const [selectedInvoices, setSelectedInvoices] = useState<Set<number>>(new Set());
     const [showReminderModal, setShowReminderModal] = useState(false);
     const [reminderForm, setReminderForm] = useState({
@@ -98,23 +99,23 @@ const Finance = () => {
     const [years, setYears] = useState([]);
     const [activeStudentInvoices, setActiveStudentInvoices] = useState<any[]>([]);
 
-    // Unified data loading effect
+    // Debounced search effect syncs searchTerm to debouncedSearch
     useEffect(() => {
-        // If it's a search update, loadData is handled by the debounce effect below
-        if (searchTerm && activeTab !== 'dashboard') return;
-
-        loadData();
-    }, [activeTab, isAllTime, page, invFilters]);
-
-    // Debounced search effect
-    useEffect(() => {
-        if (!searchTerm) return;
         const handler = setTimeout(() => {
-            if (page !== 1) setPage(1);
-            else loadData();
+            setDebouncedSearch(searchTerm);
         }, 500);
         return () => clearTimeout(handler);
     }, [searchTerm]);
+
+    // Reset page on filter or search term change
+    useEffect(() => {
+        setPage(1);
+    }, [debouncedSearch, invFilters, activeTab, isAllTime]);
+
+    // Unified data loading effect
+    useEffect(() => {
+        loadData();
+    }, [activeTab, isAllTime, page, invFilters, debouncedSearch]);
 
     const loadData = useCallback(async () => {
         setLoading(true);
@@ -150,7 +151,7 @@ const Finance = () => {
                 const params: any = {
                     page,
                     page_size: pageSize,
-                    search: searchTerm,
+                    search: debouncedSearch,
                     ...invFilters
                 };
                 if (invFilters.year_id) params.academic_year = invFilters.year_id;
@@ -162,11 +163,11 @@ const Finance = () => {
                 const params: any = {
                     page,
                     page_size: pageSize,
-                    search: searchTerm
+                    search: debouncedSearch
                 };
 
                 // Default to active term if no search or specific filter
-                if (!searchTerm && statsContext?.year_id) {
+                if (!debouncedSearch && statsContext?.year_id) {
                     params.invoice__academic_year = statsContext.year_id;
                     params.invoice__term = statsContext.term_num;
                 }
@@ -178,7 +179,7 @@ const Finance = () => {
                 const res = await financeAPI.feeStructures.getAll({
                     page,
                     page_size: pageSize,
-                    search: searchTerm
+                    search: debouncedSearch
                 });
                 setFeeStructures(d(res));
                 set_totalItems(res.data?.count ?? (res.data?.results ? res.data.results.length : 0));
@@ -186,7 +187,7 @@ const Finance = () => {
                 const res = await financeAPI.expenses.getAll({
                     page,
                     page_size: pageSize,
-                    search: searchTerm
+                    search: debouncedSearch
                 });
                 setExpenses(d(res));
                 set_totalItems(res.data?.count ?? (res.data?.results ? res.data.results.length : 0));
@@ -198,7 +199,7 @@ const Finance = () => {
         } finally {
             setLoading(false);
         }
-    }, [activeTab, isAllTime, page, searchTerm, invFilters, pageSize, statsContext?.year_id, statsContext?.term_num, toastError, success]);
+    }, [activeTab, isAllTime, page, debouncedSearch, invFilters, pageSize, statsContext?.year_id, statsContext?.term_num, toastError, success]);
 
     // Ensure data is loaded when modals open (in case user hasn't visited the tab)
     useEffect(() => {
@@ -1276,21 +1277,11 @@ const Finance = () => {
                             const stud: any = students.find((s: any) => String(s.admission_number) === adminNum);
 
                             if (stud) {
-                                try {
-                                    const res = await financeAPI.invoices.getAll({ student: stud.id, page_size: 100 });
-                                    const studentInvoices = res.data?.results ?? res.data ?? [];
-                                    const validInvoices = studentInvoices.filter((i: any) => i.status !== 'PAID' && Number(i.balance) !== 0);
-                                    const latestInvoice = validInvoices.length > 0 ? validInvoices[0] : null;
-
-                                    setMpesaForm({
-                                        ...mpesaForm,
-                                        admission_number: adminNum,
-                                        amount: latestInvoice ? String(latestInvoice.balance) : String(stud.fee_balance || mpesaForm.amount)
-                                    });
-                                } catch (err) {
-                                    console.error("Failed to load specific student invoices:", err);
-                                    setMpesaForm({ ...mpesaForm, admission_number: adminNum });
-                                }
+                                setMpesaForm({
+                                    ...mpesaForm,
+                                    admission_number: adminNum,
+                                    amount: String(stud.fee_balance || mpesaForm.amount) // Default to GLOBAL debt, not just latest invoice
+                                });
                             } else {
                                 setMpesaForm({ ...mpesaForm, admission_number: adminNum });
                             }
