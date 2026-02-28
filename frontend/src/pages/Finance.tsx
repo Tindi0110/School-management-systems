@@ -1083,6 +1083,22 @@ const Finance = () => {
                                 label: `${s.admission_number} - ${s.full_name} `,
                                 subLabel: `Balance: KES ${Number(s.fee_balance).toLocaleString()} `
                             }))}
+                            onSearch={async (term) => {
+                                if (term.length > 2) {
+                                    try {
+                                        const res = await studentsAPI.minimalSearch({ search: term, has_debt: true });
+                                        const results = res.data?.results ?? res.data ?? [];
+                                        // Merge new results with existing to prevent flickering
+                                        setStudents(prev => {
+                                            const map = new Map(prev.map((s: any) => [s.id, s]));
+                                            results.forEach((r: any) => map.set(r.id, r));
+                                            return Array.from(map.values()) as any;
+                                        });
+                                    } catch (e) {
+                                        console.error("Student search failed", e);
+                                    }
+                                }
+                            }}
                             value={payForm.student_id}
                             onChange={async (val) => {
                                 const studentId = String(val);

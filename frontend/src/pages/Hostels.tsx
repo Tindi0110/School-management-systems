@@ -1284,7 +1284,28 @@ const Hostels = () => {
 
                 {attendanceMode === 'SINGLE' ? (
                     <form onSubmit={handleAttendanceSubmit} className="space-y-4">
-                        <SearchableSelect label="Student" options={students.map(s => ({ id: String(s.id), label: s.full_name, subLabel: s.admission_number }))} value={String(attendanceFormData.student || '')} onChange={(val) => setAttendanceFormData({ ...attendanceFormData, student: val })} required />
+                        <SearchableSelect
+                            label="Student"
+                            options={students.map(s => ({ id: String(s.id), label: s.full_name, subLabel: s.admission_number }))}
+                            onSearch={async (term) => {
+                                if (term.length > 2) {
+                                    try {
+                                        const res = await studentsAPI.minimalSearch({ search: term });
+                                        const results = res.data?.results ?? res.data ?? [];
+                                        setStudents(prev => {
+                                            const map = new Map(prev.map((s: any) => [s.id, s]));
+                                            results.forEach((r: any) => map.set(r.id, r));
+                                            return Array.from(map.values()) as any;
+                                        });
+                                    } catch (e) {
+                                        console.error("Student search failed", e);
+                                    }
+                                }
+                            }}
+                            value={String(attendanceFormData.student || '')}
+                            onChange={(val) => setAttendanceFormData({ ...attendanceFormData, student: val })}
+                            required
+                        />
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="form-group pb-2">

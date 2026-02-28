@@ -3,6 +3,8 @@ from rest_framework import viewsets, permissions, status, filters
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from .models import (
     AcademicYear, Term, SubjectGroup, Subject, 
     Class, GradeSystem, GradeBoundary, Exam, 
@@ -19,6 +21,7 @@ from .serializers import (
     ClassSubjectSerializer, StudentSubjectSerializer
 )
 
+@method_decorator(cache_page(60 * 5), name='dispatch')
 class AcademicYearViewSet(viewsets.ModelViewSet):
     queryset = AcademicYear.objects.all()
     serializer_class = AcademicYearSerializer
@@ -30,6 +33,7 @@ class AcademicYearViewSet(viewsets.ModelViewSet):
         return super().list(request, *args, **kwargs)
 
 
+@method_decorator(cache_page(60 * 5), name='dispatch')
 class TermViewSet(viewsets.ModelViewSet):
     queryset = Term.objects.select_related('year').all()
     serializer_class = TermSerializer
@@ -43,14 +47,17 @@ class TermViewSet(viewsets.ModelViewSet):
 
 
 
+@method_decorator(cache_page(60 * 5), name='dispatch')
 class SubjectGroupViewSet(viewsets.ModelViewSet):
     queryset = SubjectGroup.objects.all()
     serializer_class = SubjectGroupSerializer
 
+@method_decorator(cache_page(60 * 5), name='dispatch')
 class SubjectViewSet(viewsets.ModelViewSet):
     queryset = Subject.objects.select_related('group').all()
     serializer_class = SubjectSerializer
 
+@method_decorator(cache_page(60 * 5), name='dispatch')
 class ClassViewSet(viewsets.ModelViewSet):
     queryset = Class.objects.select_related('class_teacher').annotate(
         _student_count=Count('students')

@@ -93,8 +93,16 @@ WSGI_APPLICATION = 'sms.wsgi.application'
 DATABASES = {
     'default': dj_database_url.config(
         default=f"sqlite:///{os.path.join(BASE_DIR, 'db.sqlite3')}",
-        conn_max_age=0 # Set to 0 to prevent Render Postgres connection pool exhaustion
+        conn_max_age=60 # Enabled connection pooling to prevent HTTP handshake overhead on Render
     )
+}
+
+# Caching Setup
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+    }
 }
 
 # Password Hashers for Login Optimization

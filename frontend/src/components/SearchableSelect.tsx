@@ -17,6 +17,8 @@ interface SearchableSelectProps {
     required?: boolean;
     disabled?: boolean;
     className?: string;
+    onSearch?: (searchTerm: string) => void; // Optional callback for async backend searching
+    initialOptions?: Option[]; // Fallback options for data visibility when 'value' isn't in 'options' yet
 }
 
 const SearchableSelect: React.FC<SearchableSelectProps> = ({
@@ -27,7 +29,9 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
     label,
     required = false,
     disabled = false,
-    className = ''
+    className = '',
+    onSearch,
+    initialOptions = []
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
@@ -37,16 +41,27 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
     const inputRef = useRef<HTMLInputElement>(null);
     const optionsRef = useRef<HTMLDivElement>(null);
 
-    const selectedOption = options.find(opt => opt.id.toString() === value?.toString());
+    // Combine provided options with initial options to ensure the selected value always has a label
+    const combinedOptions = [...options];
+    initialOptions.forEach(initOpt => {
+        if (!combinedOptions.find(opt => opt.id.toString() === initOpt.id.toString())) {
+            combinedOptions.push(initOpt);
+        }
+    });
+
+    const selectedOption = combinedOptions.find(opt => opt.id.toString() === value?.toString());
 
     // Debounce search term
     useEffect(() => {
         const handler = setTimeout(() => {
             setDebouncedSearch(searchTerm);
             setActiveIndex(-1);
-        }, 300);
+            if (onSearch) {
+                onSearch(searchTerm);
+            }
+        }, 400); // 400ms debounce for API calls
         return () => clearTimeout(handler);
-    }, [searchTerm]);
+    }, [searchTerm, onSearch]);
 
     // Handle clicks outside
     useEffect(() => {
@@ -60,9 +75,11 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const filteredOptions = options.filter(opt =>
-        opt.label.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-        opt.subLabel?.toLowerCase().includes(debouncedSearch.toLowerCase())
+    const filteredOptions = combinedOptions.filter(opt =>
+        // If onSearch is provided, we assume the backend handles filtering, so we show all options currently in array.
+        // Otherwise, we do local filtering.
+        onSearch ? true : opt.label.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+            opt.subLabel?.toLowerCase().includes(debouncedSearch.toLowerCase())
     );
 
     // Keyboard navigation
