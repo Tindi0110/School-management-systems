@@ -166,7 +166,6 @@ const Hostels = () => {
                 staffAPI.getAll({ page_size: 100 }),
                 hostelAPI.attendance.getAll({ page_size: 300, ordering: '-date' }),
                 hostelAPI.assets.getAll({ page_size: 500 }),
-                hostelAPI.assets.getAll({ page_size: 500 }),
                 hostelAPI.maintenance.getAll({ page_size: 200 }),
                 hostelAPI.allocations.getAll({ status: 'ACTIVE', page_size: 500 }) // Fetch all active for lookups
             ];
