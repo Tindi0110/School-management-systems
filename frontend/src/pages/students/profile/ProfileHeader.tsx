@@ -1,9 +1,9 @@
 import React from 'react';
 import {
-    User, ArrowLeft, Printer, Edit, TrendingUp, CreditCard, ShieldCheck
+    User, ArrowLeft, Printer, Edit
 } from 'lucide-react';
-import Button from '../../components/common/Button';
-import { Student } from '../../types/student.types';
+import Button from '../../../components/common/Button';
+import type { Student } from '../../../types/student.types';
 
 interface ProfileHeaderProps {
     student: Student;

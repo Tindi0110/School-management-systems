@@ -1,6 +1,6 @@
 import React from 'react';
 import { Users, Layers, Calendar, Trophy, Edit, BarChart3 } from 'lucide-react';
-import StatCard from '../../components/StatCard';
+import { StatCard } from '../../components/Card';
 import Button from '../../components/common/Button';
 
 interface AcademicSummaryProps {

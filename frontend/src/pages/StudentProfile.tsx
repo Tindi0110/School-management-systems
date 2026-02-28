@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertTriangle, ArrowLeft, TrendingUp, BookOpen, CreditCard, ShieldAlert, Heart, Users, FileText, History as HistoryIcon } from 'lucide-react';
+import Button from '../components/common/Button';
 
 // Modular Components
 import ProfileHeader from './students/profile/ProfileHeader';
@@ -587,7 +588,7 @@ const StudentProfile = () => {
                     {activeTab === 'ACTIVITIES' && (
                         <ExtraCurriculars
                             activities={activities}
-                            onJoinActivity={() => { setActivityId(null); setActivityForm({ name: '', role: '', year: new Date().getFullYear(), activity_type: 'Club', student: Number(id) }); setIsActivityModalOpen(true); }}
+                            onJoinActivity={() => { setActivityId(null); setActivityForm({ name: '', role: '', year: new Date().getFullYear(), activity_type: 'Club' }); setIsActivityModalOpen(true); }}
                             onEditActivity={handleEditActivity}
                             onDeleteActivity={handleDeleteActivity}
                         />

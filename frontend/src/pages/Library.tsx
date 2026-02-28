@@ -1,7 +1,6 @@
 ﻿import React, { useEffect, useState, useMemo } from 'react';
 import {
-    Plus, Edit, Trash2,
-    Book, RefreshCw, ArrowRight
+    Book, Bookmark, Receipt, Layers, Search, Download, Printer
 } from 'lucide-react';
 import { libraryAPI, studentsAPI } from '../api/api';
 import { exportToCSV } from '../utils/export';
@@ -117,19 +116,17 @@ const Library = () => {
     }, [searchTerm, activeTab]);
 
     useEffect(() => {
-        if (activeTab === 'catalog') loadCatalog();
-        else if (activeTab === 'lendings') loadLendings();
-        else if (activeTab === 'fines') loadFines();
-    }, [activeTab, pagination.books.page, pagination.lendings.page, pagination.fines.page, searchTerm]);
-
-    const fetchAllData = async () => {
-        try {
-            const statsRes = await libraryAPI.books.getDashboardStats();
-            setStats(statsRes.data);
-            await Promise.all([loadCatalog(), loadLendings(), loadFines(), loadStudents()]);
-        } catch (error) { console.error('Error initializing library:', error); }
-        finally { setLoading(false); }
-    };
+        const initLibrary = async () => {
+            try {
+                const statsRes = await libraryAPI.books.getDashboardStats();
+                setStats(statsRes.data);
+                await Promise.all([loadCatalog(), loadLendings(), loadFines(), loadStudents()]);
+            } catch (error) { console.error('Error initializing library:', error); }
+            finally { setLoading(false); }
+        };
+        initLibrary();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const loadCatalog = async () => {
         const params: any = { page_size: PAGE_SIZE, page: pagination.books.page };
@@ -476,6 +473,7 @@ const Library = () => {
                 <BookCatalog
                     books={books}
                     copies={copies}
+                    searchTerm={searchTerm}
                     isReadOnly={isReadOnly}
                     onAdd={() => { setBookId(null); setIsBookModalOpen(true); }}
                     onEdit={handleEditBook}

@@ -3,8 +3,8 @@ import Modal from '../Modal';
 import Button from '../common/Button';
 import SearchableSelect from '../SearchableSelect';
 import StudentResultRow from './StudentResultRow';
-import { Student } from '../../types/student.types';
-import { ClassUnit, Subject, GradeSystem } from '../../types/academic.types';
+import type { Student } from '../../types/student.types';
+import type { ClassUnit, Subject, GradeSystem } from '../../types/academic.types';
 
 interface ResultEntryModalProps {
     isOpen: boolean;

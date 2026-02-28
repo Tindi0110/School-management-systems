@@ -7,7 +7,6 @@ interface AllocationManagerProps {
     rooms: any[];
     hostels: any[];
     students: any[];
-    beds: any[];
     allocPage: number;
     setAllocPage: (page: number | ((p: number) => number)) => void;
     allocTotal: number;
@@ -25,7 +24,6 @@ const AllocationManager: React.FC<AllocationManagerProps> = ({
     rooms,
     hostels,
     students,
-    beds,
     allocPage,
     setAllocPage,
     allocTotal,

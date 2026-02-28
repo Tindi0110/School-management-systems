@@ -1,6 +1,7 @@
 from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from django.db.models import Count, Q, OuterRef, Subquery, F, Value
 from django.db.models.functions import Concat
 from django_filters.rest_framework import DjangoFilterBackend

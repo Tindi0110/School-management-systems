@@ -1,5 +1,5 @@
 import React from 'react';
-import { Edit, Trash2, Trophy, Printer, ClipboardCheck, Calendar } from 'lucide-react';
+import { Edit, Trash2, Trophy, Printer } from 'lucide-react';
 import Modal from '../Modal';
 import Button from '../common/Button';
 import SearchableSelect from '../SearchableSelect';

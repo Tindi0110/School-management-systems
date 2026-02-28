@@ -2,7 +2,7 @@ import React from 'react';
 import { BookOpen, TrendingUp, ShieldCheck, Printer } from 'lucide-react';
 import { StatCard } from '../../../components/Card';
 import Button from '../../../components/common/Button';
-import { Student } from '../../../types/student.types';
+import type { Student } from '../../../types/student.types';
 
 interface AcademicHistoryProps {
     student: Student;

@@ -1,10 +1,9 @@
 import React from 'react';
-import { ShieldAlert, Plus, Edit, Trash2 } from 'lucide-react';
+import { ShieldAlert, Edit, Trash2 } from 'lucide-react';
 import Button from '../../components/common/Button';
 
 interface SafetyManagerProps {
     incidents: any[];
-    searchTerm: string;
     vehicles: any[];
     onAdd: () => void;
     onEdit: (i: any) => void;
@@ -17,7 +16,6 @@ interface SafetyManagerProps {
 
 const SafetyManager: React.FC<SafetyManagerProps> = ({
     incidents,
-    searchTerm,
     vehicles,
     onAdd,
     onEdit,
@@ -54,7 +52,7 @@ const SafetyManager: React.FC<SafetyManagerProps> = ({
                                 <td><span className="badge badge-outline">{i.incident_type}</span></td>
                                 <td>
                                     <span className={`status-badge ${i.severity === 'CRITICAL' ? 'error' :
-                                            i.severity === 'MAJOR' ? 'warning' : 'secondary'
+                                        i.severity === 'MAJOR' ? 'warning' : 'secondary'
                                         }`}>
                                         {i.severity}
                                     </span>

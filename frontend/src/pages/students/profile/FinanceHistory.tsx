@@ -1,7 +1,7 @@
 import React from 'react';
 import { CreditCard, TrendingUp, ShieldCheck, Printer } from 'lucide-react';
 import Button from '../../../components/common/Button';
-import { Student } from '../../../types/student.types';
+import type { Student } from '../../../types/student.types';
 
 interface FinanceHistoryProps {
     student: Student;

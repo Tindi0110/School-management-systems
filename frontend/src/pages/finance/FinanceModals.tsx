@@ -1,5 +1,5 @@
 import React from 'react';
-import { CreditCard, FileText, TrendingUp, CheckCircle, Bell, Send, Mail, MessageSquare } from 'lucide-react';
+import { CreditCard, Printer, TrendingUp, CheckCircle, Bell, Send, Mail, MessageSquare } from 'lucide-react';
 import Modal from '../../components/Modal';
 import Button from '../../components/common/Button';
 import SearchableSelect from '../../components/SearchableSelect';

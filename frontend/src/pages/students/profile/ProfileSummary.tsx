@@ -2,7 +2,7 @@ import React from 'react';
 import { TrendingUp, History as HistoryIcon, ShieldAlert } from 'lucide-react';
 import { StatCard } from '../../../components/Card';
 import Button from '../../../components/common/Button';
-import { Student } from '../../../types/student.types';
+import type { Student } from '../../../types/student.types';
 
 interface ProfileSummaryProps {
     student: Student;

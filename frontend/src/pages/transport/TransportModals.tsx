@@ -1,7 +1,7 @@
 import React from 'react';
-import Modal from '../../components/common/Modal';
+import Modal from '../../components/Modal';
 import Button from '../../components/common/Button';
-import PremiumDateInput from '../../components/PremiumDateInput';
+import PremiumDateInput from '../../components/common/DatePicker';
 import SearchableSelect from '../../components/SearchableSelect';
 
 interface TransportModalsProps {

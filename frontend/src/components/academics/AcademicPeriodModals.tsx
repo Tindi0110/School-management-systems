@@ -3,7 +3,7 @@ import Modal from '../Modal';
 import Button from '../common/Button';
 import SearchableSelect from '../SearchableSelect';
 import PremiumDateInput from '../common/DatePicker';
-import { AcademicYear } from '../../types/academic.types';
+import type { AcademicYear } from '../../types/academic.types';
 
 interface YearModalProps {
     isOpen: boolean;

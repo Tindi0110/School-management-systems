@@ -3,8 +3,8 @@ import Modal from '../Modal';
 import Button from '../common/Button';
 import SearchableSelect from '../SearchableSelect';
 import PremiumDateInput from '../common/DatePicker';
-import { Student } from '../../types/student.types';
-import { ClassUnit } from '../../types/academic.types';
+import type { Student } from '../../types/student.types';
+import type { ClassUnit } from '../../types/academic.types';
 
 interface AttendanceModalProps {
     isOpen: boolean;

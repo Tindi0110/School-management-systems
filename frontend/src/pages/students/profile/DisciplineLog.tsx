@@ -1,7 +1,7 @@
 import React from 'react';
-import { ShieldAlert, Plus, ShieldCheck, Edit, Trash2 } from 'lucide-react';
+import { Plus, ShieldCheck, Edit, Trash2 } from 'lucide-react';
 import Button from '../../../components/common/Button';
-import { DisciplineIncident } from '../../../types/student.types';
+import type { DisciplineIncident } from '../../../types/student.types';
 
 interface DisciplineLogProps {
     discipline: DisciplineIncident[];

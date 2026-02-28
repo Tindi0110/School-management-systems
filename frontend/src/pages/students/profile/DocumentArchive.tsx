@@ -1,7 +1,7 @@
 import React from 'react';
 import { FilePlus, FileText, Trash2 } from 'lucide-react';
 import Button from '../../../components/common/Button';
-import { StudentDocument } from '../../../types/student.types';
+import type { StudentDocument } from '../../../types/student.types';
 
 interface DocumentArchiveProps {
     documents: StudentDocument[];

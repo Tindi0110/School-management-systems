@@ -377,6 +377,8 @@ export const hostelAPI = {
     create: (data: any) => api.post('hostel-attendance/', data),
     update: (id: number, data: any) => api.put(`hostel-attendance/${id}/`, data),
     delete: (id: number) => api.delete(`hostel-attendance/${id}/`),
+    bulkMark: (data: { room_id: number; date: string; session: string; attendance_data: any[] }) =>
+      api.post('hostel-attendance/bulk_mark/', data),
   },
   discipline: {
     getAll: (params?: Record<string, any>) => api.get('hostel-discipline/', allWith(params)),

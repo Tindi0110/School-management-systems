@@ -1,14 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { academicsAPI, studentsAPI } from '../api/api';
+import { academicsAPI, studentsAPI, staffAPI } from '../api/api';
+import { GraduationCap, Calendar, Award, ShieldAlert } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
-import Button from '../components/common/Button';
 import type {
     AcademicYear, Term, ClassUnit, Subject,
     Exam, GradeSystem
 } from '../types/academic.types';
 import type { Student } from '../types/student.types';
-import { calculateMeanGrade } from '../utils/academicHelpers';
+import { calculateMeanGrade, calculateGrade } from '../utils/academicHelpers';
 
 // Sub-components
 import AcademicSummary from './academics/AcademicSummary';
@@ -17,10 +17,7 @@ import CurriculumManager from './academics/CurriculumManager';
 import AllocationManager from './academics/AllocationManager';
 import GradingSystemManager from './academics/GradingSystemManager';
 import ExamManager from './academics/ExamManager';
-import AttendanceManager from './academics/AttendanceManager';
 import AcademicModals from './academics/AcademicModals';
-import ResourceManager from './academics/ResourceManager';
-
 
 const Academics = () => {
 
@@ -108,10 +105,7 @@ const Academics = () => {
 
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
     const [isViewClassModalOpen, setIsViewClassModalOpen] = useState(false);
-    const [isExporting, setIsExporting] = useState(false);
-    const [attendanceSort, setAttendanceSort] = useState({ field: 'date', direction: 'desc' });
     const [bulkAttendanceList, setBulkAttendanceList] = useState<any[]>([]);
-    const [attendanceRecords, setAttendanceRecords] = useState<any[]>([]);
 
     // RBAC Helpers
     const userString = localStorage.getItem('user');
@@ -308,11 +302,10 @@ const Academics = () => {
                 const res = await academicsAPI.exams.getAll();
                 setExams(d(res));
             } else if (activeTab === 'ATTENDANCE') {
-                const [attRes, studentRes] = await Promise.all([
+                const [, studentRes] = await Promise.all([
                     academicsAPI.attendance.getAll({ page_size: 500, ordering: '-date' }),
                     studentsAPI.getAll({ page_size: 200 })
                 ]);
-                setAttendanceRecords(d(attRes));
                 setStudents(d(studentRes));
             } else if (activeTab === 'CURRICULUM') {
                 const [syllabusRes, studentRes] = await Promise.all([
@@ -414,11 +407,6 @@ const Academics = () => {
         finally { setIsSubmitting(false); }
     };
 
-    const openEditYear = (y: any) => {
-        setYearForm({ name: y.name, is_active: y.is_active });
-        setEditingYearId(y.id);
-        setIsYearModalOpen(true);
-    };
     const handleTermSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
@@ -438,37 +426,10 @@ const Academics = () => {
         finally { setIsSubmitting(false); }
     };
 
-    const openEditTerm = (t: any) => {
-        const yearId = typeof t.year === 'object' && t.year ? t.year.id : t.year;
-        setTermForm({
-            year: yearId.toString(),
-            name: t.name,
-            start_date: t.start_date || '',
-            end_date: t.end_date || '',
-            is_active: t.is_active
-        });
-        setEditingTermId(t.id);
-        setIsTermModalOpen(true);
-    };
-
     const openEditGradeSystem = (gs: any) => {
         setGradeForm({ name: gs.name, is_default: gs.is_default });
         setEditingSystemId(gs.id);
         setIsGradeModalOpen(true);
-    };
-
-    const handleDeleteAttendance = async (id: number) => {
-        if (await confirm('Delete this attendance record?', { type: 'danger' })) {
-            try {
-                await academicsAPI.attendance.delete(id);
-                success('Attendance record removed');
-                // Refresh attendance data
-                try {
-                    const attRes = await academicsAPI.attendance.getAll();
-                    setAttendanceRecords(attRes.data?.results ?? attRes.data ?? []);
-                } catch (e) { console.error("Error refreshing attendance:", e); }
-            } catch (err: any) { toastError(err.message || 'Failed to remove attendance'); }
-        }
     };
 
     const handleSubjectSubmit = async (e: React.FormEvent) => {
@@ -512,18 +473,6 @@ const Academics = () => {
         }
     };
 
-    const openEditAttendance = (att: any) => {
-        setAttendanceForm({
-            student: att.student.toString(),
-            status: att.status,
-            remark: att.remark || '',
-            date: att.date || new Date().toISOString().split('T')[0]
-        });
-        setEditingAttendanceId(att.id);
-        setAttendanceFilter({ ...attendanceFilter, isBulk: false });
-        setIsAttendanceModalOpen(true);
-    };
-
     const handleAttendanceSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
@@ -549,9 +498,8 @@ const Academics = () => {
 
             // Only refresh attendance data to prevent full page reload (which hides the tab)
             try {
-                const attRes = await academicsAPI.attendance.getAll();
-                const newRecords = attRes.data?.results ?? attRes.data ?? [];
-                setAttendanceRecords(newRecords);
+                await academicsAPI.attendance.getAll();
+                // Attendance is handled via modal / backend refresh
             } catch (e) { console.error("Error refreshing attendance:", e); }
 
             setIsAttendanceModalOpen(false);
@@ -578,6 +526,16 @@ const Academics = () => {
             setSyllabusForm({ subject: '', level: '', class_grade: '', coverage_percentage: 0 });
         } catch (err: any) { toastError(err.message || 'Failed to save syllabus data'); }
         finally { setIsSubmitting(false); }
+    };
+
+    const handleDeleteSyllabus = async (id: number) => {
+        if (await confirm('Delete this syllabus item?', { type: 'danger' })) {
+            try {
+                await academicsAPI.syllabus.delete(id);
+                success('Syllabus item deleted');
+                loadAllAcademicData();
+            } catch (err: any) { toastError(err.message || 'Delete failed'); }
+        }
     };
 
     const handleGroupSubmit = async (e: React.FormEvent) => {
@@ -776,7 +734,10 @@ const Academics = () => {
             }
             await Promise.all(studentResults.map(r => academicsAPI.results.delete(r.id)));
             success('Student results removed');
-            openViewResults(selectedExam); // Refresh
+            // Refresh logic:
+            const res = await academicsAPI.results.getAll({ exam_id: selectedExam.id });
+            const rData = res.data?.results ?? res.data ?? [];
+            setExamResults(rData);
         } catch (err: any) {
             toastError(err.message || 'Failed to clear results');
         } finally {
@@ -784,32 +745,11 @@ const Academics = () => {
         }
     };
 
-
     const handleDeleteExam = async (id: number) => {
         if (await confirm('Delete this exam? This will permanently remove all associated results.', { type: 'danger' })) {
             try {
                 await academicsAPI.exams.delete(id);
                 success('Exam deleted');
-                loadAllAcademicData();
-            } catch (err: any) { toastError(err.message || 'Delete failed'); }
-        }
-    };
-
-    const handleDeleteTerm = async (id: number) => {
-        if (await confirm('Delete this academic term?', { type: 'danger' })) {
-            try {
-                await academicsAPI.terms.delete(id);
-                success('Term deleted');
-                loadAllAcademicData();
-            } catch (err: any) { toastError(err.message || 'Delete failed'); }
-        }
-    };
-
-    const handleDeleteYear = async (id: number) => {
-        if (await confirm('Delete this academic year? This may affect historical data.', { type: 'danger' })) {
-            try {
-                await academicsAPI.years.delete(id);
-                success('Academic Cycle deleted');
                 loadAllAcademicData();
             } catch (err: any) { toastError(err.message || 'Delete failed'); }
         }
@@ -822,35 +762,6 @@ const Academics = () => {
                 success('Grading policy removed');
                 loadAllAcademicData();
             } catch (err: any) { toastError(err.message || 'Delete failed'); }
-        }
-    };
-
-    const handleSetActiveTerm = async (term: any) => {
-        const newStatus = !term.is_active;
-        if (!await confirm(`${newStatus ? 'Activate' : 'Deactivate'} ${term.name}? This will update the system-wide active context.`, { type: 'info', confirmLabel: 'Proceed', cancelLabel: 'Cancel' })) return;
-
-        const yearId = typeof term.year === 'object' && term.year ? term.year.id : term.year;
-        const payload = { ...term, year: yearId, is_active: newStatus };
-
-        try {
-            await academicsAPI.terms.update(term.id, payload);
-            success(`Term ${term.name} is now ${newStatus ? 'ACTIVE' : 'INACTIVE'}`);
-            loadAllAcademicData();
-        } catch (err: any) {
-            toastError(err.message || 'Failed to update term status');
-        }
-    };
-
-    const handleSetActiveYear = async (year: any) => {
-        const newStatus = !year.is_active;
-        if (!await confirm(`${newStatus ? 'Activate' : 'Deactivate'} Academic Cycle ${year.name}?`, { type: 'info' })) return;
-
-        try {
-            await academicsAPI.years.update(year.id, { ...year, is_active: newStatus });
-            success(`Academic Cycle ${year.name} is now ${newStatus ? 'ACTIVE' : 'INACTIVE'}`);
-            loadAllAcademicData();
-        } catch (err: any) {
-            toastError(err.message || 'Failed to update cycle status');
         }
     };
 
@@ -971,49 +882,6 @@ const Academics = () => {
         }
     };
 
-    const handleExportAcademics = () => {
-        setIsExporting(true);
-        try {
-            let dataToExport: any[] = [];
-            let fileName = 'Academics_Report';
-
-            if (activeTab === 'ATTENDANCE') {
-                dataToExport = attendanceRecords.map(att => {
-                    const student = students.find(s => s.id === att.student);
-                    const cls = classes.find(c => c.id === student?.current_class);
-                    return {
-                        date: att.date,
-                        student_name: student?.full_name,
-                        admission: student?.admission_number,
-                        class: cls ? `${cls.name} ${cls.stream}` : 'N/A',
-                        status: att.status,
-                        remark: att.remark
-                    };
-                });
-                fileName = `Attendance_Report`;
-            } else if (activeTab === 'CLASSES') {
-                dataToExport = classes.map(c => ({
-                    name: c.name,
-                    stream: c.stream,
-                    teacher: c.teacher_name,
-                    students: c.student_count,
-                    capacity: c.capacity
-                }));
-                fileName = `Classes_Report`;
-            }
-
-            if (dataToExport.length === 0) {
-                warning("No data available to export for this view.");
-                return;
-            }
-
-            exportToCSV(dataToExport, fileName);
-        } catch (err: any) {
-            toastError(err.message || "Failed to export report.");
-        } finally {
-            setIsExporting(false);
-        }
-    };
 
 
     if (loading) return <div className="flex items-center justify-center p-12 spinner-container"><div className="spinner"></div></div>;
@@ -1101,7 +969,7 @@ const Academics = () => {
                     exams={exams}
                     meanGrade={meanGrade}
                     syllabusData={syllabusData}
-                    setActiveTab={setActiveTab}
+                    setActiveTab={tab => setActiveTab(tab as any)}
                     setIsSyllabusModalOpen={setIsSyllabusModalOpen}
                     setSyllabusForm={setSyllabusForm}
                     setEditingSyllabusId={setEditingSyllabusId}
@@ -1138,8 +1006,7 @@ const Academics = () => {
                     setIsSyllabusModalOpen={setIsSyllabusModalOpen}
                     setSyllabusForm={setSyllabusForm}
                     setEditingSyllabusId={setEditingSyllabusId}
-                    loadAllAcademicData={loadAllAcademicData}
-                    academicsAPI={academicsAPI}
+                    handleDeleteSyllabus={handleDeleteSyllabus}
                 />
             )}
 
@@ -1171,7 +1038,6 @@ const Academics = () => {
                     setBoundaryForm={setBoundaryForm}
                     setEditingBoundaryId={setEditingBoundaryId}
                     handleDeleteBoundary={handleDeleteBoundary}
-                    boundaryForm={boundaryForm}
                 />
             )}
 
@@ -1179,7 +1045,6 @@ const Academics = () => {
                 <ExamManager
                     exams={exams}
                     searchTerm={searchTerm}
-                    isReadOnly={isReadOnly}
                     openEnterResults={openEnterResults}
                     openViewResults={openViewResults}
                     openEditExam={openEditExam}
@@ -1222,9 +1087,8 @@ const Academics = () => {
                     handleTermSubmit, handleClassSubmit, handleGroupSubmit,
                     handleSubjectSubmit, handleAttendanceSubmit, handleExamSubmit,
                     handleSyllabusSubmit, handleGradeSystemSubmit, handleBoundarySubmit,
-                    handleDeleteStudentResults, handleScoreChange,
-                    handleDeleteSingleResult, handleBulkResultSubmit,
-                    handleDeleteExam, handleDeleteTerm, handleDeleteYear, handleDeleteGradeSystem
+                    handleDeleteSingleResult, handleBulkResultSubmit, handleDeleteSyllabus,
+                    handleScoreChange, handleDeleteStudentResults
                 }}
                 status={{
                     isSubmitting, editingClassId, editingGroupId,

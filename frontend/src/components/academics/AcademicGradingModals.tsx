@@ -1,7 +1,6 @@
 import React from 'react';
 import Modal from '../Modal';
 import Button from '../common/Button';
-import { GradeSystem } from '../../types/academic.types';
 
 interface GradeSystemModalProps {
     isOpen: boolean;

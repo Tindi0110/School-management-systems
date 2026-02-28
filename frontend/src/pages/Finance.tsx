@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { financeAPI, academicsAPI, studentsAPI, classesAPI, mpesaAPI } from '../api/api';
-import { CreditCard, FileText, TrendingUp, Plus, Bell, Loader2 } from 'lucide-react';
+import { CreditCard, FileText, TrendingUp, Bell, Loader2 } from 'lucide-react';
 import SearchInput from '../components/common/SearchInput';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';

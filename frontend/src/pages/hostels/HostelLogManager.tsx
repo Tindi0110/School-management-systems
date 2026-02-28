@@ -10,14 +10,13 @@ interface HostelLogManagerProps {
     pageSize: number;
     students: any[];
     hostels: any[];
-    rooms: any[];
     onAdd: () => void;
     onEdit: (item: any) => void;
     onDelete: (id: number) => void;
 }
 
 const HostelLogManager: React.FC<HostelLogManagerProps> = ({
-    type, data, page, setPage, total, pageSize, students, hostels, rooms, onAdd, onEdit, onDelete
+    type, data, page, setPage, total, pageSize, students, hostels, onAdd, onEdit, onDelete
 }) => {
     const titles = {
         discipline: 'Disciplinary Records',

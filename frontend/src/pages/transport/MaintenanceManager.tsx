@@ -1,10 +1,9 @@
 import React from 'react';
-import { Plus, Edit, Trash2, Wrench } from 'lucide-react';
+import { Plus, Edit, Trash2 } from 'lucide-react';
 import Button from '../../components/common/Button';
 
 interface MaintenanceManagerProps {
     records: any[];
-    searchTerm: string;
     onAdd: () => void;
     onEdit: (m: any) => void;
     onDelete: (id: number) => void;
@@ -17,7 +16,6 @@ interface MaintenanceManagerProps {
 
 const MaintenanceManager: React.FC<MaintenanceManagerProps> = ({
     records,
-    searchTerm,
     onAdd,
     onEdit,
     onDelete,
@@ -55,7 +53,7 @@ const MaintenanceManager: React.FC<MaintenanceManagerProps> = ({
                                 <td>{parseFloat(r.cost).toLocaleString()}</td>
                                 <td>
                                     <span className={`status-badge ${r.status === 'COMPLETED' ? 'success' :
-                                            r.status === 'IN_PROGRESS' ? 'warning' : 'secondary'
+                                        r.status === 'IN_PROGRESS' ? 'warning' : 'secondary'
                                         }`}>
                                         {r.status}
                                     </span>

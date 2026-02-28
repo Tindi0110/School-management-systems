@@ -644,7 +644,6 @@ const Transport = () => {
                     {activeTab === 'trips' && (
                         <TripLogs
                             trips={trips}
-                            searchTerm={searchTerm}
                             onAdd={() => { setTripId(null); setTripForm(INITIAL_TRIP_FORM); setIsTripModalOpen(true); }}
                             onEdit={handleEditTrip}
                             onDelete={handleDeleteTrip}
@@ -657,7 +656,6 @@ const Transport = () => {
                     {activeTab === 'maintenance' && (
                         <MaintenanceManager
                             records={maintenanceRecords}
-                            searchTerm={searchTerm}
                             vehicles={vehicles}
                             onAdd={() => { setMaintenanceId(null); setMaintenanceForm(INITIAL_MAINTENANCE_FORM); setIsMaintenanceModalOpen(true); }}
                             onEdit={handleEditMaintenance}
@@ -671,7 +669,6 @@ const Transport = () => {
                     {activeTab === 'fuel' && (
                         <FuelManager
                             records={fuelRecords}
-                            searchTerm={searchTerm}
                             vehicles={vehicles}
                             onDelete={handleDeleteFuel}
                             page={pagination.fuel.page}
@@ -683,7 +680,6 @@ const Transport = () => {
                     {activeTab === 'safety' && (
                         <SafetyManager
                             incidents={incidents}
-                            searchTerm={searchTerm}
                             vehicles={vehicles}
                             onAdd={() => { setIncidentId(null); setSafetyForm(INITIAL_SAFETY_FORM); setIsSafetyModalOpen(true); }}
                             onEdit={handleEditIncident}

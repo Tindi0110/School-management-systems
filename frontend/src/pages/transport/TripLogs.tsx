@@ -4,7 +4,6 @@ import Button from '../../components/common/Button';
 
 interface TripLogsProps {
     trips: any[];
-    searchTerm: string;
     onAdd: () => void;
     onEdit: (t: any) => void;
     onDelete: (id: number) => void;
@@ -16,7 +15,6 @@ interface TripLogsProps {
 
 const TripLogs: React.FC<TripLogsProps> = ({
     trips,
-    searchTerm,
     onAdd,
     onEdit,
     onDelete,

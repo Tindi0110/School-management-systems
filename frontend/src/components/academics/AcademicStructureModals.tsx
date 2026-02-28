@@ -2,8 +2,9 @@ import React from 'react';
 import Modal from '../Modal';
 import Button from '../common/Button';
 import SearchableSelect from '../SearchableSelect';
-import { Staff } from '../../types/staff.types';
-import { SubjectGroup } from '../../types/academic.types';
+
+type Staff = { id: number; user?: number; full_name: string; employee_id: string; role: string };
+type SubjectGroup = { id: number; name: string };
 
 interface ClassModalProps {
     isOpen: boolean;

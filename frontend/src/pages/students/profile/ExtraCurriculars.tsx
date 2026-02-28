@@ -1,7 +1,7 @@
 import React from 'react';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import Button from '../../../components/common/Button';
-import { Activity } from '../../../types/student.types';
+import type { Activity } from '../../../types/student.types';
 
 interface ExtraCurricularsProps {
     activities: Activity[];

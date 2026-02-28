@@ -1,7 +1,7 @@
 import React from 'react';
 import { Heart, Edit, Trash2, AlertTriangle, Phone } from 'lucide-react';
 import Button from '../../../components/common/Button';
-import { Student } from '../../../types/student.types';
+import type { Student } from '../../../types/student.types';
 
 interface HealthWelfareProps {
     student: Student;

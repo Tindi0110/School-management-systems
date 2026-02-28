@@ -1,7 +1,7 @@
 import React from 'react';
 import { Plus, Users, ShieldCheck, Trash2, Phone, Mail, MessageSquare } from 'lucide-react';
 import Button from '../../../components/common/Button';
-import { Parent } from '../../../types/student.types';
+import type { Parent } from '../../../types/student.types';
 
 interface FamilyGuardianProps {
     parents: Parent[];

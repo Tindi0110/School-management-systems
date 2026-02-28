@@ -1,5 +1,5 @@
 import React from 'react';
-import { Building, Plus, Bed as BedIcon, Trash2, Users } from 'lucide-react';
+import { Plus, Edit, Trash2, Users } from 'lucide-react';
 import Modal from '../../components/Modal';
 import Button from '../../components/common/Button';
 import SearchableSelect from '../../components/SearchableSelect';
@@ -98,7 +98,7 @@ const HostelModals: React.FC<HostelModalsProps> = ({
     isRoomModalOpen, setIsRoomModalOpen, roomFormData, setRoomFormData, handleRoomSubmit, roomId,
     isAllocationModalOpen, setIsAllocationModalOpen, allocationFormData, setAllocationFormData, handleAllocationSubmit, allocationId, isTransferMode,
     isAssetModalOpen, setIsAssetModalOpen, assetFormData, setAssetFormData, handleAssetSubmit, assetId,
-    isAttendanceModalOpen, setIsAttendanceModalOpen, attendanceFormData, setAttendanceFormData, handleAttendanceSubmit, attendanceId, attendanceMode, setAttendanceMode, bulkAttendanceRoom, setBulkAttendanceRoom, bulkAttendanceData, setBulkAttendanceData, handleBulkAttendanceSubmit,
+    isAttendanceModalOpen, setIsAttendanceModalOpen, attendanceFormData, setAttendanceFormData, handleAttendanceSubmit, attendanceId, attendanceMode, setAttendanceMode: _setAttendanceMode, bulkAttendanceRoom, setBulkAttendanceRoom, bulkAttendanceData, setBulkAttendanceData, handleBulkAttendanceSubmit,
     isDisciplineModalOpen, setIsDisciplineModalOpen, disciplineFormData, setDisciplineFormData, handleDisciplineSubmit, disciplineId,
     isMaintenanceModalOpen, setIsMaintenanceModalOpen, maintenanceFormData, setMaintenanceFormData, handleMaintenanceSubmit, maintenanceId,
     isViewResidentsModalOpen, setIsViewResidentsModalOpen, viewHostelResidents,
@@ -189,7 +189,7 @@ const HostelModals: React.FC<HostelModalsProps> = ({
 
                     {attendanceMode === 'BULK' ? (
                         <div className="space-y-4">
-                            <SearchableSelect label="Select Room" options={rooms.map(r => ({ id: r.id.toString(), label: `Room ${r.room_number} (${rooms.find(rm => rm.id === r.id)?.hostel_name || 'N/A'})` }))} value={bulkAttendanceRoom} onChange={(v) => setBulkAttendanceRoom(Number(v))} />
+                            <SearchableSelect label="Select Room" options={rooms.map(r => ({ id: r.id.toString(), label: `Room ${r.room_number} (${rooms.find(rm => rm.id === r.id)?.hostel_name || 'N/A'})` }))} value={bulkAttendanceRoom !== null ? bulkAttendanceRoom.toString() : ''} onChange={(v) => setBulkAttendanceRoom(Number(v))} />
                             {bulkAttendanceRoom && (
                                 <div className="max-h-96 overflow-y-auto border rounded-lg p-2 space-y-2 bg-slate-50">
                                     {students.filter(s => s.current_room === bulkAttendanceRoom).map(s => (
@@ -329,7 +329,7 @@ const HostelModals: React.FC<HostelModalsProps> = ({
                 <div className="space-y-4">
                     <div className="flex justify-between items-center bg-slate-50 p-3 rounded-lg border">
                         <div className="text-xs font-bold uppercase text-secondary">Hostel: {selectedHostel?.name}</div>
-                        <Button variant="primary" size="xs" icon={<Plus size={14} />} onClick={() => openAddRoom(selectedHostel)}>Add Room</Button>
+                        <Button variant="primary" size="sm" icon={<Plus size={14} />} onClick={() => openAddRoom(selectedHostel)}>Add Room</Button>
                     </div>
                     <div className="max-h-96 overflow-y-auto">
                         <table className="table w-full table-compact">

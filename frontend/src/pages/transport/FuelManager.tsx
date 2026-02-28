@@ -1,10 +1,9 @@
 import React from 'react';
-import { Droplet, Trash2, Plus } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import Button from '../../components/common/Button';
 
 interface FuelManagerProps {
     records: any[];
-    searchTerm: string;
     vehicles: any[];
     onDelete: (id: number) => void;
     page: number;
@@ -15,7 +14,6 @@ interface FuelManagerProps {
 
 const FuelManager: React.FC<FuelManagerProps> = ({
     records,
-    searchTerm,
     vehicles,
     onDelete,
     page,

@@ -101,11 +101,12 @@ interface AcademicModalsProps {
         handleAttendanceSubmit: (e: any) => void;
         handleExamSubmit: (e: any) => void;
         handleSyllabusSubmit: (e: any) => void;
+        handleDeleteSyllabus: (id: number) => void;
         handleGradeSystemSubmit: (e: any) => void;
         handleBoundarySubmit: (e: any) => void;
+        handleDeleteSingleResult: (studentId: number, subjectId: number, resultId: number) => void;
         handleDeleteStudentResults: (studentId: number) => void;
         handleScoreChange: (studentId: any, subjectId: any, val: string) => void;
-        handleDeleteSingleResult: (studentId: number, subjectId: number, resultId: number) => void;
         handleBulkResultSubmit: (e: any) => void;
 
     };

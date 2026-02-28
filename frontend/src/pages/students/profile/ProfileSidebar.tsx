@@ -1,7 +1,7 @@
 import React from 'react';
 import { ShieldCheck, MessageSquare, MessageCircle, Mail, Send } from 'lucide-react';
 import Button from '../../../components/common/Button';
-import { Student } from '../../../types/student.types';
+import type { Student } from '../../../types/student.types';
 
 interface ProfileSidebarProps {
     student: Student;
