@@ -87,9 +87,10 @@ const Library = () => {
             const res = await libraryAPI.fines.syncToFinance();
             const { synced, skipped_no_student, skipped_no_invoice } = res.data;
             toast.success(
-                `Sync complete: ${synced} fine(s) added to fee balances.` +
+                `Sync complete: ${synced} new fine(s) billed to invoices. ` +
                 (skipped_no_student ? ` ${skipped_no_student} skipped (no student link).` : '') +
-                (skipped_no_invoice ? ` ${skipped_no_invoice} skipped (no invoice found).` : '')
+                (skipped_no_invoice ? ` ${skipped_no_invoice} skipped (no invoice found).` : '') +
+                ` (Already-billed fines are skipped automatically.)`
             );
             await loadFines();
         } catch (err: any) {
@@ -767,7 +768,7 @@ const Library = () => {
                                     <td>{f.user_name || 'Unknown Student'}</td>
                                     <td className="font-bold">{parseFloat(f.amount).toLocaleString()}</td>
                                     <td>{f.reason}</td>
-                                    <td><span className={`badge ${f.status === 'PAID' ? 'badge-success' : 'badge-error'}`}>{f.status}</span></td>
+                                    <td><span className={`badge ${f.status === 'PAID' ? 'badge-success' : (f.adjustment ? 'badge-warning' : 'badge-error')}`}>{f.status === 'PAID' ? 'PAID' : (f.adjustment ? 'BILLED TO INVOICE' : 'PENDING')}</span></td>
                                     <td>{f.date_issued}</td>
                                     <td>
                                         <div className="flex gap-2">
