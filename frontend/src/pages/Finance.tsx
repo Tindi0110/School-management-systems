@@ -83,7 +83,7 @@ const Finance = () => {
     const [statsContext, setStatsContext] = useState<any>(null);
 
     // Invoice Filters
-    const [invFilters, setInvFilters] = useState({ class_id: '', stream: '', year_id: '', term: '', status: '' });
+    const [invFilters, setInvFilters] = useState({ class_id: '', stream: '', year_id: '', term: '', status: '', expenseCategory: '' });
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [selectedInvoices, setSelectedInvoices] = useState<Set<number>>(new Set());
@@ -195,11 +195,15 @@ const Finance = () => {
                 setFeeStructures(d(res));
                 set_totalItems(res.data?.count ?? (res.data?.results ? res.data.results.length : 0));
             } else if (activeTab === 'expenses') {
-                const res = await financeAPI.expenses.getAll({
+                const params: any = {
                     page,
                     page_size: pageSize,
                     search: debouncedSearch
-                });
+                };
+                if (invFilters.expenseCategory) {
+                    params.category = invFilters.expenseCategory;
+                }
+                const res = await financeAPI.expenses.getAll(params);
                 setExpenses(d(res));
                 set_totalItems(res.data?.count ?? (res.data?.results ? res.data.results.length : 0));
             }
@@ -807,8 +811,8 @@ const Finance = () => {
                                                 { id: 'FOOD', label: 'Food' },
                                                 { id: 'OTHER', label: 'Other' }
                                             ]}
-                                            value={invFilters.status /* Reusing filter state temporarily */}
-                                            onChange={(val) => setInvFilters({ ...invFilters, status: val.toString() })}
+                                            value={invFilters.expenseCategory}
+                                            onChange={(val) => setInvFilters({ ...invFilters, expenseCategory: val.toString() })}
                                         />
                                     </div>
                                     {!isReadOnly && (
