@@ -29,6 +29,17 @@ const Finance = () => {
         }
     };
 
+    const formatDateTime = (dateString: string) => {
+        if (!dateString) return 'N/A';
+        try {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return 'N/A';
+            return date.toLocaleString();
+        } catch (e) {
+            return 'N/A';
+        }
+    };
+
     // Data State
     const [stats, setStats] = useState({
         totalInvoiced: 0, totalCollected: 0, totalOutstanding: 0,
@@ -1146,7 +1157,10 @@ const Finance = () => {
                                     <tbody>
                                         {selectedInvoice.items?.map((item: any) => (
                                             <tr key={item.id}>
-                                                <td>{item.description}</td>
+                                                <td>
+                                                    {item.description}
+                                                    <span className="text-xs text-gray-400 block">{item.created_at ? formatDateTime(item.created_at) : formatDate(selectedInvoice.date_generated)}</span>
+                                                </td>
                                                 <td className="text-right font-mono">KES {Number(item.amount).toLocaleString()}</td>
                                             </tr>
                                         ))}
@@ -1155,8 +1169,11 @@ const Finance = () => {
                                                 <tr className="bg-gray-50"><td colSpan={2} className="text-xs font-bold text-gray-400">ADJUSTMENTS (FINES/WAIVERS)</td></tr>
                                                 {selectedInvoice.adjustments.map((adj: any) => (
                                                     <tr key={adj.id}>
-                                                        <td>{adj.reason} <span className="text-xs text-gray-400">({adj.adjustment_type})</span></td>
-                                                        <td className={`text - right font - mono ${adj.adjustment_type === 'DEBIT' ? 'text-error' : 'text-success'} `}>
+                                                        <td>
+                                                            {adj.reason} <span className="text-xs text-gray-400">({adj.adjustment_type})</span>
+                                                            <span className="text-xs text-gray-400 block">{adj.created_at ? formatDateTime(adj.created_at) : formatDate(adj.date)}</span>
+                                                        </td>
+                                                        <td className={`text-right font-mono ${adj.adjustment_type === 'DEBIT' ? 'text-error' : 'text-success'}`}>
                                                             {adj.adjustment_type === 'DEBIT' ? '+' : '-'} KES {Number(adj.amount).toLocaleString()}
                                                         </td>
                                                     </tr>
@@ -1170,7 +1187,7 @@ const Finance = () => {
                                                     <tr key={pay.id}>
                                                         <td>
                                                             Payment - {pay.method} {pay.reference_number && `(Ref: ${pay.reference_number})`}
-                                                            <span className="text-xs text-gray-400 block">{formatDate(pay.date_received)}</span>
+                                                            <span className="text-xs text-gray-400 block">{pay.created_at ? formatDateTime(pay.created_at) : formatDate(pay.date_received)}</span>
                                                         </td>
                                                         <td className="text-right font-mono text-success">
                                                             - KES {Number(pay.amount).toLocaleString()}

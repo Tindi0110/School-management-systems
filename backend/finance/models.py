@@ -98,6 +98,7 @@ class InvoiceItem(models.Model):
     fee_structure = models.ForeignKey(FeeStructure, on_delete=models.SET_NULL, null=True)
     description = models.CharField(max_length=150) # Snapshot of name
     amount = models.DecimalField(max_digits=10, decimal_places=2) # Snapshot of amount
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -128,6 +129,7 @@ class Payment(models.Model):
     reference_number = models.CharField(max_length=50, blank=True, null=True) # e.g. M-Pesa Code
     date_received = models.DateField(default=timezone.now, db_index=True)
     received_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
     
     notes = models.TextField(blank=True)
 
@@ -156,6 +158,7 @@ class Adjustment(models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     reason = models.TextField()
     date = models.DateField(default=timezone.now)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
     approved_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
 
     # Origin Tracking (for Fraud Prevention/Auditing)

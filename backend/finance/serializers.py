@@ -18,7 +18,7 @@ class FeeStructureSerializer(serializers.ModelSerializer):
 class InvoiceItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = InvoiceItem
-        fields = ['id', 'description', 'amount']
+        fields = ['id', 'description', 'amount', 'created_at']
 
 class PaymentSerializer(serializers.ModelSerializer):
     student_name = serializers.CharField(source='invoice.student.full_name', read_only=True)
