@@ -66,30 +66,39 @@ class Student(models.Model):
     def save(self, *args, **kwargs):
         if not self.admission_number:
             from academics.models import AcademicYear
-            from django.db.models import Max
+            from django.db import transaction, models
             import datetime
             
-            # 1. Determine the Year Part (YY)
-            active_year = AcademicYear.objects.filter(is_active=True).first()
-            year_val = active_year.name if active_year else str(datetime.date.today().year)
-            
-            # Handle formats like "2024" or "24/25"
-            if '/' in year_val:
-                short_year = year_val.split('/')[0][-2:]
-            else:
-                short_year = year_val[-2:]
-            
-            # 2. Determine the sequence Part (XXXX)
-            # Filter students whose admission numbers start with this year prefix (YY/)
-            year_prefix = f"{short_year}/"
-            
-            count = Student.objects.filter(admission_number__startswith=year_prefix).count()
-            next_num = count + 1
-            
-            # 3. Format: YY/XXXX (padded to 4)
-            self.admission_number = f"{short_year}/{next_num:04d}"
-            
-        super().save(*args, **kwargs)
+            with transaction.atomic():
+                # 1. Determine the Year Part (YY)
+                active_year = AcademicYear.objects.filter(is_active=True).first()
+                year_val = active_year.name if active_year else str(datetime.date.today().year)
+                
+                # Handle formats like "2024" or "24/25"
+                if '/' in year_val:
+                    short_year = year_val.split('/')[0][-2:]
+                else:
+                    short_year = year_val[-2:]
+                
+                # 2. Determine the sequence Part (XXXX)
+                # Use select_for_update() to lock the rows for this year's prefix
+                year_prefix = f"{short_year}/"
+                
+                # We count existing students for this year. 
+                # select_for_update() on the queryset ensures that two concurrent saves 
+                # will wait for each other rather than getting the same count.
+                # Note: count() itself doesn't lock, so we fetch the IDs with lock and then count.
+                existing_ids = Student.objects.select_for_update().filter(
+                    admission_number__startswith=year_prefix
+                ).values_list('id', flat=True)
+                
+                next_num = len(existing_ids) + 1
+                
+                # 3. Format: YY/XXXX (padded to 4)
+                self.admission_number = f"{short_year}/{next_num:04d}"
+                super().save(*args, **kwargs)
+        else:
+            super().save(*args, **kwargs)
 
     def __str__(self): return f"{self.full_name} ({self.admission_number})"
 

@@ -170,22 +170,69 @@ class HostelAttendanceViewSet(viewsets.ModelViewSet):
     search_fields = ['student__full_name', 'student__admission_number']
     ordering_fields = ['date', 'session', 'status']
 
+    @action(detail=False, methods=['post'])
+    def bulk_mark(self, request):
+        """
+        Marks attendance for multiple students at once.
+        Supports both legacy 'records' key and new 'attendance_data' key.
+        """
+        attendance_data = request.data.get('attendance_data') or request.data.get('records', [])
+        date = request.data.get('date', timezone.now().date())
+        session = request.data.get('session')
+
+        if not attendance_data:
+            return Response({'error': 'No attendance records provided'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        created_count = 0
+        updated_count = 0
+        
+        with transaction.atomic():
+            for record in attendance_data:
+                # Support both 'student' and 'student_id'
+                student_id = record.get('student') or record.get('student_id')
+                # Use shared date/session if not in record
+                rec_date = record.get('date', date)
+                rec_session = record.get('session', session)
+                status_val = record.get('status')
+                # Support both 'remarks' and 'warden_remark'
+                remark = record.get('warden_remark') or record.get('remarks', '')
+
+                if not all([student_id, rec_session, status_val]):
+                    continue
+
+                obj, created = HostelAttendance.objects.update_or_create(
+                    student_id=student_id,
+                    date=rec_date,
+                    session=rec_session,
+                    defaults={'status': status_val, 'warden_remark': remark}
+                )
+                if created:
+                    created_count += 1
+                else:
+                    updated_count += 1
+                    
+        return Response({
+            'message': f'Bulk attendance processed. {created_count} created, {updated_count} updated.',
+            'created': created_count,
+            'updated': updated_count
+        })
+
 class HostelDisciplineViewSet(viewsets.ModelViewSet):
-    queryset = HostelDiscipline.objects.all()
+    queryset = HostelDiscipline.objects.select_related('student', 'reported_by').all()
     serializer_class = HostelDisciplineSerializer
     permission_classes = [IsAuthenticated]
 
 class HostelAssetViewSet(viewsets.ModelViewSet):
-    queryset = HostelAsset.objects.all()
+    queryset = HostelAsset.objects.select_related('hostel', 'room').all()
     serializer_class = HostelAssetSerializer
     permission_classes = [IsAuthenticated]
 
 class GuestLogViewSet(viewsets.ModelViewSet):
-    queryset = GuestLog.objects.all()
+    queryset = GuestLog.objects.select_related('student_visited').all()
     serializer_class = GuestLogSerializer
     permission_classes = [IsAuthenticated]
 
 class HostelMaintenanceViewSet(viewsets.ModelViewSet):
-    queryset = HostelMaintenance.objects.all()
+    queryset = HostelMaintenance.objects.select_related('hostel', 'room', 'reported_by').all()
     serializer_class = HostelMaintenanceSerializer
     permission_classes = [IsAuthenticated]

@@ -1,21 +1,23 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
-    Plus, Edit, Trash2, Users, Award, GraduationCap,
-    School, Calendar, ClipboardCheck, BarChart3, FileText,
-    Settings, Layers, Trophy, Printer, CheckSquare, Download,
-    ShieldAlert
+    Edit, Trash2, Calendar, ClipboardCheck, BarChart3,
+    Trophy, Printer, ShieldAlert
 } from 'lucide-react';
 import { academicsAPI, staffAPI, studentsAPI } from '../api/api';
-import { exportToCSV } from '../utils/export';
 
-import Modal from '../components/Modal';
+
 import SearchableSelect from '../components/SearchableSelect';
-import { StatCard } from '../components/Card';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 import Button from '../components/common/Button';
-import PremiumDateInput from '../components/common/DatePicker';
 import ExamBroadsheet from '../components/academics/ExamBroadsheet';
+import StudentResultRow from '../components/academics/StudentResultRow';
+import { YearModal, TermModal } from '../components/academics/AcademicPeriodModals';
+import { ClassModal, GroupModal, SubjectModal } from '../components/academics/AcademicStructureModals';
+import { AttendanceModal } from '../components/academics/AcademicAttendanceModals';
+import { ExamModal, SyllabusModal, RankingModal } from '../components/academics/AcademicAssessmentModals';
+import { ResultEntryModal } from '../components/academics/ResultEntryModal';
+import { ViewClassModal, ReportModal, ConfirmDeleteModal } from '../components/academics/AcademicReviewModals';
+import { GradeSystemModal, BoundaryModal } from '../components/academics/AcademicGradingModals';
 import type {
     AcademicYear, Term, ClassUnit, Subject,
     Exam, GradeSystem
@@ -24,70 +26,8 @@ import type { Student } from '../types/student.types';
 import { calculateGrade, calculateMeanGrade } from '../utils/academicHelpers';
 
 
-const StudentResultRow = React.memo(({ student, sClass, subjects, studentScores, onScoreChange, onDeleteResult, activeClassSubjects, resultContext, gradeSystems, examGradeSystemId, isLocked }: any) => {
-    return (
-        <tr className="hover:bg-slate-50 transition-colors border-b">
-            <td className="sticky left-0 z-10 bg-white font-medium py-2 px-3 border-r">
-                <div className="text-slate-950 font-bold text-sm" title={student.full_name}>{student.full_name}</div>
-                <div className="text-[10px] text-slate-500 font-mono mt-0.5">
-                    {student.admission_number} | {sClass?.stream}
-                </div>
-            </td>
-            {subjects.filter((sub: any) => {
-                if (resultContext === 'all') return true;
-                return activeClassSubjects.some((cs: any) => cs.subject === sub.id);
-            }).map((sub: any) => {
-                const entry = (studentScores || {})[sub.id] || { score: '' };
-                const scoreVal = parseFloat(entry.score);
-                const grade = isNaN(scoreVal) ? '' : calculateGrade(scoreVal, gradeSystems, examGradeSystemId);
-                const hasSavedResult = !!entry.id;
-                return (
-                    <td key={sub.id} className="p-0 relative border-r group min-w-[120px]">
-                        <div className="flex flex-col items-center justify-center p-2 min-h-[80px]">
-                            <input
-                                type="text"
-                                inputMode="decimal"
-                                className={`w-20 text-center text-base font-black border outline-none px-2 py-2 m-0 rounded-xl shadow-inner
-                                    ${hasSavedResult ? 'text-primary border-primary/30 bg-primary/5' : 'text-slate-700 border-slate-200 bg-slate-50/50'}
-                                    focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all`}
-                                value={entry.score}
-                                placeholder="—"
-                                onChange={(e) => {
-                                    const val = e.target.value;
-                                    if (!isLocked && (val === '' || /^\d*\.?\d*$/.test(val))) {
-                                        onScoreChange(student.id, sub.id, val);
-                                    }
-                                }}
-                                disabled={isLocked}
-                                title={isLocked ? "Results Entry is Locked" : `${sub.name}: ${entry.score || 'not entered'}`}
-                            />
-                            {/* Grade badge */}
-                            <span className={`text-[10px] font-black mt-1 ${grade === 'A' || grade === 'A-' ? 'text-green-600' :
-                                grade === 'E' || grade === 'D-' ? 'text-red-600' :
-                                    grade ? 'text-slate-500' : 'text-slate-300'
-                                }`}>{grade || '•'}</span>
-                        </div>
-                        {/* Delete button — only shown for saved results on hover */}
-                        {hasSavedResult && !isLocked && (
-                            <button
-                                type="button"
-                                className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-red-100 text-red-600 hover:bg-red-500 hover:text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-[10px] font-black leading-none"
-                                title={`Delete ${sub.name} score for ${student.full_name}`}
-                                onClick={() => onDeleteResult && onDeleteResult(student.id, sub.id, entry.id)}
-                            >×</button>
-                        )}
-                        {/* Blue dot = saved, not yet in db */}
-                        {entry.score && !hasSavedResult && (
-                            <span className="absolute top-0.5 right-1 w-1.5 h-1.5 rounded-full bg-amber-400" title="Unsaved" />
-                        )}
-                    </td>
-                );
-            })}
-        </tr>
-    );
-});
-
 const Academics = () => {
+
     const [activeTab, setActiveTab] = useState<'SUMMARY' | 'CLASSES' | 'CURRICULUM' | 'EXAMS' | 'GRADING' | 'ATTENDANCE' | 'RESOURCES' | 'ALLOCATION'>('SUMMARY');
     const [loading, setLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -192,6 +132,25 @@ const Academics = () => {
     const isAdmin = ['ADMIN', 'PRINCIPAL', 'DOS', 'REGISTRAR'].includes(user?.role);
     const isReadOnly = isTeacher && !isAdmin;
 
+
+    const handleDeleteSingleResult = async (studentId: number, subjectId: number) => {
+        const resId = studentScores[studentId]?.[subjectId]?.id;
+        if (resId && await confirm('Clear this mark?')) {
+            try {
+                await academicsAPI.results.delete(resId);
+                success('Mark cleared');
+                setStudentScores((prev: any) => {
+                    const next = { ...prev };
+                    if (next[studentId]?.[subjectId]) {
+                        delete next[studentId][subjectId];
+                    }
+                    return next;
+                });
+            } catch (e: any) {
+                toastError(e.message || 'Failed to clear mark');
+            }
+        }
+    };
 
     const handleScoreChange = useCallback((studentId: any, subjectId: any, val: string) => {
         setStudentScores((prev: any) => ({
@@ -657,6 +616,25 @@ const Academics = () => {
         finally { setIsSubmitting(false); }
     };
 
+    const handleGroupSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        try {
+            if (editingGroupId) {
+                await academicsAPI.subjectGroups.update(editingGroupId, groupForm);
+                success('Group updated');
+            } else {
+                await academicsAPI.subjectGroups.create(groupForm);
+                success('Group created');
+            }
+            loadAllAcademicData();
+            setIsGroupModalOpen(false);
+            setEditingGroupId(null);
+            setGroupForm({ name: '' });
+        } catch (err: any) { toastError(err.message || 'Failed to save group'); }
+        finally { setIsSubmitting(false); }
+    };
+
     const handleClassSubmit = async (e: React.FormEvent | React.MouseEvent) => {
         e.preventDefault();
         if (!classForm.name) { toastError("Class Level (e.g. Form 4) is required."); return; }
@@ -821,66 +799,6 @@ const Academics = () => {
         }
     };
 
-    const getGroupedAndRankedResults = () => {
-        // 1. Group by Student (Aggregate Scores)
-        const aggregated: { [key: number]: any } = {};
-        examResults.forEach(r => {
-            if (!aggregated[r.student]) {
-                aggregated[r.student] = {
-                    student: r.student,
-                    student_name: r.student_name,
-                    admission_number: r.admission_number,
-                    class_name: r.class_name,
-                    class_stream: r.class_stream,
-                    form_level: r.form_level,
-                    scores: {},
-                    totalScore: 0,
-                    subjectCount: 0,
-                    classId: r.class_id || students.find(st => st.id === r.student)?.current_class
-                };
-            }
-            aggregated[r.student].scores[r.subject] = r.score;
-            aggregated[r.student].totalScore += parseFloat(r.score);
-            aggregated[r.student].subjectCount += 1;
-        });
-
-        // 2. Calculate Mean & Grade for each aggregated student
-        const rankedResults = Object.values(aggregated).map(s => {
-            const mean = s.subjectCount > 0 ? (s.totalScore / s.subjectCount) : 0;
-            return {
-                ...s,
-                meanScore: mean.toFixed(1),
-                meanGrade: calculateGrade(mean, gradeSystems, selectedExam?.grade_system)
-            };
-        });
-
-        // 3. Filter based on dropdowns
-        const filtered = rankedResults.filter(r => {
-            const matchesLevel = !rankingFilter.level || r.form_level === rankingFilter.level;
-            const matchesClass = !rankingFilter.classId || r.classId === parseInt(rankingFilter.classId);
-            return matchesLevel && matchesClass;
-        });
-
-        // 4. Sort by Total Score Descending (Ranking)
-        const sorted = filtered.sort((a, b) => b.totalScore - a.totalScore);
-
-        // 5. Group for display
-        const groups: { [key: string]: any[] } = {};
-        if (sorted.length > 0) {
-            const label = rankingFilter.classId ?
-                classes.find(c => c.id === parseInt(rankingFilter.classId))?.stream + " Results" :
-                (rankingFilter.level || "Overall") + " Ranking";
-            groups[label] = sorted;
-        }
-
-        return groups;
-    };
-
-    const getSubjectAbbr = (sub: any) => {
-        if (sub.short_name) return sub.short_name.toUpperCase();
-        if (sub.code) return sub.code.toUpperCase();
-        return sub.name.substring(0, 3).toUpperCase();
-    };
     const handleDeleteStudentResults = async (studentId: number) => {
         if (!selectedExam) return;
         if (!await confirm(`Delete ALL saved results for this student in ${selectedExam.name}?`, { type: 'danger' })) return;
@@ -902,7 +820,6 @@ const Academics = () => {
         }
     };
 
-    const groupedResults = getGroupedAndRankedResults();
 
     const handleDeleteExam = (id: number) => setDeleteConfirm({ isOpen: true, type: 'EXAM', id });
     const handleDeleteTerm = (id: number) => setDeleteConfirm({ isOpen: true, type: 'TERM', id });
@@ -2104,309 +2021,113 @@ const Academics = () => {
                 </div>
             )}
 
-            {/* Modals */}
+            {/* Modals Section */}
+            <YearModal
+                isOpen={isYearModalOpen}
+                onClose={() => setIsYearModalOpen(false)}
+                yearForm={yearForm}
+                setYearForm={setYearForm}
+                handleYearSubmit={handleYearSubmit}
+                isSubmitting={isSubmitting}
+            />
 
-            <Modal isOpen={isYearModalOpen} onClose={() => setIsYearModalOpen(false)} title="Add Academic Cycle">
-                <form onSubmit={handleYearSubmit} className="space-y-4 form-container-sm mx-auto">
-                    <div className="form-group"><label className="label text-[10px] font-black uppercase">Year Name (e.g. 2026) *</label><input type="text" className="input" value={yearForm.name} onChange={(e) => setYearForm({ ...yearForm, name: e.target.value })} required /></div>
-                    <div className="form-group checkbox-group"><input type="checkbox" checked={yearForm.is_active} onChange={(e) => setYearForm({ ...yearForm, is_active: e.target.checked })} /><label className="text-xs font-bold">Set as Active Year</label></div>
-                    <Button type="submit" variant="primary" size="sm" className="w-full mt-2 font-black uppercase" loading={isSubmitting} loadingText="Initializing...">Initialize Year Cycle</Button>
-                </form>
-            </Modal>
+            <TermModal
+                isOpen={isTermModalOpen}
+                onClose={() => setIsTermModalOpen(false)}
+                termForm={termForm}
+                setTermForm={setTermForm}
+                academicYears={academicYears}
+                handleTermSubmit={handleTermSubmit}
+                isSubmitting={isSubmitting}
+            />
 
-            <Modal isOpen={isTermModalOpen} onClose={() => setIsTermModalOpen(false)} title="Configure Academic Term">
-                <form onSubmit={handleTermSubmit} className="space-y-4 form-container-md mx-auto">
-                    <div className="form-group">
-                        <label className="label text-[10px] font-black uppercase">Academic Year</label>
-                        <SearchableSelect
-                            options={academicYears.map(y => ({ id: y.id.toString(), label: y.name }))}
-                            value={termForm.year}
-                            onChange={(val) => setTermForm({ ...termForm, year: val.toString() })}
-                            required
-                        />
-                    </div>
-                    <div className="form-group"><label className="label text-[10px] font-black uppercase">Term Name (e.g. Term 1)</label><input type="text" className="input" value={termForm.name} onChange={(e) => setTermForm({ ...termForm, name: e.target.value })} required /></div>
-                    <div className="grid grid-cols-2 gap-md">
-                        <PremiumDateInput
-                            label="Start Date"
-                            value={termForm.start_date}
-                            onChange={(val) => setTermForm({ ...termForm, start_date: val })}
-                            minDate={new Date().toISOString().split('T')[0]}
-                            required
-                        />
-                        <PremiumDateInput
-                            label="End Date"
-                            value={termForm.end_date}
-                            onChange={(val) => setTermForm({ ...termForm, end_date: val })}
-                            minDate={termForm.start_date || new Date().toISOString().split('T')[0]}
-                            required
-                        />
-                    </div>
-                    <Button type="submit" variant="primary" size="sm" className="w-full mt-2 font-black uppercase" loading={isSubmitting} loadingText="Saving...">Save Term Configuration</Button>
-                </form>
-            </Modal>
+            <ClassModal
+                isOpen={isClassModalOpen}
+                onClose={() => setIsClassModalOpen(false)}
+                classForm={classForm}
+                setClassForm={setClassForm}
+                staff={staff}
+                handleClassSubmit={handleClassSubmit}
+                isSubmitting={isSubmitting}
+                editingClassId={editingClassId}
+            />
 
-            <Modal isOpen={isClassModalOpen} onClose={() => setIsClassModalOpen(false)} title="Create New Class Unit">
-                <form onSubmit={handleClassSubmit} className="space-y-4 form-container-md mx-auto">
-                    <div className="grid grid-cols-2 gap-md">
-                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Class Level *</label><input type="text" className="input" value={classForm.name} onChange={(e) => setClassForm({ ...classForm, name: e.target.value })} placeholder="Form 4" required /></div>
-                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Stream *</label><input type="text" className="input" value={classForm.stream} onChange={(e) => setClassForm({ ...classForm, stream: e.target.value })} placeholder="North" required /></div>
-                    </div>
-                    <div className="form-group mb-2">
-                        <label className="label text-[10px] font-black uppercase">Class Teacher</label>
-                        <SearchableSelect
-                            placeholder="Select Teacher..."
-                            options={staff.filter(s => s.role === 'TEACHER').map(s => ({ id: (s.user || s.id).toString(), label: `${s.full_name} (${s.employee_id})` }))}
-                            value={classForm.class_teacher}
-                            onChange={(val) => setClassForm({ ...classForm, class_teacher: val.toString() })}
-                        />
-                    </div>
-                    <div className="grid grid-cols-2 gap-md">
-                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Active Year</label><input type="number" className="input" value={classForm.year} readOnly /></div>
-                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Max Capacity</label><input type="number" className="input" value={classForm.capacity || ''} onChange={(e) => setClassForm({ ...classForm, capacity: parseInt(e.target.value) || 0 })} /></div>
-                    </div>
-                    <Button type="button" onClick={(e) => { e.preventDefault(); handleClassSubmit(e); }} variant="primary" size="sm" className="w-full mt-2 font-black uppercase" loading={isSubmitting} loadingText={editingClassId ? "Updating..." : "Creating..."}>Confirm Unit Creation</Button>
-                </form>
-            </Modal>
+            <GroupModal
+                isOpen={isGroupModalOpen}
+                onClose={() => setIsGroupModalOpen(false)}
+                groupForm={groupForm}
+                setGroupForm={setGroupForm}
+                handleGroupSubmit={handleGroupSubmit}
+                isSubmitting={isSubmitting}
+                editingGroupId={editingGroupId}
+            />
 
-            <Modal isOpen={isGroupModalOpen} onClose={() => setIsGroupModalOpen(false)} title="Create Department Group">
-                <form
-                    onSubmit={async (e) => {
-                        e.preventDefault();
-                        try {
-                            if (editingGroupId) {
-                                await academicsAPI.subjectGroups.update(editingGroupId, groupForm);
-                            } else {
-                                await academicsAPI.subjectGroups.create(groupForm);
-                            }
-                            loadAllAcademicData();
-                            setIsGroupModalOpen(false);
-                            setEditingGroupId(null);
-                            setGroupForm({ name: '' });
-                        } catch (err: any) { toastError(err.message || 'Failed to save group'); }
-                    }}
-                    className="form-container-sm mx-auto space-y-4"
-                >
-                    <div className="form-group"><label className="label text-[10px] font-black uppercase">Group Name *</label><input type="text" className="input" value={groupForm.name} onChange={(e) => setGroupForm({ ...groupForm, name: e.target.value })} placeholder="e.g. Sciences" required /></div>
-                    <Button type="submit" variant="primary" size="sm" className="w-full mt-2 font-black uppercase" loading={isSubmitting} loadingText="Saving...">Save Group</Button>
-                </form>
-            </Modal>
+            <SubjectModal
+                isOpen={isSubjectModalOpen}
+                onClose={() => setIsSubjectModalOpen(false)}
+                subjectForm={subjectForm}
+                setSubjectForm={setSubjectForm}
+                subjectGroups={subjectGroups}
+                handleSubjectSubmit={handleSubjectSubmit}
+                isSubmitting={isSubmitting}
+            />
 
-            <Modal isOpen={isSubjectModalOpen} onClose={() => setIsSubjectModalOpen(false)} title="Add Curriculum Subject">
-                <form onSubmit={handleSubjectSubmit} className="space-y-4 form-container-md mx-auto">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Subject Name *</label><input type="text" className="input" value={subjectForm.name} onChange={(e) => setSubjectForm({ ...subjectForm, name: e.target.value })} required /></div>
-                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Subject Code *</label><input type="text" className="input" value={subjectForm.code} onChange={(e) => setSubjectForm({ ...subjectForm, code: e.target.value })} required /></div>
-                    </div>
-                    <div className="form-group">
-                        <label className="label text-[10px] font-black uppercase">Abbreviated Name (Optional)</label>
-                        <input type="text" className="input" placeholder="e.g. MATH" value={subjectForm.short_name} onChange={(e) => setSubjectForm({ ...subjectForm, short_name: e.target.value })} />
-                    </div>
-                    <div className="form-group">
-                        <label className="label text-[10px] font-black uppercase">Department Group</label>
-                        <SearchableSelect
-                            placeholder="General"
-                            options={subjectGroups.map(g => ({ id: g.id.toString(), label: g.name }))}
-                            value={subjectForm.group}
-                            onChange={(val) => setSubjectForm({ ...subjectForm, group: val.toString() })}
-                        />
-                    </div>
-                    <Button type="submit" variant="primary" size="sm" className="w-full mt-2 font-black uppercase" loading={isSubmitting} loadingText="Registering...">Register Subject</Button>
-                </form>
-            </Modal>
+            <AttendanceModal
+                isOpen={isAttendanceModalOpen}
+                onClose={() => setIsAttendanceModalOpen(false)}
+                attendanceForm={attendanceForm}
+                setAttendanceForm={setAttendanceForm}
+                attendanceFilter={attendanceFilter}
+                setAttendanceFilter={setAttendanceFilter}
+                bulkAttendanceList={bulkAttendanceList}
+                setBulkAttendanceList={setBulkAttendanceList}
+                studentOptions={studentOptions}
+                uniqueClassNames={uniqueClassNames}
+                classes={classes}
+                students={students}
+                handleAttendanceSubmit={handleAttendanceSubmit}
+                isSubmitting={isSubmitting}
+            />
 
-            <Modal isOpen={isAttendanceModalOpen} onClose={() => setIsAttendanceModalOpen(false)} title="Log Student Attendance" size="lg">
-                <form onSubmit={handleAttendanceSubmit} className="form-container-md mx-auto">
-                    <div className="flex justify-between items-center mb-4 border-bottom pb-2">
-                        <span className="text-xs font-bold uppercase text-secondary">Recording Mode:</span>
-                        <div className="flex bg-secondary-light p-1 rounded-lg">
-                            <button type="button" className={`px-3 py-1 text-[10px] font-black rounded ${!attendanceFilter.isBulk ? 'bg-primary text-white' : 'text-secondary'}`} onClick={() => setAttendanceFilter({ ...attendanceFilter, isBulk: false })}>SINGLE STUDENT</button>
-                            <button type="button" className={`px-3 py-1 text-[10px] font-black rounded ${attendanceFilter.isBulk ? 'bg-primary text-white' : 'text-secondary'}`} onClick={() => setAttendanceFilter({ ...attendanceFilter, isBulk: true })}>CLASS REGISTER (BULK)</button>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <PremiumDateInput
-                                value={attendanceForm.date}
-                                onChange={(val) => setAttendanceForm({ ...attendanceForm, date: val })}
-                                placeholder="Date"
-                                minDate={new Date().toISOString().split('T')[0]}
-                                required
-                            />
-                        </div>
-                    </div>
+            <ExamModal
+                isOpen={isExamModalOpen}
+                onClose={() => setIsExamModalOpen(false)}
+                examForm={examForm}
+                setExamForm={setExamForm}
+                handleExamSubmit={handleExamSubmit}
+                terms={terms}
+                gradeSystems={gradeSystems}
+                isSubmitting={isSubmitting}
+            />
 
-                    <div className="grid grid-cols-2 gap-md mb-4 bg-secondary-light/20 p-2 rounded border">
-                        <div>
-                            <label className="text-[9px] font-bold uppercase text-secondary">Filter Class</label>
-                            <SearchableSelect
-                                placeholder="Level..."
-                                options={uniqueClassNames.map(name => ({ id: name, label: name }))}
-                                value={attendanceFilter.level}
-                                onChange={(val) => setAttendanceFilter({ ...attendanceFilter, level: val.toString(), classId: '' })}
-                            />
-                        </div>
-                        <div>
-                            <label className="text-[9px] font-bold uppercase text-secondary">Stream</label>
-                            <SearchableSelect
-                                placeholder="Stream..."
-                                options={classes.filter(c => c.name === attendanceFilter.level).map(c => ({ id: c.id.toString(), label: c.stream }))}
-                                value={attendanceFilter.classId}
-                                onChange={(val) => {
-                                    const newClassId = val.toString();
-                                    setAttendanceFilter({ ...attendanceFilter, classId: newClassId });
-                                    if (attendanceFilter.isBulk && newClassId) {
-                                        const cid = parseInt(newClassId);
-                                        const classStudents = students.filter(s => {
-                                            const sClassId = typeof (s as any).current_class === 'object' ? (s as any).current_class?.id : (s as any).current_class;
-                                            return Number(sClassId) === cid;
-                                        });
-                                        setBulkAttendanceList(classStudents.map(s => ({ student_id: s.id, status: 'PRESENT', remark: '' })));
-                                    }
-                                }}
-                                disabled={!attendanceFilter.level}
-                            />
-                        </div>
-                    </div>
+            <SyllabusModal
+                isOpen={isSyllabusModalOpen}
+                onClose={() => setIsSyllabusModalOpen(false)}
+                syllabusForm={syllabusForm}
+                setSyllabusForm={setSyllabusForm}
+                handleSyllabusSubmit={handleSyllabusSubmit}
+                uniqueClassNames={uniqueClassNames}
+                classes={classes}
+                subjects={subjects}
+                isSubmitting={isSubmitting}
+            />
 
-                    {!attendanceFilter.isBulk ? (
-                        <>
-                            <SearchableSelect
-                                label="Student Name *"
-                                options={attendanceFilter.classId
-                                    ? studentOptions.filter((opt: any) => {
-                                        const s = students.find(st => st.id.toString() === opt.value);
-                                        return s && (s as any).current_class === parseInt(attendanceFilter.classId);
-                                    })
-                                    : studentOptions
-                                }
-                                value={attendanceForm.student}
-                                onChange={(v) => setAttendanceForm({ ...attendanceForm, student: v.toString() })}
-                                required
-                            />
-                            <div className="form-group mt-4">
-                                <label className="label text-[10px] font-black uppercase">Status</label>
-                                <SearchableSelect
-                                    options={[
-                                        { id: 'PRESENT', label: 'Present' },
-                                        { id: 'ABSENT', label: 'Absent' },
-                                        { id: 'LATE', label: 'Late / Tardy' }
-                                    ]}
-                                    value={attendanceForm.status}
-                                    onChange={(v) => setAttendanceForm({ ...attendanceForm, status: v.toString() })}
-                                />
-                            </div>
-                            <div className="form-group"><label className="label text-[10px] font-black uppercase">Remarks</label><input type="text" className="input" value={attendanceForm.remark} onChange={(e) => setAttendanceForm({ ...attendanceForm, remark: e.target.value })} placeholder="Reason if absent..." /></div>
-                        </>
-                    ) : (
-                        <div className="max-h-400 overflow-y-auto border rounded">
-                            <table className="table table-xs w-full">
-                                <thead className="sticky top-0 bg-white z-10">
-                                    <tr>
-                                        <th>Student</th>
-                                        <th>Status</th>
-                                        <th>Remark</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {bulkAttendanceList.length === 0 && <tr><td colSpan={3} className="text-center p-4 text-xs italic text-secondary">Select a class to load students</td></tr>}
-                                    {bulkAttendanceList.map((item, idx) => {
-                                        const student = students.find(s => s.id === item.student_id);
-                                        return (
-                                            <tr key={item.student_id}>
-                                                <td className="text-xs font-bold">{student?.full_name}</td>
-                                                <td>
-                                                    <SearchableSelect
-                                                        options={[
-                                                            { id: 'PRESENT', label: 'Present' },
-                                                            { id: 'ABSENT', label: 'Absent' },
-                                                            { id: 'LATE', label: 'Late' }
-                                                        ]}
-                                                        value={item.status}
-                                                        onChange={(v) => {
-                                                            const newList = [...bulkAttendanceList];
-                                                            newList[idx].status = v.toString();
-                                                            setBulkAttendanceList(newList);
-                                                        }}
-                                                    />
-                                                </td>
-                                                <td>
-                                                    <input type="text" className="input input-xs w-full" placeholder="..."
-                                                        value={item.remark}
-                                                        onChange={(e) => {
-                                                            const newList = [...bulkAttendanceList];
-                                                            newList[idx].remark = e.target.value;
-                                                            setBulkAttendanceList(newList);
-                                                        }}
-                                                    />
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
+            <RankingModal
+                isOpen={isViewResultsModalOpen}
+                onClose={() => setIsViewResultsModalOpen(false)}
+                selectedExam={selectedExam}
+                rankingFilter={rankingFilter}
+                setRankingFilter={setRankingFilter}
+                uniqueClassNames={uniqueClassNames}
+                classes={classes}
+                subjects={subjects}
+                examResults={examResults}
+                gradeSystems={gradeSystems}
+                handleDeleteStudentResults={handleDeleteStudentResults}
+                setIsResultModalOpen={setIsResultModalOpen}
+                setResultContext={setResultContext}
+            />
 
-                    <div className="mt-6 pt-4 border-t flex justify-end gap-2 sticky bottom-0 bg-white pb-2">
-                        <Button type="button" variant="ghost" size="sm" onClick={() => setIsAttendanceModalOpen(false)}>Cancel</Button>
-                        <Button type="submit" variant="primary" size="sm" className="bg-success border-success font-black uppercase text-white shadow-md px-8" loading={isSubmitting} loadingText="Posting...">
-                            {attendanceFilter.isBulk ? `Submit Register (${bulkAttendanceList.length})` : 'Post Attendance Record'}
-                        </Button>
-                    </div>
-                </form>
-            </Modal>
-
-            <Modal isOpen={isExamModalOpen} onClose={() => setIsExamModalOpen(false)} title="Schedule Assessment/Exam">
-                <form onSubmit={handleExamSubmit} className="form-container-md mx-auto">
-                    <div className="grid grid-cols-2 gap-md mb-4">
-                        <div className="form-group col-span-2"><label className="label text-[10px] font-black uppercase">Exam Title *</label><input type="text" className="input" value={examForm.name} onChange={(e) => setExamForm({ ...examForm, name: e.target.value })} placeholder="End of Term 1" required /></div>
-
-                        <div className="form-group">
-                            <label className="label text-[10px] font-black uppercase">Assessment Type</label>
-                            <SearchableSelect
-                                options={[
-                                    { id: 'CAT', label: 'Continuous Assessment (CAT)' },
-                                    { id: 'MID_TERM', label: 'Mid-Term Exam' },
-                                    { id: 'END_TERM', label: 'End-Term Exam' }
-                                ]}
-                                value={examForm.exam_type}
-                                onChange={(v) => setExamForm({ ...examForm, exam_type: v.toString() })}
-                            />
-                        </div>
-                        <div className="form-group">
-                            <label className="label text-[10px] font-black uppercase">Active Term *</label>
-                            <SearchableSelect
-                                placeholder="Select Term"
-                                options={terms.map(t => ({ id: t.id.toString(), label: `${t.name} (${t.year})` }))}
-                                value={examForm.term}
-                                onChange={(v) => setExamForm({ ...examForm, term: v.toString() })}
-                                required
-                            />
-                        </div>
-
-                        <div className="form-group">
-                            <label className="label text-[10px] font-black uppercase">Grading System</label>
-                            <SearchableSelect
-                                placeholder="Default Grading System"
-                                options={gradeSystems.map(gs => ({ id: gs.id.toString(), label: gs.name }))}
-                                value={examForm.grade_system}
-                                onChange={(v) => setExamForm({ ...examForm, grade_system: v.toString() })}
-                            />
-                        </div>
-                        <div className="form-group col-span-2">
-                            <PremiumDateInput
-                                label="Assessment Start Date"
-                                value={examForm.date_started}
-                                onChange={(val) => setExamForm({ ...examForm, date_started: val })}
-                                minDate={new Date().toISOString().split('T')[0]}
-                                required
-                            />
-                        </div>
-
-                        <div className="form-group col-span-2"><label className="label text-[10px] font-black uppercase">Weighting (%)</label><input type="number" className="input" value={examForm.weighting} onChange={(e) => setExamForm({ ...examForm, weighting: parseInt(e.target.value) })} required /></div>
-                    </div>
-                    <Button type="submit" variant="primary" size="sm" className="w-full mt-2 font-black uppercase" loading={isSubmitting} loadingText="Confirming...">Confirm Exam Schedule</Button>
-                </form>
-            </Modal>
             <ExamBroadsheet
                 isOpen={isBroadsheetModalOpen}
                 onClose={() => setIsBroadsheetModalOpen(false)}
@@ -2419,268 +2140,63 @@ const Academics = () => {
                 uniqueClassNames={uniqueClassNames}
             />
 
-            {/* View Class Modal */}
-            <Modal isOpen={isViewClassModalOpen} onClose={() => setIsViewClassModalOpen(false)} title={`Class Details: ${selectedClass?.name || ''} ${selectedClass?.stream || ''}`}>
-                <div className="flex justify-end gap-2 mb-4 no-print">
-                    <Button variant="outline" size="sm" onClick={() => {
-                        const exportData = viewClassStudents.map(s => ({
-                            'Student Name': s.full_name,
-                            'Admission Number': s.admission_number,
-                            'Gender': s.gender || 'N/A'
-                        }));
-                        exportToCSV(exportData, `Class_List_${selectedClass?.name}_${selectedClass?.stream}`);
-                    }} icon={<Download size={16} />}>
-                        Export CSV
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => {
-                        // Temporarily add print-modal class to the modal content wrapper before triggering print
-                        const modalContent = document.querySelector('.modal-content');
-                        if (modalContent) modalContent.classList.add('print-modal');
-                        window.print();
-                        if (modalContent) setTimeout(() => modalContent.classList.remove('print-modal'), 1000);
-                    }} className="border-primary text-primary hover:bg-primary hover:text-white" icon={<Printer size={16} />}>
-                        Print List
-                    </Button>
-                </div>
-                <div className="table-wrapper">
-                    <table className="table">
-                        <thead><tr><th>Student Name</th><th>ADM No</th></tr></thead>
-                        <tbody>
-                            {viewClassStudents.length > 0 ? viewClassStudents.map(s => (
-                                <tr key={s.id}>
-                                    <td className="font-bold text-xs">{s.full_name}</td>
-                                    <td className="text-xs text-secondary">{s.admission_number}</td>
-                                </tr>
-                            )) : <tr><td colSpan={2} className="text-center p-4 text-xs">No students found in this class.</td></tr>}
-                        </tbody>
-                    </table>
-                </div>
-            </Modal>
+            <ResultEntryModal
+                isOpen={isResultModalOpen}
+                onClose={() => setIsResultModalOpen(false)}
+                selectedExam={selectedExam}
+                resultContext={resultContext}
+                setResultContext={setResultContext}
+                uniqueClassNames={uniqueClassNames}
+                classes={classes}
+                subjects={subjects}
+                filteredResultStudents={filteredResultStudents}
+                studentScores={studentScores}
+                handleScoreChange={handleScoreChange}
+                handleDeleteSingleResult={handleDeleteSingleResult}
+                activeClassSubjects={activeClassSubjects}
+                gradeSystems={gradeSystems}
+                handleBulkResultSubmit={handleBulkResultSubmit}
+                isSubmitting={isSubmitting}
+            />
 
-            {/* Enter Results Modal */}
-            <Modal isOpen={isResultModalOpen} onClose={() => setIsResultModalOpen(false)} title={`Enter Results: ${selectedExam?.name || ''}`} size="lg">
-                <form onSubmit={handleBulkResultSubmit} className="max-w-7xl mx-auto">
-                    {/* Cascading Class Selector */}
-                    <div className="form-group p-3 mb-4 bg-gray-50">
-                        <label className="label text-[10px] font-black uppercase mb-2">Select Class to Enter Marks</label>
-                        <div className="grid grid-cols-2 gap-md">
-                            <div>
-                                <label className="text-[9px] font-bold uppercase text-secondary">Class Level</label>
-                                <SearchableSelect
-                                    placeholder="Select Level..."
-                                    options={uniqueClassNames.map(name => ({ id: name, label: name }))}
-                                    value={resultContext.level}
-                                    onChange={(val) => {
-                                        setResultContext({ ...resultContext, level: val.toString(), classId: '' });
-                                    }}
-                                />
-                            </div>
-                            <div>
-                                <label className="text-[9px] font-bold uppercase text-secondary">Stream</label>
-                                <SearchableSelect
-                                    placeholder="Select Stream..."
-                                    options={[
-                                        { id: 'all', label: 'ALL STREAMS (Combined)' },
-                                        ...classes.filter(c => c.name === resultContext.level).map(c => ({ id: c.id.toString(), label: c.stream }))
-                                    ]}
-                                    value={resultContext.classId}
-                                    onChange={(val) => {
-                                        setResultContext({ ...resultContext, classId: val.toString() });
-                                    }}
-                                    disabled={!resultContext.level}
-                                />
-                            </div>
-                        </div>
-                    </div>
+            <ViewClassModal
+                isOpen={isViewClassModalOpen}
+                onClose={() => setIsViewClassModalOpen(false)}
+                selectedClass={selectedClass}
+                viewClassStudents={viewClassStudents}
+            />
 
-                    {resultContext.classId && (
-                        <div className="table-wrapper max-h-75vh w-full block bg-white relative m-0 mt-4 border rounded-xl overflow-auto shadow-sm">
-                            <table className="results-entry-table table w-full border-collapse text-xs">
-                                <thead className="sticky top-0 z-20 bg-white">
-                                    <tr className="border-none">
-                                        <th className="sticky left-0 z-30 bg-white min-w-[160px] p-3 text-left">
-                                            <span className="text-[10px] font-black uppercase text-slate-800">Student Name</span>
-                                        </th>
-                                        {subjects.filter(sub => {
-                                            // 1. If 'All Streams' selected, show all subjects
-                                            if (resultContext.classId === 'all') return true;
-                                            // 2. Otherwise, only show if it's allocated to the selected class
-                                            return activeClassSubjects.some(cs => cs.subject === sub.id);
-                                        }).map(sub => (
-                                            <th key={sub.id} className="text-center min-w-[110px] p-2 bg-white" title={`${sub.name} (${sub.code})`}>
-                                                <div className="text-[11px] font-black uppercase text-slate-800">{sub.name.substring(0, 3)}</div>
-                                            </th>
-                                        ))}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {filteredResultStudents.map((student) => {
-                                        const sClass = classes.find(c => c.id === student.current_class);
-                                        return (
-                                            <StudentResultRow
-                                                key={student.id}
-                                                student={student}
-                                                sClass={sClass}
-                                                subjects={subjects}
-                                                studentScores={studentScores[student.id]}
-                                                onScoreChange={handleScoreChange}
-                                                onDeleteResult={handleDeleteSingleResult}
-                                                activeClassSubjects={activeClassSubjects}
-                                                resultContext={resultContext.classId}
-                                                gradeSystems={gradeSystems}
-                                                examGradeSystemId={selectedExam?.grade_system}
-                                                isLocked={!selectedExam?.is_active}
-                                            />
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                            {students.filter(s => {
-                                if (resultContext.classId === 'all') {
-                                    const sClass = classes.find(c => c.id === s.current_class);
-                                    return sClass && sClass.name === resultContext.level;
-                                }
-                                return s.current_class === parseInt(resultContext.classId);
-                            }).length === 0 && (
-                                    <div className="p-12 text-center text-gray-400 italic">No students found for {resultContext.level} {resultContext.classId === 'all' ? '(All Streams)' : ''}</div>
-                                )}
-                        </div>
-                    )}
+            <ConfirmDeleteModal
+                isOpen={deleteConfirm.isOpen}
+                onClose={() => setDeleteConfirm({ isOpen: false, type: null, id: null })}
+                executeDelete={executeDelete}
+                isSubmitting={isSubmitting}
+            />
 
-                    <div className="mt-4 pt-4 border-top flex justify-between items-center">
-                        <p className="text-[10px] text-secondary">
-                            <span className="font-bold text-primary">Tip:</span> Existing marks are shown in <span className="font-bold text-primary">blue</span>. Enter new marks and click Save.
-                        </p>
-                        <div className="flex gap-2">
-                            <Button variant="ghost" size="sm" onClick={() => setIsResultModalOpen(false)}>Cancel</Button>
-                            <Button type="submit" variant="primary" size="sm" className="font-black uppercase shadow-md px-6" loading={isSubmitting} loadingText="Saving Matrix...">Save Matrix Payload</Button>
-                        </div>
-                    </div>
-                </form>
-            </Modal>
+            <ReportModal
+                isOpen={isReportModalOpen}
+                onClose={() => setIsReportModalOpen(false)}
+            />
 
-            {/* Confirmation Modal */}
-            <Modal isOpen={deleteConfirm.isOpen} onClose={() => setDeleteConfirm({ ...deleteConfirm, isOpen: false })} title="Confirm Deletion" size="sm">
-                <div className="p-4 form-container-sm mx-auto">
-                    <p className="mb-4 text-secondary">
-                        Are you sure you want to delete this item? This action cannot be undone.
-                    </p>
-                    <div className="flex justify-end gap-2">
-                        <Button variant="secondary" onClick={() => setDeleteConfirm({ ...deleteConfirm, isOpen: false })}>Cancel</Button>
-                        <Button variant="primary" className="bg-error border-error text-white" onClick={executeDelete} loading={isSubmitting} loadingText="Deleting...">Confirm Delete</Button>
-                    </div>
-                </div>
-            </Modal>
+            <GradeSystemModal
+                isOpen={isGradeModalOpen}
+                onClose={() => setIsGradeModalOpen(false)}
+                editingSystemId={editingSystemId}
+                gradeForm={gradeForm}
+                setGradeForm={setGradeForm}
+                handleGradeSystemSubmit={handleGradeSystemSubmit}
+                isSubmitting={isSubmitting}
+            />
 
-            {/* Reports Modal */}
-            <Modal isOpen={isReportModalOpen} onClose={() => setIsReportModalOpen(false)} title="Generate Reports" >
-                <div className="p-4 space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                        <button className="flex flex-col items-center justify-center p-6 border rounded-lg hover:bg-secondary-light hover:border-primary transition-all gap-2" onClick={() => { window.print(); setIsReportModalOpen(false); }}>
-                            <div className="p-3 rounded-full bg-primary-light text-primary mb-2"><FileText size={24} /></div>
-                            <span className="font-bold text-sm">Print Current View</span>
-                            <span className="text-[10px] text-center text-secondary">Print the current dashboard/list</span>
-                        </button>
-                        <button className="flex flex-col items-center justify-center p-6 border rounded-lg hover:bg-secondary-light hover:border-primary transition-all gap-2" onClick={() => alert('Feature coming soon: Export to CSV')}>
-                            <div className="p-3 rounded-full bg-success-light text-success mb-2"><BarChart3 size={24} /></div>
-                            <span className="font-bold text-sm">Export Data (CSV)</span>
-                            <span className="text-[10px] text-center text-secondary">Download raw data</span>
-                        </button>
-                    </div>
-                </div>
-            </Modal>
-
-            {/* Syllabus Modal */}
-            <Modal isOpen={isSyllabusModalOpen} onClose={() => setIsSyllabusModalOpen(false)} title="Track Syllabus Coverage" >
-                <form onSubmit={handleSyllabusSubmit} className="form-container-md mx-auto">
-                    <div className="form-group">
-                        <label className="label text-[10px] font-black uppercase">Class Level</label>
-                        <SearchableSelect
-                            placeholder="Select Level..."
-                            options={uniqueClassNames.map(name => ({ id: name, label: name }))}
-                            value={syllabusForm.level}
-                            onChange={(val) => setSyllabusForm({ ...syllabusForm, level: val.toString(), class_grade: '' })}
-                            required
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label className="label text-[10px] font-black uppercase">Specific Stream</label>
-                        <SearchableSelect
-                            placeholder="Select Stream..."
-                            options={classes.filter(c => c.name === syllabusForm.level).map(c => ({ id: c.id.toString(), label: c.stream }))}
-                            value={syllabusForm.class_grade}
-                            onChange={(val) => setSyllabusForm({ ...syllabusForm, class_grade: val.toString() })}
-                            required
-                            disabled={!syllabusForm.level}
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label className="label text-[10px] font-black uppercase">Subject</label>
-                        <SearchableSelect
-                            placeholder="Select Subject..."
-                            options={subjects.map(s => ({ id: s.id.toString(), label: s.name, subLabel: `(${s.code})` }))}
-                            value={syllabusForm.subject}
-                            onChange={(val) => setSyllabusForm({ ...syllabusForm, subject: val.toString() })}
-                            required
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label className="label text-[10px] font-black uppercase">Start Pct</label>
-                        <div className="flex items-center gap-2">
-                            <input type="range" min="0" max="100" className="range range-xs range-primary" value={syllabusForm.coverage_percentage} onChange={(e) => setSyllabusForm({ ...syllabusForm, coverage_percentage: parseInt(e.target.value) })} />
-                            <span className="font-bold text-xs w-12 text-right">{syllabusForm.coverage_percentage}%</span>
-                        </div>
-                    </div>
-                    <Button type="submit" variant="primary" size="sm" className="w-full mt-2 font-black uppercase" loading={isSubmitting} loadingText="Saving...">Save Coverage</Button>
-                </form>
-            </Modal>
-
-            {/* Grade System Modal */}
-            <Modal isOpen={isGradeModalOpen} onClose={() => setIsGradeModalOpen(false)} title={editingSystemId ? "Edit Grading System" : "New Grading System"}>
-                <form onSubmit={handleGradeSystemSubmit} className="form-container-md mx-auto">
-                    <div className="form-group mb-4">
-                        <label className="label text-[10px] font-black uppercase">System Name</label>
-                        <input type="text" className="input" placeholder="e.g. KNEC Standard" value={gradeForm.name} onChange={(e) => setGradeForm({ ...gradeForm, name: e.target.value })} required />
-                    </div>
-                    <div className="form-group mb-4 flex items-center gap-2">
-                        <input type="checkbox" className="checkbox checkbox-sm checkbox-primary" checked={gradeForm.is_default} onChange={(e) => setGradeForm({ ...gradeForm, is_default: e.target.checked })} />
-                        <label className="label text-[10px] font-black uppercase mb-0">Set as Default System</label>
-                    </div>
-                    <Button type="submit" variant="primary" className="w-full font-black uppercase" loading={isSubmitting} loadingText="Saving...">Save System</Button>
-                </form>
-            </Modal>
-
-
-            {/* Grade Boundary Modal */}
-            <Modal isOpen={isBoundaryModalOpen} onClose={() => setIsBoundaryModalOpen(false)} title={editingBoundaryId ? "Edit Grade Boundary" : "Add Grade Boundary"}>
-                <form onSubmit={handleBoundarySubmit} className="form-container-md mx-auto space-y-4 px-1">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group">
-                            <label className="label text-[10px] font-black uppercase">Grade Symbol</label>
-                            <input type="text" className="input" placeholder="e.g. A" value={boundaryForm.grade} onChange={(e) => setBoundaryForm({ ...boundaryForm, grade: e.target.value })} required />
-                        </div>
-                        <div className="form-group">
-                            <label className="label text-[10px] font-black uppercase">Points</label>
-                            <input type="number" className="input" placeholder="12" value={boundaryForm.points} onChange={(e) => setBoundaryForm({ ...boundaryForm, points: parseInt(e.target.value) })} required />
-                        </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group">
-                            <label className="label text-[10px] font-black uppercase">Min Score</label>
-                            <input type="number" className="input" value={boundaryForm.min_score} onChange={(e) => setBoundaryForm({ ...boundaryForm, min_score: parseInt(e.target.value) })} required />
-                        </div>
-                        <div className="form-group">
-                            <label className="label text-[10px] font-black uppercase">Max Score</label>
-                            <input type="number" className="input" value={boundaryForm.max_score} onChange={(e) => setBoundaryForm({ ...boundaryForm, max_score: parseInt(e.target.value) })} required />
-                        </div>
-                    </div>
-                    <div className="form-group">
-                        <label className="label text-[10px] font-black uppercase">Remarks</label>
-                        <input type="text" className="input" placeholder="Excellent" value={boundaryForm.remarks} onChange={(e) => setBoundaryForm({ ...boundaryForm, remarks: e.target.value })} />
-                    </div>
-                    <Button type="submit" variant="primary" className="w-full font-black uppercase" loading={isSubmitting} loadingText="Saving...">Save Boundary</Button>
-                </form>
-            </Modal>
+            <BoundaryModal
+                isOpen={isBoundaryModalOpen}
+                onClose={() => setIsBoundaryModalOpen(false)}
+                editingBoundaryId={editingBoundaryId}
+                boundaryForm={boundaryForm}
+                setBoundaryForm={setBoundaryForm}
+                handleBoundarySubmit={handleBoundarySubmit}
+                isSubmitting={isSubmitting}
+            />
         </div>
     );
 };
