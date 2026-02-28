@@ -336,10 +336,12 @@ export const financeAPI = {
   },
   expenses: {
     getAll: (params?: any) => api.get('expenses/', allWith(params)),
-    create: (data: any) => api.post('expenses/', data),
-    update: (id: number, data: any) => api.put(`expenses/${id}/`, data),
-    patch: (id: number, data: any) => api.patch(`expenses/${id}/`, data),
+    create: (data: any) => api.post('expenses/', data, data instanceof FormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : {}),
+    update: (id: number, data: any) => api.put(`expenses/${id}/`, data, data instanceof FormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : {}),
+    patch: (id: number, data: any) => api.patch(`expenses/${id}/`, data, data instanceof FormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : {}),
     delete: (id: number) => api.delete(`expenses/${id}/`),
+    approve: (id: number) => api.post(`expenses/${id}/approve/`),
+    decline: (id: number) => api.post(`expenses/${id}/decline/`),
   }
 };
 

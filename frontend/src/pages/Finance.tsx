@@ -68,7 +68,7 @@ const Finance = () => {
     const [feeForm, setFeeForm] = useState({ name: '', amount: '', term: '1', year_id: '', class_id: '' });
 
     // Expense Form
-    const [expenseForm, setExpenseForm] = useState({ category: 'SUPPLIES', amount: '', description: '', paid_to: '', date_occurred: '' });
+    const [expenseForm, setExpenseForm] = useState({ category: 'SUPPLIES', amount: '', description: '', paid_to: '', date_occurred: '', receipt_scan: null as File | null });
 
     // Mpesa Form
     const [mpesaForm, setMpesaForm] = useState({ admission_number: '', phone_number: '', amount: '' });
@@ -355,13 +355,18 @@ const Finance = () => {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            await financeAPI.expenses.create({
-                ...expenseForm,
-                amount: parseFloat(expenseForm.amount)
-            });
+            const formData = new FormData();
+            formData.append('category', expenseForm.category);
+            formData.append('amount', parseFloat(expenseForm.amount).toString());
+            formData.append('description', expenseForm.description);
+            formData.append('paid_to', expenseForm.paid_to);
+            if (expenseForm.date_occurred) formData.append('date_occurred', expenseForm.date_occurred);
+            if (expenseForm.receipt_scan) formData.append('receipt_scan', expenseForm.receipt_scan);
+
+            await financeAPI.expenses.create(formData);
             success('Expense recorded successfully');
             setShowExpenseModal(false);
-            setExpenseForm({ category: 'SUPPLIES', amount: '', description: '', paid_to: '', date_occurred: new Date().toISOString().split('T')[0] });
+            setExpenseForm({ category: 'SUPPLIES', amount: '', description: '', paid_to: '', date_occurred: new Date().toISOString().split('T')[0], receipt_scan: null });
             loadData();
         } catch (err: any) {
             toastError(err.message || 'Failed to record expense');
@@ -787,36 +792,123 @@ const Finance = () => {
 
                     {activeTab === 'expenses' && (
                         <div className="card">
-                            <div className="flex justify-between mb-4">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                                 <h3 className="text-lg font-bold">Expense History</h3>
-                                {!isReadOnly && (
-                                    <Button variant="secondary" size="sm" onClick={() => setShowExpenseModal(true)} icon={<Plus size={16} />}>
-                                        Record Expense
-                                    </Button>
-                                )}
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <div className="w-40">
+                                        <SearchableSelect
+                                            placeholder="All Categories"
+                                            options={[
+                                                { id: '', label: 'All Categories' },
+                                                { id: 'SALARY', label: 'Salary' },
+                                                { id: 'UTILITIES', label: 'Utilities' },
+                                                { id: 'MAINTENANCE', label: 'Maintenance' },
+                                                { id: 'SUPPLIES', label: 'Supplies' },
+                                                { id: 'FOOD', label: 'Food' },
+                                                { id: 'OTHER', label: 'Other' }
+                                            ]}
+                                            value={invFilters.status /* Reusing filter state temporarily */}
+                                            onChange={(val) => setInvFilters({ ...invFilters, status: val.toString() })}
+                                        />
+                                    </div>
+                                    {!isReadOnly && (
+                                        <Button variant="secondary" size="sm" onClick={() => setShowExpenseModal(true)} icon={<Plus size={16} />}>
+                                            Record Expense
+                                        </Button>
+                                    )}
+                                </div>
                             </div>
                             <div className="table-wrapper">
-                                <table className="table min-w-[800px]">
+                                <table className="table min-w-[900px]">
                                     <thead>
                                         <tr>
-                                            <th>Date</th>
+                                            <th>Date & Origin</th>
                                             <th>Category</th>
                                             <th>Description</th>
                                             <th>Paid To</th>
                                             <th>Amount</th>
+                                            <th>Status</th>
+                                            <th className="text-right">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {filteredExpenses.length === 0 ? (
-                                            <tr><td colSpan={5} className="text-center py-10 text-slate-400 italic">No expenses recorded for this selection</td></tr>
+                                            <tr><td colSpan={7} className="text-center py-10 text-slate-400 italic">No expenses recorded for this selection</td></tr>
                                         ) : (
                                             filteredExpenses.map((exp: any) => (
-                                                <tr key={exp.id}>
-                                                    <td>{formatDate(exp.date_occurred)}</td>
-                                                    <td><span className="badge badge-outline">{exp.category}</span></td>
-                                                    <td>{exp.description}</td>
+                                                <tr key={exp.id} className="hover:bg-gray-50">
+                                                    <td>
+                                                        <div className="font-bold">{formatDate(exp.date_occurred)}</div>
+                                                        {exp.origin_model && (
+                                                            <div className="text-[10px] uppercase font-bold text-primary opacity-60 flex items-center gap-1 mt-1">
+                                                                <TrendingUp size={10} /> {exp.origin_model.split('.').pop()} INT
+                                                            </div>
+                                                        )}
+                                                    </td>
+                                                    <td><span className="badge badge-outline text-xs">{exp.category}</span></td>
+                                                    <td className="max-w-[200px] truncate" title={exp.description}>{exp.description}</td>
                                                     <td>{exp.paid_to}</td>
                                                     <td className="font-bold">KES {Number(exp.amount).toLocaleString()}</td>
+                                                    <td>
+                                                        <span className={`badge text-xs font-bold ${exp.status === 'APPROVED' ? 'badge-success text-white' : exp.status === 'DECLINED' ? 'badge-error text-white' : 'badge-warning text-yellow-900 border-yellow-300'}`}>
+                                                            {exp.status}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <div className="flex items-center justify-end gap-2">
+                                                            {exp.receipt_scan && (
+                                                                <a href={exp.receipt_scan} target="_blank" rel="noreferrer" className="btn btn-ghost btn-xs text-blue-500" title="View Receipt">
+                                                                    <FileText size={14} />
+                                                                </a>
+                                                            )}
+                                                            {!isReadOnly && exp.status === 'PENDING' && (
+                                                                <>
+                                                                    <button
+                                                                        onClick={async () => {
+                                                                            if (window.confirm('Approve this expense?')) {
+                                                                                setIsSubmitting(true);
+                                                                                try {
+                                                                                    await financeAPI.expenses.approve(exp.id);
+                                                                                    success('Expense approved');
+                                                                                    loadData();
+                                                                                } catch (e: any) {
+                                                                                    toastError('Failed to approve');
+                                                                                } finally {
+                                                                                    setIsSubmitting(false);
+                                                                                }
+                                                                            }
+                                                                        }}
+                                                                        className="btn btn-ghost btn-xs text-success hover:bg-success/10"
+                                                                        title="Approve"
+                                                                        disabled={isSubmitting}
+                                                                    >
+                                                                        <CheckCircle size={16} />
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={async () => {
+                                                                            if (window.confirm('Decline this expense?')) {
+                                                                                setIsSubmitting(true);
+                                                                                try {
+                                                                                    await financeAPI.expenses.decline(exp.id);
+                                                                                    success('Expense declined');
+                                                                                    loadData();
+                                                                                } catch (e: any) {
+                                                                                    toastError('Failed to decline');
+                                                                                } finally {
+                                                                                    setIsSubmitting(false);
+                                                                                }
+                                                                            }
+                                                                        }}
+                                                                        className="btn btn-ghost btn-xs text-error hover:bg-error/10"
+                                                                        title="Decline"
+                                                                        disabled={isSubmitting}
+                                                                    >
+                                                                        <Trash2 size={16} />
+                                                                    </button>
+                                                                </>
+                                                            )}
+                                                        </div>
+                                                    </td>
                                                 </tr>
                                             ))
                                         )}
@@ -1256,9 +1348,15 @@ const Finance = () => {
                             />
                         </div>
                     </div>
-                    <div className="form-group">
-                        <label className="label">Paid To / Recipient *</label>
-                        <input type="text" className="input" value={expenseForm.paid_to} onChange={e => setExpenseForm({ ...expenseForm, paid_to: e.target.value })} required />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="form-group">
+                            <label className="label">Paid To / Recipient *</label>
+                            <input type="text" className="input" value={expenseForm.paid_to} onChange={e => setExpenseForm({ ...expenseForm, paid_to: e.target.value })} required />
+                        </div>
+                        <div className="form-group">
+                            <label className="label">Receipt Scan (Optional)</label>
+                            <input type="file" className="file-input file-input-bordered w-full" accept="image/*,.pdf" onChange={e => setExpenseForm({ ...expenseForm, receipt_scan: e.target.files?.[0] || null })} />
+                        </div>
                     </div>
                     <div className="form-group">
                         <label className="label">Description *</label>

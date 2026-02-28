@@ -350,8 +350,55 @@ class ExpenseViewSet(viewsets.ModelViewSet):
     queryset = Expense.objects.select_related('approved_by').all()
     serializer_class = ExpenseSerializer
     permission_classes = [IsAuthenticated, IsAdminToDelete]
-    filter_backends = [filters.SearchFilter]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_fields = ['category', 'status']
     search_fields = ['category', 'description', 'paid_to']
 
     def perform_create(self, serializer):
         serializer.save(approved_by=self.request.user)
+
+    @action(detail=True, methods=['post'])
+    def approve(self, request, pk=None):
+        expense = self.get_object()
+        if expense.status != 'PENDING':
+            return Response({'error': 'Can only approve pending expenses.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        expense.status = 'APPROVED'
+        expense.approved_by = request.user
+        expense.save(update_fields=['status', 'approved_by'])
+
+        # Explicit Origin Feedback
+        if expense.origin_model == 'transport.VehicleMaintenance' and expense.origin_id:
+            try:
+                from transport.models import VehicleMaintenance
+                maintenance = VehicleMaintenance.objects.get(id=expense.origin_id)
+                maintenance.status = 'COMPLETED'
+                maintenance.save(update_fields=['status'])
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).error(f"Origin feedback error: {e}")
+
+        return Response({'message': 'Expense approved successfully', 'status': expense.status})
+
+    @action(detail=True, methods=['post'])
+    def decline(self, request, pk=None):
+        expense = self.get_object()
+        if expense.status != 'PENDING':
+            return Response({'error': 'Can only decline pending expenses.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        expense.status = 'DECLINED'
+        expense.approved_by = request.user
+        expense.save(update_fields=['status', 'approved_by'])
+
+        # Explicit Origin Feedback
+        if expense.origin_model == 'transport.VehicleMaintenance' and expense.origin_id:
+            try:
+                from transport.models import VehicleMaintenance
+                maintenance = VehicleMaintenance.objects.get(id=expense.origin_id)
+                maintenance.status = 'IN_PROGRESS' # Revert to generic open state
+                maintenance.save(update_fields=['status'])
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).error(f"Origin feedback error: {e}")
+
+        return Response({'message': 'Expense declined successfully', 'status': expense.status})
