@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { financeAPI, academicsAPI, studentsAPI, classesAPI, mpesaAPI } from '../api/api';
-import { CreditCard, FileText, TrendingUp, Plus, Bell } from 'lucide-react';
+import { CreditCard, FileText, TrendingUp, Plus, Bell, Loader2 } from 'lucide-react';
 import SearchInput from '../components/common/SearchInput';
 import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
 import Button from '../components/common/Button';
 
 // Modular Components
@@ -14,31 +15,34 @@ import FeeManager from './finance/FeeManager';
 import ExpenseManager from './finance/ExpenseManager';
 import FinanceModals from './finance/FinanceModals';
 
+// ─── Utilities ────────────────────────────────────────────────────────────────
+const formatDate = (dateString: string): string => {
+    if (!dateString) return 'N/A';
+    try {
+        const date = new Date(dateString);
+        return isNaN(date.getTime()) ? 'N/A' : date.toLocaleDateString();
+    } catch { return 'N/A'; }
+};
+
+const formatDateTime = (dateString: string): string => {
+    if (!dateString) return 'N/A';
+    try {
+        const date = new Date(dateString);
+        return isNaN(date.getTime()) ? 'N/A' : date.toLocaleString();
+    } catch { return 'N/A'; }
+};
+
 const Finance = () => {
     const [activeTab, setActiveTab] = useState('dashboard');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { success, error: toastError } = useToast();
+    const { confirm } = useConfirm();
     const { user } = useSelector((state: any) => state.auth);
 
     // Authorization
-    const isReadOnly = ['ACCOUNTANT', 'ADMIN', 'PRINCIPAL', 'DIRECTOR'].includes(user?.role) ? false : !user?.permissions?.includes('finance.add_invoice');
-
-    // Utility Formatters
-    const formatDate = (dateString: string) => {
-        if (!dateString) return 'N/A';
-        try {
-            const date = new Date(dateString);
-            return isNaN(date.getTime()) ? 'N/A' : date.toLocaleDateString();
-        } catch (e) { return 'N/A'; }
-    };
-
-    const formatDateTime = (dateString: string) => {
-        if (!dateString) return 'N/A';
-        try {
-            const date = new Date(dateString);
-            return isNaN(date.getTime()) ? 'N/A' : date.toLocaleString();
-        } catch (e) { return 'N/A'; }
-    };
+    const isReadOnly = ['ACCOUNTANT', 'ADMIN', 'PRINCIPAL', 'DIRECTOR'].includes(user?.role)
+        ? false
+        : !user?.permissions?.includes('finance.add_invoice');
 
     // Data State
     const [stats, setStats] = useState({
@@ -246,10 +250,42 @@ const Finance = () => {
     const toggleInvoiceSelection = (id: number) => {
         setSelectedInvoices(prev => {
             const next = new Set(prev);
-            if (next.has(id)) next.delete(id); else next.add(id);
+            if (next.has(id)) next.delete(id);
+            else next.add(id);
             return next;
         });
     };
+
+    // ── Fee manager callbacks ─────────────────────────────────────────────────
+    const handleEditFee = (f: any) => {
+        setFeeForm({
+            name: f.name,
+            amount: String(f.amount),
+            term: String(f.term),
+            year_id: f.academic_year ? String(f.academic_year) : '',
+            class_id: f.class_level ? String(f.class_level) : '',
+        });
+        setEditingFeeId(f.id);
+        setShowFeeModal(true);
+    };
+
+    const handleDeleteFee = async (id: number) => {
+        if (!await confirm('Delete this fee structure? This cannot be undone.', { type: 'danger' })) return;
+        try {
+            await financeAPI.feeStructures.delete(id);
+            success('Fee structure deleted');
+            loadData();
+        } catch (err: any) {
+            toastError(err.response?.data?.error || 'Failed to delete fee structure');
+        }
+    };
+
+    // ── Expense manager callbacks ─────────────────────────────────────────────
+    const handleApproveExpense = (id: number) =>
+        financeAPI.expenses.approve(id).then(() => { success('Expense approved'); loadData(); });
+
+    const handleDeclineExpense = (id: number) =>
+        financeAPI.expenses.decline(id).then(() => { success('Expense declined'); loadData(); });
 
     return (
         <div className="fade-in px-4 pb-20">
@@ -276,7 +312,9 @@ const Finance = () => {
             </div>
 
             {activeTabLoading ? (
-                <div className="flex justify-center py-20"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>
+                <div className="flex justify-center items-center py-20">
+                    <Loader2 size={36} className="animate-spin text-primary opacity-70" />
+                </div>
             ) : (
                 <div className="space-y-6">
                     {activeTab !== 'dashboard' && (
@@ -285,11 +323,54 @@ const Finance = () => {
                         </div>
                     )}
 
-                    {activeTab === 'dashboard' && <FinanceDashboard stats={stats} invoices={invoices} statsContext={statsContext} isAllTime={isAllTime} setIsAllTime={setIsAllTime} formatDate={formatDate} setSelectedInvoice={setSelectedInvoice} selectedInvoices={selectedInvoices} toggleInvoiceSelection={toggleInvoiceSelection} setSelectedInvoices={setSelectedInvoices} />}
-                    {activeTab === 'invoices' && <InvoiceManager invoices={invoices} filteredInvoices={invoices} invFilters={invFilters} setInvFilters={setInvFilters} uniqueClassNames={uniqueClassNames} classes={classes} years={years} page={page} setPage={setPage} pageSize={pageSize} totalItems={totalItems} loadData={loadData} formatDate={formatDate} setSelectedInvoice={setSelectedInvoice} selectedInvoices={selectedInvoices} setSelectedInvoices={setSelectedInvoices} toggleInvoiceSelection={toggleInvoiceSelection} />}
-                    {activeTab === 'payments' && <PaymentManager filteredPayments={payments} isReadOnly={isReadOnly} setShowPaymentModal={setShowPaymentModal} formatDate={formatDate} totalItems={totalItems} page={page} setPage={setPage} pageSize={pageSize} />}
-                    {activeTab === 'fees' && <FeeManager filteredFees={feeStructures} isReadOnly={isReadOnly} setShowFeeModal={setShowFeeModal} handleEditFee={(f) => { setFeeForm({ name: f.name, amount: String(f.amount), term: String(f.term), year_id: f.academic_year ? String(f.academic_year) : '', class_id: f.class_level ? String(f.class_level) : '' }); setEditingFeeId(f.id); setShowFeeModal(true); }} handleDeleteFee={(id) => { if (window.confirm('Delete?')) financeAPI.feeStructures.delete(id).then(() => { success('Deleted'); loadData(); }); }} totalItems={totalItems} page={page} setPage={setPage} pageSize={pageSize} />}
-                    {activeTab === 'expenses' && <ExpenseManager filteredExpenses={expenses} isReadOnly={isReadOnly} setShowExpenseModal={setShowExpenseModal} invFilters={invFilters} setInvFilters={setInvFilters} formatDate={formatDate} totalItems={totalItems} page={page} setPage={setPage} pageSize={pageSize} isSubmitting={isSubmitting} handleApprove={(id) => financeAPI.expenses.approve(id).then(() => { success('Approved'); loadData(); })} handleDecline={(id) => financeAPI.expenses.decline(id).then(() => { success('Declined'); loadData(); })} />}
+                    {activeTab === 'dashboard' && (
+                        <FinanceDashboard
+                            stats={stats} invoices={invoices} statsContext={statsContext}
+                            isAllTime={isAllTime} setIsAllTime={setIsAllTime}
+                            formatDate={formatDate} setSelectedInvoice={setSelectedInvoice}
+                            selectedInvoices={selectedInvoices} toggleInvoiceSelection={toggleInvoiceSelection}
+                            setSelectedInvoices={setSelectedInvoices}
+                        />
+                    )}
+                    {activeTab === 'invoices' && (
+                        <InvoiceManager
+                            invoices={invoices} filteredInvoices={invoices}
+                            invFilters={invFilters} setInvFilters={setInvFilters}
+                            uniqueClassNames={uniqueClassNames} classes={classes} years={years}
+                            page={page} setPage={setPage} pageSize={pageSize} totalItems={totalItems}
+                            loadData={loadData} formatDate={formatDate}
+                            setSelectedInvoice={setSelectedInvoice} selectedInvoices={selectedInvoices}
+                            setSelectedInvoices={setSelectedInvoices} toggleInvoiceSelection={toggleInvoiceSelection}
+                        />
+                    )}
+                    {activeTab === 'payments' && (
+                        <PaymentManager
+                            filteredPayments={payments} isReadOnly={isReadOnly}
+                            setShowPaymentModal={setShowPaymentModal} formatDate={formatDate}
+                            totalItems={totalItems} page={page} setPage={setPage} pageSize={pageSize}
+                        />
+                    )}
+                    {activeTab === 'fees' && (
+                        <FeeManager
+                            filteredFees={feeStructures} isReadOnly={isReadOnly}
+                            setShowFeeModal={setShowFeeModal}
+                            handleEditFee={handleEditFee}
+                            handleDeleteFee={handleDeleteFee}
+                            totalItems={totalItems} page={page} setPage={setPage} pageSize={pageSize}
+                        />
+                    )}
+                    {activeTab === 'expenses' && (
+                        <ExpenseManager
+                            filteredExpenses={expenses} isReadOnly={isReadOnly}
+                            setShowExpenseModal={setShowExpenseModal}
+                            invFilters={invFilters} setInvFilters={setInvFilters}
+                            formatDate={formatDate} totalItems={totalItems}
+                            page={page} setPage={setPage} pageSize={pageSize}
+                            isSubmitting={isSubmitting}
+                            handleApprove={handleApproveExpense}
+                            handleDecline={handleDeclineExpense}
+                        />
+                    )}
                 </div>
             )}
 

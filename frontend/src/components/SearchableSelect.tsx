@@ -180,6 +180,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
 
                     {value && !disabled && (
                         <button
+                            type="button"
                             onClick={handleClear}
                             className="absolute right-3 top-1/2 -translate-y-1/2 bg-transparent border-0 p-1 shadow-none outline-none text-slate-700 hover:text-error transition-colors flex items-center justify-center cursor-pointer"
                         >

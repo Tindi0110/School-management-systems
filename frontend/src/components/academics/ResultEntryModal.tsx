@@ -18,7 +18,7 @@ interface ResultEntryModalProps {
     filteredResultStudents: Student[];
     studentScores: any;
     handleScoreChange: (studentId: any, subjectId: any, val: string) => void;
-    handleDeleteSingleResult: (studentId: number, subjectId: number) => void;
+    handleDeleteSingleResult: (studentId: number, subjectId: number, resultId: number) => void;
     activeClassSubjects: any[];
     gradeSystems: GradeSystem[];
     handleBulkResultSubmit: (e: React.FormEvent) => void;

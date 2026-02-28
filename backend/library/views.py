@@ -91,13 +91,23 @@ class LibraryConfigViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
 class BookViewSet(viewsets.ModelViewSet):
-    queryset = Book.objects.all()
     serializer_class = BookSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['category', 'language']
     search_fields = ['title', 'author', 'isbn', 'category', 'publisher']
     ordering_fields = ['title', 'author', 'year']
+
+    def get_queryset(self):
+        # Annotate with available copies count to avoid N+1 in serializer
+        from django.db.models import Count, Q
+        return Book.objects.annotate(
+            available_copies_count_annotated=Count(
+                'copies', 
+                filter=Q(copies__status='AVAILABLE')
+            ),
+            total_copies_count_annotated=Count('copies')
+        ).all()
 
     @action(detail=False, methods=['get'])
     def dashboard_stats(self, request):
@@ -121,14 +131,19 @@ class BookCopyViewSet(viewsets.ModelViewSet):
     queryset = BookCopy.objects.select_related('book').all()
     serializer_class = BookCopySerializer
     permission_classes = [IsAuthenticated]
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['book', 'status', 'condition']
     search_fields = ['copy_number', 'barcode', 'book__title']
+    ordering_fields = ['copy_number', 'purchase_date', 'status']
 
 class BookLendingViewSet(viewsets.ModelViewSet):
     queryset = BookLending.objects.select_related('copy__book', 'user').all()
     serializer_class = BookLendingSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['copy', 'user', 'date_returned']
+    search_fields = ['user__first_name', 'user__last_name', 'copy__copy_number', 'copy__book__title']
+    ordering_fields = ['date_issued', 'due_date', 'date_returned']
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -282,6 +297,10 @@ class LibraryFineViewSet(viewsets.ModelViewSet):
     queryset = LibraryFine.objects.select_related('lending', 'lending__copy__book', 'user', 'adjustment').all()
     serializer_class = LibraryFineSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['status', 'fine_type', 'user']
+    search_fields = ['user__first_name', 'user__last_name', 'reason']
+    ordering_fields = ['amount', 'date_issued']
 
     def perform_create(self, serializer):
         fine = serializer.save()
@@ -324,3 +343,6 @@ class BookReservationViewSet(viewsets.ModelViewSet):
     queryset = BookReservation.objects.select_related('book', 'user').all()
     serializer_class = BookReservationSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_fields = ['status', 'user']
+    search_fields = ['book__title', 'user__first_name', 'user__last_name']

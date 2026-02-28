@@ -19,13 +19,23 @@ class BookCopySerializer(serializers.ModelSerializer):
 class BookSerializer(serializers.ModelSerializer):
     copies = BookCopySerializer(many=True, read_only=True)
     available_copies_count = serializers.SerializerMethodField()
+    total_copies_count = serializers.SerializerMethodField()
     
     class Meta:
         model = Book
         fields = '__all__'
     
     def get_available_copies_count(self, obj):
+        # Use annotated value if available for performance
+        if hasattr(obj, 'available_copies_count_annotated'):
+            return obj.available_copies_count_annotated
         return obj.copies.filter(status='AVAILABLE').count()
+
+    def get_total_copies_count(self, obj):
+        # Use annotated value if available for performance
+        if hasattr(obj, 'total_copies_count_annotated'):
+            return obj.total_copies_count_annotated
+        return obj.copies.count()
 
 class BookLendingSerializer(serializers.ModelSerializer):
     book_title = serializers.CharField(source='copy.book.title', read_only=True)

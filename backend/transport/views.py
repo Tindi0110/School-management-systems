@@ -20,9 +20,15 @@ from .serializers import (
 class TransportConfigViewSet(viewsets.ModelViewSet):
     queryset = TransportConfig.objects.all()
     serializer_class = TransportConfigSerializer
+    permission_classes = [IsAuthenticated]
 
 class VehicleViewSet(viewsets.ModelViewSet):
     serializer_class = VehicleSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['status', 'vehicle_type', 'current_condition']
+    search_fields = ['registration_number', 'make_model', 'logbook_number']
+    ordering_fields = ['registration_number', 'seating_capacity', 'insurance_expiry']
 
     def get_queryset(self):
         # Annotate with the full name of the assigned driver to avoid N+1 in serializer
@@ -44,11 +50,20 @@ class VehicleViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 class DriverProfileViewSet(viewsets.ModelViewSet):
-    queryset = DriverProfile.objects.select_related('staff', 'assigned_vehicle').all()
+    queryset = DriverProfile.objects.select_related('staff__user', 'assigned_vehicle').all()
     serializer_class = DriverProfileSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_fields = ['assigned_vehicle']
+    search_fields = ['staff__user__first_name', 'staff__user__last_name', 'license_number']
 
 class RouteViewSet(viewsets.ModelViewSet):
     serializer_class = RouteSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['status']
+    search_fields = ['name', 'route_code']
+    ordering_fields = ['name', 'distance_km', 'base_cost']
 
     def get_queryset(self):
         return Route.objects.prefetch_related('pickup_points').annotate(
@@ -56,12 +71,21 @@ class RouteViewSet(viewsets.ModelViewSet):
         ).all()
 
 class PickupPointViewSet(viewsets.ModelViewSet):
-    queryset = PickupPoint.objects.all()
+    queryset = PickupPoint.objects.select_related('route').all()
     serializer_class = PickupPointSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_fields = ['route']
+    search_fields = ['point_name']
 
 class TransportAllocationViewSet(viewsets.ModelViewSet):
     queryset = TransportAllocation.objects.select_related('student', 'route', 'pickup_point').all()
     serializer_class = TransportAllocationSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['route', 'pickup_point', 'status', 'student']
+    search_fields = ['student__full_name', 'student__admission_number', 'seat_number']
+    ordering_fields = ['start_date', 'student__full_name']
 
     def perform_create(self, serializer):
         # Logic to check route capacity before allocation
@@ -73,11 +97,13 @@ class TransportAllocationViewSet(viewsets.ModelViewSet):
         serializer.save()
 
 class TripLogViewSet(viewsets.ModelViewSet):
-    queryset = TripLog.objects.select_related('vehicle', 'route').prefetch_related('attendance__student').all()
+    queryset = TripLog.objects.select_related('vehicle', 'route', 'driver__staff__user').prefetch_related('attendance__student').all()
     serializer_class = TripLogSerializer
+    permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['vehicle', 'route', 'trip_type', 'date']
-    ordering_fields = ['date', 'trip_type']
+    filterset_fields = ['vehicle', 'route', 'trip_type', 'date', 'status']
+    search_fields = ['attendant', 'vehicle__registration_number', 'route__name']
+    ordering_fields = ['date', 'trip_type', 'departure_time']
     ordering = ['-date']
 
     @action(detail=True, methods=['post'])
@@ -95,6 +121,7 @@ class TripLogViewSet(viewsets.ModelViewSet):
 class TransportAttendanceViewSet(viewsets.ModelViewSet):
     queryset = TransportAttendance.objects.select_related('student', 'trip').all()
     serializer_class = TransportAttendanceSerializer
+    permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['trip', 'student', 'is_present']
     search_fields = ['student__full_name', 'student__admission_number']
@@ -102,14 +129,29 @@ class TransportAttendanceViewSet(viewsets.ModelViewSet):
 class VehicleMaintenanceViewSet(viewsets.ModelViewSet):
     queryset = VehicleMaintenance.objects.select_related('vehicle').all()
     serializer_class = VehicleMaintenanceSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['vehicle', 'status']
+    search_fields = ['description', 'performed_by', 'vehicle__registration_number']
+    ordering_fields = ['service_date', 'cost']
 
 class FuelRecordViewSet(viewsets.ModelViewSet):
     queryset = FuelRecord.objects.select_related('vehicle').all()
     serializer_class = FuelRecordSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['vehicle', 'date']
+    search_fields = ['receipt_no', 'vehicle__registration_number']
+    ordering_fields = ['date', 'amount', 'liters']
 
 class TransportIncidentViewSet(viewsets.ModelViewSet):
     queryset = TransportIncident.objects.select_related('vehicle', 'reported_by').all()
     serializer_class = TransportIncidentSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['vehicle', 'severity', 'incident_type', 'date']
+    search_fields = ['description', 'action_taken', 'vehicle__registration_number']
+    ordering_fields = ['date', 'severity']
 
     def perform_create(self, serializer):
         serializer.save(reported_by=self.request.user)

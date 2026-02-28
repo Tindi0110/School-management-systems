@@ -1,8 +1,7 @@
-﻿import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState, useMemo } from 'react';
 import {
     Plus, Edit, Trash2,
-    Book, Layers, Printer,
-    Download, ArrowRight, Bookmark, Receipt, RefreshCw, Search
+    Book, RefreshCw, ArrowRight
 } from 'lucide-react';
 import { libraryAPI, studentsAPI } from '../api/api';
 import { exportToCSV } from '../utils/export';
@@ -13,6 +12,12 @@ import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 import Button from '../components/common/Button';
 import PremiumDateInput from '../components/common/DatePicker';
+
+// Import sub-components
+import BookCatalog from './library/BookCatalog';
+import InventoryManager from './library/InventoryManager';
+import CirculationManager from './library/CirculationManager';
+import FineManager from './library/FineManager';
 
 const Library = () => {
     const [activeTab, setActiveTab] = useState('catalog');
@@ -28,14 +33,11 @@ const Library = () => {
 
     // Pagination state — per tab
     const PAGE_SIZE = 25;
-    const [booksPage, setBooksPage] = useState(1);
-    const [copiesPage, setCopiesPage] = useState(1);
-    const [lendingsPage, setLendingsPage] = useState(1);
-    const [finesPage, setFinesPage] = useState(1);
-
-    const [booksTotal, setBooksTotal] = useState(0);
-    const [lendingsTotal, setLendingsTotal] = useState(0);
-    const [finesTotal, setFinesTotal] = useState(0);
+    const [pagination, setPagination] = useState({
+        books: { page: 1, total: 0 },
+        lendings: { page: 1, total: 0 },
+        fines: { page: 1, total: 0 }
+    });
 
     const [stats, setStats] = useState({
         totalBooks: 0,
@@ -62,6 +64,10 @@ const Library = () => {
     const [copyId, setCopyId] = useState<number | null>(null);
     const [lendingId, setLendingId] = useState<number | null>(null);
     const [fineId, setFineId] = useState<number | null>(null);
+
+    // Extend Due Date state
+    const [extendLendingId, setExtendLendingId] = useState<number | null>(null);
+    const [extendDays, setExtendDays] = useState<string>('7');
 
     // Inventory View State
     const [viewingInventoryBookId, setViewingInventoryBookId] = useState<number | null>(null);
@@ -100,60 +106,22 @@ const Library = () => {
         }
     };
 
-    // Reset page on tab change
+    // Reset page on search or tab change
     useEffect(() => {
-        setBooksPage(1);
-        setCopiesPage(1);
-        setLendingsPage(1);
-        setFinesPage(1);
-    }, [activeTab]);
-
-    // Debounced search — reset pages and reload active tab
-    useEffect(() => {
-        const handler = setTimeout(() => {
-            setBooksPage(1);
-            setCopiesPage(1);
-            setLendingsPage(1);
-            setFinesPage(1);
-            if (activeTab === 'catalog') loadCatalog();
-            if (activeTab === 'lendings') loadLendings();
-            if (activeTab === 'fines') loadFines();
-        }, 400);
-        return () => clearTimeout(handler);
-    }, [searchTerm]);
-
-
-    // Debounced search — reset pages and reload active tab
-    useEffect(() => {
-        const handler = setTimeout(() => {
-            setBooksPage(1);
-            setCopiesPage(1);
-            setLendingsPage(1);
-            setFinesPage(1);
-            if (activeTab === 'catalog') loadCatalog();
-            if (activeTab === 'lendings') loadLendings();
-            if (activeTab === 'fines') loadFines();
-        }, 400);
-        return () => clearTimeout(handler);
-    }, [searchTerm]);
+        setPagination(prev => ({
+            ...prev,
+            books: { ...prev.books, page: 1 },
+            lendings: { ...prev.lendings, page: 1 },
+            fines: { ...prev.fines, page: 1 }
+        }));
+    }, [searchTerm, activeTab]);
 
     useEffect(() => {
         if (activeTab === 'catalog') loadCatalog();
-    }, [booksPage, copiesPage]);
+        else if (activeTab === 'lendings') loadLendings();
+        else if (activeTab === 'fines') loadFines();
+    }, [activeTab, pagination.books.page, pagination.lendings.page, pagination.fines.page, searchTerm]);
 
-    useEffect(() => {
-        if (activeTab === 'lendings') loadLendings();
-    }, [lendingsPage]);
-
-    useEffect(() => {
-        if (activeTab === 'fines') loadFines();
-    }, [finesPage]);
-
-    useEffect(() => {
-        fetchAllData();
-    }, []);
-
-    // Split loading to avoid slow re-fetches
     const fetchAllData = async () => {
         try {
             const statsRes = await libraryAPI.books.getDashboardStats();
@@ -164,31 +132,43 @@ const Library = () => {
     };
 
     const loadCatalog = async () => {
-        const params: any = { page_size: PAGE_SIZE, page: booksPage };
+        const params: any = { page_size: PAGE_SIZE, page: pagination.books.page };
         if (searchTerm) params.search = searchTerm;
-        const [b, c] = await Promise.all([
-            libraryAPI.books.getAll(params),
-            libraryAPI.copies.getAll({ page_size: 2000 }),
-        ]);
-        setBooks(b.data?.results ?? b.data ?? []);
-        setBooksTotal(b.data?.count ?? 0);
-        setCopies(c.data?.results ?? c.data ?? []);
+        try {
+            const [b, c] = await Promise.all([
+                libraryAPI.books.getAll(params),
+                libraryAPI.copies.getAll({ page_size: 2000 }),
+            ]);
+            setBooks(b.data?.results ?? b.data ?? []);
+            setPagination(prev => ({ ...prev, books: { ...prev.books, total: b.data?.count ?? 0 } }));
+            setCopies(c.data?.results ?? c.data ?? []);
+        } catch (error) {
+            toast.error("Failed to load catalog.");
+        }
     };
 
     const loadLendings = async () => {
-        const params: any = { page: lendingsPage, page_size: PAGE_SIZE };
+        const params: any = { page: pagination.lendings.page, page_size: PAGE_SIZE };
         if (searchTerm) params.search = searchTerm;
-        const res = await libraryAPI.lendings.getAll(params);
-        setLendings(res.data?.results ?? res.data ?? []);
-        setLendingsTotal(res.data?.count ?? 0);
+        try {
+            const res = await libraryAPI.lendings.getAll(params);
+            setLendings(res.data?.results ?? res.data ?? []);
+            setPagination(prev => ({ ...prev, lendings: { ...prev.lendings, total: res.data?.count ?? 0 } }));
+        } catch (error) {
+            toast.error("Failed to load lendings.");
+        }
     };
 
     const loadFines = async () => {
-        const params: any = { page: finesPage, page_size: PAGE_SIZE };
+        const params: any = { page: pagination.fines.page, page_size: PAGE_SIZE };
         if (searchTerm) params.search = searchTerm;
-        const res = await libraryAPI.fines.getAll(params);
-        setFines(res.data?.results ?? res.data ?? []);
-        setFinesTotal(res.data?.count ?? 0);
+        try {
+            const res = await libraryAPI.fines.getAll(params);
+            setFines(res.data?.results ?? res.data ?? []);
+            setPagination(prev => ({ ...prev, fines: { ...prev.fines, total: res.data?.count ?? 0 } }));
+        } catch (error) {
+            toast.error("Failed to load fines.");
+        }
     };
 
     const loadStudents = async () => {
@@ -324,8 +304,8 @@ const Library = () => {
             loadCatalog().catch(console.error);
 
         } catch (err: any) {
-            console.error(err);
-            const errorDetail = err.response?.data?.detail; const errorMsg = errorDetail || err.message || 'Failed to issue book.';
+            const errorDetail = err.response?.data?.detail;
+            const errorMsg = errorDetail || err.message || 'Failed to issue book.';
             if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
                 toast.warning('Request timed out, but book might be issued. Please check the list.');
             } else {
@@ -338,19 +318,25 @@ const Library = () => {
     const handleEditLending = (l: any) => { setLendingId(l.id); setLendingForm({ ...l, copy: String(l.copy), student: String(l.student) }); setIsLendModalOpen(true); };
 
     const handleExtendDueDate = async (id: number) => {
-        const daysStr = window.prompt("Enter number of days to extend overdue/active borrowing:", "7");
-        if (daysStr) {
-            const days = parseInt(daysStr, 10);
-            if (!isNaN(days) && days > 0) {
-                try {
-                    await libraryAPI.lendings.extendDueDate(id, { days });
-                    toast.success(`Due date extended by ${days} days.`);
-                    loadLendings();
-                    loadCatalog();
-                } catch (err: any) {
-                    toast.error(err.response?.data?.detail || err.response?.data?.error || 'Failed to extend due date.');
-                }
-            }
+        setExtendLendingId(id);
+        setExtendDays('7');
+    };
+
+    const confirmExtendDueDate = async () => {
+        if (!extendLendingId) return;
+        const days = parseInt(extendDays, 10);
+        if (isNaN(days) || days <= 0) {
+            toast.error('Please enter a valid number of days.');
+            return;
+        }
+        try {
+            await libraryAPI.lendings.extendDueDate(extendLendingId, { days });
+            toast.success(`Due date extended by ${days} day(s).`);
+            setExtendLendingId(null);
+            loadLendings();
+            loadCatalog();
+        } catch (err: any) {
+            toast.error(err.response?.data?.detail || err.response?.data?.error || 'Failed to extend due date.');
         }
     };
 
@@ -388,7 +374,6 @@ const Library = () => {
             // Background refresh
             loadFines();
         } catch (err: any) {
-            console.error(err);
             toast.error('Failed to save fine.');
         } finally {
             setIsSubmitting(false);
@@ -407,7 +392,7 @@ const Library = () => {
         [copies, books]);
 
 
-    const filteredCopies = React.useMemo(() => {
+    const filteredCopies = useMemo(() => {
         const lowerSearch = searchTerm.toLowerCase();
         return copies.filter(c =>
             !searchTerm ||
@@ -488,316 +473,76 @@ const Library = () => {
 
             {/* Catalog Content */}
             {activeTab === 'catalog' && (
-                <div className="table-container fade-in">
-                    <div className="flex justify-between items-center mb-4">
-                        <h3>Asset Catalog</h3>
-                        <div className="flex gap-2">
-                            {!isReadOnly && (
-                                <Button variant="primary" size="sm" onClick={() => { setBookId(null); setIsBookModalOpen(true); }} icon={<Plus size={14} />}>Add Title</Button>
-                            )}
-                        </div>
-                    </div>
-                    <table className="table">
-                        <thead>
-                            <tr>
-                                <th>Title</th>
-                                <th>Author</th>
-                                <th>ISBN</th>
-                                <th>Category</th>
-                                <th>Availability</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {books.map((b: any) => {
-                                const bookCopies = copies.filter(c => c.book === b.id);
-                                const available = bookCopies.filter(c => c.status === 'AVAILABLE').length;
-                                return (
-                                    <tr key={b.id}>
-                                        <td className="font-bold">{b.title}</td>
-                                        <td>{b.author}</td>
-                                        <td className="font-mono text-xs">{b.isbn || 'N/A'}</td>
-                                        <td>{b.category || 'General'}</td>
-                                        <td>
-                                            <span className={`badge ${available > 0 ? 'badge-success' : 'badge-warning'}`}>
-                                                {available} / {bookCopies.length} Units
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div className="flex gap-2">
-                                                {!isReadOnly && (
-                                                    <>
-                                                        <Button variant="ghost" size="sm" className="text-primary" onClick={() => handleEditBook(b)} icon={<Edit size={14} />} />
-                                                        <Button variant="ghost" size="sm" className="text-error" onClick={(e) => handleDelete(e, b.id, libraryAPI.books.delete, 'Delete this title?', loadCatalog)} icon={<Trash2 size={14} />} />
-                                                    </>
-                                                )}
-                                                <Button variant="outline" size="sm" onClick={() => { setActiveTab('copies'); setViewingInventoryBookId(b.id); }}>View Units</Button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
-                    {/* Books Pagination */}
-                    {booksTotal > PAGE_SIZE && (
-                        <div className="flex items-center justify-between mt-4 pt-4 border-t">
-                            <span className="text-sm text-secondary">
-                                Showing {((booksPage - 1) * PAGE_SIZE) + 1}–{Math.min(booksPage * PAGE_SIZE, booksTotal)} of {booksTotal} titles
-                            </span>
-                            <div className="flex gap-2">
-                                <button className="btn btn-outline btn-sm" onClick={() => setBooksPage(p => Math.max(1, p - 1))} disabled={booksPage === 1}>← Prev</button>
-                                <span className="btn btn-ghost btn-sm pointer-events-none">Page {booksPage} / {Math.ceil(booksTotal / PAGE_SIZE)}</span>
-                                <button className="btn btn-outline btn-sm" onClick={() => setBooksPage(p => p + 1)} disabled={booksPage * PAGE_SIZE >= booksTotal}>Next →</button>
-                            </div>
-                        </div>
-                    )}
-                </div>
+                <BookCatalog
+                    books={books}
+                    copies={copies}
+                    isReadOnly={isReadOnly}
+                    onAdd={() => { setBookId(null); setIsBookModalOpen(true); }}
+                    onEdit={handleEditBook}
+                    onDelete={(e, id) => handleDelete(e, id, libraryAPI.books.delete, 'Delete this title?', loadCatalog)}
+                    onViewUnits={(id) => { setActiveTab('copies'); setViewingInventoryBookId(id); }}
+                    page={pagination.books.page}
+                    total={pagination.books.total}
+                    pageSize={PAGE_SIZE}
+                    onPageChange={(p) => setPagination(prev => ({ ...prev, books: { ...prev.books, page: p } }))}
+                />
             )}
 
             {/* Inventory Content */}
             {activeTab === 'copies' && (
-                <div className="table-container fade-in">
-                    {!viewingInventoryBookId ? (
-                        <>
-                            <div className="flex justify-between items-center mb-4">
-                                <h3>Inventory Summary</h3>
-                                {!isReadOnly && (
-                                    <Button variant="primary" size="sm" onClick={() => { setCopyId(null); setIsCopyModalOpen(true); }} icon={<Plus size={14} />}>Add Copy</Button>
-                                )}
-                            </div>
-                            <table className="table">
-                                <thead>
-                                    <tr>
-                                        <th>Book Title</th>
-                                        <th>Total Copies</th>
-                                        <th>Available</th>
-                                        <th>Issued</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {books.map(b => {
-                                        const bookCopies = copies.filter(c => c.book === b.id);
-                                        const available = bookCopies.filter(c => c.status === 'AVAILABLE').length;
-                                        const issued = bookCopies.filter(c => c.status === 'ISSUED').length;
-
-                                        return (
-                                            <tr key={b.id}>
-                                                <td className="font-bold">{b.title}</td>
-                                                <td><span className="badge badge-info">{bookCopies.length}</span></td>
-                                                <td><span className="badge badge-success">{available}</span></td>
-                                                <td><span className="badge badge-warning">{issued}</span></td>
-                                                <td>
-                                                    <Button variant="outline" size="sm" onClick={() => setViewingInventoryBookId(b.id)} icon={<ArrowRight size={14} />}>
-                                                        View Units
-                                                    </Button>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                            {/* Inventory Summary Pagination (Uses Books Pagination) */}
-                            {booksTotal > PAGE_SIZE && (
-                                <div className="flex items-center justify-between mt-4 pt-4 border-t">
-                                    <span className="text-sm text-secondary">
-                                        Showing {((booksPage - 1) * PAGE_SIZE) + 1}–{Math.min(booksPage * PAGE_SIZE, booksTotal)} of {booksTotal} titles
-                                    </span>
-                                    <div className="flex gap-2">
-                                        <button className="btn btn-outline btn-sm" onClick={() => setBooksPage(p => Math.max(1, p - 1))} disabled={booksPage === 1}>← Prev</button>
-                                        <span className="btn btn-ghost btn-sm pointer-events-none">Page {booksPage} / {Math.ceil(booksTotal / PAGE_SIZE)}</span>
-                                        <button className="btn btn-outline btn-sm" onClick={() => setBooksPage(p => p + 1)} disabled={booksPage * PAGE_SIZE >= booksTotal}>Next →</button>
-                                    </div>
-                                </div>
-                            )}
-                        </>
-                    ) : (
-                        <>
-                            <div className="flex justify-between items-center mb-4">
-                                <div className="flex items-center gap-2">
-                                    <Button variant="ghost" size="sm" onClick={() => setViewingInventoryBookId(null)}>ΓåÉ Back</Button>
-                                    <h3>{books.find(b => b.id === viewingInventoryBookId)?.title} - Copies</h3>
-                                </div>
-                                {!isReadOnly && (
-                                    <Button variant="primary" size="sm" onClick={() => { setCopyId(null); setCopyForm({ ...copyForm, book: String(viewingInventoryBookId) }); setIsCopyModalOpen(true); }} icon={<Plus size={14} />}>
-                                        Add Copy to this Title
-                                    </Button>
-                                )}
-                            </div>
-                            <table className="table">
-                                <thead>
-                                    <tr>
-                                        <th>Accession ID</th>
-                                        <th>Condition</th>
-                                        <th>Status</th>
-                                        <th>Purchase Date</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {filteredCopies.filter(c => c.book === viewingInventoryBookId).map(c => (
-                                        <tr key={c.id}>
-                                            <td><span className="font-mono bg-secondary-light px-2 py-1 rounded text-xs">#{c.copy_number}</span></td>
-                                            <td><span className={`badge ${c.condition === 'NEW' ? 'badge-success' : 'badge-info'}`}>{c.condition}</span></td>
-                                            <td><span className={`status-badge ${c.status === 'AVAILABLE' ? 'success' : c.status === 'OVERDUE' ? 'error' : 'secondary'}`}>{c.status}</span></td>
-                                            <td>{c.purchase_date || 'N/A'}</td>
-                                            <td>
-                                                <div className="flex gap-2">
-                                                    {!isReadOnly && (
-                                                        <>
-                                                            <Button variant="ghost" size="sm" className="text-primary" onClick={() => handleEditCopy(c)} icon={<Edit size={14} />} />
-                                                            <Button variant="ghost" size="sm" className="text-error" onClick={(e) => handleDelete(e, c.id, libraryAPI.copies.delete, 'Remove this copy completely?', loadCatalog)} icon={<Trash2 size={14} />} />
-                                                        </>
-                                                    )}
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                    {copies.filter(c => c.book === viewingInventoryBookId).length === 0 && (
-                                        <tr><td colSpan={5} className="text-center italic text-secondary">No copies found for this title.</td></tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </>
-                    )}
-                </div>
+                <InventoryManager
+                    books={books}
+                    copies={copies}
+                    filteredCopies={filteredCopies}
+                    isReadOnly={isReadOnly}
+                    viewingInventoryBookId={viewingInventoryBookId}
+                    onSetViewingBookId={setViewingInventoryBookId}
+                    onAddCopy={(bookId) => {
+                        setCopyId(null);
+                        if (bookId) setCopyForm({ ...copyForm, book: bookId });
+                        setIsCopyModalOpen(true);
+                    }}
+                    onEditCopy={handleEditCopy}
+                    onDeleteCopy={(e, id) => handleDelete(e, id, libraryAPI.copies.delete, 'Remove this copy completely?', loadCatalog)}
+                    page={pagination.books.page}
+                    total={pagination.books.total}
+                    pageSize={PAGE_SIZE}
+                    onPageChange={(p) => setPagination(prev => ({ ...prev, books: { ...prev.books, page: p } }))}
+                />
             )}
 
             {/* Lendings Content */}
             {activeTab === 'lendings' && (
-                <div className="table-container fade-in">
-                    <div className="flex justify-between items-center mb-4">
-                        <h3>Circulation Record</h3>
-                        {!isReadOnly && (
-                            <Button variant="primary" size="sm" onClick={() => { setLendingId(null); setIsLendModalOpen(true); }} icon={<Plus size={14} />}>Issue Book</Button>
-                        )}
-                    </div>
-                    <table className="table">
-                        <thead>
-                            <tr>
-                                <th>Book Title</th>
-                                <th>Copy ID</th>
-                                <th>Student</th>
-                                <th>Borrowed</th>
-                                <th>Due Date</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {lendings.map((l: any) => (
-                                <tr key={l.id}>
-                                    <td className="font-bold">{l.book_title}</td>
-                                    <td><span className="font-mono text-xs bg-secondary-light px-2 py-1 rounded">{l.copy_number}</span></td>
-                                    <td>{l.user_name || l.student_name}</td>
-                                    <td>{l.date_issued}</td>
-                                    <td><span className={new Date(l.due_date) < new Date() && !l.date_returned ? 'text-error font-bold' : ''}>{l.due_date}</span></td>
-                                    <td><span className={`badge ${l.date_returned ? 'badge-success' : (new Date(l.due_date) < new Date() ? 'badge-error' : 'badge-info')}`}>{l.date_returned ? 'RETURNED' : (new Date(l.due_date) < new Date() ? 'OVERDUE' : 'ISSUED')}</span></td>
-                                    <td>
-                                        <div className="flex gap-2">
-                                            {!isReadOnly && !l.date_returned && (
-                                                <>
-                                                    <Button size="sm" onClick={() => libraryAPI.lendings.returnBook(l.id).then(() => { loadLendings(); loadCatalog(); })}>
-                                                        Return
-                                                    </Button>
-                                                    <Button variant="outline" size="sm" className="text-warning border-warning hover:bg-warning hover:text-white"
-                                                        onClick={() => handleExtendDueDate(l.id)}>
-                                                        Extend
-                                                    </Button>
-                                                </>
-                                            )}
-                                            {!isReadOnly && (
-                                                <>
-                                                    <Button variant="ghost" size="sm" className="text-primary" onClick={() => handleEditLending(l)} icon={<Edit size={14} />} />
-                                                    <Button variant="ghost" size="sm" className="text-error" onClick={(e) => handleDelete(e, l.id, libraryAPI.lendings.delete, 'Delete this lending record?', loadLendings)} icon={<Trash2 size={14} />} />
-                                                </>
-                                            )}
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                    {/* Lendings Pagination */}
-                    {lendingsTotal > PAGE_SIZE && (
-                        <div className="flex items-center justify-between mt-4 pt-4 border-t">
-                            <span className="text-sm text-secondary">
-                                Showing {((lendingsPage - 1) * PAGE_SIZE) + 1}–{Math.min(lendingsPage * PAGE_SIZE, lendingsTotal)} of {lendingsTotal} records
-                            </span>
-                            <div className="flex gap-2">
-                                <button className="btn btn-outline btn-sm" onClick={() => setLendingsPage(p => Math.max(1, p - 1))} disabled={lendingsPage === 1}>← Prev</button>
-                                <span className="btn btn-ghost btn-sm pointer-events-none">Page {lendingsPage} / {Math.ceil(lendingsTotal / PAGE_SIZE)}</span>
-                                <button className="btn btn-outline btn-sm" onClick={() => setLendingsPage(p => p + 1)} disabled={lendingsPage * PAGE_SIZE >= lendingsTotal}>Next →</button>
-                            </div>
-                        </div>
-                    )}
-                </div>
+                <CirculationManager
+                    lendings={lendings}
+                    isReadOnly={isReadOnly}
+                    onIssue={() => { setLendingId(null); setIsLendModalOpen(true); }}
+                    onReturn={(id) => libraryAPI.lendings.returnBook(id).then(() => { loadLendings(); loadCatalog(); })}
+                    onExtend={handleExtendDueDate}
+                    onEdit={handleEditLending}
+                    onDelete={(e, id) => handleDelete(e, id, libraryAPI.lendings.delete, 'Delete this lending record?', loadLendings)}
+                    page={pagination.lendings.page}
+                    total={pagination.lendings.total}
+                    pageSize={PAGE_SIZE}
+                    onPageChange={(p) => setPagination(prev => ({ ...prev, lendings: { ...prev.lendings, page: p } }))}
+                />
             )}
 
             {/* Fines Content */}
             {activeTab === 'fines' && (
-                <div className="table-container fade-in">
-                    <div className="flex justify-between items-center mb-4">
-                        <h3>Library Fines & Discipline</h3>
-                        <div className="flex gap-2">
-                            {!isReadOnly && (
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={handleSyncFinesToFinance}
-                                    loading={isSyncing}
-                                    loadingText="Syncing..."
-                                    icon={<RefreshCw size={14} />}
-                                    className="text-green-600 border-green-200 hover:bg-green-50"
-                                >
-                                    Sync to Finance
-                                </Button>
-                            )}
-                            {!isReadOnly && (
-                                <Button variant="primary" size="sm" onClick={() => { setFineId(null); setIsFineModalOpen(true); }} icon={<Plus size={14} />}>Record Fine</Button>
-                            )}
-                        </div>
-                    </div>
-                    <table className="table">
-                        <thead><tr><th>Student</th><th>Amount (KES)</th><th>Reason</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
-                        <tbody>
-                            {fines.length === 0 && <tr><td colSpan={6} className="text-center italic">No fines found.</td></tr>}
-                            {fines.map((f: any) => (
-                                <tr key={f.id}>
-                                    <td>{f.user_name || 'Unknown Student'}</td>
-                                    <td className="font-bold">{parseFloat(f.amount).toLocaleString()}</td>
-                                    <td>{f.reason}</td>
-                                    <td><span className={`badge ${f.status === 'PAID' ? 'badge-success' : (f.adjustment ? 'badge-warning' : 'badge-error')}`}>{f.status === 'PAID' ? 'PAID' : (f.adjustment ? 'BILLED TO INVOICE' : 'PENDING')}</span></td>
-                                    <td>{f.date_issued}</td>
-                                    <td>
-                                        <div className="flex gap-2">
-                                            {!isReadOnly && (
-                                                <>
-                                                    <Button variant="ghost" size="sm" className="text-primary" onClick={() => handleEditFine(f)} icon={<Edit size={14} />} />
-                                                    <Button variant="ghost" size="sm" className="text-error" onClick={(e) => handleDelete(e, f.id, libraryAPI.fines.delete, 'Delete this fine?', loadFines)} icon={<Trash2 size={14} />} />
-                                                </>
-                                            )}
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                    {/* Fines Pagination */}
-                    {finesTotal > PAGE_SIZE && (
-                        <div className="flex items-center justify-between mt-4 pt-4 border-t">
-                            <span className="text-sm text-secondary">
-                                Showing {((finesPage - 1) * PAGE_SIZE) + 1}–{Math.min(finesPage * PAGE_SIZE, finesTotal)} of {finesTotal} fines
-                            </span>
-                            <div className="flex gap-2">
-                                <button className="btn btn-outline btn-sm" onClick={() => setFinesPage(p => Math.max(1, p - 1))} disabled={finesPage === 1}>← Prev</button>
-                                <span className="btn btn-ghost btn-sm pointer-events-none">Page {finesPage} / {Math.ceil(finesTotal / PAGE_SIZE)}</span>
-                                <button className="btn btn-outline btn-sm" onClick={() => setFinesPage(p => p + 1)} disabled={finesPage * PAGE_SIZE >= finesTotal}>Next →</button>
-                            </div>
-                        </div>
-                    )}
-                </div>
+                <FineManager
+                    fines={fines}
+                    isReadOnly={isReadOnly}
+                    isSyncing={isSyncing}
+                    onSync={handleSyncFinesToFinance}
+                    onAdd={() => { setFineId(null); setIsFineModalOpen(true); }}
+                    onEdit={handleEditFine}
+                    onDelete={(e, id) => handleDelete(e, id, libraryAPI.fines.delete, 'Delete this fine?', loadFines)}
+                    page={pagination.fines.page}
+                    total={pagination.fines.total}
+                    pageSize={PAGE_SIZE}
+                    onPageChange={(p) => setPagination(prev => ({ ...prev, fines: { ...prev.fines, page: p } }))}
+                />
             )}
 
             {/* Modals */}
@@ -952,6 +697,27 @@ const Library = () => {
                         </Button>
                     </div>
                 </form>
+            </Modal>
+
+            {/* Extend Due Date Modal */}
+            <Modal isOpen={!!extendLendingId} onClose={() => setExtendLendingId(null)} title="Extend Due Date">
+                <div className="space-y-4">
+                    <p className="text-sm text-secondary">Enter the number of days to extend this borrowing's return deadline.</p>
+                    <div className="form-group">
+                        <label className="label">Days to Extend</label>
+                        <input
+                            type="number"
+                            className="input"
+                            min="1"
+                            value={extendDays}
+                            onChange={e => setExtendDays(e.target.value)}
+                        />
+                    </div>
+                    <div className="modal-footer">
+                        <Button variant="ghost" onClick={() => setExtendLendingId(null)}>Cancel</Button>
+                        <Button variant="primary" onClick={confirmExtendDueDate}>Confirm Extension</Button>
+                    </div>
+                </div>
             </Modal>
 
             <style>{`
