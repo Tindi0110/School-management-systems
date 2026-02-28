@@ -54,11 +54,13 @@ def sync_fine_to_finance(fine, approved_by):
             return False, "No active invoice found to sync the fine."
 
         # Build reason string
+        date_str = fine.date_issued.strftime("%d %b %Y") if fine.date_issued else "Unknown Date"
+        
         if fine.lending and fine.lending.copy:
             book_title = fine.lending.copy.book.title
-            reason = f"Library Fine ({fine.get_fine_type_display()}): {book_title}"
+            reason = f"Library Fine ({fine.get_fine_type_display()}): {book_title} (Incurred: {date_str})"
         else:
-            reason = f"Library Fine ({fine.get_fine_type_display()}): {fine.reason or 'Manual fine'}"
+            reason = f"Library Fine ({fine.get_fine_type_display()}): {fine.reason or 'Manual fine'} (Incurred: {date_str})"
 
         from django.db import transaction
         with transaction.atomic():
