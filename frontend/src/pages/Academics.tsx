@@ -18,6 +18,8 @@ import AllocationManager from './academics/AllocationManager';
 import GradingSystemManager from './academics/GradingSystemManager';
 import ExamManager from './academics/ExamManager';
 import AcademicModals from './academics/AcademicModals';
+import ResourceManager from './academics/ResourceManager';
+import AttendanceManager from './academics/AttendanceManager';
 
 const Academics = () => {
 
@@ -46,6 +48,12 @@ const Academics = () => {
     const [classAllocations, setClassAllocations] = useState<any[]>([]);
     const [selectedAllocationClass, setSelectedAllocationClass] = useState<string>('');
     const [isSyncing, setIsSyncing] = useState(false);
+
+    // Attendance State Restoration
+    const [attendanceRecords, setAttendanceRecords] = useState<any[]>([]);
+    const [attendanceSort, setAttendanceSort] = useState<{ field: string, direction: 'asc' | 'desc' }>({ field: 'date', direction: 'desc' });
+    const [isExporting, setIsExporting] = useState(false);
+
     // Derived / memoised
     const uniqueClassNames = useMemo(() => Array.from(new Set(classes.map(c => c.name))).sort(), [classes]);
 
@@ -302,10 +310,11 @@ const Academics = () => {
                 const res = await academicsAPI.exams.getAll();
                 setExams(d(res));
             } else if (activeTab === 'ATTENDANCE') {
-                const [, studentRes] = await Promise.all([
+                const [attRes, studentRes] = await Promise.all([
                     academicsAPI.attendance.getAll({ page_size: 500, ordering: '-date' }),
                     studentsAPI.getAll({ page_size: 200 })
                 ]);
+                setAttendanceRecords(d(attRes));
                 setStudents(d(studentRes));
             } else if (activeTab === 'CURRICULUM') {
                 const [syllabusRes, studentRes] = await Promise.all([
@@ -343,6 +352,19 @@ const Academics = () => {
             const res = await academicsAPI.classSubjects.list({ class_id: classId });
             setClassAllocations(res.data?.results ?? res.data ?? []);
         } catch (err) { console.error("Error fetching allocations:", err); }
+    };
+
+    const handleExportAcademics = async () => {
+        setIsExporting(true);
+        try {
+            // Placeholder export function, typically would call academicsAPI.attendance.export()
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            success('Attendance exported successfully (simulated)');
+        } catch (e: any) {
+            toastError('Failed to export data');
+        } finally {
+            setIsExporting(false);
+        }
     };
 
     const toggleClassSubject = async (subjectId: number, currentAllocationId?: number) => {
@@ -424,6 +446,83 @@ const Academics = () => {
             setTermForm({ year: '', name: '', start_date: '', end_date: '', is_active: false });
         } catch (err: any) { toastError(err.message || 'Failed to save term'); }
         finally { setIsSubmitting(false); }
+    };
+
+    // --- ResourceManager Handlers ---
+    const handleSetActiveYear = async (year: any) => {
+        try {
+            await academicsAPI.years.update(year.id, { is_active: true });
+            success(`${year.name} set as active year`);
+            loadAllAcademicData();
+        } catch (e: any) { toastError(e.message || 'Failed to set active year'); }
+    };
+
+    const handleSetActiveTerm = async (term: any) => {
+        try {
+            await academicsAPI.terms.update(term.id, { is_active: true });
+            success(`${term.name} set as active term`);
+            loadAllAcademicData();
+        } catch (e: any) { toastError(e.message || 'Failed to set active term'); }
+    };
+
+    const openEditYear = (year: any) => {
+        setYearForm({ name: year.name, is_active: year.is_active });
+        setEditingYearId(year.id);
+        setIsYearModalOpen(true);
+    };
+
+    const handleDeleteYear = async (id: number) => {
+        if (await confirm('Delete academic year? This may break linked records.', { type: 'danger' })) {
+            try {
+                await academicsAPI.years.delete(id);
+                success('Year deleted');
+                loadAllAcademicData();
+            } catch (e: any) { toastError(e.message || 'Failed to delete year'); }
+        }
+    };
+
+    const openEditTerm = (term: any) => {
+        setTermForm({
+            year: term.year.toString(),
+            name: term.name,
+            start_date: term.start_date,
+            end_date: term.end_date,
+            is_active: term.is_active
+        });
+        setEditingTermId(term.id);
+        setIsTermModalOpen(true);
+    };
+
+    const handleDeleteTerm = async (id: number) => {
+        if (await confirm('Delete term?', { type: 'danger' })) {
+            try {
+                await academicsAPI.terms.delete(id);
+                success('Term deleted');
+                loadAllAcademicData();
+            } catch (e: any) { toastError(e.message || 'Failed to delete term'); }
+        }
+    };
+
+    // --- AttendanceManager Handlers ---
+    const openEditAttendance = (att: any) => {
+        setAttendanceForm({
+            student: att.student.toString(),
+            status: att.status,
+            remark: att.remark || '',
+            date: att.date
+        });
+        setEditingAttendanceId(att.id);
+        setIsAttendanceModalOpen(true);
+    };
+
+    const handleDeleteAttendance = async (id: number) => {
+        if (await confirm('Delete attendance record?', { type: 'danger' })) {
+            try {
+                await academicsAPI.attendance.delete(id);
+                success('Attendance record deleted');
+                loadTabSpecificData(); // Reload attendance records
+            } catch (e: any) { toastError(e.message || 'Failed to delete attendance'); }
+        }
     };
 
     const openEditGradeSystem = (gs: any) => {
@@ -1050,6 +1149,51 @@ const Academics = () => {
                     openEditExam={openEditExam}
                     handleDeleteExam={handleDeleteExam}
                     openCreateExam={openCreateExam}
+                />
+            )}
+
+            {activeTab === 'ATTENDANCE' && (
+                <AttendanceManager
+                    attendanceRecords={attendanceRecords}
+                    students={students}
+                    classes={classes}
+                    attendanceSort={attendanceSort}
+                    setAttendanceSort={setAttendanceSort}
+                    handleExportAcademics={handleExportAcademics}
+                    isExporting={isExporting}
+                    setEditingAttendanceId={setEditingAttendanceId}
+                    setAttendanceForm={setAttendanceForm}
+                    setIsAttendanceModalOpen={setIsAttendanceModalOpen}
+                    openEditAttendance={openEditAttendance}
+                    handleDeleteAttendance={handleDeleteAttendance}
+                />
+            )}
+
+            {activeTab === 'RESOURCES' && (
+                <ResourceManager
+                    academicYears={academicYears}
+                    terms={terms}
+                    gradeSystems={gradeSystems}
+                    selectedSystem={selectedSystem}
+                    setSelectedSystem={setSelectedSystem}
+                    setBoundaryForm={setBoundaryForm}
+                    setIsGradeModalOpen={setIsGradeModalOpen}
+                    handleSetActiveYear={handleSetActiveYear}
+                    handleSetActiveTerm={handleSetActiveTerm}
+                    openEditYear={openEditYear}
+                    handleDeleteYear={handleDeleteYear}
+                    setIsYearModalOpen={setIsYearModalOpen}
+                    setTermForm={setTermForm}
+                    setEditingTermId={setEditingTermId}
+                    setIsTermModalOpen={setIsTermModalOpen}
+                    openEditTerm={openEditTerm}
+                    handleDeleteTerm={handleDeleteTerm}
+                    openEditGradeSystem={openEditGradeSystem}
+                    handleDeleteGradeSystem={handleDeleteGradeSystem}
+                    setIsBoundaryModalOpen={setIsBoundaryModalOpen}
+                    academicsAPI={academicsAPI}
+                    success={success}
+                    loadAllAcademicData={loadAllAcademicData}
                 />
             )}
 
