@@ -95,12 +95,12 @@ router.register(r'hostel-guests', GuestLogViewSet)
 router.register(r'hostel-maintenance', HostelMaintenanceViewSet)
 
 # Library
-router.register(r'library-config', LibraryConfigViewSet)
-router.register(r'books', BookViewSet)
-router.register(r'book-copies', BookCopyViewSet)
-router.register(r'book-lendings', BookLendingViewSet)
-router.register(r'library-fines', LibraryFineViewSet)
-router.register(r'book-reservations', BookReservationViewSet)
+router.register(r'library-config', LibraryConfigViewSet, basename='libraryconfig')
+router.register(r'books', BookViewSet, basename='book')
+router.register(r'book-copies', BookCopyViewSet, basename='bookcopy')
+router.register(r'book-lendings', BookLendingViewSet, basename='booklending')
+router.register(r'library-fines', LibraryFineViewSet, basename='libraryfine')
+router.register(r'book-reservations', BookReservationViewSet, basename='bookreservation')
 # Medical
 router.register(r'medical-records', MedicalRecordViewSet)
 # Transport
