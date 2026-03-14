@@ -3,8 +3,9 @@ import { Outlet, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { logout } from '../store/authSlice'
 import Sidebar from '../components/Sidebar'
-import { LogOut, Bell, Menu } from 'lucide-react'
+import { LogOut, Bell, Menu, Search, Command } from 'lucide-react'
 import { useToast } from '../context/ToastContext'
+import CommandPalette from '../components/CommandPalette'
 
 const DashboardLayout = () => {
   const { user } = useSelector((state: any) => state.auth) // Get user from Redux
@@ -102,6 +103,16 @@ const DashboardLayout = () => {
                 {user?.username || 'User'} <span className="text-xs font-normal text-gray-500">({user?.role || 'Guest'})</span>
               </h2>
             </div>
+            
+            {/* Elite Quick Search Trigger Info */}
+            <div className="hidden lg:flex items-center gap-2 bg-gray-50 border border-gray-100 px-3 py-1.5 rounded-xl text-gray-400 cursor-pointer hover:bg-white hover:border-primary-accent transition-all group" onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }))}>
+              <Search size={14} className="group-hover:text-primary-accent transition-colors" />
+              <span className="text-[11px] font-bold">Quick Search</span>
+              <div className="flex items-center gap-0.5 ml-2">
+                <span className="bg-white border px-1 rounded text-[9px] font-black">Ctrl</span>
+                <span className="bg-white border px-1 rounded text-[9px] font-black">K</span>
+              </div>
+            </div>
           </div>
           <div className="actions">
             <div className="relative">
@@ -165,6 +176,7 @@ const DashboardLayout = () => {
           </div>
         </div>
       </main>
+      <CommandPalette />
 
       <style>{`
         .dashboard-layout {

@@ -15,6 +15,7 @@ import Button from '../components/common/Button';
 import CountryCodeSelect from '../components/CountryCodeSelect';
 import SearchableSelect from '../components/SearchableSelect';
 import PremiumDateInput from '../components/common/DatePicker';
+import Skeleton from '../components/common/Skeleton';
 
 const Students = () => {
     const navigate = useNavigate();
@@ -321,7 +322,53 @@ const Students = () => {
 
 
 
-    if (loading) return <div className="flex items-center justify-center p-12 spinner-container"><div className="spinner"></div></div>;
+    const renderSkeletonStats = () => (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-md mb-8 no-print">
+            {[1, 2, 3, 4].map(i => (
+                <div key={i} className="card p-6 bg-white border border-gray-100 rounded-2xl">
+                    <Skeleton variant="text" width="60%" className="mb-2" />
+                    <Skeleton variant="rect" height="32px" width="40%" />
+                </div>
+            ))}
+        </div>
+    );
+
+    const renderSkeletonTable = () => (
+        <div className="table-wrapper">
+            <table className="table">
+                <thead>
+                    <tr>
+                        <th>Identity</th>
+                        <th>Class / Unit</th>
+                        <th>Financials</th>
+                        <th>Adherence</th>
+                        <th>Presence</th>
+                        <th className="no-print">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {[1, 2, 3, 4, 5].map(i => (
+                        <tr key={i}>
+                            <td>
+                                <div className="flex items-center gap-3">
+                                    <Skeleton variant="circle" width="40px" height="40px" />
+                                    <div className="flex flex-col gap-1 flex-1">
+                                        <Skeleton variant="text" width="120px" />
+                                        <Skeleton variant="text" width="80px" />
+                                    </div>
+                                </div>
+                            </td>
+                            <td><Skeleton variant="text" width="100px" /><Skeleton variant="text" width="60px" /></td>
+                            <td><Skeleton variant="text" width="80px" /></td>
+                            <td><Skeleton variant="rect" width="60px" height="20px" /></td>
+                            <td><Skeleton variant="text" width="50px" /></td>
+                            <td><Skeleton variant="rect" width="100px" height="30px" /></td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    );
 
     return (
         <div className="fade-in">
@@ -355,12 +402,14 @@ const Students = () => {
             </div>
 
             {/* Dashboard Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-md mb-8 no-print">
-                <StatCard title="Active Enrollment" value={activeCount.toString()} icon={<UserCheck size={18} />} gradient="linear-gradient(135deg, #0ba360, #3cba92)" />
-                <StatCard title="Boarders" value={boarderCount.toString()} icon={<MapPin size={18} />} gradient="var(--info)" />
-                <StatCard title="Day Scholars" value={dayScholarCount.toString()} icon={<UserIcon size={18} />} gradient="var(--secondary)" />
-                <StatCard title="Enrolled Capacity" value={`${classes.length > 0 ? Math.round((activeCount / classes.reduce((sum, c) => sum + (c.capacity || 40), 0)) * 100) : 0}%`} icon={<TrendingUp size={18} />} gradient="linear-gradient(135deg, #0f172a, #1e293b)" />
-            </div>
+            {loading ? renderSkeletonStats() : (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-md mb-8 no-print">
+                    <StatCard title="Active Enrollment" value={activeCount.toString()} icon={<UserCheck size={18} />} gradient="linear-gradient(135deg, #0ba360, #3cba92)" />
+                    <StatCard title="Boarders" value={boarderCount.toString()} icon={<MapPin size={18} />} gradient="var(--info)" />
+                    <StatCard title="Day Scholars" value={dayScholarCount.toString()} icon={<UserIcon size={18} />} gradient="var(--secondary)" />
+                    <StatCard title="Enrolled Capacity" value={`${classes.length > 0 ? Math.round((activeCount / classes.reduce((sum, c) => sum + (c.capacity || 40), 0)) * 100) : 0}%`} icon={<TrendingUp size={18} />} gradient="linear-gradient(135deg, #0f172a, #1e293b)" />
+                </div>
+            )}
 
             {/* Premium Search & Actions Bar */}
             <div className="card mb-8 no-print p-4 bg-white/50 backdrop-blur-md border-slate-200/60 shadow-xl">
@@ -439,7 +488,7 @@ const Students = () => {
                             </div>
                         )}
                         <div className="table-container border-none shadow-none">
-                            {renderTable(filteredStudents)}
+                            {loading ? renderSkeletonTable() : renderTable(filteredStudents)}
 
                             {/* Pagination Controls */}
                             <div className="flex justify-between items-center mt-6 bg-slate-50 p-4 rounded-2xl border border-slate-100">

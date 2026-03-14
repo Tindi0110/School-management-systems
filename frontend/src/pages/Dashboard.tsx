@@ -13,6 +13,7 @@ import Modal from '../components/Modal';
 import { useToast } from '../context/ToastContext';
 import Button from '../components/common/Button';
 import PremiumDateInput from '../components/common/DatePicker';
+import Skeleton from '../components/common/Skeleton';
 
 const Dashboard = () => {
     const { user } = useSelector((state: any) => state.auth);
@@ -157,75 +158,119 @@ const Dashboard = () => {
         }
     };
 
-    if (loading) return <div className="spinner-container"><div className="spinner"></div></div>;
+    const renderSkeletonHeader = () => (
+        <div className="relative overflow-hidden rounded-3xl bg-gray-100 p-8 mb-8">
+            <Skeleton variant="text" width="150px" className="mb-4" />
+            <Skeleton variant="text" width="300px" height="40px" className="mb-4" />
+            <div className="flex gap-4">
+                <Skeleton variant="rect" width="120px" height="24px" className="rounded-full" />
+                <Skeleton variant="rect" width="180px" height="24px" className="rounded-full" />
+            </div>
+        </div>
+    );
+
+    const renderSkeletonStats = () => (
+        <div className="grid grid-cols-2 gap-10 mb-10">
+            {[1, 2, 3, 4].map(i => (
+                <div key={i} className="card p-8 bg-white border border-gray-100 rounded-2xl h-[120px]">
+                    <Skeleton variant="text" width="40%" className="mb-4" />
+                    <Skeleton variant="rect" width="30%" height="32px" />
+                </div>
+            ))}
+        </div>
+    );
+
+    const renderSkeletonActivity = () => (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-12 mb-12">
+            {[1, 2].map(i => (
+                <div key={i} className="card p-6 bg-white border border-gray-100 rounded-2xl">
+                    <Skeleton variant="text" width="150px" className="mb-6" />
+                    {[1, 2, 3].map(j => (
+                        <div key={j} className="flex gap-4 mb-4">
+                            <Skeleton variant="circle" width="40px" height="40px" />
+                            <div className="flex-1">
+                                <Skeleton variant="text" width="70%" className="mb-1" />
+                                <Skeleton variant="text" width="40%" />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            ))}
+        </div>
+    );
 
     return (
         <div className="fade-in px-4">
             {/* Elegant Header with Multi-layer Background */}
-            <div className="relative overflow-hidden rounded-3xl bg-primary text-white p-8 mb-8 shadow-2xl">
-                <div className="relative z-10 flex justify-between items-center">
-                    <div>
-                        <div className="flex items-center gap-2 mb-2">
-                            <ShieldCheck size={16} className="text-info-light" />
-                            <span className="text-[10px] font-black uppercase tracking-widest opacity-80">System Operator Dashboard</span>
-                        </div>
-                        <h1 className="text-3xl font-black mb-1 capitalize">Welcome, {getRoleDisplay(user?.role || 'GUEST')}</h1>
-                        <div className="flex items-center gap-4 mt-2">
-                            <div className="flex items-center gap-1.5 px-3 py-1 bg-white/10 rounded-full border border-white/10">
-                                <Calendar size={12} className="text-info-light" />
-                                <span className="text-[10px] font-bold uppercase">{activeAcademic.year} • {activeAcademic.term}</span>
+            {loading ? renderSkeletonHeader() : (
+                <div className="relative overflow-hidden rounded-3xl bg-primary text-white p-8 mb-8 shadow-2xl">
+                    <div className="relative z-10 flex justify-between items-center">
+                        <div>
+                            <div className="flex items-center gap-2 mb-2">
+                                <ShieldCheck size={16} className="text-info-light" />
+                                <span className="text-[10px] font-black uppercase tracking-widest opacity-80">System Operator Dashboard</span>
                             </div>
-                            <span className="text-xs opacity-70 italic font-medium">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                            <h1 className="text-3xl font-black mb-1 capitalize">Welcome, {getRoleDisplay(user?.role || 'GUEST')}</h1>
+                            <div className="flex items-center gap-4 mt-2">
+                                <div className="flex items-center gap-1.5 px-3 py-1 bg-white/10 rounded-full border border-white/10">
+                                    <Calendar size={12} className="text-info-light" />
+                                    <span className="text-[10px] font-bold uppercase">{activeAcademic.year} • {activeAcademic.term}</span>
+                                </div>
+                                <span className="text-xs opacity-70 italic font-medium">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                            </div>
                         </div>
                     </div>
+                    <div className="absolute top-0 right-0 p-12 opacity-10 pointer-events-none">
+                        <Zap size={200} />
+                    </div>
                 </div>
-                <div className="absolute top-0 right-0 p-12 opacity-10 pointer-events-none">
-                    <Zap size={200} />
-                </div>
-            </div>
+            )}
 
-            <div className="grid grid-cols-2 gap-10 mb-10">
-                {(user?.role === 'ADMIN' || user?.role === 'DOS' || user?.role === 'REGISTRAR' || user?.role === 'TEACHER') && (
+            {loading ? renderSkeletonStats() : (
+                <div className="grid grid-cols-2 gap-10 mb-10">
+                    {(user?.role === 'ADMIN' || user?.role === 'DOS' || user?.role === 'REGISTRAR' || user?.role === 'TEACHER') && (
+                        <div className="transform hover:-translate-y-1 transition-all">
+                            <StatCard
+                                title="Total Registry"
+                                value={stats.totalStudents}
+                                icon={<Users size={18} />}
+                                gradient="linear-gradient(135deg, #1e3c72, #2a5298)"
+                            />
+                        </div>
+                    )}
+                    {(user?.role === 'ADMIN' || user?.role === 'DOS') && (
+                        <div className="transform hover:-translate-y-1 transition-all">
+                            <StatCard
+                                title="Faculty Units"
+                                value={stats.totalStaff}
+                                icon={<Award size={18} />}
+                                gradient="linear-gradient(135deg, #f093fb, #f5576c)"
+                            />
+                        </div>
+                    )}
                     <div className="transform hover:-translate-y-1 transition-all">
                         <StatCard
-                            title="Total Registry"
-                            value={stats.totalStudents}
-                            icon={<Users size={18} />}
-                            gradient="linear-gradient(135deg, #1e3c72, #2a5298)"
+                            title="Active Sessions"
+                            value={stats.totalClasses}
+                            icon={<BookOpen size={18} />}
+                            gradient="linear-gradient(135deg, #5ee7df, #b490ca)"
                         />
                     </div>
-                )}
-                {(user?.role === 'ADMIN' || user?.role === 'DOS') && (
-                    <div className="transform hover:-translate-y-1 transition-all">
-                        <StatCard
-                            title="Faculty Units"
-                            value={stats.totalStaff}
-                            icon={<Award size={18} />}
-                            gradient="linear-gradient(135deg, #f093fb, #f5576c)"
-                        />
-                    </div>
-                )}
-                <div className="transform hover:-translate-y-1 transition-all">
-                    <StatCard
-                        title="Active Sessions"
-                        value={stats.totalClasses}
-                        icon={<BookOpen size={18} />}
-                        gradient="linear-gradient(135deg, #5ee7df, #b490ca)"
-                    />
+                    {(user?.role === 'ADMIN' || user?.role === 'ACCOUNTANT') && (
+                        <div className="transform hover:-translate-y-1 transition-all">
+                            <StatCard
+                                title="Pending Dues"
+                                value={stats.pendingPayments}
+                                icon={<DollarSign size={18} />}
+                                gradient="linear-gradient(135deg, #f093fb, #f5576c)"
+                            />
+                        </div>
+                    )}
                 </div>
-                {(user?.role === 'ADMIN' || user?.role === 'ACCOUNTANT') && (
-                    <div className="transform hover:-translate-y-1 transition-all">
-                        <StatCard
-                            title="Pending Dues"
-                            value={stats.pendingPayments}
-                            icon={<DollarSign size={18} />}
-                            gradient="linear-gradient(135deg, #f093fb, #f5576c)"
-                        />
-                    </div>
-                )}
-            </div>
+            )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {loading ? renderSkeletonActivity() : (
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 {/* Left Column - Main Viewport */}
                 <div className="lg:col-span-4 h-full">
                     <div className="card border-top-4 border-primary h-full">
@@ -318,7 +363,7 @@ const Dashboard = () => {
                         </div>
                     </div>
                 </div>
-            </div>
+            )}
 
             {/* Faculty Modal */}
             <Modal isOpen={isStaffModalOpen} onClose={() => setIsStaffModalOpen(false)} title="Register New Faculty Member">
