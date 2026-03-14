@@ -29,24 +29,28 @@ class UserViewSet(viewsets.ModelViewSet):
     from rest_framework.permissions import IsAdminUser
     permission_classes = [IsAdminUser]
 
-from django.views.decorators.cache import cache_page
+from django.core.cache import cache
+
+DASHBOARD_CACHE_KEY = 'dashboard_stats_data'
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-@cache_page(60 * 15)
 def dashboard_stats(request):
     """
     Consolidated endpoint that returns all data needed for the initial dashboard load.
     Reduces network round-trips significantly by combining counts, active context, 
     live alerts, and upcoming events into a single response.
     """
+    cached_data = cache.get(DASHBOARD_CACHE_KEY)
+    if cached_data:
+        return Response(cached_data)
+
     from django.db.models import Sum
     from finance.models import Invoice
     from academics.models import Exam
     today = timezone.now().date()
     
     # 1. Basic Counts (Aggregated)
-    # total_students now shows all students in registry (not just active) for complete visibility
     counts = {
         'total_students': Student.objects.count(), 
         'active_students': Student.objects.filter(status='ACTIVE').count(),
@@ -93,7 +97,7 @@ def dashboard_stats(request):
     # Sort combined list by date
     events_data.sort(key=lambda x: str(x['date']))
     
-    return Response({
+    response_data = {
         'counts': counts,
         'active_context': {
             'year': active_year.name if active_year else 'N/A',
@@ -101,4 +105,9 @@ def dashboard_stats(request):
         },
         'alerts': alerts_data,
         'events': events_data[:5] # Return top 5 combined
-    })
+    }
+    
+    # Cache for 15 minutes
+    cache.set(DASHBOARD_CACHE_KEY, response_data, 60 * 15)
+    
+    return Response(response_data)

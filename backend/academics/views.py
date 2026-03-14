@@ -21,7 +21,6 @@ from .serializers import (
     ClassSubjectSerializer, StudentSubjectSerializer
 )
 
-@method_decorator(cache_page(60 * 5), name='dispatch')
 class AcademicYearViewSet(viewsets.ModelViewSet):
     queryset = AcademicYear.objects.all()
     serializer_class = AcademicYearSerializer
@@ -33,7 +32,6 @@ class AcademicYearViewSet(viewsets.ModelViewSet):
         return super().list(request, *args, **kwargs)
 
 
-@method_decorator(cache_page(60 * 5), name='dispatch')
 class TermViewSet(viewsets.ModelViewSet):
     queryset = Term.objects.select_related('year').all()
     serializer_class = TermSerializer
@@ -47,17 +45,14 @@ class TermViewSet(viewsets.ModelViewSet):
 
 
 
-@method_decorator(cache_page(60 * 5), name='dispatch')
 class SubjectGroupViewSet(viewsets.ModelViewSet):
     queryset = SubjectGroup.objects.all()
     serializer_class = SubjectGroupSerializer
 
-@method_decorator(cache_page(60 * 5), name='dispatch')
 class SubjectViewSet(viewsets.ModelViewSet):
     queryset = Subject.objects.select_related('group').all()
     serializer_class = SubjectSerializer
 
-@method_decorator(cache_page(60 * 5), name='dispatch')
 class ClassViewSet(viewsets.ModelViewSet):
     queryset = Class.objects.select_related('class_teacher').annotate(
         _student_count=Count('students')
