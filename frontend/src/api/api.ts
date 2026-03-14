@@ -10,15 +10,39 @@ const api = axios.create({
   },
 });
 
-// --- Simple In-Memory Cache Setup ---
+// --- Fine-Grained In-Memory Cache Setup ---
 const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
-let apiCache = new Map<string, { data: any; timestamp: number }>();
+interface CacheEntry { data: any; timestamp: number; tag?: string }
+let apiCache = new Map<string, CacheEntry>();
 
-// Expose a way to clear cache manually if needed
-export const clearApiCache = () => {
-  apiCache.clear();
+/**
+ * Clears the API cache. 
+ * If a tag is provided, only entries matching that tag prefix are cleared.
+ */
+export const clearApiCache = (tag?: string) => {
+  if (!tag) {
+    apiCache.clear();
+  } else {
+    // Collect keys to delete to avoid iteration issues
+    const keysToDelete: string[] = [];
+    apiCache.forEach((value, key) => {
+      if (value.tag === tag || (value.tag && value.tag.startsWith(`${tag}/`))) {
+        keysToDelete.push(key);
+      }
+    });
+    keysToDelete.forEach(key => apiCache.delete(key));
+  }
 };
-// ------------------------------------
+
+/**
+ * Helper to determine a cache tag from a URL
+ */
+const getUrlTag = (url?: string): string | undefined => {
+  if (!url) return undefined;
+  const parts = url.split('/').filter(Boolean);
+  return parts[0]; // e.g. 'students', 'staff', 'finance'
+};
+// ------------------------------------------
 
 // Request interceptor to add auth token AND handle caching for GET
 api.interceptors.request.use(
@@ -32,9 +56,15 @@ api.interceptors.request.use(
     // 2. Cache Strategy
     const method = config.method?.toLowerCase();
 
-    // Clear cache immediately on mutation
+    // Clear specific tag on mutation
     if (method && ['post', 'put', 'patch', 'delete'].includes(method)) {
-      clearApiCache();
+      const tag = getUrlTag(config.url);
+      clearApiCache(tag);
+      
+      // Crucial: Clear stats/dashboard if anything sensitive changes
+      if (tag === 'finance' || tag === 'students' || tag === 'staff') {
+        clearApiCache('stats');
+      }
     }
 
     // If it's a GET request, check the cache
@@ -69,7 +99,8 @@ api.interceptors.response.use(
       const key = `${response.config.url}?${new URLSearchParams(response.config.params as any || {}).toString()}`;
       apiCache.set(key, {
         data: response.data,
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        tag: getUrlTag(response.config.url)
       });
     }
     return response;
