@@ -383,7 +383,7 @@ const Academics = () => {
 
     const updateAllocationTeacher = async (allocationId: number, teacherId: string) => {
         try {
-            await academicsAPI.classSubjects.update(allocationId, { teacher: parseInt(teacherId) || null });
+            await academicsAPI.classSubjects.patch(allocationId, { teacher: parseInt(teacherId) || null });
             success('Teacher assigned');
             fetchClassAllocations(selectedAllocationClass);
         } catch (err: any) {
@@ -451,7 +451,7 @@ const Academics = () => {
     // --- ResourceManager Handlers ---
     const handleSetActiveYear = async (year: any) => {
         try {
-            await academicsAPI.years.update(year.id, { is_active: true });
+            await academicsAPI.years.patch(year.id, { is_active: true });
             success(`${year.name} set as active year`);
             loadAllAcademicData();
         } catch (e: any) { toastError(e.message || 'Failed to set active year'); }
@@ -459,7 +459,7 @@ const Academics = () => {
 
     const handleSetActiveTerm = async (term: any) => {
         try {
-            await academicsAPI.terms.update(term.id, { is_active: true });
+            await academicsAPI.terms.patch(term.id, { is_active: true });
             success(`${term.name} set as active term`);
             loadAllAcademicData();
         } catch (e: any) { toastError(e.message || 'Failed to set active term'); }
