@@ -49,10 +49,20 @@ def _send_mail_safe(subject: str, body: str, recipient: str) -> bool:
     Returns True immediately. Logs failure in background.
     """
     def _target():
+        logger.info("Starting email thread for %s", recipient)
         try:
+            # Urgent: Write to a temp file to confirm the thread is actually running
+            with open(os.path.join(settings.BASE_DIR, 'email_debug.log'), 'a') as f:
+                f.write(f"Executing send_mail to {recipient} at {subject}\n")
+            
             send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [recipient])
-        except Exception:
+            
+            with open(os.path.join(settings.BASE_DIR, 'email_debug.log'), 'a') as f:
+                f.write(f"send_mail completed for {recipient}\n")
+        except Exception as e:
             logger.exception("Failed to send email to %s (subject: %s)", recipient, subject)
+            with open(os.path.join(settings.BASE_DIR, 'email_debug.log'), 'a') as f:
+                f.write(f"ERROR sending to {recipient}: {str(e)}\n")
 
     threading.Thread(target=_target, daemon=True).start()
     return True
