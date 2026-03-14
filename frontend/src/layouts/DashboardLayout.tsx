@@ -3,7 +3,7 @@ import { Outlet, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { logout } from '../store/authSlice'
 import Sidebar from '../components/Sidebar'
-import { LogOut, Bell, Menu, Search, Command } from 'lucide-react'
+import { LogOut, Bell, Menu, Search } from 'lucide-react'
 import { useToast } from '../context/ToastContext'
 import CommandPalette from '../components/CommandPalette'
 
