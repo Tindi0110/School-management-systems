@@ -41,14 +41,21 @@ def _decode_uid(uidb64: str):
         return None
 
 
+import threading
+
 def _send_mail_safe(subject: str, body: str, recipient: str) -> bool:
-    """Send an email, returning True on success.  Logs but doesn't raise on failure."""
-    try:
-        send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [recipient])
-        return True
-    except Exception:
-        logger.exception("Failed to send email to %s (subject: %s)", recipient, subject)
-        return False
+    """
+    Send an email asynchronously using a background thread.
+    Returns True immediately. Logs failure in background.
+    """
+    def _target():
+        try:
+            send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [recipient])
+        except Exception:
+            logger.exception("Failed to send email to %s (subject: %s)", recipient, subject)
+
+    threading.Thread(target=_target, daemon=True).start()
+    return True
 
 
 # ---------------------------------------------------------------------------

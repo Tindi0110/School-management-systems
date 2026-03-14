@@ -10,7 +10,6 @@ const Register = () => {
     const { success } = useToast();
     const [formData, setFormData] = useState({
         full_name: '',
-        username: '',
         email: '',
         password: '',
         confirm_password: '',
@@ -98,26 +97,13 @@ const Register = () => {
                     )}
 
                     <form onSubmit={handleSubmit} className="space-y-4 form-container-md mx-auto">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="auth-input-group">
-                                <label className="label uppercase text-[10px] font-black mb-1">Full Name</label>
-                                <div className="auth-input-wrapper">
-                                    <User size={18} className="auth-input-icon" />
-                                    <input type="text" className="input auth-input-field"
-                                        placeholder="John Doe"
-                                        value={formData.full_name} onChange={e => setFormData({ ...formData, full_name: e.target.value })} required />
-                                </div>
-                            </div>
-
-                            <div className="auth-input-group">
-                                <label className="label uppercase text-[10px] font-black mb-1">Username / ID</label>
-                                <div className="auth-input-wrapper">
-                                    <User size={18} className="auth-input-icon" />
-                                    <input type="text" className="input auth-input-field"
-                                        placeholder="e.g. jdoe01"
-                                        autoComplete="off"
-                                        value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} required />
-                                </div>
+                        <div className="auth-input-group">
+                            <label className="label uppercase text-[10px] font-black mb-1">Full Name</label>
+                            <div className="auth-input-wrapper">
+                                <User size={18} className="auth-input-icon" />
+                                <input type="text" className="input auth-input-field"
+                                    placeholder="John Doe"
+                                    value={formData.full_name} onChange={e => setFormData({ ...formData, full_name: e.target.value })} required />
                             </div>
                         </div>
 
@@ -167,7 +153,7 @@ const Register = () => {
                                     <button
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-secondary hover:text-primary transition-colors"
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-secondary hover:text-primary transition-colors bg-transparent border-none p-0 flex items-center justify-center outline-none"
                                     >
                                         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                     </button>
@@ -184,7 +170,7 @@ const Register = () => {
                                     <button
                                         type="button"
                                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-secondary hover:text-primary transition-colors"
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-secondary hover:text-primary transition-colors bg-transparent border-none p-0 flex items-center justify-center outline-none"
                                     >
                                         {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                     </button>

@@ -75,6 +75,10 @@ class RegisterSerializer(serializers.ModelSerializer):
     def create(self, validated_data: dict) -> User:
         full_name = validated_data.pop('full_name', '')
         role = validated_data.get('role', 'STUDENT')
+        
+        # Use email as username if not provided
+        if not validated_data.get('username'):
+            validated_data['username'] = validated_data.get('email')
 
         user = User.objects.create_user(**validated_data)
 

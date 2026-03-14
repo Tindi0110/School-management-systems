@@ -11,6 +11,7 @@ const ResetPassword = () => {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [done, setDone] = useState(false);
 
@@ -70,7 +71,7 @@ const ResetPassword = () => {
                                         <button
                                             type="button"
                                             onClick={() => setShowPassword(!showPassword)}
-                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-secondary hover:text-primary transition-colors"
+                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-secondary hover:text-primary transition-colors bg-transparent border-none p-0 flex items-center justify-center outline-none"
                                         >
                                             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                         </button>
@@ -82,13 +83,20 @@ const ResetPassword = () => {
                                     <div className="auth-input-wrapper">
                                         <Lock size={18} className="auth-input-icon" />
                                         <input
-                                            type={showPassword ? "text" : "password"}
+                                            type={showConfirmPassword ? "text" : "password"}
                                             className="input auth-input-field"
                                             placeholder="••••••••"
                                             value={confirmPassword}
                                             onChange={e => setConfirmPassword(e.target.value)}
                                             required
                                         />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-secondary hover:text-primary transition-colors bg-transparent border-none p-0 flex items-center justify-center outline-none"
+                                        >
+                                            {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                        </button>
                                     </div>
                                 </div>
 
