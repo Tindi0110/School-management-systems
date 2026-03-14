@@ -74,8 +74,9 @@ const ForgotPassword = () => {
                                 </div>
 
                                 <button type="submit" disabled={loading} className="btn btn-primary w-full py-3 h-auto font-black uppercase tracking-widest shadow-lg flex items-center justify-center gap-2">
-                                    {loading ? 'Processing...' : <><span className="mr-2">Send Recovery Link</span> <Send size={18} /></>}
+                                    {loading ? 'Sending email...' : <><span className="mr-2">Send Recovery Link</span> <Send size={18} /></>}
                                 </button>
+ drum
                             </form>
                         </>
                     ) : (

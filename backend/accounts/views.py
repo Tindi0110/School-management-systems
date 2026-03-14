@@ -47,6 +47,7 @@ import threading
 def _send_mail_safe(subject: str, body: str, recipient: str) -> bool:
     """
     Send an email synchronously for debugging.
+    Raises exception to be caught by the caller if it fails.
     """
     logger.info("Starting synchronous email send for %s", recipient)
     try:
@@ -55,7 +56,7 @@ def _send_mail_safe(subject: str, body: str, recipient: str) -> bool:
         return True
     except Exception as e:
         logger.exception("Failed to send email to %s (subject: %s)", recipient, subject)
-        return False
+        raise e # Raise to be caught by the view for diagnostic reporting
 
 
 # ---------------------------------------------------------------------------
@@ -88,18 +89,17 @@ class PasswordResetRequestView(APIView):
                 f"— School Management System"
             )
             
-            status_sent = _send_mail_safe('Password Reset Request — School Management System', body, email)
-
-            if status_sent:
+            try:
+                _send_mail_safe('Password Reset Request — School Management System', body, email)
                 logger.info("Email dispatch reported success for %s", email)
                 return Response(
                     {'message': f'A reset link has been sent to {email}.'},
                     status=status.HTTP_200_OK,
                 )
-            else:
-                logger.error("Email dispatch reported failure for %s", email)
+            except Exception as e:
+                logger.error("Email dispatch reported failure for %s: %s", email, str(e))
                 return Response(
-                    {'error': 'Server error: Failed to dispatch email. Please contact support.'},
+                    {'error': f'Server error: Failed to dispatch email. Error: {str(e)}'},
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 )
 

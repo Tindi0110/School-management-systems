@@ -14,6 +14,14 @@ class StaffViewSet(viewsets.ModelViewSet):
     filterset_fields = ['department', 'user__role']
     search_fields = ['user__first_name', 'user__last_name', 'employee_id', 'user__role', 'department']
 
+    def destroy(self, request, *args, **kwargs):
+        if request.user.role != 'ADMIN':
+            return Response(
+                {"detail": "Only System Admins can delete staff members."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return super().destroy(request, *args, **kwargs)
+
     @action(detail=False, methods=['post'])
     def sync_staff(self, request):
         """

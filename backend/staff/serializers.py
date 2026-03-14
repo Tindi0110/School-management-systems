@@ -113,7 +113,13 @@ class StaffSerializer(serializers.ModelSerializer):
             instance.user.last_name  = parts[1] if len(parts) > 1 else ''
 
         if role:
-            instance.user.role = role
+            # Only ADMIN can change roles
+            request = self.context.get('request')
+            if request and request.user.role == 'ADMIN':
+                instance.user.role = role
+            else:
+                # Silently ignore or you could raise an error. User asked to "allow only system admin to change"
+                pass
 
         instance.user.save()
         return super().update(instance, validated_data)
