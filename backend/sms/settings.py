@@ -225,7 +225,7 @@ if not DEBUG:
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = os.getenv('MAIL_SERVER') or os.getenv('EMAIL_HOST', 'smtp.gmail.com')
 EMAIL_PORT = int(os.getenv('MAIL_PORT') or os.getenv('EMAIL_PORT', 587))
-EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_USE_TLS = (os.getenv('MAIL_USE_TLS') or os.getenv('EMAIL_USE_TLS', 'True')) == 'True'
 EMAIL_HOST_USER = os.getenv('MAIL_USERNAME') or os.getenv('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.getenv('MAIL_PASSWORD') or os.getenv('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.getenv('MAIL_DEFAULT_SENDER') or os.getenv('DEFAULT_FROM_EMAIL', 'noreply@school.com')

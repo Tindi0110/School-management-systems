@@ -77,7 +77,9 @@ class PasswordResetRequestView(APIView):
             token = default_token_generator.make_token(user)
             uid   = urlsafe_base64_encode(force_bytes(user.pk))
             link  = f"{settings.FRONTEND_URL}/reset-password/{uid}/{token}"
-
+            
+            logger.info("Generating password reset link for %s", email)
+            
             body = (
                 f"Hello,\n\n"
                 f"You requested a password reset. Click the link below:\n\n"
@@ -85,12 +87,21 @@ class PasswordResetRequestView(APIView):
                 f"If you did not request this, you can ignore this email.\n\n"
                 f"— School Management System"
             )
-            _send_mail_safe('Password Reset Request — School Management System', body, email)
+            
+            status_sent = _send_mail_safe('Password Reset Request — School Management System', body, email)
 
-            return Response(
-                {'message': 'A reset link has been sent to your email.'},
-                status=status.HTTP_200_OK,
-            )
+            if status_sent:
+                logger.info("Email dispatch reported success for %s", email)
+                return Response(
+                    {'message': f'A reset link has been sent to {email}.'},
+                    status=status.HTTP_200_OK,
+                )
+            else:
+                logger.error("Email dispatch reported failure for %s", email)
+                return Response(
+                    {'error': 'Server error: Failed to dispatch email. Please contact support.'},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
 
         return Response(
             {'error': 'No account found with this email address.'},
