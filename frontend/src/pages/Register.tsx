@@ -165,6 +165,7 @@ const Register = () => {
                                         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                     </button>
                                 </div>
+                                <PasswordValidator password={formData.password} />
                             </div>
                             <div className="auth-input-group">
                                 <label className="label uppercase text-[10px] font-black mb-1">Confirm</label>
