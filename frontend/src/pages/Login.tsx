@@ -4,10 +4,10 @@ import { Link, useNavigate } from 'react-router-dom'
 import { setCredentials } from '../store/authSlice'
 import { authAPI } from '../api/api'
 import { useToast } from '../context/ToastContext'
-import { Lock, User, ArrowRight, School, Eye, EyeOff } from 'lucide-react'
+import { Lock, ArrowRight, School, Eye, EyeOff } from 'lucide-react'
 
 const Login = () => {
-  const [username, setUsername] = useState('')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -21,17 +21,17 @@ const Login = () => {
     setError('')
     setLoading(true)
     try {
-      const response = await authAPI.login({ username, password })
+      const response = await authAPI.login({ username: email, password })
       const token = response.data.token
-      const user = response.data.user || { username, role: 'GUEST' }
+      const user = response.data.user || { email, role: 'GUEST' }
 
       localStorage.setItem('token', token)
       dispatch(setCredentials({ user, token }))
-      success(`Welcome back, ${user.username || username}!`)
+      success(`Welcome back, ${user.first_name || email}!`)
       navigate('/')
     } catch (err: any) {
       console.error(err);
-      const msg = 'Invalid credentials. Please check your login details.';
+      const msg = err.response?.data?.error || 'Invalid credentials. Please check your login details.';
       setError(msg)
       errorToast(msg)
     } finally {
@@ -64,15 +64,15 @@ const Login = () => {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="auth-input-group">
-              <label className="label uppercase text-[10px] font-black mb-1">Username / Staff ID</label>
+              <label className="label uppercase text-[10px] font-black mb-1">Email Address</label>
               <div className="auth-input-wrapper">
-                <User size={18} className="auth-input-icon" />
+                <Lock size={18} className="auth-input-icon" />
                 <input
-                  type="text"
+                  type="email"
                   className="input auth-input-field"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Enter your ID"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email"
                   required
                 />
               </div>

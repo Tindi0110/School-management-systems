@@ -17,18 +17,27 @@ class User(AbstractUser):
         ('PARENT', 'Parent'),
         ('DRIVER', 'Driver'),
     )
+    email = models.EmailField(unique=True)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='STUDENT')
     supabase_id = models.UUIDField(null=True, blank=True, unique=True)
+    is_email_verified = models.BooleanField(default=False)
+    is_approved = models.BooleanField(default=False)
     
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username']
+
     def save(self, *args, **kwargs):
-        if self.is_superuser and not self.role == 'ADMIN':
-            self.role = 'ADMIN'
+        if self.is_superuser:
+            if not self.role == 'ADMIN':
+                self.role = 'ADMIN'
+            self.is_email_verified = True
+            self.is_approved = True
         super().save(*args, **kwargs)
     
     # Department could be a foreign key, but keeping it simple for now or referencing 'Staff' profile
     
     def __str__(self):
-        return f"{self.username} ({self.get_role_display()})"
+        return f"{self.email} ({self.get_role_display()})"
 
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -46,4 +55,3 @@ def sync_user_group(sender, instance, created, **kwargs):
         group, _ = Group.objects.get_or_create(name=group_name)
         instance.groups.clear()
         instance.groups.add(group)
-

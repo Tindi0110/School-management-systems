@@ -33,7 +33,7 @@ const Register = () => {
         setLoading(true);
         try {
             await authAPI.register(formData);
-            success("Registration Request Sent! Please contact admin for approval.", { duration: 5000 });
+            success("Registration successful! Please check your email for a verification link and wait for admin approval.", { duration: 8000 });
             setTimeout(() => {
                 navigate('/login');
                 setLoading(false);

@@ -9,12 +9,13 @@ User = settings.AUTH_USER_MODEL
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_staff_profile(sender, instance, created, **kwargs):
     """
-    Automatically create a Staff profile when a new User with a staff role is created.
+    Automatically create a Staff profile when a User with a staff role is approved.
     """
     if kwargs.get('raw'):
         return
 
-    if created:
+    # Trigger on creation (if already approved, e.g. superuser) OR when is_approved becomes True
+    if instance.is_approved:
         # Define roles that are considered staff
         STAFF_ROLES = [
             'TEACHER', 'PRINCIPAL', 'DEPUTY', 'DOS', 
@@ -23,7 +24,7 @@ def create_staff_profile(sender, instance, created, **kwargs):
         
         if instance.role in STAFF_ROLES:
             try:
-                # Check if profile already exists (paranoia check)
+                # Check if profile already exists
                 if not Staff.objects.filter(user=instance).exists():
                     Staff.objects.create(
                         user=instance,
@@ -31,6 +32,6 @@ def create_staff_profile(sender, instance, created, **kwargs):
                         employee_id=f"EMP-{instance.id:04d}", # Auto-generate ID (EMP-0001)
                         date_joined=instance.date_joined.date() if instance.date_joined else timezone.now().date()
                     )
-                    print(f"[Signal] Created Staff profile for {instance.username}")
+                    print(f"[Signal] Created Staff profile for {instance.email}")
             except Exception as e:
-                print(f"[Signal] Error creating Staff profile for {instance.username}: {e}")
+                print(f"[Signal] Error creating Staff profile for {instance.email}: {e}")

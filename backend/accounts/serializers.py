@@ -8,7 +8,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'role', 'is_staff', 'permissions']
+        fields = ['id', 'username', 'email', 'role', 'is_staff', 'is_approved', 'is_email_verified', 'permissions']
 
     def get_permissions(self, obj):
         # Synthetic permissions based on Role (Frontend Modules)
@@ -28,9 +28,8 @@ class UserSerializer(serializers.ModelSerializer):
             'PARENT': ['view_dashboard'],
         }
 
-        # Use role-defined permissions as the base (avoids get_all_permissions DB hit entirely)
+        # Use role-defined permissions as the base
         final_perms = role_permissions.get(obj.role, []).copy()
-            
         return list(set(final_perms))
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -43,13 +42,29 @@ class RegisterSerializer(serializers.ModelSerializer):
     
     def create(self, validated_data):
         full_name = validated_data.pop('full_name', '')
+        # Staff roles require approval, Students/Parents don't? 
+        # User requested: "new staff register to be required to verify emails... and be approved"
+        role = validated_data.get('role', 'STUDENT')
+        
+        STAFF_ROLES = [
+            'TEACHER', 'PRINCIPAL', 'DEPUTY', 'DOS', 
+            'REGISTRAR', 'ACCOUNTANT', 'NURSE', 'WARDEN', 'LIBRARIAN', 'ADMIN'
+        ]
+        
         user = User.objects.create_user(**validated_data)
+        
+        if role in STAFF_ROLES:
+            user.is_approved = False
+        else:
+            user.is_approved = True # Non-staff are auto-approved for now, or per user preference
+            
+        user.is_email_verified = False # All must verify email
         
         if full_name:
             names = full_name.split(' ', 1)
             user.first_name = names[0]
             if len(names) > 1:
                 user.last_name = names[1]
-            user.save()
-            
+        
+        user.save()
         return user
