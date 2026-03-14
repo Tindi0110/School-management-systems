@@ -17,3 +17,4 @@ urllib3
 django-filter
 argon2-cffi
 django-redis
+sentry-sdk

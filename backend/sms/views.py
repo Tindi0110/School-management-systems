@@ -29,8 +29,11 @@ class UserViewSet(viewsets.ModelViewSet):
     from rest_framework.permissions import IsAdminUser
     permission_classes = [IsAdminUser]
 
+from django.views.decorators.cache import cache_page
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@cache_page(60 * 15)
 def dashboard_stats(request):
     """
     Consolidated endpoint that returns all data needed for the initial dashboard load.

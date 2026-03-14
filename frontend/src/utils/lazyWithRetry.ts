@@ -2,8 +2,14 @@ import React from 'react';
 
 /**
  * A wrapper for React.lazy that handles chunk load failures.
- * This is common when a new version of the app is deployed and the 
- * user's browser is still trying to fetch old hashed asset files.
+ * This is essential for single-page applications during new deployments,
+ * where hashed asset files from previous builds may no longer be available on the server.
+ * 
+ * @param componentImport - A function that returns a dynamic import promise.
+ * @returns A lazy-loaded React component with built-in retry/refresh logic.
+ * 
+ * @example
+ * const Dashboard = lazyWithRetry(() => import('./pages/Dashboard'));
  */
 export const lazyWithRetry = (componentImport: () => Promise<any>) =>
     React.lazy(async () => {

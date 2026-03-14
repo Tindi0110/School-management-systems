@@ -1,4 +1,5 @@
 import axios from 'axios';
+import axiosRetry from 'axios-retry';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api';
 
@@ -8,6 +9,17 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+});
+
+// --- Network Resilience (Axios Retry) ---
+axiosRetry(api, {
+  retries: 3,
+  retryDelay: axiosRetry.exponentialDelay,
+  retryCondition: (error) => {
+    // Retry on 5xx errors or network errors
+    return axiosRetry.isNetworkOrIdempotentRequestError(error) || 
+           (error.response?.status ? error.response.status >= 500 : false);
+  }
 });
 
 // --- Fine-Grained In-Memory Cache Setup ---

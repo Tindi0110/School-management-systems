@@ -1,3 +1,13 @@
+/**
+ * Exports an array of objects to a CSV file.
+ * Handles nested objects by flattening them and ensures CSV safety (escaping quotes).
+ * 
+ * @param data - Array of objects to export.
+ * @param filename - Base name for the exported file (current date will be appended).
+ * 
+ * @example
+ * exportToCSV(students, 'student_registry');
+ */
 export const exportToCSV = (data: any[], filename: string) => {
     if (!data || data.length === 0) {
         alert("No data to export");
