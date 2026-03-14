@@ -47,8 +47,8 @@ def dashboard_stats(request):
     counts = {
         'total_students': Student.objects.count(), 
         'active_students': Student.objects.filter(status='ACTIVE').count(),
-        'boarder_count': Student.objects.filter(category='BOARDING').count(),
-        'day_scholar_count': Student.objects.filter(category='DAY').count(),
+        'boarder_count': Student.objects.filter(status='ACTIVE', category='BOARDING').count(),
+        'day_scholar_count': Student.objects.filter(status='ACTIVE', category='DAY').count(),
         'total_staff': Staff.objects.count(),
         'total_classes': Class.objects.count(),
         'pending_invoices': Invoice.objects.filter(balance__gt=0).count(),

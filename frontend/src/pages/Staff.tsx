@@ -21,6 +21,9 @@ const Staff = () => {
     const { confirm } = useConfirm();
     const [page, setPage] = useState(1);
     const [totalItems, setTotalItems] = useState(0);
+    const [departments, setDepartments] = useState<any[]>([]);
+    const [showDeptModal, setShowDeptModal] = useState(false);
+    const [newDeptName, setNewDeptName] = useState('');
     const pageSize = 50;
 
     const [formData, setFormData] = useState({
@@ -34,6 +37,7 @@ const Staff = () => {
 
     useEffect(() => {
         loadData();
+        loadDepartments();
     }, [page]);
 
     // Debounced search
@@ -59,6 +63,31 @@ const Staff = () => {
             console.error('Error loading staff:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const loadDepartments = async () => {
+        try {
+            const res = await staffAPI.departments.getAll();
+            setDepartments(res.data?.results ?? res.data ?? []);
+        } catch (error) {
+            console.error('Error loading departments:', error);
+        }
+    };
+
+    const handleCreateDept = async () => {
+        if (!newDeptName.trim()) return;
+        setIsSubmitting(true);
+        try {
+            await staffAPI.departments.create({ name: newDeptName });
+            toast.success('Department created successfully');
+            setNewDeptName('');
+            setShowDeptModal(false);
+            loadDepartments();
+        } catch (error: any) {
+            toast.error(error.message || 'Failed to create department');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -126,7 +155,7 @@ const Staff = () => {
             setFormData({
                 employee_id: member.employee_id,
                 full_name: member.full_name || '',
-                department: member.department,
+                department: member.department || '',
                 role: member.role || 'TEACHER',
                 qualifications: member.qualifications,
                 date_joined: member.date_joined || new Date().toISOString().split('T')[0],
@@ -173,7 +202,7 @@ const Staff = () => {
                                     <span className="text-[10px] font-bold text-secondary uppercase tracking-tight">ID: {member.employee_id}</span>
                                 </div>
                             </td>
-                            <td>{member.department || 'General'}</td>
+                            <td>{member.department_name || 'General'}</td>
                             <td><span className="badge badge-info">{member.role}</span></td>
                             <td>{new Date(member.date_joined).toLocaleDateString()}</td>
                             <td className="no-print">
@@ -195,7 +224,7 @@ const Staff = () => {
             if (groupBy === 'ROLE') {
                 key = member.role || 'Unassigned';
             } else if (groupBy === 'DEPARTMENT') {
-                key = member.department || 'General Administration';
+                key = member.department_name || 'General Administration';
             }
 
             if (!groups[key]) groups[key] = [];
@@ -307,8 +336,17 @@ const Staff = () => {
                             <input type="text" className="input" value={formData.full_name} onChange={(e) => setFormData({ ...formData, full_name: e.target.value })} required />
                         </div>
                         <div className="form-group">
-                            <label className="label">Department *</label>
-                            <input type="text" className="input" placeholder="e.g. Science, Administration" value={formData.department} onChange={(e) => setFormData({ ...formData, department: e.target.value })} required />
+                            <label className="label flex justify-between">
+                                <span>Department *</span>
+                                <button type="button" onClick={() => setShowDeptModal(true)} className="text-[10px] font-bold text-primary hover:underline">+ New Dept</button>
+                            </label>
+                            <SearchableSelect
+                                placeholder="Select Department"
+                                options={departments.map(d => ({ id: d.id.toString(), label: d.name }))}
+                                value={formData.department}
+                                onChange={(val) => setFormData({ ...formData, department: val.toString() })}
+                                required
+                            />
                         </div>
                         <div className="form-group">
                             <label className="label">Role *</label>
@@ -352,6 +390,40 @@ const Staff = () => {
                         </Button>
                     </div>
                 </form>
+            </Modal>
+
+            {/* Quick Add Department Modal */}
+            <Modal isOpen={showDeptModal} onClose={() => setShowDeptModal(false)} title="Add New Department" size="sm">
+                <div className="p-4 space-y-4">
+                    <div className="form-group">
+                        <label className="label">Department Name</label>
+                        <input 
+                            type="text" 
+                            className="input" 
+                            placeholder="Enter name..." 
+                            value={newDeptName} 
+                            onChange={(e) => setNewDeptName(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    handleCreateDept();
+                                }
+                            }}
+                        />
+                    </div>
+                    <div className="flex justify-end gap-2 text-sm pt-2">
+                        <Button variant="outline" size="sm" onClick={() => setShowDeptModal(false)}>Cancel</Button>
+                        <Button 
+                            variant="primary" 
+                            size="sm" 
+                            disabled={!newDeptName.trim()} 
+                            loading={isSubmitting}
+                            onClick={handleCreateDept}
+                        >
+                            Save Dept
+                        </Button>
+                    </div>
+                </div>
             </Modal>
 
         </div>

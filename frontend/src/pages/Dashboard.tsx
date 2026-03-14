@@ -8,9 +8,11 @@ import {
     Star, Award, Zap
 } from 'lucide-react';
 import { StatCard } from '../components/Card';
-import { statsAPI, staffAPI } from '../api/api';
+import { statsAPI, staffAPI, communicationAPI, academicsAPI } from '../api/api';
 import Modal from '../components/Modal';
 import { useToast } from '../context/ToastContext';
+import Button from '../components/common/Button';
+import PremiumDateInput from '../components/common/DatePicker';
 
 const Dashboard = () => {
     const { user } = useSelector((state: any) => state.auth);
@@ -33,6 +35,25 @@ const Dashboard = () => {
         role: 'TEACHER',
         date_joined: new Date().toISOString().split('T')[0],
     });
+
+    const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
+    const [alertFormData, setAlertFormData] = useState({
+        title: '',
+        message: '',
+        severity: 'INFO',
+        is_active: true
+    });
+
+    const [isEventModalOpen, setIsEventModalOpen] = useState(false);
+    const [eventFormData, setEventFormData] = useState({
+        title: '',
+        description: '',
+        date: new Date().toISOString().split('T')[0],
+        start_time: '08:00',
+        location: '',
+        event_type: 'GENERAL'
+    });
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const [activeAcademic, setActiveAcademic] = useState({ year: 'NO ACTIVE YEAR', term: 'NO ACTIVE TERM' });
 
@@ -82,6 +103,38 @@ const Dashboard = () => {
             console.error('Dashboard load error:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleAlertSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        try {
+            await communicationAPI.alerts.create(alertFormData);
+            setIsAlertModalOpen(false);
+            setAlertFormData({ title: '', message: '', severity: 'INFO', is_active: true });
+            loadDashboardData();
+            success("System alert posted successfully");
+        } catch (error: any) {
+            toastError(error.response?.data?.detail || 'Failed to post alert');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleEventSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        try {
+            await academicsAPI.events.create(eventFormData);
+            setIsEventModalOpen(false);
+            setEventFormData({ title: '', description: '', date: new Date().toISOString().split('T')[0], start_time: '08:00', location: '', event_type: 'GENERAL' });
+            loadDashboardData();
+            success("School event scheduled successfully");
+        } catch (error: any) {
+            toastError(error.response?.data?.detail || 'Failed to schedule event');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -217,7 +270,7 @@ const Dashboard = () => {
                             <h3 className="text-xs font-black uppercase tracking-widest text-secondary flex items-center gap-2">
                                 <Calendar size={16} /> Calendar Events
                             </h3>
-                            <button className="btn btn-xs btn-outline" onClick={() => navigate('/academics')}><Plus size={12} /></button>
+                            <button className="btn btn-xs btn-outline" onClick={() => setIsEventModalOpen(true)}><Plus size={12} /></button>
                         </div>
                         <div className="space-y-4">
                             {events.length === 0 ? (
@@ -247,7 +300,7 @@ const Dashboard = () => {
                             <h3 className="text-xs font-black uppercase tracking-widest text-secondary flex items-center gap-2">
                                 <Bell size={16} /> System Alerts
                             </h3>
-                            <button className="btn btn-xs btn-outline" onClick={() => navigate('/academics')}><Plus size={12} /></button>
+                            <button className="btn btn-xs btn-outline" onClick={() => setIsAlertModalOpen(true)}><Plus size={12} /></button>
                         </div>
                         <div className="space-y-4">
                             {alerts.length === 0 ? (
@@ -299,6 +352,66 @@ const Dashboard = () => {
                     </div>
                     <div className="pt-4">
                         <button type="submit" className="btn btn-primary w-full shadow-lg h-12">Submit Registration</button>
+                    </div>
+                </form>
+            </Modal>
+
+            {/* Alert Modal */}
+            <Modal isOpen={isAlertModalOpen} onClose={() => setIsAlertModalOpen(false)} title="Post System Alert" size="sm">
+                <form onSubmit={handleAlertSubmit} className="p-4 space-y-4">
+                    <div className="form-group">
+                        <label className="label">Alert Title</label>
+                        <input type="text" className="input" value={alertFormData.title} onChange={e => setAlertFormData({...alertFormData, title: e.target.value})} required />
+                    </div>
+                    <div className="form-group">
+                        <label className="label">Severity</label>
+                        <SearchableSelect 
+                            options={[
+                                { id: 'INFO', label: 'Info' },
+                                { id: 'WARNING', label: 'Warning' },
+                                { id: 'CRITICAL', label: 'Critical' },
+                                { id: 'SUCCESS', label: 'Success' }
+                            ]}
+                            value={alertFormData.severity}
+                            onChange={v => setAlertFormData({...alertFormData, severity: v.toString()})}
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label className="label">Message</label>
+                        <textarea className="textarea h-24" value={alertFormData.message} onChange={e => setAlertFormData({...alertFormData, message: e.target.value})} required />
+                    </div>
+                    <div className="modal-footer flex gap-2">
+                        <Button variant="ghost" className="flex-1" onClick={() => setIsAlertModalOpen(false)}>Cancel</Button>
+                        <Button type="submit" variant="primary" className="flex-1" loading={isSubmitting}>Post Alert</Button>
+                    </div>
+                </form>
+            </Modal>
+
+            {/* Event Modal */}
+            <Modal isOpen={isEventModalOpen} onClose={() => setIsEventModalOpen(false)} title="Schedule School Event">
+                <form onSubmit={handleEventSubmit} className="p-4 space-y-4 form-container-md mx-auto">
+                    <div className="form-group">
+                        <label className="label">Event Title</label>
+                        <input type="text" className="input" value={eventFormData.title} onChange={e => setEventFormData({...eventFormData, title: e.target.value})} required />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <PremiumDateInput label="Date" value={eventFormData.date} onChange={v => setEventFormData({...eventFormData, date: v})} required />
+                        <div className="form-group">
+                            <label className="label">Start Time</label>
+                            <input type="time" className="input" value={eventFormData.start_time} onChange={e => setEventFormData({...eventFormData, start_time: e.target.value})} />
+                        </div>
+                    </div>
+                    <div className="form-group">
+                        <label className="label">Location</label>
+                        <input type="text" className="input" placeholder="e.g. Main Hall" value={eventFormData.location} onChange={e => setEventFormData({...eventFormData, location: e.target.value})} />
+                    </div>
+                    <div className="form-group">
+                        <label className="label">Description</label>
+                        <textarea className="textarea h-24" value={eventFormData.description} onChange={e => setEventFormData({...eventFormData, description: e.target.value})} />
+                    </div>
+                    <div className="modal-footer flex gap-2">
+                        <Button variant="ghost" className="flex-1" onClick={() => setIsEventModalOpen(false)}>Cancel</Button>
+                        <Button type="submit" variant="primary" className="flex-1" loading={isSubmitting}>Schedule Event</Button>
                     </div>
                 </form>
             </Modal>

@@ -202,6 +202,12 @@ export const staffAPI = {
   update: (id: number, data: any) => api.put(`staff/${id}/`, data),
   delete: (id: number) => api.delete(`staff/${id}/`),
   sync: () => api.post('staff/sync_staff/'),
+  departments: {
+    getAll: () => api.get('departments/', ALL),
+    create: (data: { name: string, description?: string }) => api.post('departments/', data),
+    update: (id: number, data: any) => api.put(`departments/${id}/`, data),
+    delete: (id: number) => api.delete(`departments/${id}/`),
+  }
 };
 
 export const academicsAPI = {
@@ -524,6 +530,7 @@ export const communicationAPI = {
   alerts: {
     getAll: (params?: any) => api.get('alerts/', recentWith(params)),
     getActive: () => api.get('alerts/', recentWith({ is_active: true })),
+    create: (data: any) => api.post('alerts/', data),
   }
 };
 

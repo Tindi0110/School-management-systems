@@ -132,6 +132,41 @@ const HostelModals: React.FC<HostelModalsProps> = ({
                 </form>
             </Modal>
 
+            {/* View Rooms Modal */}
+            <Modal isOpen={isViewRoomsModalOpen} onClose={() => setIsViewRoomsModalOpen(false)} title={`Rooms in ${selectedHostel?.name}`}>
+                <div className="space-y-4">
+                    <div className="flex justify-between items-center bg-slate-50 p-3 rounded-lg border">
+                        <div className="text-xs font-bold uppercase text-secondary">Hostel: {selectedHostel?.name}</div>
+                        <Button variant="primary" size="sm" icon={<Plus size={14} />} onClick={() => openAddRoom(selectedHostel)}>Add Room</Button>
+                    </div>
+                    <div className="max-h-96 overflow-y-auto">
+                        <table className="table w-full table-compact">
+                            <thead><tr><th>No.</th><th>Type</th><th>Floor</th><th>Beds</th><th>Status</th><th>Actions</th></tr></thead>
+                            <tbody>
+                                {rooms.filter(r => String(r.hostel) === String(selectedHostel?.id)).map(r => (
+                                    <tr key={r.id} className="hover:bg-slate-50">
+                                        <td className="font-bold">#{r.room_number}</td>
+                                        <td>{r.room_type}</td>
+                                        <td>{r.floor}</td>
+                                        <td>{r.available_beds} / {r.capacity}</td>
+                                        <td><div className="flex items-center gap-1"><div className={`w-2 h-2 rounded-full ${r.available_beds > 0 ? 'bg-success' : 'bg-error'}`}></div><span className="text-[10px] uppercase font-bold text-secondary">{r.available_beds > 0 ? 'Available' : 'Full'}</span></div></td>
+                                        <td>
+                                            <div className="flex gap-2">
+                                                <button className="btn btn-ghost btn-xs text-primary" onClick={() => openEditRoom(r)}><Edit size={12} /></button>
+                                                <button className="btn btn-ghost btn-xs text-success" onClick={() => openViewResidents({ ...selectedHostel, roomFilter: r.id })}><Users size={12} /></button>
+                                                <button className="btn btn-ghost btn-xs text-error" onClick={() => handleDeleteRoom(r.id)}><Trash2 size={12} /></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                                {rooms.filter(r => String(r.hostel) === String(selectedHostel?.id)).length === 0 && <tr><td colSpan={6} className="text-center py-6 italic text-slate-400">No rooms added to this hostel</td></tr>}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div className="modal-action"><Button variant="ghost" onClick={() => setIsViewRoomsModalOpen(false)}>Close</Button></div>
+            </Modal>
+
             {/* Room Modal */}
             <Modal isOpen={isRoomModalOpen} onClose={() => setIsRoomModalOpen(false)} title={roomId ? "Edit Room" : "Add New Room"}>
                 <form onSubmit={handleRoomSubmit} className="space-y-4">
@@ -324,40 +359,6 @@ const HostelModals: React.FC<HostelModalsProps> = ({
                 <div className="modal-action"><Button variant="ghost" onClick={() => setIsViewResidentsModalOpen(false)}>Close</Button></div>
             </Modal>
 
-            {/* View Rooms Modal */}
-            <Modal isOpen={isViewRoomsModalOpen} onClose={() => setIsViewRoomsModalOpen(false)} title={`Rooms in ${selectedHostel?.name}`}>
-                <div className="space-y-4">
-                    <div className="flex justify-between items-center bg-slate-50 p-3 rounded-lg border">
-                        <div className="text-xs font-bold uppercase text-secondary">Hostel: {selectedHostel?.name}</div>
-                        <Button variant="primary" size="sm" icon={<Plus size={14} />} onClick={() => openAddRoom(selectedHostel)}>Add Room</Button>
-                    </div>
-                    <div className="max-h-96 overflow-y-auto">
-                        <table className="table w-full table-compact">
-                            <thead><tr><th>No.</th><th>Type</th><th>Floor</th><th>Beds</th><th>Status</th><th>Actions</th></tr></thead>
-                            <tbody>
-                                {rooms.filter(r => String(r.hostel) === String(selectedHostel?.id)).map(r => (
-                                    <tr key={r.id} className="hover:bg-slate-50">
-                                        <td className="font-bold">#{r.room_number}</td>
-                                        <td>{r.room_type}</td>
-                                        <td>{r.floor}</td>
-                                        <td>{r.available_beds} / {r.capacity}</td>
-                                        <td><div className="flex items-center gap-1"><div className={`w-2 h-2 rounded-full ${r.available_beds > 0 ? 'bg-success' : 'bg-error'}`}></div><span className="text-[10px] uppercase font-bold text-secondary">{r.available_beds > 0 ? 'Available' : 'Full'}</span></div></td>
-                                        <td>
-                                            <div className="flex gap-2">
-                                                <button className="btn btn-ghost btn-xs text-primary" onClick={() => openEditRoom(r)}><Edit size={12} /></button>
-                                                <button className="btn btn-ghost btn-xs text-success" onClick={() => openViewResidents({ ...selectedHostel, roomFilter: r.id })}><Users size={12} /></button>
-                                                <button className="btn btn-ghost btn-xs text-error" onClick={() => handleDeleteRoom(r.id)}><Trash2 size={12} /></button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                                {rooms.filter(r => String(r.hostel) === String(selectedHostel?.id)).length === 0 && <tr><td colSpan={6} className="text-center py-6 italic text-slate-400">No rooms added to this hostel</td></tr>}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <div className="modal-action"><Button variant="ghost" onClick={() => setIsViewRoomsModalOpen(false)}>Close</Button></div>
-            </Modal>
         </>
     );
 };

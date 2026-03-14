@@ -3,8 +3,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import IsAuthenticated
-from .models import Staff
-from .serializers import StaffSerializer
+from .models import Staff, Department
+from .serializers import StaffSerializer, DepartmentSerializer
 
 class StaffViewSet(viewsets.ModelViewSet):
     queryset = Staff.objects.select_related('user').all()
@@ -34,3 +34,10 @@ class StaffViewSet(viewsets.ModelViewSet):
             created_count += 1
             
         return Response({"detail": f"Successfully synced {created_count} staff members."}, status=status.HTTP_200_OK)
+
+class DepartmentViewSet(viewsets.ModelViewSet):
+    queryset = Department.objects.all()
+    serializer_class = DepartmentSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name']

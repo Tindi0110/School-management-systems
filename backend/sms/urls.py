@@ -7,7 +7,7 @@ from .views import (
     health_check, UserViewSet,
     dashboard_stats
 )
-from staff.views import StaffViewSet
+from staff.views import StaffViewSet, DepartmentViewSet
 from finance.views import (
     FeeStructureViewSet, InvoiceViewSet, PaymentViewSet, 
     AdjustmentViewSet, ExpenseViewSet
@@ -49,6 +49,7 @@ router = DefaultRouter()
 # Core
 router.register(r'users', UserViewSet)
 router.register(r'staff', StaffViewSet)
+router.register(r'departments', DepartmentViewSet)
 router.register(r'classes', ClassViewSet)
 router.register(r'subjects', SubjectViewSet)
 router.register(r'exams', ExamViewSet)

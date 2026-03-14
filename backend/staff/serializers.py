@@ -1,14 +1,21 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import Staff
+from .models import Staff, Department
 
 User = get_user_model()
+
+class DepartmentSerializer(serializers.ModelSerializer):
+    staff_count = serializers.IntegerField(source='staff_members.count', read_only=True)
+    class Meta:
+        model = Department
+        fields = ['id', 'name', 'description', 'staff_count', 'created_at']
 
 class StaffSerializer(serializers.ModelSerializer):
     full_name = serializers.SerializerMethodField()
     role = serializers.SerializerMethodField()
     email = serializers.SerializerMethodField()
     username = serializers.SerializerMethodField()
+    department_name = serializers.CharField(source='department.name', read_only=True)
     
     # Write-only fields for creation/update
     write_full_name = serializers.CharField(write_only=True, required=False)
@@ -17,8 +24,8 @@ class StaffSerializer(serializers.ModelSerializer):
     class Meta:
         model = Staff
         fields = [
-            'id', 'user', 'employee_id', 'department', 'qualifications', 
-            'date_joined', 'full_name', 'role', 'email', 'username',
+            'id', 'user', 'employee_id', 'department', 'department_name', 
+            'qualifications', 'date_joined', 'full_name', 'role', 'email', 'username',
             'write_full_name', 'write_role'
         ]
         read_only_fields = ['user']
