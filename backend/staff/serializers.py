@@ -1,88 +1,132 @@
+"""
+staff/serializers.py
+
+Serializers for Staff and Department models.
+Enforces unique email and phone constraints and keeps the linked
+User record in sync on create/update.
+"""
+
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
+
 from .models import Staff, Department
 
 User = get_user_model()
 
+
 class DepartmentSerializer(serializers.ModelSerializer):
+    """Department with staff head-count."""
+
     staff_count = serializers.IntegerField(source='staff_members.count', read_only=True)
+
     class Meta:
-        model = Department
+        model  = Department
         fields = ['id', 'name', 'description', 'staff_count', 'created_at']
 
+
 class StaffSerializer(serializers.ModelSerializer):
-    full_name = serializers.SerializerMethodField()
-    role = serializers.SerializerMethodField()
-    email = serializers.SerializerMethodField()
-    username = serializers.SerializerMethodField()
+    """
+    Full staff profile serializer.
+    Read-only computed fields: full_name, role, username.
+    Write-only helper fields: write_full_name, write_role.
+    """
+
+    # Read fields derived from the linked User
+    full_name       = serializers.SerializerMethodField()
+    role            = serializers.SerializerMethodField()
+    username        = serializers.SerializerMethodField()
     department_name = serializers.CharField(source='department.name', read_only=True)
-    
-    # Write-only fields for creation/update
-    write_full_name = serializers.CharField(write_only=True, required=False)
-    write_role = serializers.CharField(write_only=True, required=False)
+
+    # Write-only fields so callers can supply name and role without touching User directly
+    write_full_name = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    write_role      = serializers.CharField(write_only=True, required=False, default='TEACHER')
 
     class Meta:
-        model = Staff
+        model  = Staff
         fields = [
-            'id', 'user', 'employee_id', 'department', 'department_name', 
-            'qualifications', 'date_joined', 'full_name', 'role', 'email', 'username',
-            'write_full_name', 'write_role'
+            'id', 'user', 'employee_id', 'department', 'department_name',
+            'email', 'phone', 'qualifications', 'date_joined',
+            'full_name', 'role', 'username',
+            'write_full_name', 'write_role',
         ]
         read_only_fields = ['user']
 
-    def create(self, validated_data):
-        full_name = validated_data.pop('write_full_name', '')
-        role = validated_data.pop('write_role', 'TEACHER')
+    # ── Validation ─────────────────────────────────────────────────────────
+
+    def _check_unique_field(self, field: str, value: str, instance=None):
+        """Check that a value is unique in the Staff table, excluding the current instance."""
+        qs = Staff.objects.filter(**{field: value})
+        if instance:
+            qs = qs.exclude(pk=instance.pk)
+        if qs.exists():
+            raise serializers.ValidationError(
+                {field: f"A staff member with this {field} already exists."}
+            )
+
+    def validate(self, attrs):
+        instance = self.instance  # None on create, Staff object on update
+
+        email = attrs.get('email')
+        phone = attrs.get('phone')
+
+        if email:
+            self._check_unique_field('email', email, instance)
+        if phone:
+            self._check_unique_field('phone', phone, instance)
+
+        return attrs
+
+    # ── Create / Update ────────────────────────────────────────────────────
+
+    def create(self, validated_data: dict) -> Staff:
+        full_name   = validated_data.pop('write_full_name', '')
+        role        = validated_data.pop('write_role', 'TEACHER')
         employee_id = validated_data.get('employee_id')
-        
-        # Create user for the staff member
-        # Split full_name into first and last
-        name_parts = full_name.split(' ', 1)
-        first_name = name_parts[0]
-        last_name = name_parts[1] if len(name_parts) > 1 else ''
-        
+
+        parts      = full_name.split(' ', 1)
+        first_name = parts[0]
+        last_name  = parts[1] if len(parts) > 1 else ''
+
         user, created = User.objects.get_or_create(
             username=employee_id,
             defaults={
                 'first_name': first_name,
-                'last_name': last_name,
-                'role': role
-            }
+                'last_name':  last_name,
+                'role':       role,
+            },
         )
-        
+
         if created:
-            user.set_password('staff@123') # Default password
+            user.set_password('staff@123')  # Temporary default — user must change on first login
             user.save()
-            
+
         validated_data['user'] = user
         return super().create(validated_data)
 
-    def get_full_name(self, obj):
-        if not obj.user:
-            return "Unknown Staff"
-        full_name = obj.user.get_full_name().strip()
-        return full_name if full_name else obj.user.username
-
-    def get_role(self, obj):
-        return obj.user.role if obj.user else "N/A"
-
-    def get_email(self, obj):
-        return obj.user.email if obj.user else ""
-
-    def get_username(self, obj):
-        return obj.user.username if obj.user else ""
-
-    def update(self, instance, validated_data):
+    def update(self, instance: Staff, validated_data: dict) -> Staff:
         full_name = validated_data.pop('write_full_name', None)
-        role = validated_data.pop('write_role', None)
-        
+        role      = validated_data.pop('write_role', None)
+
         if full_name:
-            name_parts = full_name.split(' ', 1)
-            instance.user.first_name = name_parts[0]
-            instance.user.last_name = name_parts[1] if len(name_parts) > 1 else ''
-            
+            parts = full_name.split(' ', 1)
+            instance.user.first_name = parts[0]
+            instance.user.last_name  = parts[1] if len(parts) > 1 else ''
+
         if role:
             instance.user.role = role
-            
+
         instance.user.save()
         return super().update(instance, validated_data)
+
+    # ── Computed getters ───────────────────────────────────────────────────
+
+    def get_full_name(self, obj: Staff) -> str:
+        if not obj.user:
+            return 'Unknown'
+        return obj.user.get_full_name().strip() or obj.user.username
+
+    def get_role(self, obj: Staff) -> str:
+        return obj.user.role if obj.user else 'N/A'
+
+    def get_username(self, obj: Staff) -> str:
+        return obj.user.username if obj.user else ''
