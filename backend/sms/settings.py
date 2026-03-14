@@ -264,7 +264,7 @@ LOGGING = {
             'formatter': 'simple',
         },
         'file': {
-            'level': 'WARNING',
+            'level': 'INFO',
             'class': 'logging.FileHandler',
             'filename': os.path.join(BASE_DIR, 'django_errors.log'),
             'formatter': 'verbose',
