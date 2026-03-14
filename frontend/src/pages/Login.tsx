@@ -4,13 +4,14 @@ import { Link, useNavigate } from 'react-router-dom'
 import { setCredentials } from '../store/authSlice'
 import { authAPI } from '../api/api'
 import { useToast } from '../context/ToastContext'
-import { Lock, User, ArrowRight, School } from 'lucide-react'
+import { Lock, User, ArrowRight, School, Eye, EyeOff } from 'lucide-react'
 
 const Login = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const { success, error: errorToast } = useToast()
@@ -85,13 +86,20 @@ const Login = () => {
               <div className="auth-input-wrapper">
                 <Lock size={18} className="auth-input-icon" />
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   className="input auth-input-field"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-secondary hover:text-primary transition-colors"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
             </div>
 

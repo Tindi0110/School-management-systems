@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Mail, Lock as LockIcon, Shield, ArrowRight, School } from 'lucide-react';
+import { User, Mail, Lock as LockIcon, Shield, ArrowRight, School, Eye, EyeOff } from 'lucide-react';
 import { authAPI } from '../api/api';
 import { useToast } from '../context/ToastContext';
 import SearchableSelect from '../components/SearchableSelect';
@@ -18,6 +18,8 @@ const Register = () => {
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -158,20 +160,34 @@ const Register = () => {
                                 <label className="label uppercase text-[10px] font-black mb-1">Password</label>
                                 <div className="auth-input-wrapper">
                                     <LockIcon size={18} className="auth-input-icon" />
-                                    <input type="password" className="input auth-input-field"
+                                    <input type={showPassword ? "text" : "password"} className="input auth-input-field"
                                         placeholder="••••••"
                                         autoComplete="new-password"
                                         value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} required />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-secondary hover:text-primary transition-colors"
+                                    >
+                                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                    </button>
                                 </div>
                             </div>
                             <div className="auth-input-group">
                                 <label className="label uppercase text-[10px] font-black mb-1">Confirm</label>
                                 <div className="auth-input-wrapper">
                                     <LockIcon size={18} className="auth-input-icon" />
-                                    <input type="password" className="input auth-input-field"
+                                    <input type={showConfirmPassword ? "text" : "password"} className="input auth-input-field"
                                         placeholder="••••••"
                                         autoComplete="new-password"
                                         value={formData.confirm_password} onChange={e => setFormData({ ...formData, confirm_password: e.target.value })} required />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-secondary hover:text-primary transition-colors"
+                                    >
+                                        {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                    </button>
                                 </div>
                             </div>
                         </div>
