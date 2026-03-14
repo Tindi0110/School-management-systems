@@ -2,6 +2,15 @@
 
 from django.db import migrations, models
 
+def fix_emails(apps, schema_editor):
+    User = apps.get_model('accounts', 'User')
+    for user in User.objects.all():
+        if not user.email:
+            placeholder = f"{user.username}@placeholder.com"
+            if User.objects.filter(email=placeholder).exists():
+                placeholder = f"{user.username}.{user.id}@placeholder.com"
+            user.email = placeholder
+            user.save()
 
 class Migration(migrations.Migration):
 
@@ -20,6 +29,7 @@ class Migration(migrations.Migration):
             name='is_email_verified',
             field=models.BooleanField(default=False),
         ),
+        migrations.RunPython(fix_emails),
         migrations.AlterField(
             model_name='user',
             name='email',
