@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { Lock, CheckCircle, Eye, EyeOff, School } from 'lucide-react';
 import { authAPI } from '../api/api';
 import { useToast } from '../context/ToastContext';
+import PasswordValidator from '../components/PasswordValidator';
 
 const ResetPassword = () => {
     const { uid, token } = useParams();
@@ -20,6 +21,12 @@ const ResetPassword = () => {
 
         if (password !== confirmPassword) {
             errorToast("Passwords do not match");
+            return;
+        }
+
+        const passwordRegex = /^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
+        if (!passwordRegex.test(password)) {
+            errorToast("Password does not meet all security requirements.");
             return;
         }
 

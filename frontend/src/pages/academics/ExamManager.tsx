@@ -59,7 +59,7 @@ const ExamManager: React.FC<ExamManagerProps> = ({
                         </div>
 
                         <div className="mt-auto pt-6 border-t border-slate-100 flex justify-between items-center bg-white/50 backdrop-blur-sm">
-                            <span className="text-[9px] font-mono text-slate-400 font-bold uppercase tracking-widest">Modified: {exam.date_start ? new Date(exam.date_start).toLocaleDateString() : 'TBD'}</span>
+                            <span className="text-[9px] font-mono text-slate-400 font-bold uppercase tracking-widest">Started: {exam.date_started ? new Date(exam.date_started).toLocaleDateString() : 'TBD'}</span>
                             <div className="flex gap-1">
                                 <Button variant="ghost" size="sm" className="p-2 text-primary hover:bg-primary-light/10" onClick={() => openEditExam(exam)} icon={<Edit size={10} />} />
                                 <Button variant="ghost" size="sm" className="p-2 text-error hover:bg-error-light/10" onClick={() => handleDeleteExam(exam.id)} icon={<Trash2 size={10} />} />

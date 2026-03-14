@@ -96,7 +96,7 @@ class Exam(models.Model):
     grade_system = models.ForeignKey(GradeSystem, on_delete=models.SET_NULL, null=True, blank=True, help_text="Specific grading system for this exam")
     term = models.ForeignKey(Term, on_delete=models.PROTECT, related_name='exams')
     weighting = models.IntegerField(default=100, help_text="Percentage contribution to final term grade")
-    date_started = models.DateField()
+    date_started = models.DateField(default=timezone.now)
     is_active = models.BooleanField(default=True)
     is_locked = models.BooleanField(default=False) # For marks entry lockdown
 

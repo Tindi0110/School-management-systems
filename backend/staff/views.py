@@ -20,7 +20,12 @@ class StaffViewSet(viewsets.ModelViewSet):
                 {"detail": "Only System Admins can delete staff members."},
                 status=status.HTTP_403_FORBIDDEN
             )
-        return super().destroy(request, *args, **kwargs)
+        instance = self.get_object()
+        user = instance.user
+        response = super().destroy(request, *args, **kwargs)
+        if user:
+            user.delete() # Persistent deletion — removes User record so sync_staff won't bring it back
+        return response
 
     @action(detail=False, methods=['post'])
     def sync_staff(self, request):

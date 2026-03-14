@@ -4,6 +4,7 @@ import { User, Mail, Lock as LockIcon, Shield, ArrowRight, School, Eye, EyeOff }
 import { authAPI } from '../api/api';
 import { useToast } from '../context/ToastContext';
 import SearchableSelect from '../components/SearchableSelect';
+import PasswordValidator from '../components/PasswordValidator';
 
 const Register = () => {
     const navigate = useNavigate();
@@ -26,6 +27,12 @@ const Register = () => {
 
         if (formData.password !== formData.confirm_password) {
             setError("Passwords do not match!");
+            return;
+        }
+
+        const passwordRegex = /^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
+        if (!passwordRegex.test(formData.password)) {
+            setError("Password does not meet all security requirements.");
             return;
         }
 
