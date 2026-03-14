@@ -17,11 +17,10 @@ const ForgotPassword = () => {
         try {
             await authAPI.resetPassword(email);
             setSent(true);
-        } catch (err) {
+        } catch (err: any) {
             console.error(err);
-            setTimeout(() => {
-                setSent(true);
-            }, 1000);
+            const msg = err.response?.data?.error || "Failed to request reset. Please try again.";
+            setError(msg);
         } finally {
             setLoading(false);
         }

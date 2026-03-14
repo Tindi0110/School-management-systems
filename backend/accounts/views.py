@@ -97,10 +97,14 @@ class PasswordResetRequestView(APIView):
             )
             _send_mail_safe('Password Reset Request — School Management System', body, email)
 
-        # Always return 200 to prevent email enumeration attacks
+            return Response(
+                {'message': 'A reset link has been sent to your email.'},
+                status=status.HTTP_200_OK,
+            )
+
         return Response(
-            {'message': 'If an account with that email exists, a reset link has been sent.'},
-            status=status.HTTP_200_OK,
+            {'error': 'No account found with this email address.'},
+            status=status.HTTP_404_NOT_FOUND,
         )
 
 
