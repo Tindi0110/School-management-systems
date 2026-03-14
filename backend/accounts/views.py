@@ -1,133 +1,225 @@
+"""
+accounts/views.py
+
+Authentication and account management API views.
+Provides endpoints for login, registration, email verification,
+password reset, and staff approval workflow.
+"""
+
+import logging
+
+from django.conf import settings
+from django.contrib.auth import get_user_model, authenticate
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
+from django.utils.encoding import force_bytes, force_str
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+
 from rest_framework import generics, status
-from rest_framework.permissions import AllowAny, IsAdminUser
-from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
+from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.contrib.auth.tokens import default_token_generator
-from django.utils.encoding import force_bytes, force_str
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.core.mail import send_mail
-from django.conf import settings
+
 from .serializers import RegisterSerializer, UserSerializer
-from django.contrib.auth import get_user_model, authenticate
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def _decode_uid(uidb64: str):
+    """Decode a base64-encoded UID, returning the User or None."""
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        return User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        return None
+
+
+def _send_mail_safe(subject: str, body: str, recipient: str) -> bool:
+    """Send an email, returning True on success.  Logs but doesn't raise on failure."""
+    try:
+        send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [recipient])
+        return True
+    except Exception:
+        logger.exception("Failed to send email to %s (subject: %s)", recipient, subject)
+        return False
+
+
+# ---------------------------------------------------------------------------
+# Password Reset
+# ---------------------------------------------------------------------------
 
 class PasswordResetRequestView(APIView):
+    """Accept an email address and dispatch a password-reset link."""
+
     permission_classes = [AllowAny]
 
     def post(self, request):
-        email = request.data.get('email')
+        email = request.data.get('email', '').strip()
         if not email:
-            return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
-        
+            return Response({'error': 'Email is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
         user = User.objects.filter(email=email).first()
         if user:
             token = default_token_generator.make_token(user)
-            uid = urlsafe_base64_encode(force_bytes(user.pk))
-            reset_link = f"{settings.FRONTEND_URL}/reset-password/{uid}/{token}"
-            
-            try:
-                subject = 'Password Reset Request - School Management System'
-                message = f"Hello,\n\nClick the link below to reset your password:\n\n{reset_link}\n\nBest regards,\nSystem Administration"
-                send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email])
-            except Exception as e:
-                return Response({'error': 'Failed to send email'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-                
-        return Response({'message': 'If an account exists, a reset link has been sent.'}, status=status.HTTP_200_OK)
+            uid   = urlsafe_base64_encode(force_bytes(user.pk))
+            link  = f"{settings.FRONTEND_URL}/reset-password/{uid}/{token}"
+
+            body = (
+                f"Hello,\n\n"
+                f"You requested a password reset. Click the link below:\n\n"
+                f"{link}\n\n"
+                f"If you did not request this, you can ignore this email.\n\n"
+                f"— School Management System"
+            )
+            _send_mail_safe('Password Reset Request — School Management System', body, email)
+
+        # Always return 200 to prevent email enumeration attacks
+        return Response(
+            {'message': 'If an account with that email exists, a reset link has been sent.'},
+            status=status.HTTP_200_OK,
+        )
+
 
 class PasswordResetConfirmView(APIView):
+    """Validate a reset token and set the user's new password."""
+
     permission_classes = [AllowAny]
 
     def post(self, request, uidb64, token):
-        try:
-            uid = force_str(urlsafe_base64_decode(uidb64))
-            user = User.objects.get(pk=uid)
-        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-            user = None
+        user = _decode_uid(uidb64)
 
-        if user is not None and default_token_generator.check_token(user, token):
-            new_password = request.data.get('password')
-            if not new_password:
-                return Response({'error': 'Password is required'}, status=status.HTTP_400_BAD_REQUEST)
-            
-            user.set_password(new_password)
-            user.save()
-            return Response({'message': 'Password has been reset successfully.'}, status=status.HTTP_200_OK)
-        return Response({'error': 'Invalid token or User ID'}, status=status.HTTP_400_BAD_REQUEST)
+        if not user or not default_token_generator.check_token(user, token):
+            return Response({'error': 'Invalid or expired reset link.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        new_password = request.data.get('password', '').strip()
+        if not new_password:
+            return Response({'error': 'A new password is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.set_password(new_password)
+        user.save()
+        return Response({'message': 'Password reset successfully.'}, status=status.HTTP_200_OK)
+
+
+# ---------------------------------------------------------------------------
+# Email Verification
+# ---------------------------------------------------------------------------
 
 class VerifyEmailView(APIView):
+    """Mark a user's email as verified via a tokenised link."""
+
     permission_classes = [AllowAny]
 
     def get(self, request, uidb64, token):
-        try:
-            uid = force_str(urlsafe_base64_decode(uidb64))
-            user = User.objects.get(pk=uid)
-        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-            user = None
+        user = _decode_uid(uidb64)
 
-        if user is not None and default_token_generator.check_token(user, token):
-            user.is_email_verified = True
-            user.save()
-            return Response({'message': 'Email verified successfully!'}, status=status.HTTP_200_OK)
-        return Response({'error': 'Invalid verification link'}, status=status.HTTP_400_BAD_REQUEST)
+        if not user or not default_token_generator.check_token(user, token):
+            return Response({'error': 'Invalid or expired verification link.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.is_email_verified = True
+        user.save()
+        return Response({'message': 'Email verified successfully.'}, status=status.HTTP_200_OK)
+
+
+# ---------------------------------------------------------------------------
+# Authentication
+# ---------------------------------------------------------------------------
 
 class CustomAuthToken(ObtainAuthToken):
+    """
+    Token login endpoint.
+    Accepts email + password. Enforces email verification and
+    admin approval before issuing a token.
+    """
+
     def post(self, request, *args, **kwargs):
-        email = request.data.get('username') # DRF ObtainAuthToken uses 'username' field name by default in its internal logic if not subclassed carefully, but we can just use our own authenticate
-        password = request.data.get('password')
-        
-        user = authenticate(request, username=email, password=password) # Since USERNAME_FIELD is 'email', authenticate expects 'username' arg to be the email value
-        
+        email    = request.data.get('username', '').strip()  # 'username' kept for DRF client compatibility
+        password = request.data.get('password', '')
+
+        user = authenticate(request, username=email, password=password)
+
         if not user:
-            return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
-            
+            return Response({'error': 'Invalid email or password.'}, status=status.HTTP_401_UNAUTHORIZED)
+
         if not user.is_email_verified:
-            return Response({'error': 'Email not verified. Please check your inbox.'}, status=status.HTTP_403_FORBIDDEN)
-            
+            return Response(
+                {'error': 'Please verify your email before logging in.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         if not user.is_approved:
-            return Response({'error': 'Your account is pending administrator approval.'}, status=status.HTTP_403_FORBIDDEN)
-            
-        token, created = Token.objects.get_or_create(user=user)
-        user_serializer = UserSerializer(user)
+            return Response(
+                {'error': 'Your account is pending administrator approval.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        token, _ = Token.objects.get_or_create(user=user)
         return Response({
             'token': token.key,
-            'user': user_serializer.data
+            'user':  UserSerializer(user).data,
         })
 
+
+# ---------------------------------------------------------------------------
+# Registration
+# ---------------------------------------------------------------------------
+
 class RegisterView(generics.CreateAPIView):
-    queryset = User.objects.all()
-    serializer_class = RegisterSerializer
+    """
+    Register a new user account.
+    Sends an email verification link upon successful creation.
+    Staff accounts additionally require admin approval.
+    """
+
+    queryset           = User.objects.all()
+    serializer_class   = RegisterSerializer
     permission_classes = [AllowAny]
 
     def perform_create(self, serializer):
-        user = serializer.save()
-        # Send verification email
+        user  = serializer.save()
         token = default_token_generator.make_token(user)
-        uid = urlsafe_base64_encode(force_bytes(user.pk))
-        verify_link = f"{settings.FRONTEND_URL}/verify-email/{uid}/{token}"
-        
-        try:
-            subject = 'Verify Your Email - School Management System'
-            message = f"Hello,\n\nPlease verify your email by clicking the link below:\n\n{verify_link}\n\nThank you!"
-            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
-        except Exception:
-            pass # In production we should handle this, but here we don't block registration
+        uid   = urlsafe_base64_encode(force_bytes(user.pk))
+        link  = f"{settings.FRONTEND_URL}/verify-email/{uid}/{token}"
+
+        body = (
+            f"Hello {user.first_name or user.username},\n\n"
+            f"Please verify your email by clicking the link below:\n\n"
+            f"{link}\n\n"
+            f"— School Management System"
+        )
+        _send_mail_safe('Verify Your Email — School Management System', body, user.email)
+
+
+# ---------------------------------------------------------------------------
+# Staff Approval (Admin only)
+# ---------------------------------------------------------------------------
 
 class StaffApprovalView(APIView):
+    """
+    Admin endpoint to list and approve pending staff accounts.
+    GET  /api/auth/staff-approval/           → list pending users
+    POST /api/auth/staff-approval/<user_id>/ → approve a specific user
+    """
+
     permission_classes = [IsAdminUser]
 
     def get(self, request):
-        pending_users = User.objects.filter(is_approved=False, is_email_verified=True)
-        serializer = UserSerializer(pending_users, many=True)
-        return Response(serializer.data)
+        pending = User.objects.filter(is_approved=False, is_email_verified=True).order_by('date_joined')
+        return Response(UserSerializer(pending, many=True).data)
 
     def post(self, request, user_id):
         try:
             user = User.objects.get(id=user_id)
-            user.is_approved = True
-            user.save()
-            return Response({'message': f'User {user.email} approved successfully.'})
         except User.DoesNotExist:
-            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        user.is_approved = True
+        user.save()
+        logger.info("Admin %s approved account for %s", request.user.email, user.email)
+        return Response({'message': f'{user.email} has been approved.'})

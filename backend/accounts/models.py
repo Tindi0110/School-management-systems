@@ -1,57 +1,54 @@
+"""
+accounts/models.py
+
+Defines the custom User model for the School Management System.
+Uses email as the primary authentication field and includes
+role-based access control fields.
+"""
+
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+
 class User(AbstractUser):
-    ROLE_CHOICES = (
-        ('ADMIN', 'Admin'),
-        ('PRINCIPAL', 'Principal'),
-        ('DEPUTY', 'Deputy Principal'),
-        ('DOS', 'Director of Studies'),
-        ('REGISTRAR', 'Admissions Registrar'),
-        ('TEACHER', 'Teacher'),
-        ('WARDEN', 'Hostel Warden'),
-        ('NURSE', 'Nurse'),
-        ('ACCOUNTANT', 'Accountant'),
-        ('LIBRARIAN', 'Librarian'),
-        ('STUDENT', 'Student'),
-        ('PARENT', 'Parent'),
-        ('DRIVER', 'Driver'),
-    )
-    email = models.EmailField(unique=True)
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='STUDENT')
-    supabase_id = models.UUIDField(null=True, blank=True, unique=True)
+    """
+    Custom User model extending Django's AbstractUser.
+    - Email is used as the primary login identifier.
+    - Role determines module access across the system.
+    - Staff accounts require email verification and admin approval.
+    """
+
+    class Role(models.TextChoices):
+        ADMIN      = 'ADMIN',      'Administrator'
+        PRINCIPAL  = 'PRINCIPAL',  'Principal'
+        DEPUTY     = 'DEPUTY',     'Deputy Principal'
+        DOS        = 'DOS',        'Director of Studies'
+        REGISTRAR  = 'REGISTRAR',  'Admissions Registrar'
+        TEACHER    = 'TEACHER',    'Teacher'
+        WARDEN     = 'WARDEN',     'Hostel Warden'
+        NURSE      = 'NURSE',      'Nurse'
+        ACCOUNTANT = 'ACCOUNTANT', 'Accountant'
+        LIBRARIAN  = 'LIBRARIAN',  'Librarian'
+        STUDENT    = 'STUDENT',    'Student'
+        PARENT     = 'PARENT',     'Parent'
+        DRIVER     = 'DRIVER',     'Driver'
+
+    email           = models.EmailField(unique=True)
+    role            = models.CharField(max_length=20, choices=Role.choices, default=Role.STUDENT)
+    supabase_id     = models.UUIDField(null=True, blank=True, unique=True)
     is_email_verified = models.BooleanField(default=False)
-    is_approved = models.BooleanField(default=False)
-    
-    USERNAME_FIELD = 'email'
+    is_approved     = models.BooleanField(default=False)
+
+    USERNAME_FIELD  = 'email'
     REQUIRED_FIELDS = ['username']
 
     def save(self, *args, **kwargs):
+        """Superusers are automatically given admin role, verification, and approval."""
         if self.is_superuser:
-            if not self.role == 'ADMIN':
-                self.role = 'ADMIN'
+            self.role = User.Role.ADMIN
             self.is_email_verified = True
             self.is_approved = True
         super().save(*args, **kwargs)
-    
-    # Department could be a foreign key, but keeping it simple for now or referencing 'Staff' profile
-    
-    def __str__(self):
+
+    def __str__(self) -> str:
         return f"{self.email} ({self.get_role_display()})"
-
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-from django.contrib.auth.models import Group
-
-@receiver(post_save, sender=User)
-def sync_user_group(sender, instance, created, **kwargs):
-    """
-    Syncs the User's 'role' field with Django Groups.
-    If the User's role changes, their Group membership is updated.
-    """
-    if instance.role:
-        # Clear existing groups and add the new one based on role
-        group_name = instance.role
-        group, _ = Group.objects.get_or_create(name=group_name)
-        instance.groups.clear()
-        instance.groups.add(group)

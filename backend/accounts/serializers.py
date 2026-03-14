@@ -1,70 +1,91 @@
+"""
+accounts/serializers.py
+
+Serializers for user registration, authentication, and profile data.
+"""
+
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
+# Roles that require admin approval before gaining system access
+STAFF_ROLES = frozenset([
+    'TEACHER', 'PRINCIPAL', 'DEPUTY', 'DOS',
+    'REGISTRAR', 'ACCOUNTANT', 'NURSE', 'WARDEN', 'LIBRARIAN', 'ADMIN',
+])
+
+# Synthetic module-level permissions derived from each role
+ROLE_PERMISSIONS: dict[str, list[str]] = {
+    'ADMIN': [
+        'view_dashboard', 'view_academics', 'view_student', 'view_parent',
+        'view_staff', 'view_finance', 'view_hostel', 'view_library',
+        'view_medical', 'view_transport', 'view_audit', 'view_school_events',
+        'view_notifications', 'add_student', 'change_student', 'delete_student',
+        'add_parent', 'change_parent', 'delete_parent',
+        'add_timetable', 'change_timetable', 'delete_timetable',
+    ],
+    'PRINCIPAL': [
+        'view_dashboard', 'view_academics', 'view_student', 'view_parent',
+        'view_staff', 'view_finance', 'view_hostel', 'view_library',
+        'view_medical', 'view_transport',
+        'add_timetable', 'change_timetable', 'delete_timetable',
+    ],
+    'DEPUTY':     ['view_dashboard', 'view_academics', 'view_student', 'view_parent', 'view_staff'],
+    'DOS':        ['view_dashboard', 'view_academics', 'view_staff', 'view_library', 'view_timetable', 'add_timetable', 'change_timetable', 'delete_timetable'],
+    'REGISTRAR':  ['view_dashboard', 'view_student', 'add_student', 'change_student', 'view_parent', 'add_parent', 'change_parent', 'view_staff', 'view_hostel', 'view_transport'],
+    'TEACHER':    ['view_dashboard', 'view_academics', 'view_timetable'],
+    'ACCOUNTANT': ['view_dashboard', 'view_finance'],
+    'WARDEN':     ['view_dashboard', 'view_hostel', 'view_transport'],
+    'NURSE':      ['view_dashboard', 'view_medical'],
+    'LIBRARIAN':  ['view_dashboard', 'view_library'],
+    'STUDENT':    ['view_dashboard', 'view_timetable', 'view_academics'],
+    'PARENT':     ['view_dashboard'],
+    'ALUMNI':     ['view_dashboard'],
+}
+
+
 class UserSerializer(serializers.ModelSerializer):
+    """Read-only serializer for authenticated user profile and permissions."""
+
     permissions = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'role', 'is_staff', 'is_approved', 'is_email_verified', 'permissions']
+        fields = [
+            'id', 'username', 'email', 'role',
+            'is_staff', 'is_approved', 'is_email_verified', 'permissions',
+        ]
 
-    def get_permissions(self, obj):
-        # Synthetic permissions based on Role (Frontend Modules)
-        role_permissions = {
-            'ADMIN': ['view_dashboard', 'view_academics', 'view_student', 'view_parent', 'view_staff', 'view_finance', 'view_hostel', 'view_library', 'view_medical', 'view_transport', 'view_audit', 'view_school_events', 'view_notifications', 'add_student', 'change_student', 'delete_student', 'add_parent', 'change_parent', 'delete_parent', 'add_timetable', 'change_timetable', 'delete_timetable'],
-            'PRINCIPAL': ['view_dashboard', 'view_academics', 'view_student', 'view_parent', 'view_staff', 'view_finance', 'view_hostel', 'view_library', 'view_medical', 'view_transport', 'add_timetable', 'change_timetable', 'delete_timetable'],
-            'DEPUTY': ['view_dashboard', 'view_academics', 'view_student', 'view_parent', 'view_staff'],
-            'DOS': ['view_dashboard', 'view_academics', 'view_staff', 'view_library', 'view_timetable', 'add_timetable', 'change_timetable', 'delete_timetable'],
-            'REGISTRAR': ['view_dashboard', 'view_student', 'add_student', 'change_student', 'view_parent', 'add_parent', 'change_parent', 'view_staff', 'view_hostel', 'view_transport'],
-            'TEACHER': ['view_dashboard', 'view_academics', 'view_timetable'],
-            'ACCOUNTANT': ['view_dashboard', 'view_finance'],
-            'WARDEN': ['view_dashboard', 'view_hostel', 'view_transport'],
-            'NURSE': ['view_dashboard', 'view_medical'],
-            'LIBRARIAN': ['view_dashboard', 'view_library'],
-            'ALUMNI': ['view_dashboard'],
-            'STUDENT': ['view_dashboard', 'view_timetable', 'view_academics'],
-            'PARENT': ['view_dashboard'],
-        }
+    def get_permissions(self, obj: User) -> list[str]:
+        """Returns a deduplicated list of module permissions for the user's role."""
+        return list(set(ROLE_PERMISSIONS.get(obj.role, [])))
 
-        # Use role-defined permissions as the base
-        final_perms = role_permissions.get(obj.role, []).copy()
-        return list(set(final_perms))
 
 class RegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)
-    full_name = serializers.CharField(write_only=True, required=False)
+    """Serializer for new user registration."""
+
+    password  = serializers.CharField(write_only=True, min_length=8)
+    full_name = serializers.CharField(write_only=True, required=False, allow_blank=True)
 
     class Meta:
         model = User
         fields = ['username', 'email', 'password', 'role', 'full_name']
-    
-    def create(self, validated_data):
+
+    def create(self, validated_data: dict) -> User:
         full_name = validated_data.pop('full_name', '')
-        # Staff roles require approval, Students/Parents don't? 
-        # User requested: "new staff register to be required to verify emails... and be approved"
         role = validated_data.get('role', 'STUDENT')
-        
-        STAFF_ROLES = [
-            'TEACHER', 'PRINCIPAL', 'DEPUTY', 'DOS', 
-            'REGISTRAR', 'ACCOUNTANT', 'NURSE', 'WARDEN', 'LIBRARIAN', 'ADMIN'
-        ]
-        
+
         user = User.objects.create_user(**validated_data)
-        
-        if role in STAFF_ROLES:
-            user.is_approved = False
-        else:
-            user.is_approved = True # Non-staff are auto-approved for now, or per user preference
-            
-        user.is_email_verified = False # All must verify email
-        
+
+        # Staff roles require admin approval; all others are auto-approved
+        user.is_approved = role not in STAFF_ROLES
+        user.is_email_verified = False  # All accounts must verify email on registration
+
         if full_name:
-            names = full_name.split(' ', 1)
-            user.first_name = names[0]
-            if len(names) > 1:
-                user.last_name = names[1]
-        
+            parts = full_name.split(' ', 1)
+            user.first_name = parts[0]
+            user.last_name = parts[1] if len(parts) > 1 else ''
+
         user.save()
         return user
