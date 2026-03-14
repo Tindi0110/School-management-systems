@@ -449,20 +449,22 @@ const Academics = () => {
     };
 
     // --- ResourceManager Handlers ---
-    const handleSetActiveYear = async (year: any) => {
+    const handleToggleYear = async (year: any) => {
         try {
-            await academicsAPI.years.patch(year.id, { is_active: true });
-            success(`${year.name} set as active year`);
+            const newStatus = !year.is_active;
+            await academicsAPI.years.patch(year.id, { is_active: newStatus });
+            success(`${year.name} ${newStatus ? 'activated' : 'deactivated'}`);
             loadAllAcademicData();
-        } catch (e: any) { toastError(e.message || 'Failed to set active year'); }
+        } catch (e: any) { toastError(e.message || 'Failed to update year status'); }
     };
 
-    const handleSetActiveTerm = async (term: any) => {
+    const handleToggleTerm = async (term: any) => {
         try {
-            await academicsAPI.terms.patch(term.id, { is_active: true });
-            success(`${term.name} set as active term`);
+            const newStatus = !term.is_active;
+            await academicsAPI.terms.patch(term.id, { is_active: newStatus });
+            success(`${term.name} ${newStatus ? 'activated' : 'deactivated'}`);
             loadAllAcademicData();
-        } catch (e: any) { toastError(e.message || 'Failed to set active term'); }
+        } catch (e: any) { toastError(e.message || 'Failed to update term status'); }
     };
 
     const openEditYear = (year: any) => {
@@ -1178,8 +1180,8 @@ const Academics = () => {
                     setSelectedSystem={setSelectedSystem}
                     setBoundaryForm={setBoundaryForm}
                     setIsGradeModalOpen={setIsGradeModalOpen}
-                    handleSetActiveYear={handleSetActiveYear}
-                    handleSetActiveTerm={handleSetActiveTerm}
+                    handleToggleYear={handleToggleYear}
+                    handleToggleTerm={handleToggleTerm}
                     openEditYear={openEditYear}
                     handleDeleteYear={handleDeleteYear}
                     setIsYearModalOpen={setIsYearModalOpen}

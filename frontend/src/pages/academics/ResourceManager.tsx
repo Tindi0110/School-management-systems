@@ -10,8 +10,8 @@ interface ResourceManagerProps {
     setSelectedSystem: (val: any) => void;
     setBoundaryForm: (val: any) => void;
     setIsGradeModalOpen: (val: boolean) => void;
-    handleSetActiveYear: (year: any) => void;
-    handleSetActiveTerm: (term: any) => void;
+    handleToggleYear: (year: any) => void;
+    handleToggleTerm: (term: any) => void;
     openEditYear: (year: any) => void;
     handleDeleteYear: (id: number) => void;
     setIsYearModalOpen: (val: boolean) => void;
@@ -36,8 +36,8 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
     setSelectedSystem,
     setBoundaryForm,
     setIsGradeModalOpen,
-    handleSetActiveYear,
-    handleSetActiveTerm,
+    handleToggleYear,
+    handleToggleTerm,
     openEditYear,
     handleDeleteYear,
     setIsYearModalOpen,
@@ -177,8 +177,8 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
                                     <div className="flex items-center gap-3">
                                         <button
                                             className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all ${y.is_active ? 'bg-success text-white shadow-lg shadow-success/30' : 'bg-slate-100 text-slate-400 hover:bg-success/10 hover:text-success'}`}
-                                            onClick={() => handleSetActiveYear(y)}
-                                            title={y.is_active ? "This is the CURRENT Active Cycle" : "Click to set as Active Cycle"}
+                                            onClick={() => handleToggleYear(y)}
+                                            title={y.is_active ? "Current Active Cycle. Click to deactivate." : "Click to set as Active Cycle"}
                                         >
                                             {y.is_active ? <CheckSquare size={18} /> : null}
                                         </button>
@@ -203,8 +203,8 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
                                             <div className="flex items-center gap-2">
                                                 <button
                                                     className={`transition-colors ${t.is_active ? 'text-success' : 'text-slate-300 hover:text-primary'}`}
-                                                    onClick={() => handleSetActiveTerm(t)}
-                                                    title={t.is_active ? "Current Active Term" : "Set as Active"}
+                                                    onClick={() => handleToggleTerm(t)}
+                                                    title={t.is_active ? "Current Active Term. Click to deactivate." : "Set as Active"}
                                                 >
                                                     {t.is_active ? <CheckSquare size={14} /> : null}
                                                 </button>
