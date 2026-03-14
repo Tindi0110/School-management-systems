@@ -363,6 +363,7 @@ const Dashboard = () => {
                         </div>
                     </div>
                 </div>
+            </div>
             )}
 
             {/* Faculty Modal */}
@@ -460,7 +461,7 @@ const Dashboard = () => {
                     </div>
                 </form>
             </Modal>
-        </div >
+        </div>
     );
 };
 
