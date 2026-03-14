@@ -83,6 +83,7 @@ const ResetPassword = () => {
                                             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                         </button>
                                     </div>
+                                    <PasswordValidator password={password} />
                                 </div>
 
                                 <div className="auth-input-group">
