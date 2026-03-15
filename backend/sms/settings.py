@@ -125,8 +125,8 @@ else:
 # Password Hashers for Login Optimization
 # https://docs.djangoproject.com/en/6.0/topics/auth/passwords/#how-django-stores-passwords
 PASSWORD_HASHERS = [
-    'django.contrib.auth.hashers.Argon2PasswordHasher',
     'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+    'django.contrib.auth.hashers.Argon2PasswordHasher',
     'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
     'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
 ]
@@ -273,7 +273,7 @@ LOGGING = {
             'formatter': 'simple',
         },
         'file': {
-            'level': 'INFO',
+            'level': 'ERROR',
             'class': 'logging.FileHandler',
             'filename': os.path.join(BASE_DIR, 'django_errors.log'),
             'formatter': 'verbose',

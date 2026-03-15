@@ -22,23 +22,26 @@ class AuditMiddleware(MiddlewareMixin):
                     entity = path_parts[1].capitalize() if len(path_parts) > 1 else "Unknown"
                     
                     action = request.method
-                    
-                    # details = {}
-                    # if request.body:
-                    #     try:
-                    #         details = json.loads(request.body)
-                    #     except:
-                    #         details = {"error": "Could not parse request body"}
-                    
-                    AuditLog.objects.create(
-                        user=user,
-                        action=action,
-                        entity=entity,
-                        details=f"Path: {request.path}", # Keep it simple for now to avoid large blobs
-                        ip_address=self.get_client_ip(request)
-                    )
+                    ip_address = self.get_client_ip(request)
+                    path = request.path
+
+                    # Perform the creation in a background thread
+                    import threading
+                    def log_change():
+                        try:
+                            AuditLog.objects.create(
+                                user=user,
+                                action=action,
+                                entity=entity,
+                                details=f"Path: {path}",
+                                ip_address=ip_address
+                            )
+                        except Exception as e:
+                            logger.error(f"Async Audit Logging Error: {str(e)}")
+
+                    threading.Thread(target=log_change, daemon=True).start()
                 except Exception as e:
-                    logger.error(f"AuditMiddleware Login Error: {str(e)}")
+                    logger.error(f"AuditMiddleware Setup Error: {str(e)}")
         
         return response
 

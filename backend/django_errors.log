@@ -82,3 +82,5 @@ INFO 2026-03-16 00:25:23,312 autoreload 1320 8768 C:\Users\Evans\School manageme
 INFO 2026-03-16 00:25:23,427 autoreload 8292 3440 C:\Users\Evans\School management system\backend\accounts\urls.py changed, reloading.
 INFO 2026-03-16 00:25:27,485 autoreload 6972 19340 Watching for file changes with StatReloader
 
+INFO 2026-03-16 01:18:56,343 autoreload 13236 13064 C:\Users\Evans\School management system\backend\audit\middleware.py changed, reloading.
+INFO 2026-03-16 01:18:56,379 autoreload 6972 19340 C:\Users\Evans\School management system\backend\audit\middleware.py changed, reloading.
