@@ -17,17 +17,18 @@ class Command(BaseCommand):
         self.stdout.write(f"Using EMAIL_USE_TLS: {settings.EMAIL_USE_TLS}")
         self.stdout.write(f"Using DEFAULT_FROM_EMAIL: {settings.DEFAULT_FROM_EMAIL}")
 
-        try:
-            send_mail(
-                'Test Email - School Management System',
-                'If you are reading this, your SMTP settings are working correctly!',
-                settings.DEFAULT_FROM_EMAIL,
-                [recipient],
-                fail_silently=False,
-            )
+        from sms.mail import EmailService
+        
+        success, message = EmailService.send_sync(
+            'Test Email - School Management System',
+            'If you are reading this, your SMTP settings are working correctly!',
+            recipient
+        )
+
+        if success:
             self.stdout.write(self.style.SUCCESS(f"Successfully sent test email to {recipient}"))
-        except Exception as e:
-            self.stdout.write(self.style.ERROR(f"Failed to send email: {str(e)}"))
+        else:
+            self.stdout.write(self.style.ERROR(f"Failed to send email: {message}"))
             self.stdout.write(self.style.ERROR("Traceback:"))
             self.stdout.write(traceback.format_exc())
             self.stdout.write(self.style.WARNING("\nSuggestions:"))

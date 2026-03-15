@@ -46,23 +46,14 @@ def send_sms(phone_number, message):
         logger.error(f"Failed to send SMS to {phone_number}: {str(e)}")
         return False, str(e)
 
+from sms.mail import EmailService
+
 def send_email(recipient_email, subject, message):
     """
-    Sends an Email using Django's built-in mail system.
+    Sends an Email using the unified EmailService.
     """
-    try:
-        send_mail(
-            subject,
-            message,
-            settings.DEFAULT_FROM_EMAIL,
-            [recipient_email],
-            fail_silently=False,
-        )
-        logger.info(f"Email sent to {recipient_email}")
-        return True, "Sent"
-    except Exception as e:
-        logger.error(f"Failed to send Email to {recipient_email}: {str(e)}")
-        return False, str(e)
+    EmailService.send_async(subject, message, recipient_email)
+    return True, "Email queued for sending"
 
 def send_whatsapp(phone_number, message):
     """

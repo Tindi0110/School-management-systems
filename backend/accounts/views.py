@@ -12,8 +12,8 @@ import os
 from django.conf import settings
 from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.tokens import default_token_generator
-from django.core.mail import send_mail
 from django.utils.encoding import force_bytes, force_str
+from sms.mail import EmailService
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 
 from rest_framework import generics, status
@@ -42,21 +42,6 @@ def _decode_uid(uidb64: str):
         return None
 
 
-import threading
-
-def _send_mail_safe(subject: str, body: str, recipient: str) -> bool:
-    """
-    Send an email synchronously for debugging.
-    Raises exception to be caught by the caller if it fails.
-    """
-    logger.info("Starting synchronous email send for %s", recipient)
-    try:
-        send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [recipient], fail_silently=False)
-        logger.info("send_mail completed for %s", recipient)
-        return True
-    except Exception as e:
-        logger.exception("Failed to send email to %s (subject: %s)", recipient, subject)
-        raise e # Raise to be caught by the view for diagnostic reporting
 
 
 # ---------------------------------------------------------------------------
@@ -90,7 +75,7 @@ class PasswordResetRequestView(APIView):
             )
             
             try:
-                _send_mail_safe('Password Reset Request — School Management System', body, email)
+                EmailService.send_async('Password Reset Request — School Management System', body, email)
                 logger.info("Email dispatch reported success for %s", email)
                 return Response(
                     {'message': f'A reset link has been sent to {email}.'},
@@ -215,14 +200,7 @@ class RegisterView(generics.CreateAPIView):
             f"{link}\n\n"
             f"— School Management System"
         )
-        
-        def send_async():
-            try:
-                _send_mail_safe('Verify Your Email — School Management System', body, user.email)
-            except Exception as e:
-                logger.error("Async verification email failed for %s: %s", user.email, str(e))
-
-        threading.Thread(target=send_async, daemon=True).start()
+        EmailService.send_async('Verify Your Email — School Management System', body, user.email)
 
 
 # ---------------------------------------------------------------------------
