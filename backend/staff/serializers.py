@@ -10,6 +10,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.conf import settings
 from sms.mail import EmailService
+from .models import Staff, Department
 
 User = get_user_model()
 

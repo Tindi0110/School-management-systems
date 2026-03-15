@@ -73,6 +73,14 @@ class RegisterSerializer(serializers.ModelSerializer):
         model = User
         fields = ['username', 'email', 'password', 'role', 'full_name']
 
+    def to_internal_value(self, data):
+        # DRF UniqueValidator checks the username field before create() is called.
+        # We need to ensure username is populated with email so it validates correctly.
+        _data = data.copy() if hasattr(data, 'copy') else data
+        if not _data.get('username') and _data.get('email'):
+            _data['username'] = _data.get('email')
+        return super().to_internal_value(_data)
+
     def create(self, validated_data: dict) -> User:
         full_name = validated_data.pop('full_name', '')
         role = validated_data.get('role', 'STUDENT')

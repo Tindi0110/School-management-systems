@@ -1,3 +1,42 @@
 ERROR 2026-03-15 19:52:42,806 mail 7560 19440 Sync email failure to tinditechnologies@gmail.com: Connection unexpectedly closed
 INFO 2026-03-15 22:54:28,411 mail 6976 3596 Email thread started for: tinditechnologies@gmail.com
 INFO 2026-03-15 22:54:32,401 mail 6976 3596 Successfully sent email to: tinditechnologies@gmail.com
+INFO 2026-03-15 23:10:17,340 mail 1128 11968 Email thread started for: tinditechnologies+staff1@gmail.com
+INFO 2026-03-15 23:10:21,865 mail 1128 11968 Successfully sent email to: tinditechnologies+staff1@gmail.com
+ERROR 2026-03-15 23:12:28,456 log 14768 10920 Invalid HTTP_HOST header: 'testserver'. You may need to add 'testserver' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\Evans\School management system\backend\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Evans\School management system\backend\venv\Lib\site-packages\django\utils\deprecation.py", line 308, in __call__
+    response = self.process_request(request)
+  File "C:\Users\Evans\School management system\backend\venv\Lib\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "C:\Users\Evans\School management system\backend\venv\Lib\site-packages\django\http\request.py", line 205, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'testserver'. You may need to add 'testserver' to ALLOWED_HOSTS.
+ERROR 2026-03-15 23:14:12,385 log 8336 11540 Invalid HTTP_HOST header: 'testserver'. You may need to add 'testserver' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\Evans\School management system\backend\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Evans\School management system\backend\venv\Lib\site-packages\django\utils\deprecation.py", line 308, in __call__
+    response = self.process_request(request)
+  File "C:\Users\Evans\School management system\backend\venv\Lib\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "C:\Users\Evans\School management system\backend\venv\Lib\site-packages\django\http\request.py", line 205, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'testserver'. You may need to add 'testserver' to ALLOWED_HOSTS.
+ERROR 2026-03-15 23:16:13,750 log 2136 3660 Invalid HTTP_HOST header: 'testserver'. You may need to add 'testserver' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\Evans\School management system\backend\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Evans\School management system\backend\venv\Lib\site-packages\django\utils\deprecation.py", line 308, in __call__
+    response = self.process_request(request)
+  File "C:\Users\Evans\School management system\backend\venv\Lib\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "C:\Users\Evans\School management system\backend\venv\Lib\site-packages\django\http\request.py", line 205, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'testserver'. You may need to add 'testserver' to ALLOWED_HOSTS.
+INFO 2026-03-15 23:20:01,312 autoreload 4640 8024 Watching for file changes with StatReloader
+INFO 2026-03-15 23:20:51,924 mail 4640 12824 Email thread started for: tinditechnologies+staff4@gmail.com
+INFO 2026-03-15 23:20:52,284 log 4640 2476 "POST /api/auth/register/ HTTP/1.1" 201 111
+INFO 2026-03-15 23:20:54,702 mail 4640 12824 Successfully sent email to: tinditechnologies+staff4@gmail.com
