@@ -375,8 +375,7 @@ class ExpenseViewSet(viewsets.ModelViewSet):
                 maintenance.status = 'COMPLETED'
                 maintenance.save(update_fields=['status'])
             except Exception as e:
-                import logging
-                logging.getLogger(__name__).error(f"Origin feedback error: {e}")
+                logger.error(f"Origin feedback error: {e}")
 
         return Response({'message': 'Expense approved successfully', 'status': expense.status})
 
@@ -390,7 +389,6 @@ class ExpenseViewSet(viewsets.ModelViewSet):
         expense.approved_by = request.user
         expense.save(update_fields=['status', 'approved_by'])
 
-        # Explicit Origin Feedback
         if expense.origin_model == 'transport.VehicleMaintenance' and expense.origin_id:
             try:
                 from transport.models import VehicleMaintenance
@@ -398,7 +396,6 @@ class ExpenseViewSet(viewsets.ModelViewSet):
                 maintenance.status = 'IN_PROGRESS' # Revert to generic open state
                 maintenance.save(update_fields=['status'])
             except Exception as e:
-                import logging
-                logging.getLogger(__name__).error(f"Origin feedback error: {e}")
+                logger.error(f"Origin feedback error: {e}")
 
         return Response({'message': 'Expense declined successfully', 'status': expense.status})

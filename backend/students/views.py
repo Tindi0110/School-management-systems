@@ -9,7 +9,6 @@ from .models import (
 from django.db import transaction
 from django.db.models import Sum, Value, DecimalField, Count, Q, Avg, OuterRef, Subquery
 from django.db.models.functions import Coalesce
-from academics.models import Attendance, StudentResult, AcademicYear, Term
 from finance.models import Invoice
 from .serializers import (
     StudentSerializer, ParentSerializer, StudentAdmissionSerializer,

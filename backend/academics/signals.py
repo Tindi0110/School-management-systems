@@ -6,6 +6,7 @@ from students.models import Student
 from staff.models import Staff
 from finance.models import Invoice
 from communication.models import SystemAlert, SchoolEvent
+from finance.utils import get_or_create_invoice
 
 DASHBOARD_CACHE_KEY = 'dashboard_stats_data'
 
