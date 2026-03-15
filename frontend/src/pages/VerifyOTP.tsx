@@ -147,7 +147,7 @@ const VerifyOTP = () => {
           </div>
 
           <form onSubmit={onSubmit} className="space-y-8">
-            <div className="flex justify-center gap-3 mx-auto" onPaste={handlePaste}>
+            <div className="flex justify-center gap-2 w-full" onPaste={handlePaste}>
               {otp.map((digit, index) => (
                 <input
                   key={index}
@@ -161,7 +161,8 @@ const VerifyOTP = () => {
                   onChange={(e) => handleChange(index, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(index, e)}
                   disabled={loading}
-                  className="w-3 h-12 text-center text-xl font-bold text-gray-800 bg-white border border-gray-200 rounded-xl shadow-sm focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none disabled:opacity-50 disabled:bg-gray-50"
+                  className="text-center text-xl font-bold text-gray-800 bg-white border border-gray-200 rounded-lg shadow-sm focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none disabled:opacity-50 disabled:bg-gray-50"
+                  style={{ width: '40px', height: '40px', padding: '0', minWidth: '40px' }}
                   aria-label={`Digit ${index + 1}`}
                 />
               ))}
