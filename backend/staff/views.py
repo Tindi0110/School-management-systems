@@ -38,13 +38,24 @@ class StaffViewSet(viewsets.ModelViewSet):
         
         users_without_profile = User.objects.filter(role__in=staff_roles).exclude(staff_profile__isnull=False)
         created_count = 0
+        errors = []
+        
         for user in users_without_profile:
-            Staff.objects.create(
-                user=user,
-                employee_id=user.username,
-                date_joined=user.date_joined.date()
-            )
-            created_count += 1
+            try:
+                Staff.objects.create(
+                    user=user,
+                    employee_id=f"EMP-{user.id:04d}", # Consistent with signal logic
+                    date_joined=user.date_joined.date()
+                )
+                created_count += 1
+            except Exception as e:
+                errors.append(f"{user.email}: {str(e)}")
+        
+        if errors:
+            return Response({
+                "detail": f"Synced {created_count} members, but {len(errors)} failed.",
+                "errors": errors
+            }, status=status.HTTP_207_MULTI_STATUS)
             
         return Response({"detail": f"Successfully synced {created_count} staff members."}, status=status.HTTP_200_OK)
 

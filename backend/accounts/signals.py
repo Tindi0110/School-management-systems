@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 # Roles that map to a Staff profile in the staff module
 STAFF_ROLES = frozenset([
-    'TEACHER', 'PRINCIPAL', 'DEPUTY', 'DOS',
+    'ADMIN', 'TEACHER', 'PRINCIPAL', 'DEPUTY', 'DOS',
     'REGISTRAR', 'ACCOUNTANT', 'NURSE', 'WARDEN', 'LIBRARIAN',
 ])
 
