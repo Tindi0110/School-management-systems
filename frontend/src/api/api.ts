@@ -178,6 +178,8 @@ export const authAPI = {
     axios.post(`${API_BASE_URL.replace('/api', '')}/api/auth/password-reset-confirm/${uidb64}/${token}/`, data),
   resendVerificationPublic: (email: string) =>
     axios.post(`${API_BASE_URL.replace('/api', '')}/api/auth/resend-verification/public/`, { email }),
+  verifyEmailOTP: (email: string, otp: string) =>
+    axios.post(`${API_BASE_URL.replace('/api', '')}/api/auth/verify-email-otp/`, { email, otp }),
   
   staffApproval: {
     getPending: () => axios.get(`${API_BASE_URL.replace('/api', '')}/api/auth/staff-approval/`),

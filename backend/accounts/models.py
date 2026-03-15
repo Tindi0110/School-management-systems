@@ -38,6 +38,10 @@ class User(AbstractUser):
     supabase_id     = models.UUIDField(null=True, blank=True, unique=True)
     is_email_verified = models.BooleanField(default=False)
     is_approved     = models.BooleanField(default=False)
+    
+    # Verification OTP tracking
+    email_verification_otp = models.CharField(max_length=6, null=True, blank=True)
+    email_verification_otp_created_at = models.DateTimeField(null=True, blank=True)
 
     USERNAME_FIELD  = 'email'
     REQUIRED_FIELDS = ['username']

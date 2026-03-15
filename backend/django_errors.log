@@ -70,3 +70,15 @@ INFO 2026-03-16 00:05:51,848 mail 10928 3296 Email thread started for: testadd4@
 INFO 2026-03-16 00:05:51,848 signals 10928 16620 Approval notification sent to testadd4@example.com
 INFO 2026-03-16 00:05:54,351 mail 10928 3296 Successfully sent email to: testadd4@example.com
 INFO 2026-03-16 00:05:55,889 mail 10928 1252 Email thread started for: testadd4@example.com
+INFO 2026-03-16 00:22:09,424 autoreload 4948 13348 C:\Users\Evans\School management system\backend\accounts\models.py changed, reloading.
+INFO 2026-03-16 00:22:09,507 autoreload 7496 18980 C:\Users\Evans\School management system\backend\accounts\models.py changed, reloading.
+INFO 2026-03-16 00:22:16,362 autoreload 14248 8344 Watching for file changes with StatReloader
+INFO 2026-03-16 00:22:16,362 autoreload 9536 16296 Watching for file changes with StatReloader
+INFO 2026-03-16 00:24:59,030 autoreload 14248 8344 C:\Users\Evans\School management system\backend\accounts\views.py changed, reloading.
+INFO 2026-03-16 00:24:59,142 autoreload 9536 16296 C:\Users\Evans\School management system\backend\accounts\views.py changed, reloading.
+INFO 2026-03-16 00:25:04,261 autoreload 8292 3440 Watching for file changes with StatReloader
+INFO 2026-03-16 00:25:04,262 autoreload 1320 8768 Watching for file changes with StatReloader
+INFO 2026-03-16 00:25:23,312 autoreload 1320 8768 C:\Users\Evans\School management system\backend\accounts\urls.py changed, reloading.
+INFO 2026-03-16 00:25:23,427 autoreload 8292 3440 C:\Users\Evans\School management system\backend\accounts\urls.py changed, reloading.
+INFO 2026-03-16 00:25:27,485 autoreload 6972 19340 Watching for file changes with StatReloader
+

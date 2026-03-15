@@ -10,6 +10,7 @@ import { ErrorBoundary } from './components/common/ErrorBoundary'
 // Eager load critical components
 import Login from './pages/Login'
 import Register from './pages/Register'
+import VerifyOTP from './pages/VerifyOTP'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 import DashboardLayout from './layouts/DashboardLayout'
@@ -61,6 +62,7 @@ function App() {
                   <Routes>
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
+                    <Route path="/verify-otp" element={<VerifyOTP />} />
                     <Route path="/forgot-password" element={<ForgotPassword />} />
                     <Route path="/reset-password/:uid/:token" element={<ResetPassword />} />
                     <Route path="/" element={

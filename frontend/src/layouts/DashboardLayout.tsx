@@ -196,23 +196,16 @@ const DashboardLayout = () => {
                 <span className="text-xs font-normal text-gray-500 ml-2">({user?.role || 'Guest'})</span>
               </h2>
             </div>
-
-            {/* Premium Quick Search Bar */}
-            <div className="hidden lg:flex flex-1 justify-center max-w-md mx-8">
-              <div
-                className="flex items-center justify-between w-full bg-gray-50/50 hover:bg-white border border-gray-200/60 hover:border-primary/40 shadow-sm hover:shadow-md px-4 py-2 rounded-full cursor-text transition-all duration-300 group"
+            {/* Premium Quick Search Button */}
+            <div className="flex items-center">
+              <button
+                type="button"
+                className="icon-btn group relative"
                 onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }))}
-                title="Quick Search"
+                aria-label="Quick Search"
               >
-                <div className="flex items-center gap-3">
-                  <Search size={16} className="text-gray-400 group-hover:text-primary transition-colors duration-300" />
-                  <span className="text-xs font-medium text-gray-500 group-hover:text-gray-900 transition-colors duration-300">Quick Search...</span>
-                </div>
-                <div className="flex items-center gap-1 opacity-70 group-hover:opacity-100 transition-opacity duration-300">
-                  <kbd className="bg-white border border-gray-200 text-gray-500 shadow-sm px-1.5 py-0.5 rounded-md text-[10px] font-bold">Ctrl</kbd>
-                  <kbd className="bg-white border border-gray-200 text-gray-500 shadow-sm px-1.5 py-0.5 rounded-md text-[10px] font-bold">K</kbd>
-                </div>
-              </div>
+                <Search size={20} className="group-hover:text-primary transition-colors" />
+              </button>
             </div>
           </div>
 

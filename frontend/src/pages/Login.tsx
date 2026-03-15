@@ -34,7 +34,13 @@ const Login = () => {
       console.error(err);
       const msg = err.response?.data?.error || 'Invalid credentials. Please check your login details.';
       setError(msg)
-      errorToast(msg)
+      
+      // If error indicates unverified email, redirect to OTP verification
+      if (err.response?.status === 403 && msg.toLowerCase().includes('verify')) {
+        navigate(`/verify-otp?email=${encodeURIComponent(email)}`)
+      } else {
+        errorToast(msg)
+      }
     } finally {
       setLoading(false)
     }
@@ -48,7 +54,8 @@ const Login = () => {
     setResending(true);
     try {
       const response = await authAPI.resendVerificationPublic(email);
-      success(response.data.message || "Verification link sent!");
+      success(response.data.message || "Verification code sent!");
+      navigate(`/verify-otp?email=${encodeURIComponent(email)}`);
     } catch (err: any) {
       console.error(err);
       errorToast(err.response?.data?.error || 'Failed to resend email.');

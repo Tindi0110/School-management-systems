@@ -12,6 +12,9 @@ from django.conf import settings
 from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_bytes, force_str
+from django.utils import timezone
+from datetime import timedelta
+import random
 from sms.mail import EmailService
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 
@@ -148,6 +151,54 @@ class VerifyEmailView(APIView):
         return Response({'message': 'Email verified successfully.'}, status=status.HTTP_200_OK)
 
 
+class VerifyEmailOTPView(APIView):
+    """Verify an email using a 6-digit OTP code."""
+
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        email = request.data.get('email', '').strip()
+        otp = request.data.get('otp', '').strip()
+
+        if not email or not otp:
+            return Response({'error': 'Email and OTP are required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({'error': 'No account found with this email.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if user.is_email_verified:
+            return Response({'message': 'Email is already verified.'}, status=status.HTTP_200_OK)
+
+        if str(user.email_verification_otp) != str(otp):
+            return Response({'error': 'Invalid verification code.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not user.email_verification_otp_created_at or timezone.now() > user.email_verification_otp_created_at + timedelta(hours=24):
+            return Response({'error': 'Verification code has expired. Please request a new one.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Success - mark as verified and clear OTP
+        user.is_email_verified = True
+        user.email_verification_otp = None
+        user.email_verification_otp_created_at = None
+        user.save()
+
+        # Notify user that verification is successful
+        body = (
+            f"Hello {user.username},\n\n"
+            f"Your email address has been successfully verified.\n\n"
+            f"NOTE: As a staff member, your account still requires administrator approval before you can log in. "
+            f"You will receive another email once your account is approved.\n\n"
+            f"— School Management System"
+        )
+        try:
+            EmailService.send_async('Email Verified — School Management System', body, user.email)
+        except Exception:
+            logger.exception("Failed to send verification success email to %s", user.email)
+
+        return Response({'message': 'Email verified successfully.'}, status=status.HTTP_200_OK)
+
+
 class ResendVerificationEmailView(APIView):
     """
     Admin/Registrar endpoint to resend the verification email to an unverified user.
@@ -160,14 +211,16 @@ class ResendVerificationEmailView(APIView):
         except User.DoesNotExist:
             return Response({'error': 'User not found or already verified.'}, status=status.HTTP_404_NOT_FOUND)
 
-        token = default_token_generator.make_token(user)
-        uid   = urlsafe_base64_encode(force_bytes(user.pk))
-        link  = f"{settings.FRONTEND_URL}/verify-email/{uid}/{token}"
+        otp = str(random.randint(100000, 999999))
+        user.email_verification_otp = otp
+        user.email_verification_otp_created_at = timezone.now()
+        user.save()
 
         body = (
             f"Hello {user.first_name or user.username},\n\n"
-            f"Please verify your email by clicking the link below:\n\n"
-            f"{link}\n\n"
+            f"Your verification code is: {otp}\n\n"
+            f"Please enter this 6-digit code to verify your email address.\n"
+            f"This code will expire in 24 hours.\n\n"
             f"— School Management System"
         )
         try:
@@ -195,19 +248,21 @@ class ResendVerificationEmailPublicView(APIView):
             # Return success to prevent email enumeration attacks
             return Response({'message': 'If the account exists and is unverified, a verification link has been sent.'})
 
-        token = default_token_generator.make_token(user)
-        uid   = urlsafe_base64_encode(force_bytes(user.pk))
-        link  = f"{settings.FRONTEND_URL}/verify-email/{uid}/{token}"
+        otp = str(random.randint(100000, 999999))
+        user.email_verification_otp = otp
+        user.email_verification_otp_created_at = timezone.now()
+        user.save()
 
         body = (
             f"Hello {user.first_name or user.username},\n\n"
-            f"You requested a new verification link. Please verify your email by clicking the link below:\n\n"
-            f"{link}\n\n"
+            f"You requested a new verification code. Your verification code is: {otp}\n\n"
+            f"Please enter this 6-digit code to verify your email address.\n"
+            f"This code will expire in 24 hours.\n\n"
             f"— School Management System"
         )
         try:
             EmailService.send_async('Verify Your Email — School Management System', body, user.email)
-            return Response({'message': 'If the account exists and is unverified, a verification link has been sent.'})
+            return Response({'message': 'If the account exists and is unverified, a verification email has been sent.'})
         except Exception:
             logger.exception("Failed to resend verification email to %s (Public)", user.email)
             return Response({'error': 'Failed to send email.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -278,14 +333,16 @@ class RegisterView(generics.CreateAPIView):
             user.save()
             logger.info("Bootstrap: Automatically approved first user %s as ADMIN", user.email)
 
-        token = default_token_generator.make_token(user)
-        uid   = urlsafe_base64_encode(force_bytes(user.pk))
-        link  = f"{settings.FRONTEND_URL}/verify-email/{uid}/{token}"
+        otp = str(random.randint(100000, 999999))
+        user.email_verification_otp = otp
+        user.email_verification_otp_created_at = timezone.now()
+        user.save()
 
         body = (
             f"Hello {user.first_name or user.username},\n\n"
-            f"Please verify your email by clicking the link below:\n\n"
-            f"{link}\n\n"
+            f"Your verification code is: {otp}\n\n"
+            f"Please enter this 6-digit code to verify your email address.\n"
+            f"This code will expire in 24 hours.\n\n"
             f"— School Management System"
         )
         EmailService.send_async('Verify Your Email — School Management System', body, user.email)

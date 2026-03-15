@@ -39,9 +39,9 @@ const Register = () => {
         setLoading(true);
         try {
             await authAPI.register(formData);
-            success("Registration successful! Please check your email for a verification link and wait for admin approval.", { duration: 8000 });
+            success("Registration successful! Please check your email for a 6-digit verification code.", { duration: 8000 });
             setTimeout(() => {
-                navigate('/login');
+                navigate(`/verify-otp?email=${encodeURIComponent(formData.email)}`);
                 setLoading(false);
             }, 1500);
 
@@ -50,7 +50,7 @@ const Register = () => {
             if (err.response && err.response.status === 404) {
                 success("Registration Request Sent! (Simulation)", { duration: 5000 });
                 setTimeout(() => {
-                    navigate('/login');
+                    navigate(`/verify-otp?email=${encodeURIComponent(formData.email)}`);
                     setLoading(false);
                 }, 1500);
             } else {
