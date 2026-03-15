@@ -156,7 +156,6 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                     {label} {required && <span className="text-error font-normal">*</span>}
                 </label>
             )}
-
             <div className="relative group">
                 <div
                     className={`
@@ -164,6 +163,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                         bg-slate-300 border border-slate-500 rounded-[8px] cursor-text transition-all duration-200
                         ${isOpen ? 'bg-white shadow-[0_0_0_4px_rgba(var(--primary-rgb),0.1)] border-primary/20' : 'hover:bg-slate-400 hover:border-slate-600'}
                         ${disabled ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}
+                    `}
                     onClick={handleTriggerClick}
                 >
                     <div className="flex items-center gap-3 w-full">
