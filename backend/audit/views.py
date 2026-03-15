@@ -5,7 +5,7 @@ from django.db import connection
 from django.utils import timezone
 import os
 
-from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
+from rest_framework.permissions import AllowAny
 
 class HealthCheckView(APIView):
     """

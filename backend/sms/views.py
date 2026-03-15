@@ -45,7 +45,6 @@ def dashboard_stats(request):
     if cached_data:
         return Response(cached_data)
 
-    from django.db.models import Sum
     from finance.models import Invoice
     from academics.models import Exam
     today = timezone.now().date()

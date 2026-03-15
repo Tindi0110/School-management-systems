@@ -10,7 +10,7 @@ from .models import Invoice, InvoiceItem, Expense, FeeStructure
 from students.models import Student
 from hostel.models import HostelAllocation, HostelMaintenance, HostelAsset
 from transport.models import TransportAllocation, VehicleMaintenance, FuelRecord
-from library.models import LibraryFine
+
 
 from .utils import get_or_create_invoice
 

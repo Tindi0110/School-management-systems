@@ -5,8 +5,7 @@ from .models import (
 )
 from academics.models import Attendance, StudentResult
 
-from django.db.models import Sum, Value, DecimalField, Avg
-from django.db.models.functions import Coalesce
+from django.db.models import Avg
 
 class SimpleStudentSerializer(serializers.ModelSerializer):
     class_name = serializers.SerializerMethodField()

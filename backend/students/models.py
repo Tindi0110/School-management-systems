@@ -1,6 +1,6 @@
 from django.db import models
 from django.conf import settings
-import uuid
+
 
 class Parent(models.Model):
     RELATIONSHIP_CHOICES = (

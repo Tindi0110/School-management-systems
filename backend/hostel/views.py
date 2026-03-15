@@ -95,7 +95,7 @@ class HostelAllocationViewSet(viewsets.ModelViewSet):
         try:
             serializer.save()
         except Exception as e:
-            from django.db import IntegrityError
+
             from rest_framework.exceptions import ValidationError
             if "UNIQUE constraint failed" in str(e):
                 raise ValidationError({"detail": "This student already has a hostel record. Please use 'Transfer' to move them."})

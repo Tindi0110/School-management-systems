@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.core.exceptions import ValidationError
 from academics.models import AcademicYear, Class
-from accounts.models import User
+
 from .models import Student, Parent
 import datetime
 

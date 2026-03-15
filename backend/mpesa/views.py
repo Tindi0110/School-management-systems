@@ -7,7 +7,7 @@ from .services import MpesaService
 from .models import MpesaSTKRequest
 from students.models import Student
 from finance.models import Invoice, Payment, FeeStructure
-from academics.models import AcademicYear, Term
+from academics.models import AcademicYear
 import json
 import logging
 

@@ -12,7 +12,7 @@ def auto_manage_hostel_on_category_change(sender, instance, created, **kwargs):
     if kwargs.get('raw'):
         return
     
-    from hostel.models import HostelAllocation, Bed, Room, Hostel
+    from hostel.models import HostelAllocation, Bed
     
     if instance.category == 'DAY':
         # 1. De-allocate if they were previously Boarding
