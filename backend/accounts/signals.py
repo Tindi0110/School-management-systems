@@ -13,6 +13,7 @@ from django.contrib.auth.models import Group
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
+from sms.mail import EmailService
 
 logger = logging.getLogger(__name__)
 
@@ -67,6 +68,22 @@ def create_staff_profile(sender, instance, **kwargs):
             date_joined=instance.date_joined.date() if instance.date_joined else timezone.now().date(),
         )
         logger.info("Created Staff profile and assigned to %s department for %s", dept_name, instance.email)
+
+        # 3. Send Approval Email to Staff
+        login_link = f"{settings.FRONTEND_URL}/login"
+        body = (
+            f"Congratulations {instance.username}!\n\n"
+            f"Your account on the School Management System has been approved by the administrator.\n\n"
+            f"You can now log in using your email and password at:\n"
+            f"{login_link}\n\n"
+            f"— School Management System"
+        )
+        try:
+            EmailService.send_async('Account Approved — School Management System', body, instance.email)
+            logger.info("Approval notification sent to %s", instance.email)
+        except Exception:
+            logger.exception("Failed to send approval email to %s", instance.email)
+
     except Exception:
         logger.exception("Failed to create Staff profile for %s", instance.email)
 

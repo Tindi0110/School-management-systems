@@ -249,23 +249,7 @@ class StaffApprovalView(APIView):
             return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
 
         user.is_approved = True
-        user.save()
-        
-        # Send Approval Email
-        login_link = f"{settings.FRONTEND_URL}/login"
-        body = (
-            f"Congratulations {user.username}!\n\n"
-            f"Your account on the School Management System has been approved by the administrator.\n\n"
-            f"You can now log in using your email and password at:\n"
-            f"{login_link}\n\n"
-            f"— School Management System"
-        )
-        try:
-            EmailService.send_async('Account Approved — School Management System', body, user.email)
-            logger.info("Approval notification sent to %s", user.email)
-        except Exception:
-            logger.exception("Failed to send approval email to %s", user.email)
-
+        user.save() # Triggers create_staff_profile signal which sends the email
         logger.info("Account %s approved by %s", user.email, request.user.email)
         return Response({'message': f'{user.email} has been approved.'})
 
