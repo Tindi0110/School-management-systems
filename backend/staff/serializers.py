@@ -8,8 +8,8 @@ User record in sync on create/update.
 
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-
-from .models import Staff, Department
+from django.conf import settings
+from sms.mail import EmailService
 
 User = get_user_model()
 
@@ -82,23 +82,43 @@ class StaffSerializer(serializers.ModelSerializer):
         full_name   = validated_data.pop('write_full_name', '')
         role        = validated_data.pop('write_role', 'TEACHER')
         employee_id = validated_data.get('employee_id')
+        email       = validated_data.get('email', '')
 
         parts      = full_name.split(' ', 1)
         first_name = parts[0]
         last_name  = parts[1] if len(parts) > 1 else ''
 
+        # Admin-created staff should be automatically fully approved
         user, created = User.objects.get_or_create(
             username=employee_id,
             defaults={
                 'first_name': first_name,
                 'last_name':  last_name,
                 'role':       role,
+                'email':      email,
+                'is_approved': True,
+                'is_email_verified': True,
             },
         )
 
         if created:
-            user.set_password('staff@123')  # Temporary default — user must change on first login
+            temp_password = 'staff@123'
+            user.set_password(temp_password)
             user.save()
+            
+            # Send welcome email with credentials
+            if email:
+                login_link = f"{settings.FRONTEND_URL}/login"
+                body = (
+                    f"Welcome {first_name}!\n\n"
+                    f"An administrator has created a staff account for you on the School Management System.\n\n"
+                    f"Your login credentials are:\n"
+                    f"Username / Employee ID: {employee_id}\n"
+                    f"Temporary Password: {temp_password}\n\n"
+                    f"Please log in at {login_link} and change your password immediately.\n\n"
+                    f"— School Management System"
+                )
+                EmailService.send_async('Welcome to the School Management System', body, email)
 
         validated_data['user'] = user
         return super().create(validated_data)

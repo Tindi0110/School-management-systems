@@ -49,6 +49,7 @@ const Staff = () => {
     const [formData, setFormData] = useState({
         employee_id: '',
         full_name: '',
+        email: '',
         department: '',
         role: 'TEACHER',
         qualifications: '',
@@ -213,6 +214,7 @@ const Staff = () => {
             setFormData({
                 employee_id: member.employee_id,
                 full_name: member.full_name || '',
+                email: member.email || '',
                 department: member.department || '',
                 role: member.role || 'TEACHER',
                 qualifications: member.qualifications,
@@ -223,6 +225,7 @@ const Staff = () => {
             setFormData({
                 employee_id: '',
                 full_name: '',
+                email: '',
                 department: '',
                 role: 'TEACHER',
                 qualifications: '',
@@ -506,6 +509,10 @@ const Staff = () => {
                         <div className="form-group">
                             <label className="label">Full Name *</label>
                             <input type="text" className="input" value={formData.full_name} onChange={(e) => setFormData({ ...formData, full_name: e.target.value })} required />
+                        </div>
+                        <div className="form-group">
+                            <label className="label">Email Address *</label>
+                            <input type="email" className="input" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} required />
                         </div>
                         <div className="form-group">
                             <label className="label flex justify-between">
