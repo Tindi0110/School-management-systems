@@ -18,7 +18,7 @@ class EmailService:
 
         def dispatch():
             try:
-                logger.info("Dispatching email to: %s", recipient)
+                logger.info("Email thread started for: %s", recipient)
                 send_mail(
                     subject=subject,
                     message=body,
@@ -30,6 +30,8 @@ class EmailService:
                 logger.info("Successfully sent email to: %s", recipient)
             except Exception as e:
                 logger.error("Failed to dispatch email to %s: %s", recipient, str(e), exc_info=True)
+                # Fallback log to console for visibility
+                print(f"EMAIL ERROR for {recipient}: {str(e)}")
 
         thread = threading.Thread(target=dispatch, daemon=True)
         thread.start()

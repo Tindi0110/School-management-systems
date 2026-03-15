@@ -190,6 +190,15 @@ class RegisterView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         user  = serializer.save()
+        
+        # Bootstrap: Automatically approve the first user in the system
+        if User.objects.count() == 1:
+            user.is_email_verified = True
+            user.is_approved = True
+            user.role = User.Role.ADMIN
+            user.save()
+            logger.info("Bootstrap: Automatically approved first user %s as ADMIN", user.email)
+
         token = default_token_generator.make_token(user)
         uid   = urlsafe_base64_encode(force_bytes(user.pk))
         link  = f"{settings.FRONTEND_URL}/verify-email/{uid}/{token}"
