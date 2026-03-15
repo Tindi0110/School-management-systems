@@ -1595,6 +1595,10 @@ table.table {
   .scale-\[0\.99\] {
     transform: scale(0.99);
   }
+
+  .pr-12 {
+    padding-right: 3rem !important;
+  }
 }
 
 /* Print Styles: Clean Document Export */

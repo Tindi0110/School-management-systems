@@ -19,6 +19,7 @@ interface SearchableSelectProps {
     className?: string;
     onSearch?: (searchTerm: string) => void; // Optional callback for async backend searching
     initialOptions?: Option[]; // Fallback options for data visibility when 'value' isn't in 'options' yet
+    icon?: React.ReactNode;
 }
 
 const SearchableSelect: React.FC<SearchableSelectProps> = ({
@@ -31,7 +32,8 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
     disabled = false,
     className = '',
     onSearch,
-    initialOptions = []
+    initialOptions = [],
+    icon
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
@@ -163,21 +165,22 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                         ${isOpen ? 'bg-white shadow-[0_0_0_4px_rgba(var(--primary-rgb),0.1)] border-primary/20' : 'hover:bg-slate-400 hover:border-slate-600'}
                         ${disabled ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}
                     `}
-                    onClick={handleTriggerClick}
-                >
-                    <input
-                        ref={inputRef}
-                        type="text"
-                        autoComplete="off"
-                        className="bg-transparent border-0 p-0 text-sm focus:ring-0 outline-none text-slate-900 placeholder:text-slate-700 font-black w-full"
-                        placeholder={selectedOption ? selectedOption.label : placeholder}
-                        value={isOpen ? searchTerm : (selectedOption ? selectedOption.label : '')}
-                        onChange={(e) => {
-                            setSearchTerm(e.target.value);
-                            if (!isOpen) setIsOpen(true);
-                        }}
-                    />
-
+                    <div className="flex items-center gap-3 w-full">
+                        {icon && <div className="text-slate-500 shrink-0">{icon}</div>}
+                        <input
+                            ref={inputRef}
+                            type="text"
+                            autoComplete="off"
+                            className="bg-transparent border-0 p-0 text-sm focus:ring-0 outline-none text-slate-900 placeholder:text-slate-700 font-black w-full"
+                            placeholder={selectedOption ? selectedOption.label : placeholder}
+                            value={isOpen ? searchTerm : (selectedOption ? selectedOption.label : '')}
+                            onChange={(e) => {
+                                setSearchTerm(e.target.value);
+                                if (!isOpen) setIsOpen(true);
+                            }}
+                        />
+                    </div>
+                    
                     {value && !disabled && (
                         <button
                             type="button"

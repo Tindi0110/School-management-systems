@@ -215,7 +215,14 @@ class RegisterView(generics.CreateAPIView):
             f"{link}\n\n"
             f"— School Management System"
         )
-        _send_mail_safe('Verify Your Email — School Management System', body, user.email)
+        
+        def send_async():
+            try:
+                _send_mail_safe('Verify Your Email — School Management System', body, user.email)
+            except Exception as e:
+                logger.error("Async verification email failed for %s: %s", user.email, str(e))
+
+        threading.Thread(target=send_async, daemon=True).start()
 
 
 # ---------------------------------------------------------------------------

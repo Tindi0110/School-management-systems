@@ -127,25 +127,23 @@ const Register = () => {
 
                         <div className="auth-input-group">
                             <label className="label uppercase text-[10px] font-black mb-1">Institutional Role</label>
-                            <div className="auth-input-wrapper">
-                                <Shield size={18} className="auth-input-icon" />
-                                <SearchableSelect
-                                    placeholder="Select Role..."
-                                    options={[
-                                        { id: 'TEACHER', label: 'Academic Staff' },
-                                        { id: 'ACCOUNTANT', label: 'Bursar / Accountant' },
-                                        { id: 'DOS', label: 'Director of Studies' },
-                                        { id: 'REGISTRAR', label: 'Registrar' },
-                                        { id: 'WARDEN', label: 'Hostel Warden' },
-                                        { id: 'DRIVER', label: 'Institutional Driver' },
-                                        { id: 'NURSE', label: 'School Nurse' },
-                                        { id: 'LIBRARIAN', label: 'Librarian' },
-                                        { id: 'ADMIN', label: 'Administrator' }
-                                    ]}
-                                    value={formData.role}
-                                    onChange={(val) => setFormData({ ...formData, role: val.toString() })}
-                                />
-                            </div>
+                            <SearchableSelect
+                                placeholder="Select Role..."
+                                icon={<Shield size={18} />}
+                                options={[
+                                    { id: 'TEACHER', label: 'Academic Staff' },
+                                    { id: 'ACCOUNTANT', label: 'Bursar / Accountant' },
+                                    { id: 'DOS', label: 'Director of Studies' },
+                                    { id: 'REGISTRAR', label: 'Registrar' },
+                                    { id: 'WARDEN', label: 'Hostel Warden' },
+                                    { id: 'DRIVER', label: 'Institutional Driver' },
+                                    { id: 'NURSE', label: 'School Nurse' },
+                                    { id: 'LIBRARIAN', label: 'Librarian' },
+                                    { id: 'ADMIN', label: 'Administrator' }
+                                ]}
+                                value={formData.role}
+                                onChange={(val) => setFormData({ ...formData, role: val.toString() })}
+                            />
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -153,14 +151,14 @@ const Register = () => {
                                 <label className="label uppercase text-[10px] font-black mb-1">Password</label>
                                 <div className="auth-input-wrapper">
                                     <LockIcon size={18} className="auth-input-icon" />
-                                    <input type={showPassword ? "text" : "password"} className="input auth-input-field"
+                                    <input type={showPassword ? "text" : "password"} className="input auth-input-field pr-12"
                                         placeholder="••••••"
                                         autoComplete="new-password"
                                         value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} required />
                                     <button
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-secondary hover:text-primary transition-colors bg-transparent border-none p-0 flex items-center justify-center outline-none"
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-secondary hover:text-primary transition-colors bg-transparent border-none p-0 flex items-center justify-center outline-none z-10"
                                     >
                                         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                     </button>
@@ -171,14 +169,14 @@ const Register = () => {
                                 <label className="label uppercase text-[10px] font-black mb-1">Confirm</label>
                                 <div className="auth-input-wrapper">
                                     <LockIcon size={18} className="auth-input-icon" />
-                                    <input type={showConfirmPassword ? "text" : "password"} className="input auth-input-field"
+                                    <input type={showConfirmPassword ? "text" : "password"} className="input auth-input-field pr-12"
                                         placeholder="••••••"
                                         autoComplete="new-password"
                                         value={formData.confirm_password} onChange={e => setFormData({ ...formData, confirm_password: e.target.value })} required />
                                     <button
                                         type="button"
                                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-secondary hover:text-primary transition-colors bg-transparent border-none p-0 flex items-center justify-center outline-none"
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-secondary hover:text-primary transition-colors bg-transparent border-none p-0 flex items-center justify-center outline-none z-10"
                                     >
                                         {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                     </button>
