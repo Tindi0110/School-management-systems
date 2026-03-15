@@ -38,8 +38,6 @@ const Login = () => {
       // If error indicates unverified email, redirect to OTP verification
       if (err.response?.status === 403 && msg.toLowerCase().includes('verify')) {
         navigate(`/verify-otp?email=${encodeURIComponent(email)}`)
-      } else {
-        errorToast(msg)
       }
     } finally {
       setLoading(false)

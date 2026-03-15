@@ -283,10 +283,15 @@ class CustomAuthToken(ObtainAuthToken):
         email    = request.data.get('username', '').strip()  # 'username' kept for DRF client compatibility
         password = request.data.get('password', '')
 
+        user_obj = User.objects.filter(email=email).first() or User.objects.filter(username=email).first()
+        
+        if not user_obj:
+            return Response({'error': 'Account not found. Please register first.'}, status=status.HTTP_404_NOT_FOUND)
+
         user = authenticate(request, username=email, password=password)
 
         if not user:
-            return Response({'error': 'Invalid email or password.'}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({'error': 'Incorrect password. Please try again.'}, status=status.HTTP_401_UNAUTHORIZED)
 
         if not user.is_email_verified:
             return Response(

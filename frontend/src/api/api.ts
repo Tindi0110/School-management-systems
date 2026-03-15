@@ -124,9 +124,14 @@ api.interceptors.response.use(
       window.location.href = '/login';
     }
 
-    let message = 'An unexpected error occurred';
+    const serverError = error.response?.data?.detail || 
+                        error.response?.data?.error || 
+                        (typeof error.response?.data === 'string' && error.response.data.length < 100 ? error.response.data : null);
 
-    // Check if Django sent a field-validation object for a 400 error
+    if (serverError) {
+      return Promise.reject({ ...error, message: serverError });
+    }
+
     if (error.response?.status === 400 && typeof error.response.data === 'object') {
       const data = error.response.data;
       const stringified = JSON.stringify(data).toLowerCase();
