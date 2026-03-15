@@ -19,8 +19,23 @@ logger = logging.getLogger(__name__)
 # Roles that map to a Staff profile in the staff module
 STAFF_ROLES = frozenset([
     'ADMIN', 'TEACHER', 'PRINCIPAL', 'DEPUTY', 'DOS',
-    'REGISTRAR', 'ACCOUNTANT', 'NURSE', 'WARDEN', 'LIBRARIAN',
+    'REGISTRAR', 'ACCOUNTANT', 'NURSE', 'WARDEN', 'LIBRARIAN', 'DRIVER',
 ])
+
+# Maps user roles to their primary department name
+ROLE_DEPARTMENT_MAP = {
+    'ADMIN':      'Administration',
+    'PRINCIPAL':  'Administration',
+    'DEPUTY':     'Administration',
+    'REGISTRAR':  'Administration',
+    'DOS':        'Academics',
+    'TEACHER':    'Academics',
+    'ACCOUNTANT': 'Finance',
+    'WARDEN':     'Hostels',
+    'NURSE':      'Medical',
+    'LIBRARIAN':  'Library',
+    'DRIVER':     'Transport',
+}
 
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
@@ -35,19 +50,23 @@ def create_staff_profile(sender, instance, **kwargs):
     if not (instance.is_approved and instance.role in STAFF_ROLES):
         return
 
-    from staff.models import Staff  # Local import to avoid circular dependency
+    from staff.models import Staff, Department # Local import to avoid circular dependency
 
     if Staff.objects.filter(user=instance).exists():
         return
 
     try:
+        # Get or create the mapped department
+        dept_name = ROLE_DEPARTMENT_MAP.get(instance.role, 'General')
+        department, _ = Department.objects.get_or_create(name=dept_name)
+
         Staff.objects.create(
             user=instance,
-            department=instance.role.title(),
+            department=department,
             employee_id=f"EMP-{instance.id:04d}",
             date_joined=instance.date_joined.date() if instance.date_joined else timezone.now().date(),
         )
-        logger.info("Created Staff profile for %s", instance.email)
+        logger.info("Created Staff profile and assigned to %s department for %s", dept_name, instance.email)
     except Exception:
         logger.exception("Failed to create Staff profile for %s", instance.email)
 

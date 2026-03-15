@@ -176,6 +176,12 @@ export const authAPI = {
     axios.post(`${API_BASE_URL.replace('/api', '')}/api/auth/password-reset/`, { email }),
   resetPasswordConfirm: (uidb64: string, token: string, data: any) =>
     axios.post(`${API_BASE_URL.replace('/api', '')}/api/auth/password-reset-confirm/${uidb64}/${token}/`, data),
+  
+  staffApproval: {
+    getPending: () => axios.get(`${API_BASE_URL.replace('/api', '')}/api/auth/staff-approval/`),
+    approve: (userId: number) => axios.post(`${API_BASE_URL.replace('/api', '')}/api/auth/staff-approval/${userId}/`),
+    reject: (userId: number) => axios.delete(`${API_BASE_URL.replace('/api', '')}/api/auth/staff-approval/${userId}/`),
+  }
 };
 
 export const statsAPI = {

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, Search, Edit, Trash2, Briefcase, Printer, Download, LayoutGrid, RefreshCcw } from 'lucide-react';
-import { staffAPI } from '../api/api';
+import { Plus, Search, Edit, Trash2, Briefcase, Printer, Download, LayoutGrid, RefreshCcw, Check, X, UserCheck } from 'lucide-react';
+import { staffAPI, authAPI } from '../api/api';
 import { exportToCSV } from '../utils/export';
 import Modal from '../components/Modal';
 import SearchableSelect from '../components/SearchableSelect';
@@ -8,6 +8,7 @@ import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 import Button from '../components/common/Button';
 import PremiumDateInput from '../components/common/DatePicker';
+import { useSelector } from 'react-redux';
 
 const Staff = () => {
     const [staff, setStaff] = useState<any[]>([]);
@@ -24,7 +25,26 @@ const Staff = () => {
     const [departments, setDepartments] = useState<any[]>([]);
     const [showDeptModal, setShowDeptModal] = useState(false);
     const [newDeptName, setNewDeptName] = useState('');
+    const [pendingStaff, setPendingStaff] = useState<any[]>([]);
+    const [isProcessingApproval, setIsProcessingApproval] = useState<number | null>(null);
     const pageSize = 50;
+
+    const { user } = useSelector((state: any) => state.auth);
+    const isAdminOrRegistrar = user?.role === 'ADMIN' || user?.role === 'REGISTRAR';
+
+    const ROLE_DEPT_MAP: Record<string, string> = {
+        'TEACHER': 'Academics',
+        'PRINCIPAL': 'Administration',
+        'DEPUTY': 'Administration',
+        'DOS': 'Academics',
+        'REGISTRAR': 'Administration',
+        'WARDEN': 'Hostels',
+        'NURSE': 'Medical',
+        'ACCOUNTANT': 'Finance',
+        'LIBRARIAN': 'Library',
+        'DRIVER': 'Transport',
+        'ADMIN': 'Administration',
+    };
 
     const [formData, setFormData] = useState({
         employee_id: '',
@@ -38,6 +58,7 @@ const Staff = () => {
     useEffect(() => {
         loadData();
         loadDepartments();
+        if (isAdminOrRegistrar) loadPendingStaff();
     }, [page]);
 
     // Debounced search
@@ -72,6 +93,43 @@ const Staff = () => {
             setDepartments(res.data?.results ?? res.data ?? []);
         } catch (error) {
             console.error('Error loading departments:', error);
+        }
+    };
+
+    const loadPendingStaff = async () => {
+        try {
+            const res = await authAPI.staffApproval.getPending();
+            setPendingStaff(res.data || []);
+        } catch (error) {
+            console.error('Error loading pending staff:', error);
+        }
+    };
+
+    const handleApprove = async (userId: number) => {
+        setIsProcessingApproval(userId);
+        try {
+            await authAPI.staffApproval.approve(userId);
+            toast.success('Staff member approved successfully');
+            loadPendingStaff();
+            loadData();
+        } catch (error: any) {
+            toast.error(error.message || 'Failed to approve staff');
+        } finally {
+            setIsProcessingApproval(null);
+        }
+    };
+
+    const handleReject = async (userId: number) => {
+        if (!await confirm('Are you sure you want to reject and delete this registration?')) return;
+        setIsProcessingApproval(userId);
+        try {
+            await authAPI.staffApproval.reject(userId);
+            toast.success('Registration rejected and removed');
+            loadPendingStaff();
+        } catch (error: any) {
+            toast.error(error.message || 'Failed to reject registration');
+        } finally {
+            setIsProcessingApproval(null);
         }
     };
 
@@ -179,6 +237,16 @@ const Staff = () => {
         setEditingStaff(null);
     };
 
+    const handleRoleChange = (role: string) => {
+        const deptName = ROLE_DEPT_MAP[role];
+        let deptId = '';
+        if (deptName) {
+            const dept = departments.find(d => d.name.toLowerCase() === deptName.toLowerCase());
+            if (dept) deptId = dept.id.toString();
+        }
+        setFormData({ ...formData, role, department: deptId });
+    };
+
     const filteredStaff = staff; // Client-side search moved to server
 
     const renderStaffTable = (staffList: any[]) => (
@@ -245,18 +313,22 @@ const Staff = () => {
                     <p className="text-secondary text-sm font-medium">Official faculty and support staff directory</p>
                 </div>
                 <div className="flex flex-wrap gap-2 w-full lg:w-auto justify-start lg:justify-end">
-                    <Button variant="outline" className="flex-1 sm:flex-none" onClick={handleDownloadCSV} icon={<Download size={18} />}>
-                        Export
-                    </Button>
-                    <Button variant="outline" className="flex-1 sm:flex-none" onClick={handlePrint} icon={<Printer size={18} />}>
-                        Print
-                    </Button>
-                    <Button variant="outline" className="flex-1 sm:flex-none" onClick={handleSyncStaff} loading={isSubmitting} icon={<RefreshCcw size={18} />}>
-                        Sync Profiles
-                    </Button>
-                    <Button variant="primary" className="flex-1 sm:flex-none" onClick={() => openModal()} icon={<Plus size={18} />}>
-                        Add Staff
-                    </Button>
+                    {isAdminOrRegistrar && (
+                        <>
+                            <Button variant="outline" className="flex-1 sm:flex-none" onClick={handleDownloadCSV} icon={<Download size={18} />}>
+                                Export
+                            </Button>
+                            <Button variant="outline" className="flex-1 sm:flex-none" onClick={handlePrint} icon={<Printer size={18} />}>
+                                Print
+                            </Button>
+                            <Button variant="outline" className="flex-1 sm:flex-none" onClick={handleSyncStaff} loading={isSubmitting} icon={<RefreshCcw size={18} />}>
+                                Sync Profiles
+                            </Button>
+                            <Button variant="primary" className="flex-1 sm:flex-none" onClick={() => openModal()} icon={<Plus size={18} />}>
+                                Add Staff
+                            </Button>
+                        </>
+                    )}
                 </div>
             </div>
 
@@ -283,6 +355,17 @@ const Staff = () => {
                                 {mode === 'NONE' ? 'Overview' : mode === 'DEPARTMENT' ? 'Depts' : 'Roles'}
                             </button>
                         ))}
+                        {isAdminOrRegistrar && (
+                            <button
+                                className={`nav-tab px-6 py-2.5 text-[11px] font-black uppercase tracking-widest rounded-xl transition-all ${groupBy === 'PENDING' as any ? 'active bg-primary text-white shadow-lg' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'}`}
+                                onClick={() => setGroupBy('PENDING' as any)}
+                            >
+                                <span className="flex items-center gap-2">
+                                    Pending 
+                                    {pendingStaff.length > 0 && <span className="bg-danger text-white text-[9px] px-1.5 py-0.5 rounded-full">{pendingStaff.length}</span>}
+                                </span>
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>
@@ -293,6 +376,70 @@ const Staff = () => {
                     {renderStaffTable(filteredStaff)}
                     {filteredStaff.length === 0 && <div className="text-center py-12 text-secondary">No matching staff records found</div>}
                 </div>
+            ) : groupBy === 'PENDING' ? (
+                <div className="table-container shadow-md border-left-4 border-warning">
+                    <div className="card-header border-bottom py-4 px-6 flex justify-between items-center">
+                        <h3 className="mb-0 text-warning flex items-center gap-sm font-black uppercase tracking-wider text-sm">
+                            <UserCheck size={18} />
+                            Pending Staff Registrations
+                        </h3>
+                        <div className="badge badge-warning font-black uppercase tracking-widest text-[10px]">{pendingStaff.length} Awaiting Approval</div>
+                    </div>
+                    <div className="table-wrapper">
+                        <table className="table">
+                            <thead>
+                                <tr>
+                                    <th>User Info</th>
+                                    <th>Requested Role</th>
+                                    <th>Verification</th>
+                                    <th className="no-print">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {pendingStaff.length > 0 ? pendingStaff.map((u) => (
+                                    <tr key={u.id}>
+                                        <td>
+                                            <div className="flex flex-col">
+                                                <span className="font-semibold text-primary">{u.username}</span>
+                                                <span className="text-[10px] text-secondary">{u.email}</span>
+                                            </div>
+                                        </td>
+                                        <td><span className="badge badge-info">{u.role}</span></td>
+                                        <td>
+                                            {u.is_email_verified ? (
+                                                <span className="text-[10px] font-bold text-success flex items-center gap-1"><Check size={12}/> Email Verified</span>
+                                            ) : (
+                                                <span className="text-[10px] font-bold text-danger flex items-center gap-1"><X size={12}/> Unverified</span>
+                                            )}
+                                        </td>
+                                        <td className="no-print">
+                                            <div className="flex gap-2">
+                                                <Button 
+                                                    variant="primary" 
+                                                    size="sm" 
+                                                    loading={isProcessingApproval === u.id}
+                                                    onClick={() => handleApprove(u.id)}
+                                                    icon={<Check size={14} />}
+                                                    title="Approve"
+                                                />
+                                                <Button 
+                                                    variant="danger" 
+                                                    size="sm" 
+                                                    loading={isProcessingApproval === u.id}
+                                                    onClick={() => handleReject(u.id)}
+                                                    icon={<X size={14} />}
+                                                    title="Reject"
+                                                />
+                                            </div>
+                                        </td>
+                                    </tr>
+                                )) : (
+                                    <tr><td colSpan={4} className="text-center py-12 text-secondary">No pending registrations found</td></tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             ) : (
                 <div className="space-y-10">
                     {Object.keys(groupedStaff).sort().map(groupKey => (
@@ -302,7 +449,32 @@ const Staff = () => {
                                     {groupBy === 'DEPARTMENT' ? <LayoutGrid size={18} /> : <Briefcase size={18} />}
                                     {groupKey}
                                 </h3>
-                                <div className="badge badge-primary font-black uppercase tracking-widest text-[10px]">{groupedStaff[groupKey].length} Staff</div>
+                                <div className="flex items-center gap-4">
+                                    {groupBy === 'DEPARTMENT' && isAdminOrRegistrar && groupKey !== 'General Administration' && (
+                                        <div className="flex gap-2 mr-4">
+                                            <Button variant="outline" size="sm" onClick={() => {
+                                                const dept = departments.find(d => d.name === groupKey);
+                                                if (dept) {
+                                                    setNewDeptName(dept.name);
+                                                    setShowDeptModal(true);
+                                                }
+                                            }} icon={<Edit size={12} />} />
+                                            <Button variant="danger" size="sm" onClick={async () => {
+                                                const dept = departments.find(d => d.name === groupKey);
+                                                if (dept && await confirm(`Delete ${dept.name} department?`)) {
+                                                    try {
+                                                        await staffAPI.departments.delete(dept.id);
+                                                        toast.success('Department deleted');
+                                                        loadDepartments();
+                                                    } catch (e) {
+                                                        toast.error('Failed to delete department (might have staff assigned)');
+                                                    }
+                                                }
+                                            }} icon={<Trash2 size={12} />} />
+                                        </div>
+                                    )}
+                                    <div className="badge badge-primary font-black uppercase tracking-widest text-[10px]">{groupedStaff[groupKey].length} Staff</div>
+                                </div>
                             </div>
                             {renderStaffTable(groupedStaff[groupKey])}
                         </div>
@@ -312,7 +484,7 @@ const Staff = () => {
             )}
 
             {/* Pagination */}
-            {totalItems > pageSize && (
+            {totalItems > pageSize && groupBy !== 'PENDING' && (
                 <div className="flex justify-between items-center mt-6 bg-slate-50 p-4 rounded-xl border border-slate-100 no-print">
                     <div className="text-[10px] font-black text-secondary uppercase tracking-widest">
                         Showing {Math.min((page - 1) * pageSize + 1, totalItems)} - {Math.min(page * pageSize, totalItems)} of {totalItems} Staff Members
@@ -324,7 +496,7 @@ const Staff = () => {
                 </div>
             )}
 
-            <Modal isOpen={isModalOpen} onClose={closeModal} title={editingStaff ? 'Edit Staff Member' : 'Register New Staff Member'} size="md">
+    <Modal isOpen={isModalOpen} onClose={closeModal} title={editingStaff ? 'Edit Staff Member' : 'Register New Staff Member'} size="md">
                 <form onSubmit={handleSubmit} className="form-container-md mx-auto space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
                         <div className="form-group">
@@ -366,7 +538,7 @@ const Staff = () => {
                                     { id: 'SUPPORT', label: 'Support Staff' }
                                 ]}
                                 value={formData.role}
-                                onChange={(val) => setFormData({ ...formData, role: val.toString() })}
+                                onChange={(val) => handleRoleChange(val.toString())}
                                 required
                             />
                         </div>
@@ -425,7 +597,6 @@ const Staff = () => {
                     </div>
                 </div>
             </Modal>
-
         </div>
     );
 };

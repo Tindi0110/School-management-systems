@@ -16,6 +16,8 @@ from .serializers import (
     HealthRecordSerializer, ActivityRecordSerializer
 )
 
+from accounts.permissions import IsAdminOrRegistrar, IsAdminUser
+
 class StudentViewSet(viewsets.ModelViewSet):
     queryset = Student.objects.select_related(
         'current_class', 'user',
@@ -41,10 +43,16 @@ class StudentViewSet(viewsets.ModelViewSet):
         avg_score=Avg('results__score'),
     ).order_by('admission_number')
     serializer_class = StudentSerializer
-    permission_classes = [permissions.IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['current_class', 'status', 'category', 'gender']
     search_fields = ['full_name', 'admission_number', 'current_class__name']
+
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'link_user', 'link_parent', 'unlink_parent']:
+            return [IsAdminOrRegistrar()]
+        if self.action in ['destroy', 'force_delete']:
+            return [IsAdminUser()]
+        return [IsAuthenticated()]
 
     @action(detail=False, methods=['get'])
     def minimal_search(self, request):
@@ -230,7 +238,11 @@ class StudentViewSet(viewsets.ModelViewSet):
 class ParentViewSet(viewsets.ModelViewSet):
     queryset = Parent.objects.all()
     serializer_class = ParentSerializer
-    permission_classes = [permissions.IsAuthenticated]
+
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return [IsAdminOrRegistrar()]
+        return [IsAuthenticated()]
 
     def get_queryset(self):
         # Optimized query with prefetch_related to resolve N+1 issue
@@ -255,7 +267,11 @@ class ParentViewSet(viewsets.ModelViewSet):
 class StudentAdmissionViewSet(viewsets.ModelViewSet):
     queryset = StudentAdmission.objects.all()
     serializer_class = StudentAdmissionSerializer
-    permission_classes = [permissions.IsAuthenticated]
+
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return [IsAdminOrRegistrar()]
+        return [IsAuthenticated()]
 
 class StudentDocumentViewSet(viewsets.ModelViewSet):
     queryset = StudentDocument.objects.select_related('student').all()

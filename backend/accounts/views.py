@@ -23,6 +23,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .serializers import RegisterSerializer, UserSerializer
+from .permissions import IsAdminOrRegistrar
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -130,6 +131,20 @@ class VerifyEmailView(APIView):
 
         user.is_email_verified = True
         user.save()
+        
+        # Notify user that verification is successful
+        body = (
+            f"Hello {user.username},\n\n"
+            f"Your email address has been successfully verified.\n\n"
+            f"NOTE: As a staff member, your account still requires administrator approval before you can log in. "
+            f"You will receive another email once your account is approved.\n\n"
+            f"— School Management System"
+        )
+        try:
+            EmailService.send_async('Email Verified — School Management System', body, user.email)
+        except Exception:
+            logger.exception("Failed to send verification success email to %s", user.email)
+
         return Response({'message': 'Email verified successfully.'}, status=status.HTTP_200_OK)
 
 
@@ -211,18 +226,17 @@ class RegisterView(generics.CreateAPIView):
         EmailService.send_async('Verify Your Email — School Management System', body, user.email)
 
 
-# ---------------------------------------------------------------------------
-# Staff Approval (Admin only)
-# ---------------------------------------------------------------------------
+# Permissions moved to permissions.py
 
 class StaffApprovalView(APIView):
     """
-    Admin endpoint to list and approve pending staff accounts.
-    GET  /api/auth/staff-approval/           → list pending users
-    POST /api/auth/staff-approval/<user_id>/ → approve a specific user
+    Admin/Registrar endpoint to list, approve, or reject pending staff accounts.
+    GET    /api/auth/staff-approval/           → list pending users
+    POST   /api/auth/staff-approval/<user_id>/ → approve a specific user
+    DELETE /api/auth/staff-approval/<user_id>/ → reject (delete) a specific user
     """
 
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminOrRegistrar]
 
     def get(self, request):
         pending = User.objects.filter(is_approved=False, is_email_verified=True).order_by('date_joined')
@@ -236,5 +250,32 @@ class StaffApprovalView(APIView):
 
         user.is_approved = True
         user.save()
-        logger.info("Admin %s approved account for %s", request.user.email, user.email)
+        
+        # Send Approval Email
+        login_link = f"{settings.FRONTEND_URL}/login"
+        body = (
+            f"Congratulations {user.username}!\n\n"
+            f"Your account on the School Management System has been approved by the administrator.\n\n"
+            f"You can now log in using your email and password at:\n"
+            f"{login_link}\n\n"
+            f"— School Management System"
+        )
+        try:
+            EmailService.send_async('Account Approved — School Management System', body, user.email)
+            logger.info("Approval notification sent to %s", user.email)
+        except Exception:
+            logger.exception("Failed to send approval email to %s", user.email)
+
+        logger.info("Account %s approved by %s", user.email, request.user.email)
         return Response({'message': f'{user.email} has been approved.'})
+
+    def delete(self, request, user_id):
+        try:
+            user = User.objects.get(id=user_id, is_approved=False)
+        except User.DoesNotExist:
+            return Response({'error': 'Pending user not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        email = user.email
+        user.delete()
+        logger.info("Account %s rejected and deleted by %s", email, request.user.email)
+        return Response({'message': f'Registration for {email} has been rejected and the account removed.'}, status=status.HTTP_204_NO_CONTENT)

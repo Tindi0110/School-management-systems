@@ -18,14 +18,20 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-from .permissions import IsAdminToDelete
+from accounts.permissions import IsAdminOrAccountant, IsAdminUser
 
 class FeeStructureViewSet(viewsets.ModelViewSet):
     queryset = FeeStructure.objects.select_related('academic_year', 'class_level').all()
     serializer_class = FeeStructureSerializer
-    permission_classes = [IsAuthenticated, IsAdminToDelete]
     filter_backends = [filters.SearchFilter]
     search_fields = ['name', 'class_level__name']
+
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update']:
+            return [IsAdminOrAccountant()]
+        if self.action == 'destroy':
+            return [IsAdminUser()]
+        return [IsAuthenticated()]
 
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -34,11 +40,17 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         'student', 'student__current_class', 'academic_year'
     ).prefetch_related('items', 'payments', 'payments__received_by', 'adjustments')
     serializer_class = InvoiceSerializer
-    permission_classes = [IsAuthenticated, IsAdminToDelete]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['student', 'student__current_class', 'student__current_class__stream', 'academic_year', 'term', 'status']
     search_fields = ['student__full_name', 'student__admission_number', 'student__user__username']
     ordering_fields = ['date_generated', 'total_amount', 'balance']
+
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'generate_batch', 'sync_all', 'send_reminders']:
+            return [IsAdminOrAccountant()]
+        if self.action == 'destroy':
+            return [IsAdminUser()]
+        return [IsAuthenticated()]
 
     @action(detail=False, methods=['get'])
     def dashboard_stats(self, request):
@@ -308,10 +320,16 @@ class PaymentViewSet(viewsets.ModelViewSet):
         'invoice', 'invoice__student', 'received_by'
     ).all()
     serializer_class = PaymentSerializer
-    permission_classes = [IsAuthenticated, IsAdminToDelete]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['invoice__student', 'invoice', 'method', 'invoice__term', 'invoice__academic_year']
     search_fields = ['invoice__student__full_name', 'invoice__student__admission_number', 'reference_number']
+
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update']:
+            return [IsAdminOrAccountant()]
+        if self.action == 'destroy':
+            return [IsAdminUser()]
+        return [IsAuthenticated()]
 
     def create(self, request, *args, **kwargs):
         method = request.data.get('method')
@@ -339,9 +357,15 @@ class PaymentViewSet(viewsets.ModelViewSet):
 class AdjustmentViewSet(viewsets.ModelViewSet):
     queryset = Adjustment.objects.select_related('invoice__student', 'approved_by').all()
     serializer_class = AdjustmentSerializer
-    permission_classes = [IsAuthenticated, IsAdminToDelete]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['invoice__student', 'invoice', 'adjustment_type']
+
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update']:
+            return [IsAdminOrAccountant()]
+        if self.action == 'destroy':
+            return [IsAdminUser()]
+        return [IsAuthenticated()]
 
     def perform_create(self, serializer):
         serializer.save(approved_by=self.request.user)
@@ -349,10 +373,16 @@ class AdjustmentViewSet(viewsets.ModelViewSet):
 class ExpenseViewSet(viewsets.ModelViewSet):
     queryset = Expense.objects.select_related('approved_by').all()
     serializer_class = ExpenseSerializer
-    permission_classes = [IsAuthenticated, IsAdminToDelete]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['category', 'status']
     search_fields = ['category', 'description', 'paid_to']
+
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'approve', 'decline']:
+            return [IsAdminOrAccountant()]
+        if self.action == 'destroy':
+            return [IsAdminUser()]
+        return [IsAuthenticated()]
 
     def perform_create(self, serializer):
         serializer.save(approved_by=self.request.user)

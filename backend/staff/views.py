@@ -5,14 +5,19 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import IsAuthenticated
 from .models import Staff, Department
 from .serializers import StaffSerializer, DepartmentSerializer
+from accounts.permissions import IsAdminOrRegistrar
 
 class StaffViewSet(viewsets.ModelViewSet):
     queryset = Staff.objects.select_related('user').all()
     serializer_class = StaffSerializer
-    permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['department', 'user__role']
     search_fields = ['user__first_name', 'user__last_name', 'employee_id', 'user__role', 'department']
+
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy', 'sync_staff']:
+            return [IsAdminOrRegistrar()]
+        return [IsAuthenticated()]
 
     def destroy(self, request, *args, **kwargs):
         if request.user.role != 'ADMIN':
@@ -62,6 +67,10 @@ class StaffViewSet(viewsets.ModelViewSet):
 class DepartmentViewSet(viewsets.ModelViewSet):
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
-    permission_classes = [IsAuthenticated]
     filter_backends = [filters.SearchFilter]
     search_fields = ['name']
+
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return [IsAdminOrRegistrar()]
+        return [IsAuthenticated()]
