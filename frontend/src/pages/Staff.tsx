@@ -134,6 +134,18 @@ const Staff = () => {
         }
     };
 
+    const handleResendVerification = async (userId: number) => {
+        setIsProcessingApproval(userId);
+        try {
+            await authAPI.staffApproval.resendVerification(userId);
+            toast.success('Verification email resent successfully');
+        } catch (error: any) {
+            toast.error(error.message || 'Failed to resend verification email');
+        } finally {
+            setIsProcessingApproval(null);
+        }
+    };
+
     const handleCreateDept = async () => {
         if (!newDeptName.trim()) return;
         setIsSubmitting(true);
@@ -327,6 +339,9 @@ const Staff = () => {
                             <Button variant="outline" className="flex-1 sm:flex-none" onClick={handleSyncStaff} loading={isSubmitting} icon={<RefreshCcw size={18} />}>
                                 Sync Profiles
                             </Button>
+                            <Button variant="primary" className="flex-1 sm:flex-none" onClick={() => setShowDeptModal(true)} icon={<Plus size={18} />}>
+                                Add Dept
+                            </Button>
                             <Button variant="primary" className="flex-1 sm:flex-none" onClick={() => openModal()} icon={<Plus size={18} />}>
                                 Add Staff
                             </Button>
@@ -417,14 +432,27 @@ const Staff = () => {
                                         </td>
                                         <td className="no-print">
                                             <div className="flex gap-2">
-                                                <Button 
-                                                    variant="primary" 
-                                                    size="sm" 
-                                                    loading={isProcessingApproval === u.id}
-                                                    onClick={() => handleApprove(u.id)}
-                                                    icon={<Check size={14} />}
-                                                    title="Approve"
-                                                />
+                                                {u.is_email_verified ? (
+                                                    <Button 
+                                                        variant="primary" 
+                                                        size="sm" 
+                                                        loading={isProcessingApproval === u.id}
+                                                        onClick={() => handleApprove(u.id)}
+                                                        icon={<Check size={14} />}
+                                                        title="Approve"
+                                                    />
+                                                ) : (
+                                                    <Button 
+                                                        variant="primary" 
+                                                        size="sm" 
+                                                        loading={isProcessingApproval === u.id}
+                                                        onClick={() => handleResendVerification(u.id)}
+                                                        title="Resend Email"
+                                                        className="whitespace-nowrap font-bold text-[10px]"
+                                                    >
+                                                        Resend
+                                                    </Button>
+                                                )}
                                                 <Button 
                                                     variant="danger" 
                                                     size="sm" 

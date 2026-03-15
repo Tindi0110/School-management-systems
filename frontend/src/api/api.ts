@@ -181,6 +181,7 @@ export const authAPI = {
     getPending: () => axios.get(`${API_BASE_URL.replace('/api', '')}/api/auth/staff-approval/`),
     approve: (userId: number) => axios.post(`${API_BASE_URL.replace('/api', '')}/api/auth/staff-approval/${userId}/`),
     reject: (userId: number) => axios.delete(`${API_BASE_URL.replace('/api', '')}/api/auth/staff-approval/${userId}/`),
+    resendVerification: (userId: number) => axios.post(`${API_BASE_URL.replace('/api', '')}/api/auth/resend-verification/${userId}/`),
   }
 };
 

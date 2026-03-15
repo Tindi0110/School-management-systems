@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import RegisterView, CustomAuthToken, PasswordResetRequestView, PasswordResetConfirmView, StaffApprovalView
+from .views import RegisterView, CustomAuthToken, PasswordResetRequestView, PasswordResetConfirmView, StaffApprovalView, ResendVerificationEmailView
 
 urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
@@ -8,4 +8,5 @@ urlpatterns = [
     path('password-reset-confirm/<uidb64>/<token>/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('staff-approval/', StaffApprovalView.as_view(), name='staff_approval_list'),
     path('staff-approval/<int:user_id>/', StaffApprovalView.as_view(), name='staff_approval_detail'),
+    path('resend-verification/<int:user_id>/', ResendVerificationEmailView.as_view(), name='resend_verification'),
 ]

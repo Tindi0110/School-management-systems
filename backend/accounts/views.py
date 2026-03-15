@@ -148,6 +148,36 @@ class VerifyEmailView(APIView):
         return Response({'message': 'Email verified successfully.'}, status=status.HTTP_200_OK)
 
 
+class ResendVerificationEmailView(APIView):
+    """
+    Admin/Registrar endpoint to resend the verification email to an unverified user.
+    """
+    permission_classes = [IsAdminOrRegistrar]
+
+    def post(self, request, user_id):
+        try:
+            user = User.objects.get(id=user_id, is_email_verified=False)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found or already verified.'}, status=status.HTTP_404_NOT_FOUND)
+
+        token = default_token_generator.make_token(user)
+        uid   = urlsafe_base64_encode(force_bytes(user.pk))
+        link  = f"{settings.FRONTEND_URL}/verify-email/{uid}/{token}"
+
+        body = (
+            f"Hello {user.first_name or user.username},\n\n"
+            f"Please verify your email by clicking the link below:\n\n"
+            f"{link}\n\n"
+            f"— School Management System"
+        )
+        try:
+            EmailService.send_async('Verify Your Email — School Management System', body, user.email)
+            return Response({'message': f'Verification email resent to {user.email}.'})
+        except Exception:
+            logger.exception("Failed to resend verification email to %s", user.email)
+            return Response({'error': 'Failed to send email.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 # ---------------------------------------------------------------------------
 # Authentication
 # ---------------------------------------------------------------------------
@@ -239,7 +269,7 @@ class StaffApprovalView(APIView):
     permission_classes = [IsAdminOrRegistrar]
 
     def get(self, request):
-        pending = User.objects.filter(is_approved=False, is_email_verified=True).order_by('date_joined')
+        pending = User.objects.filter(is_approved=False, role__in=['ADMIN', 'TEACHER', 'PRINCIPAL', 'DEPUTY', 'DOS', 'REGISTRAR', 'ACCOUNTANT', 'NURSE', 'WARDEN', 'LIBRARIAN', 'DRIVER']).order_by('date_joined')
         return Response(UserSerializer(pending, many=True).data)
 
     def post(self, request, user_id):
