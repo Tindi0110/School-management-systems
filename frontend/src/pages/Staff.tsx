@@ -16,7 +16,7 @@ const Staff = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingStaff, setEditingStaff] = useState<any>(null);
-    const [groupBy, setGroupBy] = useState<'NONE' | 'ROLE' | 'DEPARTMENT'>('NONE');
+    const [groupBy, setGroupBy] = useState<'NONE' | 'ROLE' | 'DEPARTMENT' | 'PENDING'>('NONE');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const toast = useToast();
     const { confirm } = useConfirm();
@@ -357,8 +357,8 @@ const Staff = () => {
                         ))}
                         {isAdminOrRegistrar && (
                             <button
-                                className={`nav-tab px-6 py-2.5 text-[11px] font-black uppercase tracking-widest rounded-xl transition-all ${groupBy === 'PENDING' as any ? 'active bg-primary text-white shadow-lg' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'}`}
-                                onClick={() => setGroupBy('PENDING' as any)}
+                                className={`nav-tab px-6 py-2.5 text-[11px] font-black uppercase tracking-widest rounded-xl transition-all ${groupBy === 'PENDING' ? 'active bg-primary text-white shadow-lg' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'}`}
+                                onClick={() => setGroupBy('PENDING')}
                             >
                                 <span className="flex items-center gap-2">
                                     Pending 
