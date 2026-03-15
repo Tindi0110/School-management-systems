@@ -149,16 +149,24 @@ const Register = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="auth-input-group">
                                 <label className="label uppercase text-[10px] font-black mb-1">Password</label>
-                                <div className="auth-input-wrapper">
+                                 <div className="auth-input-wrapper" style={{ position: 'relative' }}>
                                     <LockIcon size={18} className="auth-input-icon" />
-                                    <input type={showPassword ? "text" : "password"} className="input auth-input-field pr-12"
+                                    <input type={showPassword ? "text" : "password"} className="input auth-input-field"
+                                        style={{ paddingRight: '45px' }}
                                         placeholder="••••••"
                                         autoComplete="new-password"
                                         value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} required />
                                     <button
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-secondary hover:text-primary transition-colors bg-transparent border-none p-0 flex items-center justify-center outline-none z-10"
+                                        className="absolute text-secondary hover:text-primary transition-colors bg-transparent border-none p-0 flex items-center justify-center outline-none z-10"
+                                        style={{ 
+                                          position: 'absolute', 
+                                          right: '12px', 
+                                          top: '50%', 
+                                          transform: 'translateY(-50%)',
+                                          cursor: 'pointer'
+                                        }}
                                     >
                                         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                     </button>
@@ -167,16 +175,24 @@ const Register = () => {
                             </div>
                             <div className="auth-input-group">
                                 <label className="label uppercase text-[10px] font-black mb-1">Confirm</label>
-                                <div className="auth-input-wrapper">
+                                 <div className="auth-input-wrapper" style={{ position: 'relative' }}>
                                     <LockIcon size={18} className="auth-input-icon" />
-                                    <input type={showConfirmPassword ? "text" : "password"} className="input auth-input-field pr-12"
+                                    <input type={showConfirmPassword ? "text" : "password"} className="input auth-input-field"
+                                        style={{ paddingRight: '45px' }}
                                         placeholder="••••••"
                                         autoComplete="new-password"
                                         value={formData.confirm_password} onChange={e => setFormData({ ...formData, confirm_password: e.target.value })} required />
                                     <button
                                         type="button"
                                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-secondary hover:text-primary transition-colors bg-transparent border-none p-0 flex items-center justify-center outline-none z-10"
+                                        className="absolute text-secondary hover:text-primary transition-colors bg-transparent border-none p-0 flex items-center justify-center outline-none z-10"
+                                        style={{ 
+                                          position: 'absolute', 
+                                          right: '12px', 
+                                          top: '50%', 
+                                          transform: 'translateY(-50%)',
+                                          cursor: 'pointer'
+                                        }}
                                     >
                                         {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                     </button>

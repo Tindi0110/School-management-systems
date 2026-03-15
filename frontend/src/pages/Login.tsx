@@ -108,11 +108,12 @@ const Login = () => {
                 <label className="label uppercase text-[10px] font-black">Password</label>
                 <Link to="/forgot-password" title="Recover Password" className="text-[10px] font-black text-primary uppercase hover:underline">Forgot?</Link>
               </div>
-              <div className="auth-input-wrapper">
+              <div className="auth-input-wrapper" style={{ position: 'relative' }}>
                 <Lock size={18} className="auth-input-icon" />
                 <input
                   type={showPassword ? "text" : "password"}
                   className="input auth-input-field"
+                  style={{ paddingRight: '45px' }}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
@@ -121,7 +122,14 @@ const Login = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-secondary hover:text-primary transition-colors bg-transparent border-none p-0 flex items-center justify-center outline-none"
+                  className="absolute text-secondary hover:text-primary transition-colors bg-transparent border-none p-0 flex items-center justify-center outline-none z-10"
+                  style={{ 
+                    position: 'absolute', 
+                    right: '12px', 
+                    top: '50%', 
+                    transform: 'translateY(-50%)',
+                    cursor: 'pointer'
+                  }}
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
