@@ -197,16 +197,21 @@ const DashboardLayout = () => {
               </h2>
             </div>
 
-            {/* Quick Search shortcut */}
-            <div
-              className="hidden lg:flex items-center gap-2 bg-gray-50 border border-gray-100 px-3 py-1.5 rounded-xl text-gray-400 cursor-pointer hover:bg-white hover:border-primary-accent transition-all group"
-              onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }))}
-            >
-              <Search size={14} className="group-hover:text-primary-accent transition-colors" />
-              <span className="text-[11px] font-bold">Quick Search</span>
-              <div className="flex items-center gap-0.5 ml-2">
-                <kbd className="bg-white border px-1 rounded text-[9px] font-black">Ctrl</kbd>
-                <kbd className="bg-white border px-1 rounded text-[9px] font-black">K</kbd>
+            {/* Premium Quick Search Bar */}
+            <div className="hidden lg:flex flex-1 justify-center max-w-md mx-8">
+              <div
+                className="flex items-center justify-between w-full bg-gray-50/50 hover:bg-white border border-gray-200/60 hover:border-primary/40 shadow-sm hover:shadow-md px-4 py-2 rounded-full cursor-text transition-all duration-300 group"
+                onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }))}
+                title="Quick Search"
+              >
+                <div className="flex items-center gap-3">
+                  <Search size={16} className="text-gray-400 group-hover:text-primary transition-colors duration-300" />
+                  <span className="text-xs font-medium text-gray-500 group-hover:text-gray-900 transition-colors duration-300">Quick Search...</span>
+                </div>
+                <div className="flex items-center gap-1 opacity-70 group-hover:opacity-100 transition-opacity duration-300">
+                  <kbd className="bg-white border border-gray-200 text-gray-500 shadow-sm px-1.5 py-0.5 rounded-md text-[10px] font-bold">Ctrl</kbd>
+                  <kbd className="bg-white border border-gray-200 text-gray-500 shadow-sm px-1.5 py-0.5 rounded-md text-[10px] font-bold">K</kbd>
+                </div>
               </div>
             </div>
           </div>
