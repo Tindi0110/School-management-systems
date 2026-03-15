@@ -161,7 +161,7 @@ const VerifyOTP = () => {
                   onChange={(e) => handleChange(index, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(index, e)}
                   disabled={loading}
-                  className="w-10 h-12 text-center text-xl font-bold text-gray-800 bg-white border border-gray-200 rounded-xl shadow-sm focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none disabled:opacity-50 disabled:bg-gray-50"
+                  className="w-3 h-12 text-center text-xl font-bold text-gray-800 bg-white border border-gray-200 rounded-xl shadow-sm focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none disabled:opacity-50 disabled:bg-gray-50"
                   aria-label={`Digit ${index + 1}`}
                 />
               ))}
