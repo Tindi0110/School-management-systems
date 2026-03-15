@@ -15,6 +15,7 @@ const Login = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const { success, error: errorToast } = useToast()
+  const [resending, setResending] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -38,6 +39,23 @@ const Login = () => {
       setLoading(false)
     }
   }
+
+  const handleResendVerification = async () => {
+    if (!email) {
+      errorToast("Please enter your email address above to resend the verification link.");
+      return;
+    }
+    setResending(true);
+    try {
+      const response = await authAPI.resendVerificationPublic(email);
+      success(response.data.message || "Verification link sent!");
+    } catch (err: any) {
+      console.error(err);
+      errorToast(err.response?.data?.error || 'Failed to resend email.');
+    } finally {
+      setResending(false);
+    }
+  };
 
   return (
     <div className="auth-page">
@@ -111,6 +129,18 @@ const Login = () => {
 
         <div className="auth-footer text-xs font-bold text-secondary">
           New Staff? <Link to="/register" className="text-primary hover:underline ml-1">Request Account</Link>
+        </div>
+        <div className="auth-footer text-[10px] font-bold text-secondary mt-2">
+          Need to verify your email? 
+          <button 
+            type="button" 
+            onClick={handleResendVerification}
+            disabled={resending}
+            className="text-primary hover:underline ml-1 bg-transparent border-none p-0 cursor-pointer disabled:opacity-50"
+            title={!email ? "Enter your email above first" : "Resend verification email"}
+          >
+            {resending ? 'Sending...' : 'Resend Link'}
+          </button>
         </div>
       </div>
 

@@ -178,6 +178,41 @@ class ResendVerificationEmailView(APIView):
             return Response({'error': 'Failed to send email.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+class ResendVerificationEmailPublicView(APIView):
+    """
+    Public endpoint for an unverified user to request a new verification email.
+    """
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        email = request.data.get('email', '').strip()
+        if not email:
+            return Response({'error': 'Email address is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.get(email=email, is_email_verified=False)
+        except User.DoesNotExist:
+            # Return success to prevent email enumeration attacks
+            return Response({'message': 'If the account exists and is unverified, a verification link has been sent.'})
+
+        token = default_token_generator.make_token(user)
+        uid   = urlsafe_base64_encode(force_bytes(user.pk))
+        link  = f"{settings.FRONTEND_URL}/verify-email/{uid}/{token}"
+
+        body = (
+            f"Hello {user.first_name or user.username},\n\n"
+            f"You requested a new verification link. Please verify your email by clicking the link below:\n\n"
+            f"{link}\n\n"
+            f"— School Management System"
+        )
+        try:
+            EmailService.send_async('Verify Your Email — School Management System', body, user.email)
+            return Response({'message': 'If the account exists and is unverified, a verification link has been sent.'})
+        except Exception:
+            logger.exception("Failed to resend verification email to %s (Public)", user.email)
+            return Response({'error': 'Failed to send email.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 # ---------------------------------------------------------------------------
 # Authentication
 # ---------------------------------------------------------------------------
