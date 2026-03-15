@@ -41,6 +41,7 @@ class StaffSerializer(serializers.ModelSerializer):
     # Write-only fields so callers can supply name and role without touching User directly
     write_full_name = serializers.CharField(write_only=True, required=False, allow_blank=True)
     write_role      = serializers.CharField(write_only=True, required=False, default='TEACHER')
+    employee_id     = serializers.CharField(required=False, allow_blank=True)
 
     class Meta:
         model  = Staff
@@ -79,6 +80,14 @@ class StaffSerializer(serializers.ModelSerializer):
 
     # ── Create / Update ────────────────────────────────────────────────────
 
+    def to_internal_value(self, data):
+        _data = data.copy() if hasattr(data, 'copy') else data
+        import uuid
+        if not _data.get('employee_id'):
+            # Temp ID to bypass DRF validation. Will be replaced in create().
+            _data['employee_id'] = f"TEMP-{uuid.uuid4().hex[:8].upper()}"
+        return super().to_internal_value(_data)
+
     def create(self, validated_data: dict) -> Staff:
         full_name   = validated_data.pop('write_full_name', '')
         role        = validated_data.pop('write_role', 'TEACHER')
@@ -89,9 +98,13 @@ class StaffSerializer(serializers.ModelSerializer):
         first_name = parts[0]
         last_name  = parts[1] if len(parts) > 1 else ''
 
+        # Use email as base username to avoid collision since TEMP is random
+        is_temp = employee_id.startswith('TEMP-')
+        base_username = email if is_temp and email else employee_id
+
         # Admin-created staff should be automatically fully approved
         user, created = User.objects.get_or_create(
-            username=employee_id,
+            username=base_username,
             defaults={
                 'first_name': first_name,
                 'last_name':  last_name,
@@ -103,6 +116,11 @@ class StaffSerializer(serializers.ModelSerializer):
         )
 
         if created:
+            if is_temp:
+                employee_id = f"EMP-{user.id:04d}"
+                validated_data['employee_id'] = employee_id
+                user.username = employee_id
+
             temp_password = 'staff@123'
             user.set_password(temp_password)
             user.save()
@@ -122,6 +140,15 @@ class StaffSerializer(serializers.ModelSerializer):
                 EmailService.send_async('Welcome to the School Management System', body, email)
 
         validated_data['user'] = user
+        
+        # The accounts.signals post_save handler might have automatically created a Staff profile
+        staff_profile = Staff.objects.filter(user=user).first()
+        if staff_profile:
+            for attr, value in validated_data.items():
+                setattr(staff_profile, attr, value)
+            staff_profile.save()
+            return staff_profile
+
         return super().create(validated_data)
 
     def update(self, instance: Staff, validated_data: dict) -> Staff:

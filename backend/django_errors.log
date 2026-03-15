@@ -52,3 +52,21 @@ INFO 2026-03-15 23:46:00,553 autoreload 12808 19012 C:\Users\Evans\School manage
 INFO 2026-03-15 23:46:01,399 autoreload 13976 18824 C:\Users\Evans\School management system\backend\accounts\urls.py changed, reloading.
 INFO 2026-03-15 23:46:05,218 autoreload 3504 15536 Watching for file changes with StatReloader
 INFO 2026-03-15 23:46:10,066 autoreload 14508 4056 Watching for file changes with StatReloader
+INFO 2026-03-16 00:02:31,210 autoreload 3504 15536 C:\Users\Evans\School management system\backend\staff\serializers.py changed, reloading.
+INFO 2026-03-16 00:02:31,679 autoreload 14508 4056 C:\Users\Evans\School management system\backend\staff\serializers.py changed, reloading.
+INFO 2026-03-16 00:02:42,027 autoreload 9688 16552 Watching for file changes with StatReloader
+INFO 2026-03-16 00:02:42,097 autoreload 15984 18476 Watching for file changes with StatReloader
+INFO 2026-03-16 00:03:16,208 signals 7736 18908 Created Staff profile and assigned to Academics department for testadd3@example.com
+INFO 2026-03-16 00:03:16,213 mail 7736 15936 Email thread started for: testadd3@example.com
+INFO 2026-03-16 00:03:16,213 signals 7736 18908 Approval notification sent to testadd3@example.com
+INFO 2026-03-16 00:03:20,006 mail 7736 15936 Successfully sent email to: testadd3@example.com
+INFO 2026-03-16 00:03:21,171 mail 7736 13356 Email thread started for: testadd3@example.com
+INFO 2026-03-16 00:03:54,074 autoreload 15984 18476 C:\Users\Evans\School management system\backend\staff\serializers.py changed, reloading.
+INFO 2026-03-16 00:03:54,147 autoreload 9688 16552 C:\Users\Evans\School management system\backend\staff\serializers.py changed, reloading.
+INFO 2026-03-16 00:04:04,277 autoreload 4948 13348 Watching for file changes with StatReloader
+INFO 2026-03-16 00:04:04,291 autoreload 7496 18980 Watching for file changes with StatReloader
+INFO 2026-03-16 00:05:51,846 signals 10928 16620 Created Staff profile and assigned to Academics department for testadd4@example.com
+INFO 2026-03-16 00:05:51,848 mail 10928 3296 Email thread started for: testadd4@example.com
+INFO 2026-03-16 00:05:51,848 signals 10928 16620 Approval notification sent to testadd4@example.com
+INFO 2026-03-16 00:05:54,351 mail 10928 3296 Successfully sent email to: testadd4@example.com
+INFO 2026-03-16 00:05:55,889 mail 10928 1252 Email thread started for: testadd4@example.com
