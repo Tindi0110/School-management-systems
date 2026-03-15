@@ -132,6 +132,8 @@ api.interceptors.response.use(
       return Promise.reject({ ...error, message: serverError });
     }
 
+    let message = 'An unexpected error occurred';
+
     if (error.response?.status === 400 && typeof error.response.data === 'object') {
       const data = error.response.data;
       const stringified = JSON.stringify(data).toLowerCase();
