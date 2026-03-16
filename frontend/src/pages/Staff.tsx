@@ -411,143 +411,143 @@ const Staff = () => {
 
             {loading ? renderSkeletonContent() : (
                 <div className="space-y-6">
-
-
-            {groupBy === 'NONE' ? (
-                <div className="table-container shadow-md">
-                    {renderStaffTable(filteredStaff)}
-                    {filteredStaff.length === 0 && <div className="text-center py-12 text-secondary">No matching staff records found</div>}
-                </div>
-            ) : groupBy === 'PENDING' ? (
-                <div className="table-container shadow-md border-left-4 border-warning">
-                    <div className="card-header border-bottom py-4 px-6 flex justify-between items-center">
-                        <h3 className="mb-0 text-warning flex items-center gap-sm font-black uppercase tracking-wider text-sm">
-                            <UserCheck size={18} />
-                            Pending Staff Registrations
-                        </h3>
-                        <div className="badge badge-warning font-black uppercase tracking-widest text-[10px]">{pendingStaff.length} Awaiting Approval</div>
-                    </div>
-                    <div className="table-wrapper">
-                        <table className="table">
-                            <thead>
-                                <tr>
-                                    <th>User Info</th>
-                                    <th>Requested Role</th>
-                                    <th>Verification</th>
-                                    <th className="no-print">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {pendingStaff.length > 0 ? pendingStaff.map((u) => (
-                                    <tr key={u.id}>
-                                        <td>
-                                            <div className="flex flex-col">
-                                                <span className="font-semibold text-primary">{u.username}</span>
-                                                <span className="text-[10px] text-secondary">{u.email}</span>
-                                            </div>
-                                        </td>
-                                        <td><span className="badge badge-info">{u.role}</span></td>
-                                        <td>
-                                            {u.is_email_verified ? (
-                                                <span className="text-[10px] font-bold text-success flex items-center gap-1"><Check size={12}/> Email Verified</span>
-                                            ) : (
-                                                <span className="text-[10px] font-bold text-danger flex items-center gap-1"><X size={12}/> Unverified</span>
-                                            )}
-                                        </td>
-                                        <td className="no-print">
-                                            <div className="flex gap-2">
-                                                {u.is_email_verified ? (
-                                                    <Button 
-                                                        variant="primary" 
-                                                        size="sm" 
-                                                        loading={isProcessingApproval === u.id}
-                                                        onClick={() => handleApprove(u.id)}
-                                                        icon={<Check size={14} />}
-                                                        title="Approve"
-                                                    />
-                                                ) : (
-                                                    <Button 
-                                                        variant="primary" 
-                                                        size="sm" 
-                                                        loading={isProcessingApproval === u.id}
-                                                        onClick={() => handleResendVerification(u.id)}
-                                                        title="Resend Email"
-                                                        className="whitespace-nowrap font-bold text-[10px]"
-                                                    >
-                                                        Resend
-                                                    </Button>
-                                                )}
-                                                <Button 
-                                                    variant="danger" 
-                                                    size="sm" 
-                                                    loading={isProcessingApproval === u.id}
-                                                    onClick={() => handleReject(u.id)}
-                                                    icon={<X size={14} />}
-                                                    title="Reject"
-                                                />
-                                            </div>
-                                        </td>
-                                    </tr>
-                                )) : (
-                                    <tr><td colSpan={4} className="text-center py-12 text-secondary">No pending registrations found</td></tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            ) : (
-                <div className="space-y-10">
-                    {Object.keys(groupedStaff).sort().map(groupKey => (
-                        <div key={groupKey} className="table-container overflow-visible border-left-4 border-primary shadow-md">
-                            <div className="card-header border-bottom py-4 px-6 flex justify-between items-center">
-                                <h3 className="mb-0 text-primary flex items-center gap-sm font-black uppercase tracking-wider text-sm">
-                                    {groupBy === 'DEPARTMENT' ? <LayoutGrid size={18} /> : <Briefcase size={18} />}
-                                    {groupKey}
-                                </h3>
-                                <div className="flex items-center gap-4">
-                                    {groupBy === 'DEPARTMENT' && isAdminOrRegistrar && groupKey !== 'General Administration' && (
-                                        <div className="flex gap-2 mr-4">
-                                            <Button variant="outline" size="sm" onClick={() => {
-                                                const dept = departments.find(d => d.name === groupKey);
-                                                if (dept) {
-                                                    setNewDeptName(dept.name);
-                                                    setShowDeptModal(true);
-                                                }
-                                            }} icon={<Edit size={12} />} />
-                                            <Button variant="danger" size="sm" onClick={async () => {
-                                                const dept = departments.find(d => d.name === groupKey);
-                                                if (dept && await confirm(`Delete ${dept.name} department?`)) {
-                                                    try {
-                                                        await staffAPI.departments.delete(dept.id);
-                                                        toast.success('Department deleted');
-                                                        loadDepartments();
-                                                    } catch (e) {
-                                                        toast.error('Failed to delete department (might have staff assigned)');
-                                                    }
-                                                }
-                                            }} icon={<Trash2 size={12} />} />
-                                        </div>
-                                    )}
-                                    <div className="badge badge-primary font-black uppercase tracking-widest text-[10px]">{groupedStaff[groupKey].length} Staff</div>
-                                </div>
-                            </div>
-                            {renderStaffTable(groupedStaff[groupKey])}
+                    {groupBy === 'NONE' ? (
+                        <div className="table-container shadow-md">
+                            {renderStaffTable(filteredStaff)}
+                            {filteredStaff.length === 0 && <div className="text-center py-12 text-secondary">No matching staff records found</div>}
                         </div>
-                    ))}
-                    {Object.keys(groupedStaff).length === 0 && <div className="card text-center py-12 text-secondary">No records found for current criteria</div>}
-                </div>
-            )}
+                    ) : groupBy === 'PENDING' ? (
+                        <div className="table-container shadow-md border-left-4 border-warning">
+                            <div className="card-header border-bottom py-4 px-6 flex justify-between items-center">
+                                <h3 className="mb-0 text-warning flex items-center gap-sm font-black uppercase tracking-wider text-sm">
+                                    <UserCheck size={18} />
+                                    Pending Staff Registrations
+                                </h3>
+                                <div className="badge badge-warning font-black uppercase tracking-widest text-[10px]">{pendingStaff.length} Awaiting Approval</div>
+                            </div>
+                            <div className="table-wrapper">
+                                <table className="table">
+                                    <thead>
+                                        <tr>
+                                            <th>User Info</th>
+                                            <th>Requested Role</th>
+                                            <th>Verification</th>
+                                            <th className="no-print">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {pendingStaff.length > 0 ? pendingStaff.map((u) => (
+                                            <tr key={u.id}>
+                                                <td>
+                                                    <div className="flex flex-col">
+                                                        <span className="font-semibold text-primary">{u.username}</span>
+                                                        <span className="text-[10px] text-secondary">{u.email}</span>
+                                                    </div>
+                                                </td>
+                                                <td><span className="badge badge-info">{u.role}</span></td>
+                                                <td>
+                                                    {u.is_email_verified ? (
+                                                        <span className="text-[10px] font-bold text-success flex items-center gap-1"><Check size={12}/> Email Verified</span>
+                                                    ) : (
+                                                        <span className="text-[10px] font-bold text-danger flex items-center gap-1"><X size={12}/> Unverified</span>
+                                                    )}
+                                                </td>
+                                                <td className="no-print">
+                                                    <div className="flex gap-2">
+                                                        {u.is_email_verified ? (
+                                                            <Button 
+                                                                variant="primary" 
+                                                                size="sm" 
+                                                                loading={isProcessingApproval === u.id}
+                                                                onClick={() => handleApprove(u.id)}
+                                                                icon={<Check size={14} />}
+                                                                title="Approve"
+                                                            />
+                                                        ) : (
+                                                            <Button 
+                                                                variant="primary" 
+                                                                size="sm" 
+                                                                loading={isProcessingApproval === u.id}
+                                                                onClick={() => handleResendVerification(u.id)}
+                                                                title="Resend Email"
+                                                                className="whitespace-nowrap font-bold text-[10px]"
+                                                            >
+                                                                Resend
+                                                            </Button>
+                                                        )}
+                                                        <Button 
+                                                            variant="danger" 
+                                                            size="sm" 
+                                                            loading={isProcessingApproval === u.id}
+                                                            onClick={() => handleReject(u.id)}
+                                                            icon={<X size={14} />}
+                                                            title="Reject"
+                                                        />
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        )) : (
+                                            <tr><td colSpan={4} className="text-center py-12 text-secondary">No pending registrations found</td></tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="space-y-10">
+                            {Object.keys(groupedStaff).sort().map(groupKey => (
+                                <div key={groupKey} className="table-container overflow-visible border-left-4 border-primary shadow-md">
+                                    <div className="card-header border-bottom py-4 px-6 flex justify-between items-center">
+                                        <h3 className="mb-0 text-primary flex items-center gap-sm font-black uppercase tracking-wider text-sm">
+                                            {groupBy === 'DEPARTMENT' ? <LayoutGrid size={18} /> : <Briefcase size={18} />}
+                                            {groupKey}
+                                        </h3>
+                                        <div className="flex items-center gap-4">
+                                            {groupBy === 'DEPARTMENT' && isAdminOrRegistrar && groupKey !== 'General Administration' && (
+                                                <div className="flex gap-2 mr-4">
+                                                    <Button variant="outline" size="sm" onClick={() => {
+                                                        const dept = departments.find(d => d.name === groupKey);
+                                                        if (dept) {
+                                                            setNewDeptName(dept.name);
+                                                            setShowDeptModal(true);
+                                                        }
+                                                    }} icon={<Edit size={12} />} />
+                                                    <Button variant="danger" size="sm" onClick={async () => {
+                                                        const dept = departments.find(d => d.name === groupKey);
+                                                        if (dept && await confirm(`Delete ${dept.name} department?`)) {
+                                                            try {
+                                                                await staffAPI.departments.delete(dept.id);
+                                                                toast.success('Department deleted');
+                                                                loadDepartments();
+                                                            } catch (e) {
+                                                                toast.error('Failed to delete department (might have staff assigned)');
+                                                            }
+                                                        }
+                                                    }} icon={<Trash2 size={12} />} />
+                                                </div>
+                                            )}
+                                            <div className="badge badge-primary font-black uppercase tracking-widest text-[10px]">{groupedStaff[groupKey].length} Staff</div>
+                                        </div>
+                                    </div>
+                                    {renderStaffTable(groupedStaff[groupKey])}
+                                </div>
+                            ))}
+                            {Object.keys(groupedStaff).length === 0 && <div className="card text-center py-12 text-secondary">No records found for current criteria</div>}
+                        </div>
+                    )}
 
-            {/* Pagination */}
-            {totalItems > pageSize && groupBy !== 'PENDING' && (
-                <div className="flex justify-between items-center mt-6 bg-slate-50 p-4 rounded-xl border border-slate-100 no-print">
-                    <div className="text-[10px] font-black text-secondary uppercase tracking-widest">
-                        Showing {Math.min((page - 1) * pageSize + 1, totalItems)} - {Math.min(page * pageSize, totalItems)} of {totalItems} Staff Members
-                    </div>
-                    <div className="flex gap-2">
-                        <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(page - 1)} className="font-black text-[10px] uppercase">Previous</Button>
-                        <Button variant="primary" size="sm" disabled={page * pageSize >= totalItems} onClick={() => setPage(page + 1)} className="font-black text-[10px] uppercase">Next Page</Button>
-                    </div>
+                    {/* Pagination */}
+                    {totalItems > pageSize && groupBy !== 'PENDING' && (
+                        <div className="flex justify-between items-center mt-6 bg-slate-50 p-4 rounded-xl border border-slate-100 no-print">
+                            <div className="text-[10px] font-black text-secondary uppercase tracking-widest">
+                                Showing {Math.min((page - 1) * pageSize + 1, totalItems)} - {Math.min(page * pageSize, totalItems)} of {totalItems} Staff Members
+                            </div>
+                            <div className="flex gap-2">
+                                <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(page - 1)} className="font-black text-[10px] uppercase">Previous</Button>
+                                <Button variant="primary" size="sm" disabled={page * pageSize >= totalItems} onClick={() => setPage(page + 1)} className="font-black text-[10px] uppercase">Next Page</Button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
 

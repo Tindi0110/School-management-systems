@@ -43,6 +43,9 @@ class HostelListSerializer(serializers.ModelSerializer):
         return round((occupied / total) * 100, 1)
 
 class HostelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Hostel
+        fields = '__all__'
 
 class AllocationListSerializer(serializers.ModelSerializer):
     student_name = serializers.CharField(source='student.full_name', read_only=True)
@@ -56,6 +59,9 @@ class AllocationListSerializer(serializers.ModelSerializer):
         fields = ['id', 'student', 'student_name', 'admission_number', 'hostel_name', 'room', 'room_number', 'bed', 'bed_number', 'status', 'is_active', 'date_allocated']
 
 class HostelAllocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HostelAllocation
+        fields = '__all__'
 
     def validate(self, data):
         student = data.get('student')
