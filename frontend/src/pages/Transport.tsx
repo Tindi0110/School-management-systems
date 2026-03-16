@@ -1,12 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Plus, Search, Bus, Navigation, Users, Droplet, Download } from 'lucide-react';
+import { Plus, Search, Bus, Download } from 'lucide-react';
 import { transportAPI, studentsAPI } from '../api/api';
 import { exportToCSV } from '../utils/export';
-import { StatCard } from '../components/Card';
 import Button from '../components/common/Button';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
-import Skeleton from '../components/common/Skeleton';
 
 // Sub-components
 import FleetManager from './transport/FleetManager';

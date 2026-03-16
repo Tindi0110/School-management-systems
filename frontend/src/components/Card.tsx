@@ -16,7 +16,7 @@ export const Card: React.FC<CardProps> = ({ children, className = '', hover = tr
 
 interface StatCardProps {
     title: string;
-    value: string | number;
+    value: React.ReactNode;
     icon?: React.ReactNode;
     gradient?: string;
     onClick?: () => void;
