@@ -9,7 +9,7 @@ import { useConfirm } from '../context/ConfirmContext';
 import Button from '../components/common/Button';
 import PremiumDateInput from '../components/common/DatePicker';
 import { useSelector } from 'react-redux';
-import Skeleton from '../components/common/Skeleton';
+import { StaffTableSkeleton } from './staff/StaffSkeletons';
 
 const Staff = () => {
     const [staff, setStaff] = useState<any[]>([]);
@@ -218,7 +218,7 @@ const Staff = () => {
     };
 
     const handleDownloadCSV = () => {
-        exportToCSV(filteredStaff, 'Staff_Directory');
+        exportToCSV(staffList, 'Staff_Directory');
     };
 
     const openModal = (member?: any) => {
@@ -263,41 +263,8 @@ const Staff = () => {
         setFormData({ ...formData, role, department: deptId });
     };
 
-    const filteredStaff = staff; // Client-side search moved to server
+    const staffList = staff; 
 
-    const renderSkeletonContent = () => (
-        <div className="space-y-8 no-print">
-            <div className="table-wrapper">
-                <table className="table">
-                    <thead>
-                        <tr>
-                            <th>Staff Member</th>
-                            <th>Department</th>
-                            <th>Role</th>
-                            <th>Date Joined</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {[1, 2, 3, 4, 10].map(i => (
-                            <tr key={i}>
-                                <td>
-                                    <div className="flex flex-col gap-2">
-                                        <Skeleton variant="text" width="160px" />
-                                        <Skeleton variant="text" width="90px" />
-                                    </div>
-                                </td>
-                                <td><Skeleton variant="text" width="100px" /></td>
-                                <td><Skeleton variant="rect" width="80px" height="22px" className="rounded-md" /></td>
-                                <td><Skeleton variant="text" width="120px" /></td>
-                                <td><Skeleton variant="rect" width="80px" height="32px" className="rounded-lg" /></td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    );
 
     const renderStaffTable = (staffList: any[]) => (
         <div className="table-wrapper">
@@ -337,7 +304,7 @@ const Staff = () => {
     );
 
     const groupedStaff = React.useMemo(() => {
-        return filteredStaff.reduce((groups: any, member) => {
+        return staffList.reduce((groups: any, member: any) => {
             let key = 'ALL';
             if (groupBy === 'ROLE') {
                 key = member.role || 'Unassigned';
@@ -349,7 +316,7 @@ const Staff = () => {
             groups[key].push(member);
             return groups;
         }, {});
-    }, [filteredStaff, groupBy]);
+    }, [staffList, groupBy]);
 
     return (
         <div className="fade-in px-4 pb-20">
@@ -409,12 +376,12 @@ const Staff = () => {
                 </div>
             </div>
 
-            {loading ? renderSkeletonContent() : (
+            {loading ? <StaffTableSkeleton /> : (
                 <div className="space-y-6">
                     {groupBy === 'NONE' ? (
                         <div className="table-container shadow-md">
-                            {renderStaffTable(filteredStaff)}
-                            {filteredStaff.length === 0 && <div className="text-center py-12 text-secondary">No matching staff records found</div>}
+                            {renderStaffTable(staffList)}
+                            {staffList.length === 0 && <div className="text-center py-12 text-secondary">No matching staff records found</div>}
                         </div>
                     ) : groupBy === 'PENDING' ? (
                         <div className="table-container shadow-md border-left-4 border-warning">

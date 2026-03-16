@@ -122,11 +122,14 @@ const Library = () => {
                 const statsRes = await libraryAPI.books.getDashboardStats();
                 setStats(statsRes.data);
                 await Promise.all([loadCatalog(), loadLendings(), loadFines(), loadStudents()]);
-            } catch (error) { console.error('Error initializing library:', error); }
-            finally { setLoading(false); }
+            } catch (error) { 
+                console.error('Error initializing library:', error); 
+                toast.error("Network synchronization lag. Retrying...");
+            } finally {
+                setLoading(false);
+            }
         };
         initLibrary();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const loadCatalog = async () => {
@@ -223,10 +226,10 @@ const Library = () => {
                 await Promise.all(copyPromises);
             }
 
-            await loadCatalog(); // Only refresh catalog
+            await loadCatalog();
             setIsBookModalOpen(false);
             setBookId(null);
-            setBookForm({ title: '', author: '', isbn: '', category: '', year: new Date().getFullYear(), initial_copies: 0 } as any);
+            setBookForm({ title: '', author: '', isbn: '', category: '', year: new Date().getFullYear(), initial_copies: 0 });
             toast.success('Book saved successfully.');
         } catch (err: any) {
             console.error(err);
@@ -250,7 +253,7 @@ const Library = () => {
             if (copyId) await libraryAPI.copies.update(copyId, payload);
             else await libraryAPI.copies.create(payload);
 
-            await loadCatalog(); // Only refresh catalog
+            await loadCatalog();
             setIsCopyModalOpen(false);
             setCopyId(null);
             setCopyForm({ book: '', copy_number: '', condition: 'NEW', status: 'AVAILABLE', purchase_date: new Date().toISOString().split('T')[0] });
@@ -297,9 +300,8 @@ const Library = () => {
             setLendingId(null);
             setLendingForm({ copy: '', student: '', due_date: '' });
 
-            // Refresh in background
-            loadLendings().catch(console.error);
-            loadCatalog().catch(console.error);
+            loadLendings();
+            loadCatalog();
 
         } catch (err: any) {
             const errorDetail = err.response?.data?.detail;
