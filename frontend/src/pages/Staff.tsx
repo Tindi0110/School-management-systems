@@ -551,7 +551,7 @@ const Staff = () => {
                 </div>
             )}
 
-    <Modal isOpen={isModalOpen} onClose={closeModal} title={editingStaff ? 'Edit Staff Member' : 'Register New Staff Member'} size="md">
+            <Modal isOpen={isModalOpen} onClose={closeModal} title={editingStaff ? 'Edit Staff Member' : 'Register New Staff Member'} size="md">
                 <form onSubmit={handleSubmit} className="form-container-md mx-auto space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
                         <div className="form-group">
