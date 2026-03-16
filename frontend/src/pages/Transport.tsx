@@ -1,8 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Plus, Search, Bus, Download } from 'lucide-react';
+import { Plus, Search, Bus } from 'lucide-react';
 import { transportAPI, studentsAPI } from '../api/api';
 import { exportToCSV } from '../utils/export';
-import Button from '../components/common/Button';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 
@@ -551,30 +550,54 @@ const Transport = () => {
         }
     };
 
-    // ── Render ────────────────────────────────────────────────────────────────
     return (
-        <div className="fade-in px-4 pb-20">
-            {/* Header */}
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8">
-                <div className="w-full lg:w-auto">
-                    <h1 className="text-3xl font-black tracking-tight uppercase text-slate-800">Logistics & Fleet</h1>
-                    <p className="text-secondary text-[10px] font-black uppercase tracking-[0.2em] opacity-60">Institutional Transport & Route Management</p>
+        <div className="fade-in w-full max-w-full overflow-x-hidden min-w-0">
+            {/* Gradient Header — mirrors Academics */}
+            <div className="relative overflow-hidden rounded-3xl bg-primary text-white p-8 mb-8 shadow-2xl">
+                <div className="relative z-10 flex justify-between items-center">
+                    <div>
+                        <div className="flex items-center gap-2 mb-2">
+                            <Bus size={16} className="text-info-light" />
+                            <span className="text-[10px] font-black uppercase tracking-widest opacity-80">Transport Operations</span>
+                        </div>
+                        <h1 className="text-3xl font-black mb-1 capitalize text-white">Logistics &amp; Fleet</h1>
+                        <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Institutional Transport &amp; Route Management</p>
+                    </div>
+                    <div className="flex gap-3">
+                        <button
+                            className="px-5 py-2.5 rounded-xl bg-white/10 border border-white/20 text-[10px] font-black uppercase tracking-widest hover:bg-white/20 transition-all flex items-center gap-2"
+                            onClick={handleExport}
+                        >
+                            Export
+                        </button>
+                        <button
+                            className="px-5 py-2.5 rounded-xl bg-white/10 border border-white/20 text-[10px] font-black uppercase tracking-widest hover:bg-white/20 transition-all flex items-center gap-2"
+                            onClick={() => { setEnrollmentId(null); setEnrollmentForm(INITIAL_ENROLLMENT_FORM); setIsAllocationModalOpen(true); }}
+                        >
+                            <Plus size={14} /> Enroll Student
+                        </button>
+                        <button
+                            className="px-5 py-2.5 rounded-xl bg-white text-primary text-[10px] font-black uppercase tracking-widest hover:bg-white/90 transition-all shadow-lg flex items-center gap-2"
+                            onClick={() => { setVehicleId(null); setVehicleForm(INITIAL_VEHICLE_FORM); setIsVehicleModalOpen(true); }}
+                        >
+                            <Bus size={14} /> Add Vehicle
+                        </button>
+                    </div>
                 </div>
-                <div className="flex flex-wrap gap-3 w-full lg:w-auto no-print">
-                    <Button variant="ghost" className="text-[10px] font-black uppercase tracking-widest px-6" onClick={() => { setEnrollmentId(null); setEnrollmentForm(INITIAL_ENROLLMENT_FORM); setIsAllocationModalOpen(true); }} icon={<Plus size={14} />}>Enroll Student</Button>
-                    <Button variant="primary" className="text-[10px] font-black uppercase tracking-widest px-8 shadow-xl shadow-primary/20" onClick={() => { setVehicleId(null); setVehicleForm(INITIAL_VEHICLE_FORM); setIsVehicleModalOpen(true); }} icon={<Bus size={14} />}>Add Vehicle</Button>
+                <div className="absolute top-0 right-0 p-12 opacity-10 pointer-events-none">
+                    <Bus size={200} />
                 </div>
             </div>
 
             {/* Stats */}
             <TransportStats stats={stats} loading={loading} />
 
-            {/* Tab Navigation */}
-            <div className="flex overflow-x-auto gap-2 mb-8 p-1.5 bg-slate-100/40 backdrop-blur-md rounded-2xl no-print border border-slate-200/50">
+            {/* Navigation Tabs — exactly mirroring Academics nav-tab-container */}
+            <div className="nav-tab-container no-print">
                 {(['fleet', 'routes', 'allocations', 'trips', 'maintenance', 'fuel', 'safety'] as const).map(tab => (
-                    <button 
-                        key={tab} 
-                        className={`px-8 py-3.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${activeTab === tab ? 'bg-white text-primary shadow-md ring-1 ring-slate-200/50' : 'text-slate-500 hover:bg-white/60 hover:text-primary'}`} 
+                    <button
+                        key={tab}
+                        className={`nav-tab ${activeTab === tab ? 'active' : ''}`}
                         onClick={() => setActiveTab(tab)}
                     >
                         {tab === 'fleet' ? 'Fleet' : tab === 'routes' ? 'Routes' : tab === 'allocations' ? 'Allocations' : tab === 'trips' ? 'Trip Logs' : tab === 'maintenance' ? 'Repairs' : tab === 'fuel' ? 'Fuel' : 'Safety'}
@@ -582,22 +605,17 @@ const Transport = () => {
                 ))}
             </div>
 
-            {/* Search & Export toolbar */}
-            <div className="card mb-10 no-print p-5 bg-white/60 backdrop-blur-xl border-slate-200/80 shadow-2xl shadow-slate-200/40">
-                <div className="flex flex-col lg:flex-row justify-between items-center gap-6">
-                    <div className="relative flex-grow w-full max-w-2xl group">
-                        <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={22} />
-                        <input
-                            type="text"
-                            placeholder={`Search through ${activeTab}...`}
-                            className="input w-full pl-14 h-16 text-base font-bold bg-white/90 border-slate-200 shadow-sm focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all rounded-2xl placeholder:opacity-50"
-                            value={searchTerm}
-                            onChange={e => setSearchTerm(e.target.value)}
-                        />
-                    </div>
-                    <Button variant="ghost" className="text-[10px] font-black uppercase h-16 px-10 border-2 border-slate-100 hover:border-slate-200 bg-white/50 tracking-widest" onClick={handleExport} icon={<Download size={18} />}>
-                        Export {activeTab} Records
-                    </Button>
+            {/* Search toolbar */}
+            <div className="mb-4 no-print flex justify-end">
+                <div className="relative group">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={14} />
+                    <input
+                        type="text"
+                        placeholder={`Search ${activeTab}...`}
+                        className="input input-sm w-64 pl-9 shadow-sm"
+                        value={searchTerm}
+                        onChange={e => setSearchTerm(e.target.value)}
+                    />
                 </div>
             </div>
 
