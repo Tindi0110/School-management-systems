@@ -20,6 +20,15 @@ class InvoiceItemSerializer(serializers.ModelSerializer):
         model = InvoiceItem
         fields = ['id', 'description', 'amount', 'created_at']
 
+class PaymentListSerializer(serializers.ModelSerializer):
+    student_name = serializers.CharField(source='invoice.student.full_name', read_only=True)
+    admission_number = serializers.CharField(source='invoice.student.admission_number', read_only=True)
+    invoice_number = serializers.CharField(source='invoice.id', read_only=True)
+    
+    class Meta:
+        model = Payment
+        fields = ['id', 'invoice', 'invoice_number', 'student_name', 'admission_number', 'amount', 'method', 'reference_number', 'date_received', 'created_at']
+
 class PaymentSerializer(serializers.ModelSerializer):
     student_name = serializers.CharField(source='invoice.student.full_name', read_only=True)
     invoice_number = serializers.CharField(source='invoice.id', read_only=True)
@@ -44,6 +53,21 @@ class AdjustmentSerializer(serializers.ModelSerializer):
     def get_approved_by_name(self, obj):
         return obj.approved_by.get_full_name() if obj.approved_by else 'System'
 
+class InvoiceListSerializer(serializers.ModelSerializer):
+    student_name = serializers.CharField(source='student.full_name', read_only=True)
+    admission_number = serializers.CharField(source='student.admission_number', read_only=True)
+    class_name = serializers.CharField(source='student.current_class.name', read_only=True, default=None)
+    stream_name = serializers.CharField(source='student.current_class.stream', read_only=True, default=None)
+    academic_year_name = serializers.CharField(source='academic_year.name', read_only=True)
+    
+    class Meta:
+        model = Invoice
+        fields = [
+            'id', 'student', 'student_name', 'admission_number', 
+            'class_name', 'stream_name', 'academic_year', 'academic_year_name', 
+            'term', 'total_amount', 'paid_amount', 'balance', 'status', 'date_generated'
+        ]
+
 class InvoiceSerializer(serializers.ModelSerializer):
     student_name = serializers.CharField(source='student.full_name', read_only=True)
     academic_year_name = serializers.CharField(source='academic_year.name', read_only=True)
@@ -58,6 +82,11 @@ class InvoiceSerializer(serializers.ModelSerializer):
         model = Invoice
         fields = '__all__'
         read_only_fields = ['total_amount', 'paid_amount', 'balance', 'status', 'items', 'is_finalized', 'adjustments']
+
+class ExpenseListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Expense
+        fields = ['id', 'category', 'amount', 'description', 'paid_to', 'date_occurred', 'status', 'created_at']
 
 class ExpenseSerializer(serializers.ModelSerializer):
     approved_by_name = serializers.SerializerMethodField()

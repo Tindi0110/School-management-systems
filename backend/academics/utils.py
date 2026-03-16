@@ -79,24 +79,34 @@ def transition_to_new_year(old_year):
     
     # Clone existing class structures to the new year
     # This ensures promoted students have destination classes
-    old_classes = Class.objects.filter(year=int(old_year.name))
+    try:
+        old_year_val = int(old_year.name)
+    except (ValueError, TypeError):
+        return # Cannot automatically transition non-numeric year names for now
+
+    old_classes = Class.objects.filter(year=old_year_val)
     for c in old_classes:
         # Find numeric level part (e.g. "Form 1" -> "Form 2")
         # However, we have the 'level' field now.
         next_level = c.level + 1
         if next_level <= 4:
             next_name = f"Form {next_level}" # Simplified naming
-            # Check if this class already exists in the new year
-            Class.objects.get_or_create(
-                name=next_name,
-                stream=c.stream,
-                year=int(next_year.name),
-                defaults={
-                    'level': next_level,
-                    'capacity': c.capacity,
-                    'class_teacher': c.class_teacher
-                }
-            )
+            
+            try:
+                next_year_val = int(next_year.name)
+                # Check if this class already exists in the new year
+                Class.objects.get_or_create(
+                    name=next_name,
+                    stream=c.stream,
+                    year=next_year_val,
+                    defaults={
+                        'level': next_level,
+                        'capacity': c.capacity,
+                        'class_teacher': c.class_teacher
+                    }
+                )
+            except (ValueError, TypeError):
+                continue
 
 def promote_students():
     """
@@ -109,8 +119,11 @@ def promote_students():
     if not active_year:
         return
 
-    year_int = int(active_year.name)
-    
+    try:
+        year_int = int(active_year.name)
+    except (ValueError, TypeError):
+        return
+
     with transaction.atomic():
         for s in students:
             if not s.current_class:

@@ -48,7 +48,7 @@ class StudentViewSet(viewsets.ModelViewSet):
             return [IsAdminOrRegistrar()]
         if self.action in ['destroy', 'force_delete']:
             return [IsAdminUser()]
-        return [IsAuthenticated()]
+        return [permissions.IsAuthenticated()]
 
     @action(detail=False, methods=['get'])
     def minimal_search(self, request):

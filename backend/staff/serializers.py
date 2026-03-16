@@ -24,6 +24,25 @@ class DepartmentSerializer(serializers.ModelSerializer):
         model  = Department
         fields = ['id', 'name', 'description', 'staff_count', 'created_at']
 
+class StaffListSerializer(serializers.ModelSerializer):
+    """Lightweight serializer for staff directory/list views."""
+    full_name = serializers.SerializerMethodField()
+    department_name = serializers.CharField(source='department.name', read_only=True)
+    role = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Staff
+        fields = [
+            'id', 'employee_id', 'full_name', 'department_name', 
+            'role', 'email', 'phone', 'date_joined'
+        ]
+
+    def get_full_name(self, obj: Staff) -> str:
+        if not obj.user: return 'Unknown'
+        return obj.user.get_full_name().strip() or obj.user.username
+
+    def get_role(self, obj: Staff) -> str:
+        return obj.user.role if obj.user else 'N/A'
 
 class StaffSerializer(serializers.ModelSerializer):
     """

@@ -9,6 +9,7 @@ import { useConfirm } from '../context/ConfirmContext';
 import Button from '../components/common/Button';
 import PremiumDateInput from '../components/common/DatePicker';
 import { useSelector } from 'react-redux';
+import Skeleton from '../components/common/Skeleton';
 
 const Staff = () => {
     const [staff, setStaff] = useState<any[]>([]);
@@ -264,6 +265,40 @@ const Staff = () => {
 
     const filteredStaff = staff; // Client-side search moved to server
 
+    const renderSkeletonContent = () => (
+        <div className="space-y-8 no-print">
+            <div className="table-wrapper">
+                <table className="table">
+                    <thead>
+                        <tr>
+                            <th>Staff Member</th>
+                            <th>Department</th>
+                            <th>Role</th>
+                            <th>Date Joined</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {[1, 2, 3, 4, 10].map(i => (
+                            <tr key={i}>
+                                <td>
+                                    <div className="flex flex-col gap-2">
+                                        <Skeleton variant="text" width="160px" />
+                                        <Skeleton variant="text" width="90px" />
+                                    </div>
+                                </td>
+                                <td><Skeleton variant="text" width="100px" /></td>
+                                <td><Skeleton variant="rect" width="80px" height="22px" className="rounded-md" /></td>
+                                <td><Skeleton variant="text" width="120px" /></td>
+                                <td><Skeleton variant="rect" width="80px" height="32px" className="rounded-lg" /></td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+
     const renderStaffTable = (staffList: any[]) => (
         <div className="table-wrapper">
             <table className="table">
@@ -286,7 +321,7 @@ const Staff = () => {
                                 </div>
                             </td>
                             <td>{member.department_name || 'General'}</td>
-                            <td><span className="badge badge-info">{member.role}</span></td>
+                            <td><span className={`badge ${member.role === 'ADMIN' ? 'badge-error' : member.role === 'TEACHER' ? 'badge-primary' : 'badge-info'}`}>{member.role}</span></td>
                             <td>{new Date(member.date_joined).toLocaleDateString()}</td>
                             <td className="no-print">
                                 <div className="flex gap-sm">
@@ -316,35 +351,21 @@ const Staff = () => {
         }, {});
     }, [filteredStaff, groupBy]);
 
-    if (loading) {
-        return <div className="flex items-center justify-center p-12 spinner-container"><div className="spinner"></div></div>;
-    }
-
     return (
-        <div className="fade-in">
+        <div className="fade-in px-4 pb-20">
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8 no-print">
                 <div className="w-full lg:w-auto">
-                    <h1 className="text-3xl font-black tracking-tight">Staff Management</h1>
-                    <p className="text-secondary text-sm font-medium">Official faculty and support staff directory</p>
+                    <h1 className="text-3xl font-black tracking-tight uppercase">Staff Directory</h1>
+                    <p className="text-secondary text-[10px] font-black uppercase tracking-[0.2em] opacity-60">Faculty & Support Staff Management</p>
                 </div>
-                <div className="flex flex-wrap gap-2 w-full lg:w-auto justify-start lg:justify-end">
+                <div className="flex flex-wrap gap-2 w-full lg:w-auto mt-2 lg:mt-0">
                     {isAdminOrRegistrar && (
                         <>
-                            <Button variant="outline" className="flex-1 sm:flex-none" onClick={handleDownloadCSV} icon={<Download size={18} />}>
-                                Export
-                            </Button>
-                            <Button variant="outline" className="flex-1 sm:flex-none" onClick={handlePrint} icon={<Printer size={18} />}>
-                                Print
-                            </Button>
-                            <Button variant="outline" className="flex-1 sm:flex-none" onClick={handleSyncStaff} loading={isSubmitting} icon={<RefreshCcw size={18} />}>
-                                Sync Profiles
-                            </Button>
-                            <Button variant="primary" className="flex-1 sm:flex-none" onClick={() => setShowDeptModal(true)} icon={<Plus size={18} />}>
-                                Add Dept
-                            </Button>
-                            <Button variant="primary" className="flex-1 sm:flex-none" onClick={() => openModal()} icon={<Plus size={18} />}>
-                                Add Staff
-                            </Button>
+                            <Button variant="ghost" className="text-[10px] font-black uppercase" onClick={handleDownloadCSV} icon={<Download size={16} />}>Export</Button>
+                            <Button variant="ghost" className="text-[10px] font-black uppercase" onClick={handlePrint} icon={<Printer size={16} />}>Print</Button>
+                            <Button variant="outline" className="text-[10px] font-black uppercase" onClick={handleSyncStaff} loading={isSubmitting} icon={<RefreshCcw size={16} />}>Sync Profiles</Button>
+                            <Button variant="outline" className="text-primary border-primary/20 text-[10px] font-black uppercase" onClick={() => setShowDeptModal(true)} icon={<Plus size={16} />}>Add Dept</Button>
+                            <Button variant="primary" className="text-[10px] font-black uppercase shadow-lg shadow-primary/25" onClick={() => openModal()} icon={<Plus size={16} />}>Add StaffMember</Button>
                         </>
                     )}
                 </div>
@@ -357,7 +378,7 @@ const Staff = () => {
                         <Search className="search-icon text-primary" size={20} />
                         <input
                             type="text"
-                            className="input search-input pl-12 py-6 text-base font-medium bg-white/80 border-none shadow-inner"
+                            className="input search-input pl-12 py-6 text-base font-medium bg-white/80 border-none shadow-inner ring-0 focus:ring-2 focus:ring-primary/20 transition-all"
                             placeholder="Search by name, employee ID, role, or department..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
@@ -387,6 +408,9 @@ const Staff = () => {
                     </div>
                 </div>
             </div>
+
+            {loading ? renderSkeletonContent() : (
+                <div className="space-y-6">
 
 
             {groupBy === 'NONE' ? (

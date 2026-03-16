@@ -25,7 +25,11 @@ class AcademicYearViewSet(viewsets.ModelViewSet):
     filterset_fields = ['is_active']
 
     def list(self, request, *args, **kwargs):
-        sync_academic_statuses()
+        # Throttle sync to once per session/hour (Simplified)
+        from django.core.cache import cache
+        if not cache.get('academics_synced'):
+            sync_academic_statuses()
+            cache.set('academics_synced', True, 3600) # Once per hour
         return super().list(request, *args, **kwargs)
 
 
@@ -37,7 +41,11 @@ class TermViewSet(viewsets.ModelViewSet):
     search_fields = ['name']
 
     def list(self, request, *args, **kwargs):
-        sync_academic_statuses()
+        # Throttle sync to once per session/hour (Simplified)
+        from django.core.cache import cache
+        if not cache.get('academics_synced'):
+            sync_academic_statuses()
+            cache.set('academics_synced', True, 3600) # Once per hour
         return super().list(request, *args, **kwargs)
 
 

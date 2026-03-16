@@ -1,9 +1,10 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Search, Printer, Plus } from 'lucide-react';
 import { hostelAPI, studentsAPI, staffAPI } from '../api/api';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 import Button from '../components/common/Button';
+import Skeleton from '../components/common/Skeleton';
 
 // Modular Components
 import HostelDashboard from './hostels/HostelDashboard';
@@ -218,14 +219,58 @@ const Hostels = () => {
 
     const openAddRoom = (h: any) => { setRoomFormData({ hostel: h.id.toString(), room_number: '', room_type: 'DORM', floor: 'Ground', capacity: 4 }); setIsRoomModalOpen(true); };
 
-    if (loading) return <div className="spinner-container"><div className="spinner"></div></div>;
+    const renderSkeletonStats = () => (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-md mb-8">
+            {[1, 2, 3, 4].map(i => (
+                <div key={i} className="card p-6 bg-white border border-gray-100 rounded-2xl">
+                    <Skeleton variant="text" width="60%" className="mb-2" />
+                    <Skeleton variant="rect" height="32px" width="40%" />
+                </div>
+            ))}
+        </div>
+    );
+
+    const renderSkeletonTable = () => (
+        <div className="table-wrapper">
+            <table className="table">
+                <thead>
+                    <tr>
+                        <th className="w-1/3">Identity</th>
+                        <th>Placement</th>
+                        <th>Status</th>
+                        <th>Capacity</th>
+                        <th className="no-print">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {[1, 2, 3, 4, 5].map(i => (
+                        <tr key={i}>
+                            <td>
+                                <div className="flex items-center gap-3">
+                                    <Skeleton variant="circle" width="40px" height="40px" />
+                                    <div className="flex flex-col gap-1 flex-1">
+                                        <Skeleton variant="text" width="120px" />
+                                        <Skeleton variant="text" width="80px" />
+                                    </div>
+                                </div>
+                            </td>
+                            <td><Skeleton variant="text" width="100px" /><Skeleton variant="text" width="60px" /></td>
+                            <td><Skeleton variant="rect" width="60px" height="20px" /></td>
+                            <td><Skeleton variant="text" width="50px" /></td>
+                            <td><Skeleton variant="rect" width="100px" height="30px" /></td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    );
 
     return (
         <div className="fade-in px-4 pb-12">
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8 no-print">
                 <div>
                     <h1 className="text-3xl font-black tracking-tight uppercase">Hostel Ops</h1>
-                    <p className="text-secondary text-sm font-medium">Logistics and Residents Registry</p>
+                    <p className="text-secondary text-sm font-medium uppercase tracking-widest opacity-70">Logistics & Residents Registry</p>
                 </div>
                 <div className="flex flex-wrap gap-2 w-full lg:w-auto">
                     <Button variant="outline" onClick={() => window.print()} icon={<Printer size={18} />}>Report</Button>
@@ -233,7 +278,7 @@ const Hostels = () => {
                 </div>
             </div>
 
-            <HostelDashboard stats={stats} />
+            {loading ? renderSkeletonStats() : <HostelDashboard stats={stats} />}
 
             <div className="nav-tab-container no-print mb-6">
                 {['registry', 'allocations', 'attendance', 'discipline', 'assets', 'maintenance'].map(tab => (
@@ -241,19 +286,25 @@ const Hostels = () => {
                 ))}
             </div>
 
-            <div className="card mb-6 no-print p-4 bg-slate-50/50">
+            <div className="card mb-8 no-print p-4 bg-white/50 backdrop-blur-md border-slate-200/60 shadow-xl">
                 <div className="relative w-full max-w-md">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary opacity-50" size={18} />
-                    <input type="text" placeholder={`Search ${activeTab}...`} className="input pl-10 h-11 border-none focus:ring-2 ring-primary/20" onChange={(e) => setSearchTerm(e.target.value)} />
+                    <input type="text" placeholder={`Search ${activeTab}...`} className="input pl-10 h-11 border-none bg-white/80 focus:ring-2 ring-primary/20 shadow-inner" onChange={(e) => setSearchTerm(e.target.value)} />
                 </div>
             </div>
 
-            {activeTab === 'registry' && <HostelRegistry hostels={hostels} rooms={rooms} staff={staff} searchTerm={searchTerm} openViewRooms={(h) => { setSelectedHostel(h); setIsViewRoomsModalOpen(true); }} handleEditHostel={(h) => { setHostelId(h.id); setHostelFormData({ name: h.name, gender_allowed: h.gender_allowed, hostel_type: h.hostel_type, capacity: h.capacity, warden: h.warden ? String(h.warden.id || h.warden) : '' }); setIsHostelModalOpen(true); }} openViewResidents={openViewResidents} handleDeleteHostel={async (id) => { if (await confirm('Delete Hostel?')) hostelAPI.hostels.delete(id).then(() => loadData()); }} setIsHostelModalOpen={setIsHostelModalOpen} />}
-            {activeTab === 'allocations' && <AllocationManager allocations={allocations} rooms={rooms} hostels={hostels} students={students} allocPage={allocPage} setAllocPage={setAllocPage} allocTotal={allocTotal} pageSize={PAGE_SIZE} setIsAllocationModalOpen={setIsAllocationModalOpen} setAllocationId={setAllocationId} setIsTransferMode={setIsTransferMode} openTransferModal={(a) => { setIsTransferMode(true); setAllocationId(a.id); setAllocationFormData({ student: String(a.student), hostel: '', room: '', bed: '', status: 'ACTIVE' }); setIsAllocationModalOpen(true); }} handleEditAllocation={(a) => { const r = rooms.find(rm => rm.id === a.room); setAllocationId(a.id); setAllocationFormData({ ...a, student: String(a.student), hostel: r ? String(r.hostel) : '', room: String(a.room), bed: String(a.bed) }); setIsAllocationModalOpen(true); }} handleDeleteAllocation={async (id) => { if (await confirm('Delete Allocation?')) hostelAPI.allocations.delete(id).then(() => loadData()); }} />}
-            {activeTab === 'attendance' && <AttendanceManager attendance={attendance} students={students} attnPage={attnPage} setAttnPage={setAttnPage} attnTotal={attnTotal} pageSize={PAGE_SIZE} setIsAttendanceModalOpen={setIsAttendanceModalOpen} setAttendanceMode={setAttendanceMode} handleEditAttendance={(a) => { setAttendanceId(a.id); setAttendanceFormData({ ...a, student: String(a.student) }); setAttendanceMode('SINGLE'); setIsAttendanceModalOpen(true); }} handleDeleteAttendance={async (id) => { if (await confirm('Delete Record?')) hostelAPI.attendance.delete(id).then(() => loadData()); }} />}
-            {activeTab === 'discipline' && <HostelLogManager type="discipline" data={discipline} page={discPage} setPage={setDiscPage} total={discTotal} pageSize={PAGE_SIZE} students={students} hostels={hostels} onAdd={() => { setDisciplineId(null); setIsDisciplineModalOpen(true); }} onEdit={(d) => { setDisciplineId(d.id); setDisciplineFormData({ ...d, student: String(d.student), date: d.incident_date || d.date }); setIsDisciplineModalOpen(true); }} onDelete={async (id) => { if (await confirm('Delete Record?')) hostelAPI.discipline.delete(id).then(() => loadData()); }} />}
-            {activeTab === 'assets' && <HostelLogManager type="assets" data={assets} page={assetPage} setPage={setAssetPage} total={assetTotal} pageSize={PAGE_SIZE} students={students} hostels={hostels} onAdd={() => { setAssetId(null); setIsAssetModalOpen(true); }} onEdit={(a) => { setAssetId(a.id); setAssetFormData({ ...a, hostel: String(a.hostel), room: a.room ? String(a.room) : '' }); setIsAssetModalOpen(true); }} onDelete={async (id) => { if (await confirm('Delete Asset?')) hostelAPI.assets.delete(id).then(() => loadData()); }} />}
-            {activeTab === 'maintenance' && <HostelLogManager type="maintenance" data={maintenance} page={maintPage} setPage={setMaintPage} total={maintTotal} pageSize={PAGE_SIZE} students={students} hostels={hostels} onAdd={() => { setMaintenanceId(null); setIsMaintenanceModalOpen(true); }} onEdit={(m) => { setMaintenanceId(m.id); setMaintenanceFormData({ ...m, hostel: String(m.hostel), room: m.room ? String(m.room) : '', date: m.date_reported || m.date }); setIsMaintenanceModalOpen(true); }} onDelete={async (id) => { if (await confirm('Delete Request?')) hostelAPI.maintenance.delete(id).then(() => loadData()); }} />}
+            <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
+                {loading ? renderSkeletonTable() : (
+                    <>
+                        {activeTab === 'registry' && <HostelRegistry hostels={hostels} rooms={rooms} staff={staff} searchTerm={searchTerm} openViewRooms={(h) => { setSelectedHostel(h); setIsViewRoomsModalOpen(true); }} handleEditHostel={(h) => { setHostelId(h.id); setHostelFormData({ name: h.name, gender_allowed: h.gender_allowed, hostel_type: h.hostel_type, capacity: h.capacity, warden: h.warden ? String(h.warden.id || h.warden) : '' }); setIsHostelModalOpen(true); }} openViewResidents={openViewResidents} handleDeleteHostel={async (id) => { if (await confirm('Delete Hostel?')) hostelAPI.hostels.delete(id).then(() => loadData()); }} setIsHostelModalOpen={setIsHostelModalOpen} />}
+                        {activeTab === 'allocations' && <AllocationManager allocations={allocations} rooms={rooms} hostels={hostels} students={students} allocPage={allocPage} setAllocPage={setAllocPage} allocTotal={allocTotal} pageSize={PAGE_SIZE} setIsAllocationModalOpen={setIsAllocationModalOpen} setAllocationId={setAllocationId} setIsTransferMode={setIsTransferMode} openTransferModal={(a) => { setIsTransferMode(true); setAllocationId(a.id); setAllocationFormData({ student: String(a.student), hostel: '', room: '', bed: '', status: 'ACTIVE' }); setIsAllocationModalOpen(true); }} handleEditAllocation={(a) => { const r = rooms.find(rm => rm.id === a.room); setAllocationId(a.id); setAllocationFormData({ ...a, student: String(a.student), hostel: r ? String(r.hostel) : '', room: String(a.room), bed: String(a.bed) }); setIsAllocationModalOpen(true); }} handleDeleteAllocation={async (id) => { if (await confirm('Delete Allocation?')) hostelAPI.allocations.delete(id).then(() => loadData()); }} />}
+                        {activeTab === 'attendance' && <AttendanceManager attendance={attendance} students={students} attnPage={attnPage} setAttnPage={setAttnPage} attnTotal={attnTotal} pageSize={PAGE_SIZE} setIsAttendanceModalOpen={setIsAttendanceModalOpen} setAttendanceMode={setAttendanceMode} handleEditAttendance={(a) => { setAttendanceId(a.id); setAttendanceFormData({ ...a, student: String(a.student) }); setAttendanceMode('SINGLE'); setIsAttendanceModalOpen(true); }} handleDeleteAttendance={async (id) => { if (await confirm('Delete Record?')) hostelAPI.attendance.delete(id).then(() => loadData()); }} />}
+                        {activeTab === 'discipline' && <HostelLogManager type="discipline" data={discipline} page={discPage} setPage={setDiscPage} total={discTotal} pageSize={PAGE_SIZE} students={students} hostels={hostels} onAdd={() => { setDisciplineId(null); setIsDisciplineModalOpen(true); }} onEdit={(d) => { setDisciplineId(d.id); setDisciplineFormData({ ...d, student: String(d.student), date: d.incident_date || d.date }); setIsDisciplineModalOpen(true); }} onDelete={async (id) => { if (await confirm('Delete Record?')) hostelAPI.discipline.delete(id).then(() => loadData()); }} />}
+                        {activeTab === 'assets' && <HostelLogManager type="assets" data={assets} page={assetPage} setPage={setAssetPage} total={assetTotal} pageSize={PAGE_SIZE} students={students} hostels={hostels} onAdd={() => { setAssetId(null); setIsAssetModalOpen(true); }} onEdit={(a) => { setAssetId(a.id); setAssetFormData({ ...a, hostel: String(a.hostel), room: a.room ? String(a.room) : '' }); setIsAssetModalOpen(true); }} onDelete={async (id) => { if (await confirm('Delete Asset?')) hostelAPI.assets.delete(id).then(() => loadData()); }} />}
+                        {activeTab === 'maintenance' && <HostelLogManager type="maintenance" data={maintenance} page={maintPage} setPage={setMaintPage} total={maintTotal} pageSize={PAGE_SIZE} students={students} hostels={hostels} onAdd={() => { setMaintenanceId(null); setIsMaintenanceModalOpen(true); }} onEdit={(m) => { setMaintenanceId(m.id); setMaintenanceFormData({ ...m, hostel: String(m.hostel), room: m.room ? String(m.room) : '', date: m.date_reported || m.date }); setIsMaintenanceModalOpen(true); }} onDelete={async (id) => { if (await confirm('Delete Request?')) hostelAPI.maintenance.delete(id).then(() => loadData()); }} />}
+                    </>
+                )}
+            </div>
 
             <HostelModals
                 isHostelModalOpen={isHostelModalOpen} setIsHostelModalOpen={setIsHostelModalOpen} hostelFormData={hostelFormData} setHostelFormData={setHostelFormData} handleHostelSubmit={handleHostelSubmit} hostelId={hostelId}

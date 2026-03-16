@@ -70,12 +70,27 @@ api.interceptors.request.use(
 
     // Clear specific tag on mutation
     if (method && ['post', 'put', 'patch', 'delete'].includes(method)) {
-      const tag = getUrlTag(config.url);
+      const url = config.url || '';
+      const tag = getUrlTag(url);
+      
+      // Clear the primary tag
       clearApiCache(tag);
       
+      // Cross-module invalidations
+      if (['hostels', 'rooms', 'beds', 'hostel-allocations', 'hostel-attendance', 'hostel-discipline', 'hostel-assets'].some(t => url.includes(t))) {
+        clearApiCache('hostels');
+        clearApiCache('rooms');
+        clearApiCache('beds');
+        clearApiCache('hostel-allocations');
+      }
+
       // Crucial: Clear stats/dashboard if anything sensitive changes
-      if (tag === 'finance' || tag === 'students' || tag === 'staff') {
+      if (tag === 'finance' || tag === 'students' || tag === 'staff' || tag?.startsWith('hostel') || tag === 'hostels') {
         clearApiCache('stats');
+      }
+
+      if (tag === 'academics' || url.includes('classes') || url.includes('subjects') || url.includes('exams')) {
+        clearApiCache('students'); // Classes/Subjects change affects students
       }
     }
 

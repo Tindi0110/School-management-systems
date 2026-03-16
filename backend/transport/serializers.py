@@ -10,6 +10,22 @@ class TransportConfigSerializer(serializers.ModelSerializer):
         model = TransportConfig
         fields = '__all__'
 
+class VehicleListSerializer(serializers.ModelSerializer):
+    """Lightweight serializer for vehicle list."""
+    assigned_driver_name = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Vehicle
+        fields = ['id', 'registration_number', 'model', 'vehicle_type', 'capacity', 'status', 'assigned_driver_name']
+
+    def get_assigned_driver_name(self, obj):
+        # Optimized lookup for list view
+        driver = getattr(obj, 'driver_profile_annotated', None)
+        if driver: return driver
+        # Fallback if no annotation
+        driver_profile = DriverProfile.objects.filter(assigned_vehicle=obj).select_related('staff__user').first()
+        return driver_profile.staff.user.get_full_name() if driver_profile and driver_profile.staff and driver_profile.staff.user else "Unassigned"
+
 class VehicleSerializer(serializers.ModelSerializer):
     maintenance_count = serializers.IntegerField(source='maintenance_logs.count', read_only=True)
     assigned_driver_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
@@ -69,6 +85,19 @@ class PickupPointSerializer(serializers.ModelSerializer):
         model = PickupPoint
         fields = '__all__'
 
+class RouteListSerializer(serializers.ModelSerializer):
+    """Lightweight serializer for route list."""
+    occupancy = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Route
+        fields = ['id', 'name', 'start_location', 'end_location', 'base_fare', 'status', 'occupancy']
+
+    def get_occupancy(self, obj):
+        if hasattr(obj, 'occupancy_count'):
+            return obj.occupancy_count
+        return 0 # Should be annotated in viewset
+
 class RouteSerializer(serializers.ModelSerializer):
     pickup_points = PickupPointSerializer(many=True, read_only=True)
     occupancy = serializers.SerializerMethodField()
@@ -82,6 +111,15 @@ class RouteSerializer(serializers.ModelSerializer):
         if hasattr(obj, 'occupancy_count'):
             return obj.occupancy_count
         return obj.allocations.filter(status='ACTIVE').count()
+
+class AllocationListSerializer(serializers.ModelSerializer):
+    """Lightweight serializer for transport allocations list."""
+    student_name = serializers.CharField(source='student.full_name', read_only=True)
+    route_name = serializers.CharField(source='route.name', read_only=True)
+
+    class Meta:
+        model = TransportAllocation
+        fields = ['id', 'student', 'student_name', 'route_name', 'status', 'start_date', 'monthly_fee']
 
 class TransportAllocationSerializer(serializers.ModelSerializer):
     student_name = serializers.CharField(source='student.full_name', read_only=True)

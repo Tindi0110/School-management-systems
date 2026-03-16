@@ -4,8 +4,9 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .models import FeeStructure, Invoice, InvoiceItem, Payment, Adjustment, Expense
 from .serializers import (
-    FeeStructureSerializer, InvoiceSerializer, PaymentSerializer, 
-    AdjustmentSerializer, ExpenseSerializer
+    FeeStructureSerializer, InvoiceSerializer, InvoiceListSerializer,
+    PaymentSerializer, PaymentListSerializer,
+    AdjustmentSerializer, ExpenseSerializer, ExpenseListSerializer
 )
 from students.models import Student
 from academics.models import Class
@@ -45,12 +46,10 @@ class InvoiceViewSet(viewsets.ModelViewSet):
     search_fields = ['student__full_name', 'student__admission_number', 'student__user__username']
     ordering_fields = ['date_generated', 'total_amount', 'balance']
 
-    def get_permissions(self):
-        if self.action in ['create', 'update', 'partial_update', 'generate_batch', 'sync_all', 'send_reminders']:
-            return [IsAdminOrAccountant()]
-        if self.action == 'destroy':
-            return [IsAdminUser()]
-        return [IsAuthenticated()]
+    def get_serializer_class(self):
+        if self.action in ['list', 'dashboard_stats']:
+            return InvoiceListSerializer
+        return InvoiceSerializer
 
     @action(detail=False, methods=['get'])
     def dashboard_stats(self, request):
@@ -324,6 +323,11 @@ class PaymentViewSet(viewsets.ModelViewSet):
     filterset_fields = ['invoice__student', 'invoice', 'method', 'invoice__term', 'invoice__academic_year']
     search_fields = ['invoice__student__full_name', 'invoice__student__admission_number', 'reference_number']
 
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return PaymentListSerializer
+        return PaymentSerializer
+
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update']:
             return [IsAdminOrAccountant()]
@@ -377,12 +381,10 @@ class ExpenseViewSet(viewsets.ModelViewSet):
     filterset_fields = ['category', 'status']
     search_fields = ['category', 'description', 'paid_to']
 
-    def get_permissions(self):
-        if self.action in ['create', 'update', 'partial_update', 'approve', 'decline']:
-            return [IsAdminOrAccountant()]
-        if self.action == 'destroy':
-            return [IsAdminUser()]
-        return [IsAuthenticated()]
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return ExpenseListSerializer
+        return ExpenseSerializer
 
     def perform_create(self, serializer):
         serializer.save(approved_by=self.request.user)

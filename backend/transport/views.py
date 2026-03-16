@@ -11,9 +11,9 @@ from .models import (
     FuelRecord, TransportIncident, DriverProfile, TransportConfig
 )
 from .serializers import (
-    VehicleSerializer, RouteSerializer, PickupPointSerializer, 
-    TransportAllocationSerializer, TripLogSerializer, 
-    TransportAttendanceSerializer, VehicleMaintenanceSerializer, 
+    VehicleSerializer, VehicleListSerializer, RouteSerializer, RouteListSerializer, 
+    PickupPointSerializer, TransportAllocationSerializer, AllocationListSerializer,
+    TripLogSerializer, TransportAttendanceSerializer, VehicleMaintenanceSerializer, 
     FuelRecordSerializer, TransportIncidentSerializer, 
     DriverProfileSerializer, TransportConfigSerializer
 )
@@ -24,12 +24,12 @@ class TransportConfigViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
 class VehicleViewSet(viewsets.ModelViewSet):
-    serializer_class = VehicleSerializer
-    permission_classes = [IsAuthenticated]
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['status', 'vehicle_type', 'current_condition']
-    search_fields = ['registration_number', 'make_model', 'logbook_number']
     ordering_fields = ['registration_number', 'seating_capacity', 'insurance_expiry']
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return VehicleListSerializer
+        return VehicleSerializer
 
     def get_queryset(self):
         # Annotate with the full name of the assigned driver to avoid N+1 in serializer
@@ -59,12 +59,12 @@ class DriverProfileViewSet(viewsets.ModelViewSet):
     search_fields = ['staff__user__first_name', 'staff__user__last_name', 'license_number']
 
 class RouteViewSet(viewsets.ModelViewSet):
-    serializer_class = RouteSerializer
-    permission_classes = [IsAuthenticated]
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['status']
-    search_fields = ['name', 'route_code']
     ordering_fields = ['name', 'distance_km', 'base_cost']
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return RouteListSerializer
+        return RouteSerializer
 
     def get_queryset(self):
         return Route.objects.prefetch_related('pickup_points').annotate(
@@ -81,12 +81,12 @@ class PickupPointViewSet(viewsets.ModelViewSet):
 
 class TransportAllocationViewSet(viewsets.ModelViewSet):
     queryset = TransportAllocation.objects.select_related('student', 'route', 'pickup_point').all()
-    serializer_class = TransportAllocationSerializer
-    permission_classes = [IsAuthenticated]
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['route', 'pickup_point', 'status', 'student']
-    search_fields = ['student__full_name', 'student__admission_number', 'seat_number']
     ordering_fields = ['start_date', 'student__full_name']
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return AllocationListSerializer
+        return TransportAllocationSerializer
 
     def perform_create(self, serializer):
         # Logic to check route capacity before allocation

@@ -6,6 +6,7 @@ import SearchInput from '../components/common/SearchInput';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 import Button from '../components/common/Button';
+import Skeleton from '../components/common/Skeleton';
 
 // Modular Components
 import FinanceDashboard from './finance/FinanceDashboard';
@@ -287,20 +288,66 @@ const Finance = () => {
     const handleDeclineExpense = (id: number) =>
         financeAPI.expenses.decline(id).then(() => { success('Expense declined'); loadData(); });
 
+    const renderSkeletonStats = () => (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-md mb-8 no-print">
+            {[1, 2, 3, 4].map(i => (
+                <div key={i} className="card p-6 bg-white border border-gray-100 rounded-2xl">
+                    <Skeleton variant="text" width="60%" className="mb-2" />
+                    <Skeleton variant="rect" height="32px" width="40%" />
+                </div>
+            ))}
+        </div>
+    );
+
+    const renderSkeletonTable = () => (
+        <div className="table-wrapper">
+            <table className="table">
+                <thead>
+                    <tr>
+                        <th className="w-1/3">Record Identity</th>
+                        <th>Classification</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th className="no-print">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {[1, 2, 3, 4, 10].map(i => (
+                        <tr key={i}>
+                            <td>
+                                <div className="flex items-center gap-3">
+                                    <Skeleton variant="circle" width="36px" height="36px" />
+                                    <div className="flex flex-col gap-1 flex-1">
+                                        <Skeleton variant="text" width="140px" />
+                                        <Skeleton variant="text" width="90px" />
+                                    </div>
+                                </div>
+                            </td>
+                            <td><Skeleton variant="text" width="100px" /><Skeleton variant="text" width="60px" /></td>
+                            <td><Skeleton variant="text" width="70px" /></td>
+                            <td><Skeleton variant="rect" width="60px" height="22px" className="rounded-full" /></td>
+                            <td><Skeleton variant="rect" width="100px" height="32px" className="rounded-lg" /></td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    );
+
     return (
         <div className="fade-in px-4 pb-20">
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8 no-print">
                 <div>
-                    <h1 className="text-3xl font-black tracking-tight">Finance Center</h1>
-                    <p className="text-secondary text-sm font-medium">Financial operations and audit center</p>
+                    <h1 className="text-3xl font-black tracking-tight uppercase">Finance Center</h1>
+                    <p className="text-secondary text-[10px] font-black uppercase tracking-[0.2em] opacity-60">Financial Ops & Audit Center</p>
                 </div>
                 {!isReadOnly && (
-                    <div className="flex flex-wrap gap-2 w-full lg:w-auto">
-                        <Button variant="ghost" icon={<TrendingUp size={18} />} onClick={() => financeAPI.invoices.syncAll().then(r => success(r.data.message))}>Sync</Button>
-                        <Button variant="outline" className="text-green-600 border-green-200" onClick={() => setShowMpesaModal(true)}>M-Pesa</Button>
-                        <Button variant="outline" icon={<CreditCard size={18} />} onClick={() => setShowPaymentModal(true)}>Payment</Button>
-                        <Button variant="primary" icon={<FileText size={18} />} onClick={() => setShowInvoiceModal(true)}>Invoices</Button>
-                        {selectedInvoices.size > 0 && <Button variant="secondary" icon={<Bell size={18} />} className="bg-orange-600" onClick={() => setShowReminderModal(true)}>Remind ({selectedInvoices.size})</Button>}
+                    <div className="flex flex-wrap gap-2 w-full lg:w-auto mt-2 lg:mt-0">
+                        <Button variant="ghost" className="text-[10px] font-black uppercase" icon={<TrendingUp size={16} />} onClick={() => financeAPI.invoices.syncAll().then(r => success(r.data.message))}>Sync</Button>
+                        <Button variant="outline" className="text-green-600 border-green-200 text-[10px] font-black uppercase" onClick={() => setShowMpesaModal(true)}>M-Pesa</Button>
+                        <Button variant="outline" className="text-[10px] font-black uppercase" icon={<CreditCard size={16} />} onClick={() => setShowPaymentModal(true)}>Payment</Button>
+                        <Button variant="primary" className="text-[10px] font-black uppercase shadow-lg shadow-primary/20" icon={<FileText size={16} />} onClick={() => setShowInvoiceModal(true)}>Invoices</Button>
+                        {selectedInvoices.size > 0 && <Button variant="secondary" icon={<Bell size={16} />} className="bg-orange-600 text-[10px] font-black uppercase animate-pulse" onClick={() => setShowReminderModal(true)}>Remind ({selectedInvoices.size})</Button>}
                     </div>
                 )}
             </div>
@@ -311,17 +358,15 @@ const Finance = () => {
                 ))}
             </div>
 
-            {activeTabLoading ? (
-                <div className="flex justify-center items-center py-20">
-                    <Loader2 size={36} className="animate-spin text-primary opacity-70" />
-                </div>
-            ) : (
+            {activeTabLoading ? (activeTab === 'dashboard' ? renderSkeletonStats() : renderSkeletonTable()) : (
                 <div className="space-y-6">
-                    {activeTab !== 'dashboard' && (
-                        <div className="flex justify-end mb-4 no-print">
-                            <SearchInput placeholder={`Search ${activeTab}...`} value={searchTerm} onChange={setSearchTerm} className="w-80" />
-                        </div>
-                    )}
+            {activeTab !== 'dashboard' && (
+                <div className="card mb-8 no-print p-4 bg-white/50 backdrop-blur-md border-slate-200/60 shadow-xl">
+                    <div className="flex justify-end">
+                        <SearchInput placeholder={`Search ${activeTab}...`} value={searchTerm} onChange={setSearchTerm} className="w-full max-w-md h-11 border-none bg-white/80 focus:ring-2 ring-primary/20 shadow-inner" />
+                    </div>
+                </div>
+            )}
 
                     {activeTab === 'dashboard' && (
                         <FinanceDashboard

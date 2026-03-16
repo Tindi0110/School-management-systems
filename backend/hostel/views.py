@@ -10,8 +10,8 @@ from .models import (
     HostelDiscipline, HostelAsset, GuestLog, HostelMaintenance
 )
 from .serializers import (
-    HostelSerializer, RoomSerializer, BedSerializer, 
-    HostelAllocationSerializer, HostelAttendanceSerializer,
+    HostelSerializer, HostelListSerializer, RoomSerializer, BedSerializer, 
+    HostelAllocationSerializer, AllocationListSerializer, HostelAttendanceSerializer,
     HostelDisciplineSerializer, HostelAssetSerializer,
     GuestLogSerializer, HostelMaintenanceSerializer
 )
@@ -20,6 +20,18 @@ class HostelViewSet(viewsets.ModelViewSet):
     queryset = Hostel.objects.all()
     serializer_class = HostelSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        from django.db.models import Count, Q
+        return Hostel.objects.annotate(
+            total_beds_count=Count('rooms__beds'),
+            occupied_beds_count=Count('rooms__beds', filter=Q(rooms__beds__status='OCCUPIED'))
+        ).prefetch_related('rooms').all()
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return HostelListSerializer
+        return HostelSerializer
 
     @action(detail=False, methods=['get'])
     def dashboard_stats(self, request):
@@ -62,6 +74,14 @@ class HostelAllocationViewSet(viewsets.ModelViewSet):
     queryset = HostelAllocation.objects.select_related('student', 'room__hostel', 'bed').all()
     serializer_class = HostelAllocationSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_fields = ['status', 'room__hostel', 'student']
+    search_fields = ['student__full_name', 'student__admission_number']
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return AllocationListSerializer
+        return HostelAllocationSerializer
 
     def perform_create(self, serializer):
         student = serializer.validated_data.get('student')

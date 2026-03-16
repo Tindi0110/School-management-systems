@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import IsAuthenticated
 from .models import Staff, Department
-from .serializers import StaffSerializer, DepartmentSerializer
+from .serializers import StaffSerializer, StaffListSerializer, DepartmentSerializer
 from accounts.permissions import IsAdminOrRegistrar
 
 class StaffViewSet(viewsets.ModelViewSet):
@@ -12,7 +12,12 @@ class StaffViewSet(viewsets.ModelViewSet):
     serializer_class = StaffSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['department', 'user__role']
-    search_fields = ['user__first_name', 'user__last_name', 'employee_id', 'user__role', 'department']
+    search_fields = ['user__first_name', 'user__last_name', 'employee_id', 'user__role', 'department__name']
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return StaffListSerializer
+        return StaffSerializer
 
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update', 'destroy', 'sync_staff']:

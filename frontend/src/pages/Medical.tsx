@@ -7,6 +7,7 @@ import SearchableSelect from '../components/SearchableSelect';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 import Button from '../components/common/Button';
+import Skeleton from '../components/common/Skeleton';
 
 const Medical = () => {
     const [records, setRecords] = useState<any[]>([]);
@@ -113,36 +114,60 @@ const Medical = () => {
         subLabel: `ID: ${s.admission_number}`
     })), [students]);
 
-    if (loading) {
-        return <div className="flex items-center justify-center min-h-400"><div className="spinner"></div></div>;
-    }
+    const renderSkeletonTable = () => (
+        <div className="table-wrapper no-print">
+            <table className="table">
+                <thead>
+                    <tr>
+                        <th>Visit Date</th>
+                        <th>Student</th>
+                        <th>Diagnosis</th>
+                        <th>Treatment</th>
+                        <th>Medical Personnel</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {[1, 2, 3, 4, 5].map(i => (
+                        <tr key={i}>
+                            <td><Skeleton variant="text" width="100px" /></td>
+                            <td>
+                                <div className="flex items-center gap-md">
+                                    <Skeleton variant="circular" width="32px" height="32px" />
+                                    <Skeleton variant="text" width="120px" />
+                                </div>
+                            </td>
+                            <td><Skeleton variant="rect" width="100px" height="22px" className="rounded-md" /></td>
+                            <td><Skeleton variant="text" width="150px" /></td>
+                            <td><Skeleton variant="text" width="100px" /></td>
+                            <td><Skeleton variant="rect" width="80px" height="32px" className="rounded-lg" /></td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    );
 
     return (
-        <div className="fade-in">
+        <div className="fade-in px-4 pb-20">
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8">
                 <div className="w-full lg:w-auto">
-                    <h1 className="text-3xl font-black tracking-tight">Medical Records</h1>
-                    <p className="text-secondary text-sm font-medium">Official school health and infirmary logs</p>
+                    <h1 className="text-3xl font-black tracking-tight uppercase">Medical Center</h1>
+                    <p className="text-secondary text-[10px] font-black uppercase tracking-[0.2em] opacity-60">School health and infirmary records</p>
                 </div>
-                <div className="flex flex-wrap gap-2 w-full lg:w-auto justify-start lg:justify-end no-print">
-                    <Button variant="outline" className="flex-1 sm:flex-none" onClick={() => window.print()} icon={<Printer size={18} />}>
-                        Reports
-                    </Button>
-                    <Button variant="outline" className="flex-1 sm:flex-none" onClick={() => exportToCSV(records, 'Medical_Records')} icon={<Download size={18} />}>
-                        Export
-                    </Button>
-                    <Button variant="primary" className="flex-1 sm:flex-none" onClick={() => openModal()} icon={<Plus size={18} />}>
-                        New Record
-                    </Button>
+                <div className="flex flex-wrap gap-2 w-full lg:w-auto mt-2 lg:mt-0 no-print">
+                    <Button variant="ghost" className="text-[10px] font-black uppercase" onClick={() => window.print()} icon={<Printer size={16} />}>Reports</Button>
+                    <Button variant="ghost" className="text-[10px] font-black uppercase" onClick={() => exportToCSV(records, 'Medical_Records')} icon={<Download size={16} />}>Export</Button>
+                    <Button variant="primary" className="text-[10px] font-black uppercase shadow-lg shadow-primary/25" onClick={() => openModal()} icon={<Plus size={16} />}>New Record</Button>
                 </div>
             </div>
 
-            <div className="card mb-4">
-                <div className="search-container">
-                    <Search className="search-icon" size={18} />
+            <div className="card mb-8 no-print p-4 bg-white/50 backdrop-blur-md border-slate-200/60 shadow-xl">
+                <div className="search-container max-w-2xl">
+                    <Search className="search-icon text-primary" size={20} />
                     <input
                         type="text"
-                        className="input search-input"
+                        className="input search-input pl-12 py-6 text-base font-medium bg-white/80 border-none shadow-inner ring-0 focus:ring-2 focus:ring-primary/20 transition-all"
                         placeholder="Search by student name or diagnosis..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -150,62 +175,64 @@ const Medical = () => {
                 </div>
             </div>
 
-            <div className="table-wrapper">
-                <table className="table">
-                    <thead>
-                        <tr>
-                            <th>Visit Date</th>
-                            <th>Student</th>
-                            <th>Diagnosis</th>
-                            <th>Treatment</th>
-                            <th>Medical Personnel</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filteredRecords.length === 0 ? (
-                            <tr><td colSpan={6} className="text-center text-secondary">No health records found</td></tr>
-                        ) : (
-                            filteredRecords.map((record) => (
-                                <tr key={record.id}>
-                                    <td>
-                                        <div className="flex items-center gap-sm">
-                                            <Calendar size={14} className="text-secondary" />
-                                            {new Date(record.date).toLocaleDateString()}
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div className="flex items-center gap-md">
-                                            <div className="p-2 bg-secondary rounded-full">
-                                                <UserIcon size={16} className="text-secondary" />
+            {loading ? renderSkeletonTable() : (
+                <div className="table-wrapper shadow-md">
+                    <table className="table">
+                        <thead>
+                            <tr>
+                                <th>Visit Date</th>
+                                <th>Student</th>
+                                <th>Diagnosis</th>
+                                <th>Treatment</th>
+                                <th>Medical Personnel</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {filteredRecords.length === 0 ? (
+                                <tr><td colSpan={6} className="text-center text-secondary py-12">No health records found</td></tr>
+                            ) : (
+                                filteredRecords.map((record) => (
+                                    <tr key={record.id}>
+                                        <td>
+                                            <div className="flex items-center gap-sm">
+                                                <Calendar size={14} className="text-secondary opacity-60" />
+                                                <span className="font-medium">{new Date(record.date_visited).toLocaleDateString()}</span>
                                             </div>
-                                            <span className="font-semibold">{record.student_name}</span>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span className="badge badge-error bg-error-light">
-                                            {record.diagnosis}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div className="flex items-center gap-sm text-sm">
-                                            <Activity size={14} className="text-secondary" />
-                                            {record.treatment_given}
-                                        </div>
-                                    </td>
-                                    <td className="text-sm">{record.nurse_name || 'System'}</td>
-                                    <td>
-                                        <div className="flex gap-sm">
-                                            <Button variant="ghost" size="sm" onClick={() => openModal(record)} icon={<Edit size={14} />} title="Edit" />
-                                            <Button variant="danger" size="sm" onClick={() => handleDelete(record.id)} icon={<Trash2 size={14} />} title="Delete" />
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
-            </div>
+                                        </td>
+                                        <td>
+                                            <div className="flex items-center gap-md">
+                                                <div className="p-2 bg-slate-100 rounded-lg">
+                                                    <UserIcon size={16} className="text-primary" />
+                                                </div>
+                                                <span className="font-semibold text-primary">{record.student_name}</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span className="badge badge-error bg-red-50 text-red-600 border-red-100 font-bold uppercase text-[9px]">
+                                                {record.diagnosis}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div className="flex items-center gap-sm text-sm">
+                                                <Activity size={14} className="text-secondary opacity-60" />
+                                                <span className="text-xs font-medium">{record.treatment_given || record.reason}</span>
+                                            </div>
+                                        </td>
+                                        <td className="text-[11px] font-bold text-secondary uppercase italic">{record.nurse_name || 'Clinic System'}</td>
+                                        <td>
+                                            <div className="flex gap-sm">
+                                                <Button variant="ghost" size="sm" onClick={() => openModal(record)} icon={<Edit size={14} />} title="Edit" />
+                                                <Button variant="danger" size="sm" onClick={() => handleDelete(record.id)} icon={<Trash2 size={14} />} title="Delete" />
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            )}
 
             <Modal isOpen={isModalOpen} onClose={closeModal} title={editingRecord ? 'Edit Health Entry' : 'Log Infirmary Visit'}>
                 <form onSubmit={handleSubmit} className="space-y-4 form-container-md mx-auto">

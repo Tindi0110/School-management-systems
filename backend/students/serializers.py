@@ -57,19 +57,54 @@ class ActivityRecordSerializer(serializers.ModelSerializer):
 
 class StudentListSerializer(serializers.ModelSerializer):
     """
-    Lightweight serializer for list views.
-    Includes only essential fields and de-normalized balances.
+    Optimized serializer for list views.
+    Includes only essential fields for the registry table and basic edit modal.
     """
     class_name = serializers.CharField(source='current_class.name', read_only=True)
     class_stream = serializers.CharField(source='current_class.stream', read_only=True)
     
+    # Pre-calculated/annotated fields for performance
+    attendance_percentage = serializers.SerializerMethodField()
+    average_grade = serializers.SerializerMethodField()
+    
+    # Needed for basic edit modal in list view
+    parents_detail = ParentSerializer(source='parents', many=True, read_only=True)
+
     class Meta:
         model = Student
         fields = [
-            'id', 'full_name', 'admission_number', 'gender', 
+            'id', 'full_name', 'admission_number', 'gender', 'date_of_birth',
             'class_name', 'class_stream', 'status', 'category',
-            'fee_balance', 'is_active'
+            'fee_balance', 'is_active', 'attendance_percentage', 'average_grade',
+            'parents_detail'
         ]
+
+    def get_attendance_percentage(self, obj):
+        total = getattr(obj, 'attendance_total', 0)
+        present = getattr(obj, 'attendance_present', 0)
+        if total == 0:
+            return 0
+        return round((present / total) * 100, 1)
+
+    def get_average_grade(self, obj):
+        avg_score = getattr(obj, 'avg_score', None)
+        if avg_score is None:
+            return "N/A"
+        
+        score = float(avg_score)
+        grade = 'E'
+        if score >= 80: grade = 'A'
+        elif score >= 75: grade = 'A-'
+        elif score >= 70: grade = 'B+'
+        elif score >= 65: grade = 'B'
+        elif score >= 60: grade = 'B-'
+        elif score >= 55: grade = 'C+'
+        elif score >= 50: grade = 'C'
+        elif score >= 45: grade = 'C-'
+        elif score >= 40: grade = 'D+'
+        elif score >= 35: grade = 'D'
+        elif score >= 30: grade = 'D-'
+        return f"{grade} ({round(score)}%)"
 
 class StudentSerializer(serializers.ModelSerializer):
     class_name = serializers.CharField(source='current_class.name', read_only=True)

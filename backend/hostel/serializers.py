@@ -26,36 +26,36 @@ class RoomSerializer(serializers.ModelSerializer):
     def get_available_beds(self, obj):
         return obj.beds.filter(status='AVAILABLE').count()
 
-class HostelSerializer(serializers.ModelSerializer):
-    warden_name = serializers.CharField(source='warden.get_full_name', read_only=True if hasattr(settings, 'AUTH_USER_MODEL') else False)
+class HostelListSerializer(serializers.ModelSerializer):
+    warden_name = serializers.CharField(source='warden.get_full_name', read_only=True)
     total_rooms = serializers.IntegerField(source='rooms.count', read_only=True)
     occupancy_rate = serializers.SerializerMethodField()
     
     class Meta:
         model = Hostel
-        fields = '__all__'
+        fields = ['id', 'name', 'gender_allowed', 'hostel_type', 'capacity', 'warden_name', 'total_rooms', 'occupancy_rate']
 
     def get_occupancy_rate(self, obj):
-        total_beds = Bed.objects.filter(room__hostel=obj).count()
-        occupied_beds = Bed.objects.filter(room__hostel=obj, status='OCCUPIED').count()
-        if total_beds == 0: return 0
-        return round((occupied_beds / total_beds) * 100, 1)
+        # Use annotated values if available
+        total = getattr(obj, 'total_beds_count', 0)
+        occupied = getattr(obj, 'occupied_beds_count', 0)
+        if total == 0: return 0
+        return round((occupied / total) * 100, 1)
 
-class HostelAllocationSerializer(serializers.ModelSerializer):
+class HostelSerializer(serializers.ModelSerializer):
+
+class AllocationListSerializer(serializers.ModelSerializer):
     student_name = serializers.CharField(source='student.full_name', read_only=True)
+    admission_number = serializers.CharField(source='student.admission_number', read_only=True)
     room_number = serializers.CharField(source='room.room_number', read_only=True)
     bed_number = serializers.CharField(source='bed.bed_number', read_only=True)
-    hostel_name = serializers.SerializerMethodField()
+    hostel_name = serializers.CharField(source='room.hostel.name', read_only=True)
     
     class Meta:
         model = HostelAllocation
-        fields = '__all__'
+        fields = ['id', 'student', 'student_name', 'admission_number', 'hostel_name', 'room', 'room_number', 'bed', 'bed_number', 'status', 'is_active', 'date_allocated']
 
-    def get_hostel_name(self, obj):
-        try:
-            return obj.room.hostel.name
-        except AttributeError:
-            return "Unknown Hostel"
+class HostelAllocationSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         student = data.get('student')

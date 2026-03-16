@@ -1,4 +1,4 @@
-﻿import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Plus, Search, Bus, Navigation, Users, Droplet, Download } from 'lucide-react';
 import { transportAPI, studentsAPI } from '../api/api';
 import { exportToCSV } from '../utils/export';
@@ -6,6 +6,7 @@ import { StatCard } from '../components/Card';
 import Button from '../components/common/Button';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
+import Skeleton from '../components/common/Skeleton';
 
 // Sub-components
 import FleetManager from './transport/FleetManager';
@@ -527,83 +528,122 @@ const Transport = () => {
         }
     };
 
-    // ── Helpers ───────────────────────────────────────────────────────────────
-    const handleExport = () => {
-        const exportMap: Record<string, any[]> = {
-            allocations: allocations,
-            routes: routes,
-            trips: trips,
-            maintenance: maintenanceRecords,
-            fuel: fuelRecords,
-        };
-        const data = exportMap[activeTab] ?? [];
-        exportToCSV(data, `Transport_${activeTab}`);
-    };
+    // ── Skeleton Renderers ───────────────────────────────────────────────────
+    const renderSkeletonFleet = () => (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[1, 2, 3].map(i => (
+                <div key={i} className="card p-6 border-t-4 border-slate-200">
+                    <div className="flex justify-between items-start mb-4">
+                        <div className="w-2/3"><Skeleton variant="text" width="100%" height="24px" /></div>
+                        <Skeleton variant="circular" width="32px" height="32px" />
+                    </div>
+                    <div className="space-y-3">
+                        <Skeleton variant="text" width="60%" />
+                        <Skeleton variant="text" width="40%" />
+                    </div>
+                    <div className="flex gap-2 mt-6 pt-4 border-t">
+                        <Skeleton variant="rect" width="100%" height="32px" className="rounded-lg" />
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
 
-    const handlePageChange = (tab: keyof typeof pagination, page: number) => {
-        setPagination(prev => ({ ...prev, [tab]: { ...prev[tab], page } }));
-    };
+    const renderSkeletonTable = (cols: number) => (
+        <div className="table-wrapper">
+            <table className="table">
+                <thead>
+                    <tr>{Array(cols).fill(0).map((_, i) => <th key={i}><Skeleton variant="text" width="80px" /></th>)}</tr>
+                </thead>
+                <tbody>
+                    {[1, 2, 3, 4, 5].map(i => (
+                        <tr key={i}>
+                            {Array(cols).fill(0).map((_, j) => <td key={j}><Skeleton variant="text" width="100%" /></td>)}
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    );
 
     // ── Render ────────────────────────────────────────────────────────────────
     return (
-        <div className="fade-in px-4">
+        <div className="fade-in px-4 pb-20">
             {/* Header */}
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8">
-                <div>
-                    <h1 className="text-3xl font-black tracking-tight">Institutional Logistics</h1>
-                    <p className="text-secondary text-sm font-medium">Fleet management, route optimization, and student safety</p>
+                <div className="w-full lg:w-auto">
+                    <h1 className="text-3xl font-black tracking-tight uppercase">Institutional Logistics</h1>
+                    <p className="text-secondary text-[10px] font-black uppercase tracking-[0.2em] opacity-60">Fleet management, route optimization, and safety</p>
                 </div>
-                <div className="flex gap-3 w-full lg:w-auto overflow-x-auto pb-2 lg:pb-0">
-                    <Button variant="outline" size="sm" onClick={() => { setEnrollmentId(null); setEnrollmentForm(INITIAL_ENROLLMENT_FORM); setIsAllocationModalOpen(true); }} icon={<Plus size={14} />}>
-                        Enroll Student
-                    </Button>
-                    <Button variant="primary" size="sm" onClick={() => { setVehicleId(null); setVehicleForm(INITIAL_VEHICLE_FORM); setIsVehicleModalOpen(true); }} icon={<Bus size={18} />}>
-                        Add Bus
-                    </Button>
+                <div className="flex flex-wrap gap-2 w-full lg:w-auto mt-2 lg:mt-0 no-print">
+                    <Button variant="ghost" className="text-[10px] font-black uppercase" onClick={() => { setEnrollmentId(null); setEnrollmentForm(INITIAL_ENROLLMENT_FORM); setIsAllocationModalOpen(true); }} icon={<Plus size={16} />}>Enroll Student</Button>
+                    <Button variant="primary" className="text-[10px] font-black uppercase shadow-lg shadow-primary/25" onClick={() => { setVehicleId(null); setVehicleForm(INITIAL_VEHICLE_FORM); setIsVehicleModalOpen(true); }} icon={<Bus size={16} />}>Add Bus</Button>
                 </div>
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8 w-full">
-                <StatCard title="Fleet Size" value={stats.totalFleet} icon={<Bus />} gradient="linear-gradient(135deg, #1e3c72, #2a5298)" />
-                <StatCard title="Active Routes" value={stats.activeRoutes} icon={<Navigation />} gradient="linear-gradient(135deg, #4facfe, #00f2fe)" />
-                <StatCard title="Enrollments" value={stats.totalEnrolled} icon={<Users />} gradient="linear-gradient(135deg, #667eea, #764ba2)" />
-                <StatCard title="Fuel (Term)" value={`KES ${stats.fuelCostTerm.toLocaleString()}`} icon={<Droplet />} gradient="linear-gradient(135deg, #f093fb, #f5576c)" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <StatCard 
+                    title="FLEET SIZE" 
+                    value={loading ? <Skeleton variant="text" width="40px" height="32px" /> : stats.totalFleet} 
+                    icon={<Bus className="text-white" />} 
+                    gradient="linear-gradient(135deg, #1e293b, #334155)" 
+                />
+                <StatCard 
+                    title="ACTIVE ROUTES" 
+                    value={loading ? <Skeleton variant="text" width="40px" height="32px" /> : stats.activeRoutes} 
+                    icon={<Navigation className="text-white" />} 
+                    gradient="linear-gradient(135deg, #0ea5e9, #0284c7)" 
+                />
+                <StatCard 
+                    title="ENROLLMENTS" 
+                    value={loading ? <Skeleton variant="text" width="40px" height="32px" /> : stats.totalEnrolled} 
+                    icon={<Users className="text-white" />} 
+                    gradient="linear-gradient(135deg, #8b5cf6, #7c3aed)" 
+                />
+                <StatCard 
+                    title="FUEL (TERM)" 
+                    value={loading ? <Skeleton variant="text" width="80px" height="32px" /> : `KSh ${stats.fuelCostTerm.toLocaleString()}`} 
+                    icon={<Droplet className="text-white" />} 
+                    gradient="linear-gradient(135deg, #f43f5e, #e11d48)" 
+                />
             </div>
 
             {/* Tab Navigation */}
-            <div className="nav-tab-container no-print">
+            <div className="flex overflow-x-auto gap-1 mb-8 p-1 bg-slate-100/50 backdrop-blur-sm rounded-xl no-print">
                 {(['fleet', 'routes', 'allocations', 'trips', 'maintenance', 'fuel', 'safety'] as const).map(tab => (
-                    <button key={tab} className={`nav-tab ${activeTab === tab ? 'active' : ''}`} onClick={() => setActiveTab(tab)}>
+                    <button 
+                        key={tab} 
+                        className={`px-6 py-3 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all whitespace-nowrap ${activeTab === tab ? 'bg-white text-primary shadow-sm' : 'text-secondary hover:bg-white/50'}`} 
+                        onClick={() => setActiveTab(tab)}
+                    >
                         {tab === 'fleet' ? 'Fleet' : tab === 'routes' ? 'Routes' : tab === 'allocations' ? 'Allocations' : tab === 'trips' ? 'Trip Logs' : tab === 'maintenance' ? 'Repairs' : tab === 'fuel' ? 'Fuel' : 'Safety'}
                     </button>
                 ))}
             </div>
 
             {/* Search & Export toolbar */}
-            <div className="card mb-6 no-print p-4">
+            <div className="card mb-8 no-print p-4 bg-white/50 backdrop-blur-md border-slate-200/60 shadow-xl">
                 <div className="flex flex-col lg:flex-row justify-between items-center gap-4">
-                    <div className="relative flex-grow w-full max-w-md">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary opacity-50" size={18} />
+                    <div className="relative flex-grow w-full max-w-2xl">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-primary" size={20} />
                         <input
                             type="text"
                             placeholder={`Search ${activeTab}...`}
-                            className="input pl-10 h-11 bg-slate-50 border-transparent focus:bg-white"
+                            className="input w-full pl-12 h-14 text-base font-medium bg-white/80 border-none shadow-inner ring-0 focus:ring-2 focus:ring-primary/20 transition-all rounded-xl"
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    <Button variant="outline" size="sm" onClick={handleExport} icon={<Download size={14} />}>
-                        Export {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+                    <Button variant="ghost" className="text-[10px] font-black uppercase h-14 px-8 border-2 border-slate-100 hover:border-slate-200" onClick={handleExport} icon={<Download size={16} />}>
+                        Export {activeTab}
                     </Button>
                 </div>
             </div>
 
             {/* Tab Content */}
             {loading ? (
-                <div className="flex justify-center items-center h-64">
-                    <div className="spinner" />
-                </div>
+                activeTab === 'fleet' || activeTab === 'routes' ? renderSkeletonFleet() : renderSkeletonTable(activeTab === 'trips' ? 7 : 6)
             ) : (
                 <>
                     {activeTab === 'fleet' && (
