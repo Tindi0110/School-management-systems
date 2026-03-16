@@ -47,18 +47,32 @@ const FinanceDashboard: React.FC<FinanceDashboardProps> = ({
                 </Button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatCard title="Total Invoiced" value={`KES ${stats.totalInvoiced.toLocaleString()} `} icon={<FileText size={18} />} gradient="linear-gradient(135deg, #3b82f6, #2563eb)" />
-                <StatCard title="Total Collected" value={`KES ${stats.totalCollected.toLocaleString()} `} icon={<CheckCircle size={18} />} gradient="linear-gradient(135deg, #10b981, #059669)" />
-                <StatCard title="Outstanding" value={`KES ${stats.totalOutstanding.toLocaleString()} `} icon={<CreditCard size={18} />} gradient="linear-gradient(135deg, #ef4444, #dc2626)" />
-                <StatCard title="Daily Collection" value={`KES ${stats.dailyCollection.toLocaleString()} `} icon={<TrendingUp size={18} />} gradient="linear-gradient(135deg, #8b5cf6, #7c3aed)" />
+            {/* Financial Performance */}
+            <div className="space-y-6">
+                <div className="flex items-center gap-2 px-1">
+                    <div className="w-1 h-4 bg-primary rounded-full" />
+                    <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Financial Performance</h2>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <StatCard title="Total Invoiced" value={`KES ${stats.totalInvoiced.toLocaleString()} `} icon={<FileText size={18} />} gradient="linear-gradient(135deg, #1e293b, #334155)" />
+                    <StatCard title="Total Collected" value={`KES ${stats.totalCollected.toLocaleString()} `} icon={<CheckCircle size={18} />} gradient="linear-gradient(135deg, #059669, #10b981)" />
+                    <StatCard title="Outstanding" value={`KES ${stats.totalOutstanding.toLocaleString()} `} icon={<CreditCard size={18} />} gradient="linear-gradient(135deg, #e11d48, #fb7185)" />
+                    <StatCard title="Daily Collection" value={`KES ${stats.dailyCollection.toLocaleString()} `} icon={<TrendingUp size={18} />} gradient="linear-gradient(135deg, #7c3aed, #a78bfa)" />
+                </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatCard title="Enrolled Students" value={stats.enrolledStudents.toLocaleString()} icon={<TrendingUp size={18} />} gradient="linear-gradient(135deg, #06b6d4, #0891b2)" />
-                <StatCard title="Total Capacity" value={stats.totalCapacity.toLocaleString()} icon={<CheckCircle size={18} />} gradient="linear-gradient(135deg, #6366f1, #4f46e5)" />
-                <StatCard title="Revenue / Seat" value={`KES ${stats.revenuePerSeat.toLocaleString()} `} icon={<CreditCard size={18} />} gradient="linear-gradient(135deg, #f59e0b, #d97706)" />
-                <StatCard title="Collection Rate" value={`${stats.collectionRate}% `} icon={<FileText size={18} />} gradient="linear-gradient(135deg, #10b981, #059669)" />
+            {/* Operational Metrics */}
+            <div className="space-y-6">
+                <div className="flex items-center gap-2 px-1">
+                    <div className="w-1 h-4 bg-primary/40 rounded-full" />
+                    <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Operational Metrics</h2>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <StatCard title="Enrolled Students" value={stats.enrolledStudents.toLocaleString()} icon={<TrendingUp size={18} />} gradient="linear-gradient(135deg, #0891b2, #22d3ee)" />
+                    <StatCard title="Total Capacity" value={stats.totalCapacity.toLocaleString()} icon={<CheckCircle size={18} />} gradient="linear-gradient(135deg, #4f46e5, #818cf8)" />
+                    <StatCard title="Revenue / Seat" value={`KES ${stats.revenuePerSeat.toLocaleString()} `} icon={<CreditCard size={18} />} gradient="linear-gradient(135deg, #d97706, #fbbf24)" />
+                    <StatCard title="Collection Rate" value={`${stats.collectionRate}% `} icon={<FileText size={18} />} gradient="linear-gradient(135deg, #059669, #10b981)" />
+                </div>
             </div>
 
             <div className="card shadow-sm border border-slate-200">
@@ -71,6 +85,7 @@ const FinanceDashboard: React.FC<FinanceDashboardProps> = ({
                                     <input
                                         type="checkbox"
                                         className="checkbox checkbox-xs"
+                                        aria-label="Select all outstanding invoices"
                                         onChange={(e) => {
                                             if (e.target.checked) {
                                                 const outstanding = invoices.filter(i => Number(i.balance) > 0).map(i => i.id);
@@ -103,6 +118,7 @@ const FinanceDashboard: React.FC<FinanceDashboardProps> = ({
                                             <input
                                                 type="checkbox"
                                                 className="checkbox checkbox-xs"
+                                                aria-label={`Select invoice #INV-${inv.id}`}
                                                 checked={selectedInvoices.has(inv.id)}
                                                 onChange={(e) => {
                                                     e.stopPropagation();

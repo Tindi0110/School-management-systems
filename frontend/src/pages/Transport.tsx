@@ -557,12 +557,12 @@ const Transport = () => {
             {/* Header */}
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8">
                 <div className="w-full lg:w-auto">
-                    <h1 className="text-3xl font-black tracking-tight uppercase">Institutional Logistics</h1>
-                    <p className="text-secondary text-[10px] font-black uppercase tracking-[0.2em] opacity-60">Fleet management, route optimization, and safety</p>
+                    <h1 className="text-3xl font-black tracking-tight uppercase text-slate-800">Logistics & Fleet</h1>
+                    <p className="text-secondary text-[10px] font-black uppercase tracking-[0.2em] opacity-60">Institutional Transport & Route Management</p>
                 </div>
-                <div className="flex flex-wrap gap-2 w-full lg:w-auto mt-2 lg:mt-0 no-print">
-                    <Button variant="ghost" className="text-[10px] font-black uppercase" onClick={() => { setEnrollmentId(null); setEnrollmentForm(INITIAL_ENROLLMENT_FORM); setIsAllocationModalOpen(true); }} icon={<Plus size={16} />}>Enroll Student</Button>
-                    <Button variant="primary" className="text-[10px] font-black uppercase shadow-lg shadow-primary/25" onClick={() => { setVehicleId(null); setVehicleForm(INITIAL_VEHICLE_FORM); setIsVehicleModalOpen(true); }} icon={<Bus size={16} />}>Add Bus</Button>
+                <div className="flex flex-wrap gap-3 w-full lg:w-auto no-print">
+                    <Button variant="ghost" className="text-[10px] font-black uppercase tracking-widest px-6" onClick={() => { setEnrollmentId(null); setEnrollmentForm(INITIAL_ENROLLMENT_FORM); setIsAllocationModalOpen(true); }} icon={<Plus size={14} />}>Enroll Student</Button>
+                    <Button variant="primary" className="text-[10px] font-black uppercase tracking-widest px-8 shadow-xl shadow-primary/20" onClick={() => { setVehicleId(null); setVehicleForm(INITIAL_VEHICLE_FORM); setIsVehicleModalOpen(true); }} icon={<Bus size={14} />}>Add Vehicle</Button>
                 </div>
             </div>
 
@@ -570,11 +570,11 @@ const Transport = () => {
             <TransportStats stats={stats} loading={loading} />
 
             {/* Tab Navigation */}
-            <div className="flex overflow-x-auto gap-1 mb-8 p-1 bg-slate-100/50 backdrop-blur-sm rounded-xl no-print">
+            <div className="flex overflow-x-auto gap-2 mb-8 p-1.5 bg-slate-100/40 backdrop-blur-md rounded-2xl no-print border border-slate-200/50">
                 {(['fleet', 'routes', 'allocations', 'trips', 'maintenance', 'fuel', 'safety'] as const).map(tab => (
                     <button 
                         key={tab} 
-                        className={`px-6 py-3 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all whitespace-nowrap ${activeTab === tab ? 'bg-white text-primary shadow-sm' : 'text-secondary hover:bg-white/50'}`} 
+                        className={`px-8 py-3.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${activeTab === tab ? 'bg-white text-primary shadow-md ring-1 ring-slate-200/50' : 'text-slate-500 hover:bg-white/60 hover:text-primary'}`} 
                         onClick={() => setActiveTab(tab)}
                     >
                         {tab === 'fleet' ? 'Fleet' : tab === 'routes' ? 'Routes' : tab === 'allocations' ? 'Allocations' : tab === 'trips' ? 'Trip Logs' : tab === 'maintenance' ? 'Repairs' : tab === 'fuel' ? 'Fuel' : 'Safety'}
@@ -583,20 +583,20 @@ const Transport = () => {
             </div>
 
             {/* Search & Export toolbar */}
-            <div className="card mb-8 no-print p-4 bg-white/50 backdrop-blur-md border-slate-200/60 shadow-xl">
-                <div className="flex flex-col lg:flex-row justify-between items-center gap-4">
-                    <div className="relative flex-grow w-full max-w-2xl">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-primary" size={20} />
+            <div className="card mb-10 no-print p-5 bg-white/60 backdrop-blur-xl border-slate-200/80 shadow-2xl shadow-slate-200/40">
+                <div className="flex flex-col lg:flex-row justify-between items-center gap-6">
+                    <div className="relative flex-grow w-full max-w-2xl group">
+                        <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={22} />
                         <input
                             type="text"
-                            placeholder={`Search ${activeTab}...`}
-                            className="input w-full pl-12 h-14 text-base font-medium bg-white/80 border-none shadow-inner ring-0 focus:ring-2 focus:ring-primary/20 transition-all rounded-xl"
+                            placeholder={`Search through ${activeTab}...`}
+                            className="input w-full pl-14 h-16 text-base font-bold bg-white/90 border-slate-200 shadow-sm focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all rounded-2xl placeholder:opacity-50"
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    <Button variant="ghost" className="text-[10px] font-black uppercase h-14 px-8 border-2 border-slate-100 hover:border-slate-200" onClick={handleExport} icon={<Download size={16} />}>
-                        Export {activeTab}
+                    <Button variant="ghost" className="text-[10px] font-black uppercase h-16 px-10 border-2 border-slate-100 hover:border-slate-200 bg-white/50 tracking-widest" onClick={handleExport} icon={<Download size={18} />}>
+                        Export {activeTab} Records
                     </Button>
                 </div>
             </div>
