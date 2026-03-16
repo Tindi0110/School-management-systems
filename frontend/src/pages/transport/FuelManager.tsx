@@ -22,56 +22,63 @@ const FuelManager: React.FC<FuelManagerProps> = ({
     onPageChange
 }) => {
     return (
-        <div className="table-container fade-in">
-            <div className="flex justify-between items-center mb-4 px-4 pt-4">
-                <h3 className="mb-0">Fuel Consumption Logs</h3>
+        <div className="card card-mobile-flat p-0 overflow-hidden fade-in">
+            <div className="card-header">
+                <div>
+                    <h3 className="mb-0 text-sm font-black uppercase">Fuel Consumption Logs</h3>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight mt-1">All fleet refuelling records</p>
+                </div>
             </div>
-            <table className="table">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Vehicle</th>
-                        <th>Liters</th>
-                        <th>Amount (KES)</th>
-                        <th>Mileage</th>
-                        <th>Receipt No</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {records.map(r => {
-                        const vehicle = vehicles.find(v => v.id === r.vehicle);
-                        return (
-                            <tr key={r.id}>
-                                <td>{r.date}</td>
-                                <td><span className="font-semibold">{vehicle?.registration_number || `Vehicle #${r.vehicle}`}</span></td>
-                                <td>{r.liters} L</td>
-                                <td className="font-bold">{parseFloat(r.amount).toLocaleString()}</td>
-                                <td>{r.mileage} KM</td>
-                                <td><span className="font-mono text-xs">{r.receipt_no || '---'}</span></td>
-                                <td>
-                                    <Button variant="ghost" size="sm" className="text-error" onClick={() => onDelete(r.id)} icon={<Trash2 size={14} />} />
-                                </td>
-                            </tr>
-                        );
-                    })}
-                    {records.length === 0 && (
-                        <tr>
-                            <td colSpan={7} className="text-center py-8 text-secondary italic">No fuel records logged.</td>
-                        </tr>
-                    )}
-                </tbody>
-            </table>
 
-            {/* Pagination UI */}
+            <div className="p-0 table-wrapper overflow-x-auto w-full block m-0">
+                <table className="table min-w-[600px] border-collapse">
+                    <thead className="sticky top-0 bg-slate-50 z-10 shadow-sm text-[10px] uppercase">
+                        <tr>
+                            <th className="py-4 px-6 text-left">Date</th>
+                            <th className="py-4 px-6 text-left">Vehicle</th>
+                            <th className="py-4 px-6">Litres</th>
+                            <th className="py-4 px-6">Amount (KES)</th>
+                            <th className="py-4 px-6">Mileage</th>
+                            <th className="py-4 px-6">Receipt No</th>
+                            <th className="py-4 px-6 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                        {records.map(r => {
+                            const vehicle = vehicles.find(v => v.id === r.vehicle);
+                            return (
+                                <tr key={r.id} className="hover:bg-slate-50 transition-colors">
+                                    <td className="py-4 px-6 text-[11px] font-bold text-slate-500">{r.date}</td>
+                                    <td className="py-4 px-6 font-bold text-xs text-slate-800">{vehicle?.registration_number || `Vehicle #${r.vehicle}`}</td>
+                                    <td className="py-4 px-6 text-center text-[11px] font-bold text-slate-700">{r.liters} L</td>
+                                    <td className="py-4 px-6 text-center font-black text-xs text-slate-800">{parseFloat(r.amount).toLocaleString()}</td>
+                                    <td className="py-4 px-6 text-center text-[11px] font-bold text-slate-500">{r.mileage} KM</td>
+                                    <td className="py-4 px-6 text-center">
+                                        <code className="bg-slate-100 px-2 py-1 rounded text-[10px] font-black">{r.receipt_no || '---'}</code>
+                                    </td>
+                                    <td className="py-4 px-6 text-right">
+                                        <Button variant="ghost" size="sm" className="text-error hover:bg-error/10" onClick={() => onDelete(r.id)} icon={<Trash2 size={12} />} />
+                                    </td>
+                                </tr>
+                            );
+                        })}
+                        {records.length === 0 && (
+                            <tr>
+                                <td colSpan={7} className="text-center py-12 text-slate-300 font-black text-[10px] uppercase tracking-widest">No fuel records logged.</td>
+                            </tr>
+                        )}
+                    </tbody>
+                </table>
+            </div>
+
             {total > pageSize && (
-                <div className="flex items-center justify-between mt-4 pt-4 border-t px-4 pb-4">
-                    <span className="text-sm text-secondary">
+                <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100">
+                    <span className="text-[10px] font-bold text-secondary uppercase">
                         Showing {((page - 1) * pageSize) + 1}–{Math.min(page * pageSize, total)} of {total} records
                     </span>
                     <div className="flex gap-2">
                         <Button variant="outline" size="sm" onClick={() => onPageChange(Math.max(1, page - 1))} disabled={page === 1}>← Prev</Button>
-                        <span className="btn btn-ghost btn-sm pointer-events-none px-4">Page {page} / {Math.ceil(total / pageSize)}</span>
+                        <span className="btn btn-ghost btn-sm pointer-events-none px-4 text-[10px] font-black">Page {page} / {Math.ceil(total / pageSize)}</span>
                         <Button variant="outline" size="sm" onClick={() => onPageChange(page + 1)} disabled={page * pageSize >= total}>Next →</Button>
                     </div>
                 </div>

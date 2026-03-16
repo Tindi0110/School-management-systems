@@ -53,8 +53,8 @@ const FinanceDashboard: React.FC<FinanceDashboardProps> = ({
                     <div className="w-1 h-4 bg-primary rounded-full" />
                     <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Financial Performance</h2>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <StatCard title="Total Invoiced" value={`KES ${stats.totalInvoiced.toLocaleString()} `} icon={<FileText size={18} />} gradient="linear-gradient(135deg, #1e293b, #334155)" />
+                <div className="grid grid-cols-2 gap-6 lg:gap-8">
+                    <StatCard title="Total Invoiced" value={`KES ${stats.totalInvoiced.toLocaleString()} `} icon={<FileText size={18} />} gradient="linear-gradient(135deg, #0f172a, #334155)" />
                     <StatCard title="Total Collected" value={`KES ${stats.totalCollected.toLocaleString()} `} icon={<CheckCircle size={18} />} gradient="linear-gradient(135deg, #059669, #10b981)" />
                     <StatCard title="Outstanding" value={`KES ${stats.totalOutstanding.toLocaleString()} `} icon={<CreditCard size={18} />} gradient="linear-gradient(135deg, #e11d48, #fb7185)" />
                     <StatCard title="Daily Collection" value={`KES ${stats.dailyCollection.toLocaleString()} `} icon={<TrendingUp size={18} />} gradient="linear-gradient(135deg, #7c3aed, #a78bfa)" />
@@ -67,7 +67,7 @@ const FinanceDashboard: React.FC<FinanceDashboardProps> = ({
                     <div className="w-1 h-4 bg-primary/40 rounded-full" />
                     <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Operational Metrics</h2>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 gap-6 lg:gap-8">
                     <StatCard title="Enrolled Students" value={stats.enrolledStudents.toLocaleString()} icon={<TrendingUp size={18} />} gradient="linear-gradient(135deg, #0891b2, #22d3ee)" />
                     <StatCard title="Total Capacity" value={stats.totalCapacity.toLocaleString()} icon={<CheckCircle size={18} />} gradient="linear-gradient(135deg, #4f46e5, #818cf8)" />
                     <StatCard title="Revenue / Seat" value={`KES ${stats.revenuePerSeat.toLocaleString()} `} icon={<CreditCard size={18} />} gradient="linear-gradient(135deg, #d97706, #fbbf24)" />

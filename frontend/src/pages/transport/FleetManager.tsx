@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bus, Edit, Trash2, Plus } from 'lucide-react';
+import { Bus, Edit, Trash2, Plus, Fuel } from 'lucide-react';
 import Button from '../../components/common/Button';
 
 interface FleetManagerProps {
@@ -26,38 +26,46 @@ const FleetManager: React.FC<FleetManagerProps> = ({
     );
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-12 gap-6 lg:gap-8 min-w-0">
             {filteredVehicles.map(v => (
-                <div key={v.id} className="card p-6 hover-scale border-top-4 border-primary">
-                    <div className="flex justify-between items-start mb-4">
-                        <div>
-                            <h3 className="mb-0">{v.registration_number}</h3>
-                            <span className="text-xs font-bold text-secondary uppercase tracking-wider">{v.make_model || v.vehicle_type}</span>
+                <div key={v.id} className="col-span-12 md:col-span-6 lg:col-span-4 min-w-0">
+                    <div className="card hover:shadow-2xl transition-all h-full flex flex-col p-6 overflow-hidden">
+                        <div className="flex justify-between items-start mb-4">
+                            <div className={`p-2.5 rounded-lg ${v.status === 'ACTIVE' ? 'bg-success text-white' : 'bg-warning text-white'}`}>
+                                <Bus size={16} />
+                            </div>
+                            <span className="badge badge-info badge-xs">CAP: {v.seating_capacity}</span>
                         </div>
-                        <div className={`p-2 rounded-lg ${v.status === 'ACTIVE' ? 'bg-success-light text-success' : 'bg-warning-light text-warning'}`}>
-                            <Bus size={20} />
+                        <h3 className="mb-1 text-sm font-black">{v.registration_number}</h3>
+                        <p className="text-[10px] font-bold text-secondary mb-4 uppercase tracking-wider">{v.make_model || v.vehicle_type}</p>
+                        <div className="space-y-2 text-[11px] font-bold flex-1">
+                            <div className="flex justify-between items-center">
+                                <span className="text-secondary uppercase">Condition:</span>
+                                <span className="text-slate-700">{v.current_condition}</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <span className="text-secondary uppercase">Insurance:</span>
+                                <span className={`font-black ${v.insurance_expiry && new Date(v.insurance_expiry) < new Date() ? 'text-error' : 'text-slate-700'}`}>
+                                    {v.insurance_expiry || 'N/A'}
+                                </span>
+                            </div>
                         </div>
-                    </div>
-                    <div className="space-y-3 text-sm">
-                        <div className="flex justify-between"><span className="text-secondary">Seating Cap:</span><span className="font-semibold">{v.seating_capacity} Seats</span></div>
-                        <div className="flex justify-between"><span className="text-secondary">Condition:</span><span className="font-semibold">{v.current_condition}</span></div>
-                        <div className="flex justify-between">
-                            <span className="text-secondary">Insurance Info:</span>
-                            <span className={`font-semibold ${v.insurance_expiry && new Date(v.insurance_expiry) < new Date() ? 'text-error' : ''}`}>
-                                {v.insurance_expiry || 'N/A'}
-                            </span>
+                        <div className="mt-auto pt-4 border-t border-slate-100 flex justify-between items-center">
+                            <span className={`badge badge-xs font-black ${v.status === 'ACTIVE' ? 'badge-success' : 'badge-warning'}`}>{v.status}</span>
+                            <div className="flex gap-1">
+                                <Button variant="outline" size="sm" onClick={() => onEdit(v)} title="Edit Vehicle" icon={<Edit size={10} />} />
+                                <Button variant="ghost" size="sm" className="text-primary" onClick={() => onLogFuel(v)} title="Fuel Logs" icon={<Fuel size={10} />} />
+                                <Button variant="ghost" size="sm" className="text-error" onClick={() => onDelete(v.id)} title="Delete" icon={<Trash2 size={10} />} />
+                            </div>
                         </div>
-                    </div>
-                    <div className="flex gap-2 mt-6 border-top pt-4">
-                        <Button variant="ghost" size="sm" className="flex-1 text-primary" onClick={() => onEdit(v)} icon={<Edit size={14} />}>Edit</Button>
-                        <Button variant="ghost" size="sm" className="text-error" onClick={() => onDelete(v.id)} icon={<Trash2 size={14} />} />
-                        <Button variant="outline" size="sm" className="flex-1" onClick={() => onLogFuel(v)}>Fuel Logs</Button>
                     </div>
                 </div>
             ))}
-            <div className="card border-dashed border-2 flex flex-col items-center justify-center p-8 text-secondary cursor-pointer hover:bg-slate-50 transition-colors" onClick={onAdd}>
-                <Plus size={32} className="mb-2" />
-                <p className="font-bold">Add New Vehicle</p>
+            <div className="col-span-12 md:col-span-6 lg:col-span-4 min-w-0">
+                <div className="card border-dashed flex flex-col items-center justify-center p-8 cursor-pointer hover:border-primary group h-full" onClick={onAdd}>
+                    <Plus size={32} className="text-secondary group-hover:text-primary transition-all mb-2" />
+                    <span className="text-xs font-black uppercase text-secondary">Add New Vehicle</span>
+                </div>
             </div>
         </div>
     );
