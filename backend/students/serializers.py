@@ -8,11 +8,17 @@ from academics.models import Attendance, StudentResult
 from django.db.models import Avg
 
 class SimpleStudentSerializer(serializers.ModelSerializer):
-    class_name = serializers.CharField(source='current_class.name', read_only=True)
-    stream = serializers.CharField(source='current_class.stream', read_only=True)
+    class_name = serializers.SerializerMethodField()
+    stream = serializers.SerializerMethodField()
     class Meta:
         model = Student
         fields = ['id', 'full_name', 'admission_number', 'class_name', 'stream']
+
+    def get_class_name(self, obj):
+        return obj.current_class.name if obj.current_class else "General"
+
+    def get_stream(self, obj):
+        return obj.current_class.stream if obj.current_class else ""
 
 class ParentSerializer(serializers.ModelSerializer):
     students = SimpleStudentSerializer(many=True, read_only=True)
@@ -60,8 +66,8 @@ class StudentListSerializer(serializers.ModelSerializer):
     Optimized serializer for list views.
     Includes only essential fields for the registry table and basic edit modal.
     """
-    class_name = serializers.CharField(source='current_class.name', read_only=True)
-    class_stream = serializers.CharField(source='current_class.stream', read_only=True)
+    class_name = serializers.SerializerMethodField()
+    class_stream = serializers.SerializerMethodField()
     
     # Pre-calculated/annotated fields for performance
     attendance_percentage = serializers.SerializerMethodField()
@@ -79,6 +85,12 @@ class StudentListSerializer(serializers.ModelSerializer):
             'parents_detail'
         ]
 
+    def get_class_name(self, obj):
+        return obj.current_class.name if obj.current_class else "General"
+
+    def get_class_stream(self, obj):
+        return obj.current_class.stream if obj.current_class else ""
+
     def get_attendance_percentage(self, obj):
         return obj.get_attendance_stats()
 
@@ -86,8 +98,8 @@ class StudentListSerializer(serializers.ModelSerializer):
         return obj.get_academic_stats()['display']
 
 class StudentSerializer(serializers.ModelSerializer):
-    class_name = serializers.CharField(source='current_class.name', read_only=True)
-    class_stream = serializers.CharField(source='current_class.stream', read_only=True)
+    class_name = serializers.SerializerMethodField()
+    class_stream = serializers.SerializerMethodField()
     
     # MethodFields for fields requiring logic
     hostel_name = serializers.CharField(source='hostel_allocation.room.hostel.name', read_only=True)
@@ -113,6 +125,12 @@ class StudentSerializer(serializers.ModelSerializer):
     guardian_relation = serializers.CharField(write_only=True, required=False, default='GUARDIAN')
     guardian_address = serializers.CharField(write_only=True, required=False, allow_blank=True)
     is_primary_guardian = serializers.BooleanField(write_only=True, required=False, default=True)
+
+    def get_class_name(self, obj):
+        return obj.current_class.name if obj.current_class else "General"
+
+    def get_class_stream(self, obj):
+        return obj.current_class.stream if obj.current_class else ""
 
     def get_attendance_percentage(self, obj):
         return obj.get_attendance_stats()
