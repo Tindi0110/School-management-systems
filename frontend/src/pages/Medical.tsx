@@ -7,7 +7,7 @@ import SearchableSelect from '../components/SearchableSelect';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 import Button from '../components/common/Button';
-import Skeleton from '../components/common/Skeleton';
+import { MedicalTableSkeleton } from './medical/MedicalSkeletons';
 
 const Medical = () => {
     const [records, setRecords] = useState<any[]>([]);
@@ -114,40 +114,6 @@ const Medical = () => {
         subLabel: `ID: ${s.admission_number}`
     })), [students]);
 
-    const renderSkeletonTable = () => (
-        <div className="table-wrapper no-print">
-            <table className="table">
-                <thead>
-                    <tr>
-                        <th>Visit Date</th>
-                        <th>Student</th>
-                        <th>Diagnosis</th>
-                        <th>Treatment</th>
-                        <th>Medical Personnel</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {[1, 2, 3, 4, 5].map(i => (
-                        <tr key={i}>
-                            <td><Skeleton variant="text" width="100px" /></td>
-                            <td>
-                                <div className="flex items-center gap-md">
-                                    <Skeleton variant="circular" width="32px" height="32px" />
-                                    <Skeleton variant="text" width="120px" />
-                                </div>
-                            </td>
-                            <td><Skeleton variant="rect" width="100px" height="22px" className="rounded-md" /></td>
-                            <td><Skeleton variant="text" width="150px" /></td>
-                            <td><Skeleton variant="text" width="100px" /></td>
-                            <td><Skeleton variant="rect" width="80px" height="32px" className="rounded-lg" /></td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
-    );
-
     return (
         <div className="fade-in px-4 pb-20">
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8">
@@ -175,7 +141,7 @@ const Medical = () => {
                 </div>
             </div>
 
-            {loading ? renderSkeletonTable() : (
+            {loading ? <MedicalTableSkeleton /> : (
                 <div className="table-wrapper shadow-md">
                     <table className="table">
                         <thead>

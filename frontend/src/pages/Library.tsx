@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
     Book, Bookmark, Receipt, Layers, Search, Download, Printer
 } from 'lucide-react';
@@ -17,6 +17,7 @@ import BookCatalog from './library/BookCatalog';
 import InventoryManager from './library/InventoryManager';
 import CirculationManager from './library/CirculationManager';
 import FineManager from './library/FineManager';
+import { LibraryStatsSkeleton, LibraryTableSkeleton, LibraryCatalogSkeleton } from './library/LibrarySkeletons';
 
 const Library = () => {
     const [activeTab, setActiveTab] = useState('catalog');
@@ -398,9 +399,6 @@ const Library = () => {
         );
     }, [copies, searchTerm]);
 
-
-    if (loading) return <div className="spinner-container"><div className="spinner"></div></div>;
-
     return (
         <div className="fade-in px-4">
             {/* Header */}
@@ -414,30 +412,34 @@ const Library = () => {
             </div>
 
             <div className="grid grid-cols-2 gap-4 mb-8">
-                <StatCard
-                    title="Out on Loan"
-                    value={stats.activeLendings}
-                    icon={<Bookmark />}
-                    gradient="linear-gradient(135deg, #3b82f6, #2563eb)"
-                />
-                <StatCard
-                    title="Unpaid Fines"
-                    value={`KES ${stats.totalFines.toLocaleString()}`}
-                    icon={<Receipt />}
-                    gradient="linear-gradient(135deg, #ef4444, #dc2626)"
-                />
-                <StatCard
-                    title="Total Copies"
-                    value={stats.totalCopies}
-                    icon={<Layers />}
-                    gradient="linear-gradient(135deg, #10b981, #059669)"
-                />
-                <StatCard
-                    title="Unique Titles"
-                    value={stats.totalBooks}
-                    icon={<Book />}
-                    gradient="linear-gradient(135deg, #8b5cf6, #7c3aed)"
-                />
+                {loading ? <LibraryStatsSkeleton /> : (
+                    <>
+                        <StatCard
+                            title="Out on Loan"
+                            value={stats.activeLendings}
+                            icon={<Bookmark />}
+                            gradient="linear-gradient(135deg, #3b82f6, #2563eb)"
+                        />
+                        <StatCard
+                            title="Unpaid Fines"
+                            value={`KES ${stats.totalFines.toLocaleString()}`}
+                            icon={<Receipt />}
+                            gradient="linear-gradient(135deg, #ef4444, #dc2626)"
+                        />
+                        <StatCard
+                            title="Total Copies"
+                            value={stats.totalCopies}
+                            icon={<Layers />}
+                            gradient="linear-gradient(135deg, #10b981, #059669)"
+                        />
+                        <StatCard
+                            title="Unique Titles"
+                            value={stats.totalBooks}
+                            icon={<Book />}
+                            gradient="linear-gradient(135deg, #8b5cf6, #7c3aed)"
+                        />
+                    </>
+                )}
             </div>
 
             {/* Tabs Navigation */}
@@ -470,77 +472,85 @@ const Library = () => {
 
             {/* Catalog Content */}
             {activeTab === 'catalog' && (
-                <BookCatalog
-                    books={books}
-                    copies={copies}
-                    searchTerm={searchTerm}
-                    isReadOnly={isReadOnly}
-                    onAdd={() => { setBookId(null); setIsBookModalOpen(true); }}
-                    onEdit={handleEditBook}
-                    onDelete={(e, id) => handleDelete(e, id, libraryAPI.books.delete, 'Delete this title?', loadCatalog)}
-                    onViewUnits={(id) => { setActiveTab('copies'); setViewingInventoryBookId(id); }}
-                    page={pagination.books.page}
-                    total={pagination.books.total}
-                    pageSize={PAGE_SIZE}
-                    onPageChange={(p) => setPagination(prev => ({ ...prev, books: { ...prev.books, page: p } }))}
-                />
+                loading ? <LibraryCatalogSkeleton /> : (
+                    <BookCatalog
+                        books={books}
+                        copies={copies}
+                        searchTerm={searchTerm}
+                        isReadOnly={isReadOnly}
+                        onAdd={() => { setBookId(null); setIsBookModalOpen(true); }}
+                        onEdit={handleEditBook}
+                        onDelete={(e, id) => handleDelete(e, id, libraryAPI.books.delete, 'Delete this title?', loadCatalog)}
+                        onViewUnits={(id) => { setActiveTab('copies'); setViewingInventoryBookId(id); }}
+                        page={pagination.books.page}
+                        total={pagination.books.total}
+                        pageSize={PAGE_SIZE}
+                        onPageChange={(p) => setPagination(prev => ({ ...prev, books: { ...prev.books, page: p } }))}
+                    />
+                )
             )}
 
             {/* Inventory Content */}
             {activeTab === 'copies' && (
-                <InventoryManager
-                    books={books}
-                    copies={copies}
-                    filteredCopies={filteredCopies}
-                    isReadOnly={isReadOnly}
-                    viewingInventoryBookId={viewingInventoryBookId}
-                    onSetViewingBookId={setViewingInventoryBookId}
-                    onAddCopy={(bookId) => {
-                        setCopyId(null);
-                        if (bookId) setCopyForm({ ...copyForm, book: bookId });
-                        setIsCopyModalOpen(true);
-                    }}
-                    onEditCopy={handleEditCopy}
-                    onDeleteCopy={(e, id) => handleDelete(e, id, libraryAPI.copies.delete, 'Remove this copy completely?', loadCatalog)}
-                    page={pagination.books.page}
-                    total={pagination.books.total}
-                    pageSize={PAGE_SIZE}
-                    onPageChange={(p) => setPagination(prev => ({ ...prev, books: { ...prev.books, page: p } }))}
-                />
+                loading ? <LibraryTableSkeleton cols={5} /> : (
+                    <InventoryManager
+                        books={books}
+                        copies={copies}
+                        filteredCopies={filteredCopies}
+                        isReadOnly={isReadOnly}
+                        viewingInventoryBookId={viewingInventoryBookId}
+                        onSetViewingBookId={setViewingInventoryBookId}
+                        onAddCopy={(bookId) => {
+                            setCopyId(null);
+                            if (bookId) setCopyForm({ ...copyForm, book: bookId });
+                            setIsCopyModalOpen(true);
+                        }}
+                        onEditCopy={handleEditCopy}
+                        onDeleteCopy={(e, id) => handleDelete(e, id, libraryAPI.copies.delete, 'Remove this copy completely?', loadCatalog)}
+                        page={pagination.books.page}
+                        total={pagination.books.total}
+                        pageSize={PAGE_SIZE}
+                        onPageChange={(p) => setPagination(prev => ({ ...prev, books: { ...prev.books, page: p } }))}
+                    />
+                )
             )}
 
             {/* Lendings Content */}
             {activeTab === 'lendings' && (
-                <CirculationManager
-                    lendings={lendings}
-                    isReadOnly={isReadOnly}
-                    onIssue={() => { setLendingId(null); setIsLendModalOpen(true); }}
-                    onReturn={(id) => libraryAPI.lendings.returnBook(id).then(() => { loadLendings(); loadCatalog(); })}
-                    onExtend={handleExtendDueDate}
-                    onEdit={handleEditLending}
-                    onDelete={(e, id) => handleDelete(e, id, libraryAPI.lendings.delete, 'Delete this lending record?', loadLendings)}
-                    page={pagination.lendings.page}
-                    total={pagination.lendings.total}
-                    pageSize={PAGE_SIZE}
-                    onPageChange={(p) => setPagination(prev => ({ ...prev, lendings: { ...prev.lendings, page: p } }))}
-                />
+                loading ? <LibraryTableSkeleton cols={6} /> : (
+                    <CirculationManager
+                        lendings={lendings}
+                        isReadOnly={isReadOnly}
+                        onIssue={() => { setLendingId(null); setIsLendModalOpen(true); }}
+                        onReturn={(id) => libraryAPI.lendings.returnBook(id).then(() => { loadLendings(); loadCatalog(); })}
+                        onExtend={handleExtendDueDate}
+                        onEdit={handleEditLending}
+                        onDelete={(e, id) => handleDelete(e, id, libraryAPI.lendings.delete, 'Delete this lending record?', loadLendings)}
+                        page={pagination.lendings.page}
+                        total={pagination.lendings.total}
+                        pageSize={PAGE_SIZE}
+                        onPageChange={(p) => setPagination(prev => ({ ...prev, lendings: { ...prev.lendings, page: p } }))}
+                    />
+                )
             )}
 
             {/* Fines Content */}
             {activeTab === 'fines' && (
-                <FineManager
-                    fines={fines}
-                    isReadOnly={isReadOnly}
-                    isSyncing={isSyncing}
-                    onSync={handleSyncFinesToFinance}
-                    onAdd={() => { setFineId(null); setIsFineModalOpen(true); }}
-                    onEdit={handleEditFine}
-                    onDelete={(e, id) => handleDelete(e, id, libraryAPI.fines.delete, 'Delete this fine?', loadFines)}
-                    page={pagination.fines.page}
-                    total={pagination.fines.total}
-                    pageSize={PAGE_SIZE}
-                    onPageChange={(p) => setPagination(prev => ({ ...prev, fines: { ...prev.fines, page: p } }))}
-                />
+                loading ? <LibraryTableSkeleton cols={5} /> : (
+                    <FineManager
+                        fines={fines}
+                        isReadOnly={isReadOnly}
+                        isSyncing={isSyncing}
+                        onSync={handleSyncFinesToFinance}
+                        onAdd={() => { setFineId(null); setIsFineModalOpen(true); }}
+                        onEdit={handleEditFine}
+                        onDelete={(e, id) => handleDelete(e, id, libraryAPI.fines.delete, 'Delete this fine?', loadFines)}
+                        page={pagination.fines.page}
+                        total={pagination.fines.total}
+                        pageSize={PAGE_SIZE}
+                        onPageChange={(p) => setPagination(prev => ({ ...prev, fines: { ...prev.fines, page: p } }))}
+                    />
+                )
             )}
 
             {/* Modals */}

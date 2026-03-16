@@ -4,7 +4,6 @@ import { hostelAPI, studentsAPI, staffAPI } from '../api/api';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 import Button from '../components/common/Button';
-import Skeleton from '../components/common/Skeleton';
 
 // Modular Components
 import HostelDashboard from './hostels/HostelDashboard';
@@ -13,6 +12,7 @@ import AllocationManager from './hostels/AllocationManager';
 import AttendanceManager from './hostels/AttendanceManager';
 import HostelLogManager from './hostels/HostelLogManager';
 import HostelModals from './hostels/HostelModals';
+import { HostelStatsSkeleton, HostelTableSkeleton } from './hostels/HostelSkeletons';
 
 const Hostels = () => {
     const [activeTab, setActiveTab] = useState('registry');
@@ -219,52 +219,6 @@ const Hostels = () => {
 
     const openAddRoom = (h: any) => { setRoomFormData({ hostel: h.id.toString(), room_number: '', room_type: 'DORM', floor: 'Ground', capacity: 4 }); setIsRoomModalOpen(true); };
 
-    const renderSkeletonStats = () => (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-md mb-8">
-            {[1, 2, 3, 4].map(i => (
-                <div key={i} className="card p-6 bg-white border border-gray-100 rounded-2xl">
-                    <Skeleton variant="text" width="60%" className="mb-2" />
-                    <Skeleton variant="rect" height="32px" width="40%" />
-                </div>
-            ))}
-        </div>
-    );
-
-    const renderSkeletonTable = () => (
-        <div className="table-wrapper">
-            <table className="table">
-                <thead>
-                    <tr>
-                        <th className="w-1/3">Identity</th>
-                        <th>Placement</th>
-                        <th>Status</th>
-                        <th>Capacity</th>
-                        <th className="no-print">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {[1, 2, 3, 4, 5].map(i => (
-                        <tr key={i}>
-                            <td>
-                                <div className="flex items-center gap-3">
-                                    <Skeleton variant="circle" width="40px" height="40px" />
-                                    <div className="flex flex-col gap-1 flex-1">
-                                        <Skeleton variant="text" width="120px" />
-                                        <Skeleton variant="text" width="80px" />
-                                    </div>
-                                </div>
-                            </td>
-                            <td><Skeleton variant="text" width="100px" /><Skeleton variant="text" width="60px" /></td>
-                            <td><Skeleton variant="rect" width="60px" height="20px" /></td>
-                            <td><Skeleton variant="text" width="50px" /></td>
-                            <td><Skeleton variant="rect" width="100px" height="30px" /></td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
-    );
-
     return (
         <div className="fade-in px-4 pb-12">
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8 no-print">
@@ -278,7 +232,7 @@ const Hostels = () => {
                 </div>
             </div>
 
-            {loading ? renderSkeletonStats() : <HostelDashboard stats={stats} />}
+            {loading ? <HostelStatsSkeleton /> : <HostelDashboard stats={stats} />}
 
             <div className="nav-tab-container no-print mb-6">
                 {['registry', 'allocations', 'attendance', 'discipline', 'assets', 'maintenance'].map(tab => (
@@ -294,7 +248,7 @@ const Hostels = () => {
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
-                {loading ? renderSkeletonTable() : (
+                {loading ? <HostelTableSkeleton /> : (
                     <>
                         {activeTab === 'registry' && <HostelRegistry hostels={hostels} rooms={rooms} staff={staff} searchTerm={searchTerm} openViewRooms={(h) => { setSelectedHostel(h); setIsViewRoomsModalOpen(true); }} handleEditHostel={(h) => { setHostelId(h.id); setHostelFormData({ name: h.name, gender_allowed: h.gender_allowed, hostel_type: h.hostel_type, capacity: h.capacity, warden: h.warden ? String(h.warden.id || h.warden) : '' }); setIsHostelModalOpen(true); }} openViewResidents={openViewResidents} handleDeleteHostel={async (id) => { if (await confirm('Delete Hostel?')) hostelAPI.hostels.delete(id).then(() => loadData()); }} setIsHostelModalOpen={setIsHostelModalOpen} />}
                         {activeTab === 'allocations' && <AllocationManager allocations={allocations} rooms={rooms} hostels={hostels} students={students} allocPage={allocPage} setAllocPage={setAllocPage} allocTotal={allocTotal} pageSize={PAGE_SIZE} setIsAllocationModalOpen={setIsAllocationModalOpen} setAllocationId={setAllocationId} setIsTransferMode={setIsTransferMode} openTransferModal={(a) => { setIsTransferMode(true); setAllocationId(a.id); setAllocationFormData({ student: String(a.student), hostel: '', room: '', bed: '', status: 'ACTIVE' }); setIsAllocationModalOpen(true); }} handleEditAllocation={(a) => { const r = rooms.find(rm => rm.id === a.room); setAllocationId(a.id); setAllocationFormData({ ...a, student: String(a.student), hostel: r ? String(r.hostel) : '', room: String(a.room), bed: String(a.bed) }); setIsAllocationModalOpen(true); }} handleDeleteAllocation={async (id) => { if (await confirm('Delete Allocation?')) hostelAPI.allocations.delete(id).then(() => loadData()); }} />}

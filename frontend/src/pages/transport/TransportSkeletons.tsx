@@ -1,3 +1,9 @@
+import Skeleton from '../../components/common/Skeleton';
+
+export const FleetSkeleton = () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {[1, 2, 3].map(i => (
+            <div key={i} className="card p-6 border-2 border-slate-50 shadow-sm rounded-2xl">
                 <div className="flex justify-between items-start mb-4">
                     <div className="w-2/3"><Skeleton variant="text" width="100%" height="24px" /></div>
                     <Skeleton variant="circle" width="32px" height="32px" />
@@ -28,5 +34,16 @@ export const TableSkeleton = ({ cols }: { cols: number }) => (
                 ))}
             </tbody>
         </table>
+    </div>
+);
+
+export const TransportStatsSkeleton = () => (
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-md mb-8 no-print">
+        {[1, 2, 3, 4].map(i => (
+            <div key={i} className="card p-6 bg-white border border-gray-100 rounded-2xl shadow-sm">
+                <Skeleton variant="text" width="60%" className="mb-2" />
+                <Skeleton variant="rect" height="32px" width="40%" className="rounded-lg" />
+            </div>
+        ))}
     </div>
 );
