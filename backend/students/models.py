@@ -105,6 +105,56 @@ class Student(models.Model):
 
     def __str__(self): return f"{self.full_name} ({self.admission_number})"
 
+    def get_attendance_stats(self):
+        """Calculates attendance percentage, prioritizing annotated values."""
+        total = getattr(self, 'attendance_total', None)
+        present = getattr(self, 'attendance_present', None)
+        
+        if total is None:
+            # Fallback for when not using optimized querysets
+            from academics.models import Attendance
+            total = Attendance.objects.filter(student=self).count()
+            present = Attendance.objects.filter(student=self, status='PRESENT').count()
+            
+        if total == 0: return 0
+        return round((present / total) * 100, 1)
+
+    def get_academic_stats(self):
+        """Calculates average score and corresponding grade."""
+        from django.db.models import Avg
+        avg_score = getattr(self, 'avg_score', None)
+        
+        if avg_score is None:
+            # Fallback for detail views without annotations
+            avg_score = self.results.aggregate(Avg('score'))['score__avg']
+            
+        if avg_score is None:
+            return {"average_score": 0, "grade": "N/A", "display": "N/A"}
+        
+        score = float(avg_score)
+        grade = self.get_grade_from_score(score)
+        return {
+            "average_score": round(score, 1),
+            "grade": grade,
+            "display": f"{grade} ({round(score)}%)"
+        }
+
+    @staticmethod
+    def get_grade_from_score(score):
+        """Standard hardcoded fallback grading scale."""
+        if score >= 80: return 'A'
+        if score >= 75: return 'A-'
+        if score >= 70: return 'B+'
+        if score >= 65: return 'B'
+        if score >= 60: return 'B-'
+        if score >= 55: return 'C+'
+        if score >= 50: return 'C'
+        if score >= 45: return 'C-'
+        if score >= 40: return 'D+'
+        if score >= 35: return 'D'
+        if score >= 30: return 'D-'
+        return 'E'
+
 class StudentAdmission(models.Model):
     student = models.OneToOneField(Student, on_delete=models.CASCADE, related_name='admission_details')
     previous_school = models.CharField(max_length=255, blank=True)

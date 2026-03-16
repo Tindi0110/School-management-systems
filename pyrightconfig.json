@@ -1,0 +1,15 @@
+{
+    "executionEnvironments": [
+        {
+            "root": "backend",
+            "extraPaths": [
+                "."
+            ]
+        }
+    ],
+    "exclude": [
+        "**/node_modules",
+        "**/__pycache__",
+        "frontend/**"
+    ]
+}

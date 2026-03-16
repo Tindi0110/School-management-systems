@@ -17,6 +17,8 @@ import MaintenanceManager from './transport/MaintenanceManager';
 import FuelManager from './transport/FuelManager';
 import SafetyManager from './transport/SafetyManager';
 import TransportModals from './transport/TransportModals';
+import TransportStats from './transport/TransportStats';
+import { FleetSkeleton, TableSkeleton } from './transport/TransportSkeletons';
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
 const TODAY = new Date().toISOString().split('T')[0];
@@ -173,6 +175,29 @@ const Transport = () => {
         totalEnrolled: allocations.filter(a => a?.status === 'ACTIVE').length,
         fuelCostTerm: fuelRecords.reduce((acc, f) => acc + (parseFloat(f?.amount) || 0), 0),
     }), [vehicles, routes, allocations, fuelRecords]);
+
+    const handleExport = () => {
+        const dataMap: Record<string, any[]> = {
+            fleet: vehicles,
+            routes: routes,
+            allocations: allocations,
+            trips: trips,
+            maintenance: maintenanceRecords,
+            fuel: fuelRecords,
+            safety: incidents,
+        };
+        const exportData = dataMap[activeTab] || [];
+        if (exportData.length === 0) {
+            toast.error(`No ${activeTab} data to export.`);
+            return;
+        }
+        exportToCSV(exportData, `transport_${activeTab}_report`);
+        toast.success(`${activeTab} data exported successfully.`);
+    };
+
+    const handlePageChange = (key: keyof typeof pagination, page: number) => {
+        setPagination(prev => ({ ...prev, [key]: { ...prev[key], page } }));
+    };
 
     const studentOptions = useMemo(() => students.map(s => ({
         id: String(s.id),
@@ -528,44 +553,6 @@ const Transport = () => {
         }
     };
 
-    // ── Skeleton Renderers ───────────────────────────────────────────────────
-    const renderSkeletonFleet = () => (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[1, 2, 3].map(i => (
-                <div key={i} className="card p-6 border-t-4 border-slate-200">
-                    <div className="flex justify-between items-start mb-4">
-                        <div className="w-2/3"><Skeleton variant="text" width="100%" height="24px" /></div>
-                        <Skeleton variant="circular" width="32px" height="32px" />
-                    </div>
-                    <div className="space-y-3">
-                        <Skeleton variant="text" width="60%" />
-                        <Skeleton variant="text" width="40%" />
-                    </div>
-                    <div className="flex gap-2 mt-6 pt-4 border-t">
-                        <Skeleton variant="rect" width="100%" height="32px" className="rounded-lg" />
-                    </div>
-                </div>
-            ))}
-        </div>
-    );
-
-    const renderSkeletonTable = (cols: number) => (
-        <div className="table-wrapper">
-            <table className="table">
-                <thead>
-                    <tr>{Array(cols).fill(0).map((_, i) => <th key={i}><Skeleton variant="text" width="80px" /></th>)}</tr>
-                </thead>
-                <tbody>
-                    {[1, 2, 3, 4, 5].map(i => (
-                        <tr key={i}>
-                            {Array(cols).fill(0).map((_, j) => <td key={j}><Skeleton variant="text" width="100%" /></td>)}
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
-    );
-
     // ── Render ────────────────────────────────────────────────────────────────
     return (
         <div className="fade-in px-4 pb-20">
@@ -582,32 +569,7 @@ const Transport = () => {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <StatCard 
-                    title="FLEET SIZE" 
-                    value={loading ? <Skeleton variant="text" width="40px" height="32px" /> : stats.totalFleet} 
-                    icon={<Bus className="text-white" />} 
-                    gradient="linear-gradient(135deg, #1e293b, #334155)" 
-                />
-                <StatCard 
-                    title="ACTIVE ROUTES" 
-                    value={loading ? <Skeleton variant="text" width="40px" height="32px" /> : stats.activeRoutes} 
-                    icon={<Navigation className="text-white" />} 
-                    gradient="linear-gradient(135deg, #0ea5e9, #0284c7)" 
-                />
-                <StatCard 
-                    title="ENROLLMENTS" 
-                    value={loading ? <Skeleton variant="text" width="40px" height="32px" /> : stats.totalEnrolled} 
-                    icon={<Users className="text-white" />} 
-                    gradient="linear-gradient(135deg, #8b5cf6, #7c3aed)" 
-                />
-                <StatCard 
-                    title="FUEL (TERM)" 
-                    value={loading ? <Skeleton variant="text" width="80px" height="32px" /> : `KSh ${stats.fuelCostTerm.toLocaleString()}`} 
-                    icon={<Droplet className="text-white" />} 
-                    gradient="linear-gradient(135deg, #f43f5e, #e11d48)" 
-                />
-            </div>
+            <TransportStats stats={stats} loading={loading} />
 
             {/* Tab Navigation */}
             <div className="flex overflow-x-auto gap-1 mb-8 p-1 bg-slate-100/50 backdrop-blur-sm rounded-xl no-print">
@@ -643,7 +605,7 @@ const Transport = () => {
 
             {/* Tab Content */}
             {loading ? (
-                activeTab === 'fleet' || activeTab === 'routes' ? renderSkeletonFleet() : renderSkeletonTable(activeTab === 'trips' ? 7 : 6)
+                activeTab === 'fleet' || activeTab === 'routes' ? <FleetSkeleton /> : <TableSkeleton cols={activeTab === 'trips' ? 7 : 6} />
             ) : (
                 <>
                     {activeTab === 'fleet' && (

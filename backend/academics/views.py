@@ -8,6 +8,11 @@ from .models import (
     StudentResult, Attendance, LearningResource, SyllabusCoverage,
     ClassSubject, StudentSubject
 )
+from django.core.cache import cache
+from rest_framework.exceptions import ValidationError
+from rest_framework.response import Response
+
+from .permissions import IsClassTeacherForSubject
 from .utils import sync_academic_statuses
 
 from .serializers import (
@@ -26,7 +31,6 @@ class AcademicYearViewSet(viewsets.ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         # Throttle sync to once per session/hour (Simplified)
-        from django.core.cache import cache
         if not cache.get('academics_synced'):
             sync_academic_statuses()
             cache.set('academics_synced', True, 3600) # Once per hour
@@ -42,7 +46,6 @@ class TermViewSet(viewsets.ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         # Throttle sync to once per session/hour (Simplified)
-        from django.core.cache import cache
         if not cache.get('academics_synced'):
             sync_academic_statuses()
             cache.set('academics_synced', True, 3600) # Once per hour
@@ -86,8 +89,6 @@ class ExamViewSet(viewsets.ModelViewSet):
             qs = qs.filter(date_started__gte=start_date)
         return qs
 
-from .permissions import IsClassTeacherForSubject
-
 class StudentResultViewSet(viewsets.ModelViewSet):
     queryset = StudentResult.objects.select_related('student', 'exam', 'subject').all()
     serializer_class = StudentResultSerializer
@@ -110,14 +111,12 @@ class StudentResultViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         exam = serializer.validated_data.get('exam')
         if exam.is_locked or not exam.is_active:
-            from rest_framework.exceptions import ValidationError
             raise ValidationError("Marks entry is locked for this exam.")
         serializer.save()
 
     def perform_update(self, serializer):
         instance = self.get_object()
         if instance.exam.is_locked or not instance.exam.is_active:
-            from rest_framework.exceptions import ValidationError
             raise ValidationError("Results for this exam are locked and cannot be modified.")
         serializer.save()
 
@@ -134,16 +133,9 @@ class StudentResultViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'])
     def sync_grades(self, request):
-
-        from .models import GradeSystem, GradeBoundary
         # Find the default grading system
-        try:
-            default_system = GradeSystem.objects.filter(is_default=True).first()
-            if not default_system:
-                default_system = GradeSystem.objects.first()
-        except GradeSystem.DoesNotExist:
-            return Response({'error': 'No grading system found.'}, status=status.HTTP_404_NOT_FOUND)
-
+        default_system = GradeSystem.objects.filter(is_default=True).first() or GradeSystem.objects.first()
+        
         if not default_system:
             return Response({'error': 'No grading system found.'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -212,13 +204,8 @@ class ClassSubjectViewSet(viewsets.ModelViewSet):
         Syncs this class-subject to all students in the class.
         Creates StudentSubject records if they don't exist.
         """
-        class_subject = self.get_object()
-        student_qs = class_subject.class_id.students.all()
-        # Adjust related name if needed. Student model has 'current_class'.
-        # Assuming Student model: class Student(models.Model): current_class = ForeignKey(Class, ...)
-        
-        # We need to import Student model to be safe or use string reference logic
         from students.models import Student
+        class_subject = self.get_object()
         students = Student.objects.filter(current_class=class_subject.class_id)
         
         count = 0

@@ -76,12 +76,8 @@ class RegisterSerializer(serializers.ModelSerializer):
     def to_internal_value(self, data):
         # Ensure username is populated with email if missing
         if not data.get('username') and data.get('email'):
-            if isinstance(data, dict):
-                data['username'] = data.get('email')
-            else:
-                # QueryDict case
-                data = data.copy()
-                data['username'] = data.get('email')
+            data = data.copy() if hasattr(data, 'copy') else data
+            data['username'] = data.get('email')
         return super().to_internal_value(data)
 
     def create(self, validated_data: dict) -> User:

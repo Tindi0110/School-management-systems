@@ -80,31 +80,10 @@ class StudentListSerializer(serializers.ModelSerializer):
         ]
 
     def get_attendance_percentage(self, obj):
-        total = getattr(obj, 'attendance_total', 0)
-        present = getattr(obj, 'attendance_present', 0)
-        if total == 0:
-            return 0
-        return round((present / total) * 100, 1)
+        return obj.get_attendance_stats()
 
     def get_average_grade(self, obj):
-        avg_score = getattr(obj, 'avg_score', None)
-        if avg_score is None:
-            return "N/A"
-        
-        score = float(avg_score)
-        grade = 'E'
-        if score >= 80: grade = 'A'
-        elif score >= 75: grade = 'A-'
-        elif score >= 70: grade = 'B+'
-        elif score >= 65: grade = 'B'
-        elif score >= 60: grade = 'B-'
-        elif score >= 55: grade = 'C+'
-        elif score >= 50: grade = 'C'
-        elif score >= 45: grade = 'C-'
-        elif score >= 40: grade = 'D+'
-        elif score >= 35: grade = 'D'
-        elif score >= 30: grade = 'D-'
-        return f"{grade} ({round(score)}%)"
+        return obj.get_academic_stats()['display']
 
 class StudentSerializer(serializers.ModelSerializer):
     class_name = serializers.CharField(source='current_class.name', read_only=True)
@@ -136,42 +115,10 @@ class StudentSerializer(serializers.ModelSerializer):
     is_primary_guardian = serializers.BooleanField(write_only=True, required=False, default=True)
 
     def get_attendance_percentage(self, obj):
-        # Use pre-annotated values if available (from list view logic if ever needed there)
-        total = getattr(obj, 'attendance_total', None)
-        present = getattr(obj, 'attendance_present', None)
-        
-        if total is None:
-            # Fallback for detail view only
-            total = obj.attendance_set.count()
-            present = obj.attendance_set.filter(status='PRESENT').count()
-            
-        if total == 0:
-            return 0
-        return round((present / total) * 100, 1)
+        return obj.get_attendance_stats()
 
     def get_average_grade(self, obj):
-        avg_score = getattr(obj, 'avg_score', None)
-        if avg_score is None:
-            # Fallback for detail view
-            avg_score = obj.results.aggregate(Avg('score'))['score__avg']
-            
-        if avg_score is None:
-            return "N/A"
-            
-        score = float(avg_score)
-        grade = 'E'
-        if score >= 80: grade = 'A'
-        elif score >= 75: grade = 'A-'
-        elif score >= 70: grade = 'B+'
-        elif score >= 65: grade = 'B'
-        elif score >= 60: grade = 'B-'
-        elif score >= 55: grade = 'C+'
-        elif score >= 50: grade = 'C'
-        elif score >= 45: grade = 'C-'
-        elif score >= 40: grade = 'D+'
-        elif score >= 35: grade = 'D'
-        elif score >= 30: grade = 'D-'
-        return f"{grade} ({round(score)}%)"
+        return obj.get_academic_stats()['display']
 
     def validate_guardian_phone(self, value):
         if value and not value.startswith('+'):
