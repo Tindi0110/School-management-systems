@@ -62,6 +62,9 @@ class Student(models.Model):
     
     admission_date = models.DateField(auto_now_add=True)
     is_active = models.BooleanField(default=True, db_index=True) # Linked to status='ACTIVE'
+    
+    # De-normalized fields for performance
+    fee_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0, db_index=True)
 
     def save(self, *args, **kwargs):
         if not self.admission_number:

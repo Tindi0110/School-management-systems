@@ -11,7 +11,7 @@ from django.db.models import Sum, Value, DecimalField, Count, Q, Avg, OuterRef, 
 from django.db.models.functions import Coalesce
 from finance.models import Invoice
 from .serializers import (
-    StudentSerializer, ParentSerializer, StudentAdmissionSerializer,
+    StudentSerializer, StudentListSerializer, ParentSerializer, StudentAdmissionSerializer,
     StudentDocumentSerializer, DisciplineRecordSerializer,
     HealthRecordSerializer, ActivityRecordSerializer
 )
@@ -29,20 +29,16 @@ class StudentViewSet(viewsets.ModelViewSet):
         'parents',
         'documents',
     ).annotate(
-        fee_balance=Coalesce(
-            Subquery(
-                Invoice.objects.filter(student=OuterRef('pk')).values('student').annotate(
-                    total_balance=Sum('balance')
-                ).values('total_balance')
-            ),
-            Value(0, output_field=DecimalField())
-        ),
         # Lighter attendance counts
         attendance_total=Count('attendance', distinct=True),
         attendance_present=Count('attendance', filter=Q(attendance__status='PRESENT'), distinct=True),
         avg_score=Avg('results__score'),
     ).order_by('admission_number')
-    serializer_class = StudentSerializer
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return StudentListSerializer
+        return StudentSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['current_class', 'status', 'category', 'gender']
     search_fields = ['full_name', 'admission_number', 'current_class__name']
@@ -60,19 +56,8 @@ class StudentViewSet(viewsets.ModelViewSet):
         search = request.query_params.get('search', '')
         has_debt = request.query_params.get('has_debt', 'false').lower() == 'true'
         
+        # Use de-normalized fee_balance
         qs = Student.objects.filter(status='ACTIVE')
-        
-        # Annotate with fee_balance for filtering/display
-        qs = qs.annotate(
-            fee_balance=Coalesce(
-                Subquery(
-                    Invoice.objects.filter(student=OuterRef('pk')).values('student').annotate(
-                        total_balance=Sum('balance')
-                    ).values('total_balance')
-                ),
-                Value(0, output_field=DecimalField())
-            )
-        )
 
         if has_debt:
             qs = qs.filter(fee_balance__gt=0)

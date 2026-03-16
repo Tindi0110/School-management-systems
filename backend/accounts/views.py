@@ -283,27 +283,25 @@ class CustomAuthToken(ObtainAuthToken):
         email    = request.data.get('username', '').strip()  # 'username' kept for DRF client compatibility
         password = request.data.get('password', '')
 
-        user_obj = User.objects.filter(email=email).first() or User.objects.filter(username=email).first()
-        
-        if not user_obj:
-            return Response({'error': 'Account not found. Please register first.'}, status=status.HTTP_404_NOT_FOUND)
+        if not email or not password:
+            return Response({'error': 'Email and password are required.'}, status=status.HTTP_400_BAD_REQUEST)
 
+        # 1. Try to authenticate first (Single DB query/hit)
         user = authenticate(request, username=email, password=password)
 
         if not user:
+            # 2. Only if authentication fails, check why (Optional diagnostic queries)
+            user_exists = User.objects.filter(email=email).exists() or User.objects.filter(username=email).exists()
+            if not user_exists:
+                return Response({'error': 'Account not found. Please register first.'}, status=status.HTTP_404_NOT_FOUND)
             return Response({'error': 'Incorrect password. Please try again.'}, status=status.HTTP_401_UNAUTHORIZED)
 
+        # 3. Fast-path for successful authentication
         if not user.is_email_verified:
-            return Response(
-                {'error': 'Please verify your email before logging in.'},
-                status=status.HTTP_403_FORBIDDEN,
-            )
+            return Response({'error': 'Please verify your email before logging in.'}, status=status.HTTP_403_FORBIDDEN)
 
         if not user.is_approved:
-            return Response(
-                {'error': 'Your account is pending administrator approval.'},
-                status=status.HTTP_403_FORBIDDEN,
-            )
+            return Response({'error': 'Your account is pending administrator approval.'}, status=status.HTTP_403_FORBIDDEN)
 
         token, _ = Token.objects.get_or_create(user=user)
         return Response({
@@ -328,20 +326,20 @@ class RegisterView(generics.CreateAPIView):
     permission_classes = [AllowAny]
 
     def perform_create(self, serializer):
-        user  = serializer.save()
+        user = serializer.save()
         
-        # Bootstrap: Automatically approve the first user in the system
-        if User.objects.count() == 1:
+        # Fast check for first user bootstrap
+        if user.pk == User.objects.order_by('pk').values_list('pk', flat=True).first():
             user.is_email_verified = True
             user.is_approved = True
             user.role = User.Role.ADMIN
-            user.save()
+            user.save(update_fields=['is_email_verified', 'is_approved', 'role'])
             logger.info("Bootstrap: Automatically approved first user %s as ADMIN", user.email)
 
         otp = str(random.randint(100000, 999999))
         user.email_verification_otp = otp
         user.email_verification_otp_created_at = timezone.now()
-        user.save()
+        user.save(update_fields=['email_verification_otp', 'email_verification_otp_created_at'])
 
         body = (
             f"Hello {user.first_name or user.username},\n\n"
