@@ -192,8 +192,8 @@ const DashboardLayout = () => {
 
             <div className="school-logo hidden md:block">
               <h2 className="text-lg font-bold m-0 flex items-center gap-2">
-                <span className="truncate max-w-[150px] inline-block">{user?.first_name || user?.username || 'User'}</span>
-                <span className="text-xs font-normal text-gray-500 truncate max-w-[100px]">({user?.role || 'Guest'})</span>
+                <span className="truncate max-w-[100px] inline-block">{user?.first_name || user?.username || 'User'}</span>
+                <span className="text-xs font-normal text-gray-500 truncate max-w-[60px]">({user?.role || 'Guest'})</span>
               </h2>
             </div>
             {/* Premium Quick Search Button */}
@@ -231,7 +231,7 @@ const DashboardLayout = () => {
               )}
             </div>
 
-            <button onClick={handleLogout} className="logout-btn">
+            <button onClick={handleLogout} className="logout-btn shrink-0">
               <LogOut size={18} />
               <span className="logout-text">Logout</span>
             </button>

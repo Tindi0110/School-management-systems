@@ -181,6 +181,19 @@ class HostelAllocationViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+    def perform_destroy(self, instance):
+        with transaction.atomic():
+            bed = instance.bed
+            if bed:
+                bed.status = 'AVAILABLE'
+                bed.save()
+                
+                room = bed.room
+                room.current_occupancy = max(0, room.current_occupancy - 1)
+                room.status = 'AVAILABLE'
+                room.save()
+            instance.delete()
+
 class HostelAttendanceViewSet(viewsets.ModelViewSet):
     queryset = HostelAttendance.objects.select_related('student').order_by('-date')
     serializer_class = HostelAttendanceSerializer

@@ -16,7 +16,7 @@ class VehicleListSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Vehicle
-        fields = ['id', 'registration_number', 'make_model', 'vehicle_type', 'seating_capacity', 'status', 'assigned_driver_name']
+        fields = ['id', 'registration_number', 'make_model', 'vehicle_type', 'seating_capacity', 'status', 'assigned_driver_name', 'insurance_expiry']
 
     def get_assigned_driver_name(self, obj):
         # Optimized lookup for list view
