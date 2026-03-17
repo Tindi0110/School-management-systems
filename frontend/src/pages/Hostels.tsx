@@ -124,13 +124,26 @@ const Hostels = () => {
     };
 
     const handleRoomSubmit = async (e: React.FormEvent) => {
-        e.preventDefault(); setIsSubmitting(true);
+        e.preventDefault();
+        if (!roomFormData.hostel) return toastError("Please select a target hostel");
+        
+        setIsSubmitting(true);
         try {
-            const payload = { ...roomFormData, hostel: Number(roomFormData.hostel), capacity: Number(roomFormData.capacity) };
-            if (roomId) await hostelAPI.rooms.update(roomId, payload); else await hostelAPI.rooms.create(payload);
-            success('Room saved'); setIsRoomModalOpen(false); loadData();
-        } catch (err: any) { toastError('Error saving room'); }
-        finally { setIsSubmitting(false); }
+            const payload = { 
+                ...roomFormData, 
+                hostel: Number(roomFormData.hostel), 
+                capacity: Number(roomFormData.capacity) || 1 
+            };
+            if (roomId) await hostelAPI.rooms.update(roomId, payload); 
+            else await hostelAPI.rooms.create(payload);
+            
+            success('Room registration successful'); 
+            setIsRoomModalOpen(false); 
+            loadData();
+        } catch (err: any) { 
+            const msg = err.response?.data?.detail || err.response?.data?.error || 'Error saving room. Check if room number already exists.';
+            toastError(msg); 
+        } finally { setIsSubmitting(false); }
     };
 
     const handleAllocationSubmit = async (e: React.FormEvent) => {

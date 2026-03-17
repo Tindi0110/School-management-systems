@@ -191,9 +191,9 @@ const DashboardLayout = () => {
             </button>
 
             <div className="school-logo hidden md:block">
-              <h2 className="text-lg font-bold m-0">
-                {user?.first_name || user?.username || 'User'}
-                <span className="text-xs font-normal text-gray-500 ml-2">({user?.role || 'Guest'})</span>
+              <h2 className="text-lg font-bold m-0 flex items-center gap-2">
+                <span className="truncate max-w-[150px] inline-block">{user?.first_name || user?.username || 'User'}</span>
+                <span className="text-xs font-normal text-gray-500 truncate max-w-[100px]">({user?.role || 'Guest'})</span>
               </h2>
             </div>
             {/* Premium Quick Search Button */}

@@ -111,16 +111,16 @@ const Transport = () => {
     // ── Data loaders ──────────────────────────────────────────────────────────
     const loadBaseData = useCallback(async () => {
         try {
-            const [vRes, rRes, pRes, sRes] = await Promise.all([
+            const [vRes, rRes, pRes, sRes] = await Promise.allSettled([
                 transportAPI.vehicles.getAll({ page_size: 100 }),
                 transportAPI.routes.getAll({ page_size: 200 }),
                 transportAPI.pickupPoints.getAll({ page_size: 500 }),
                 studentsAPI.getAll({ page_size: 1000 }),
             ]);
-            setVehicles(vRes.data?.results ?? vRes.data ?? []);
-            setRoutes(rRes.data?.results ?? rRes.data ?? []);
-            setPickupPoints(pRes.data?.results ?? pRes.data ?? []);
-            setStudents(sRes.data?.results ?? sRes.data ?? []);
+            if (vRes.status === 'fulfilled') setVehicles(vRes.value.data?.results ?? vRes.value.data ?? []);
+            if (rRes.status === 'fulfilled') setRoutes(rRes.value.data?.results ?? rRes.value.data ?? []);
+            if (pRes.status === 'fulfilled') setPickupPoints(pRes.value.data?.results ?? pRes.value.data ?? []);
+            if (sRes.status === 'fulfilled') setStudents(sRes.value.data?.results ?? sRes.value.data ?? []);
         } catch {
             toast.error('Failed to load reference data.');
         }
@@ -129,7 +129,10 @@ const Transport = () => {
     const loadTabData = useCallback(async () => {
         setLoading(true);
         try {
-            if (activeTab === 'allocations') {
+            if (activeTab === 'fleet') {
+                const res = await transportAPI.vehicles.getAll({ search: debouncedSearch });
+                setVehicles(res.data.results ?? res.data ?? []);
+            } else if (activeTab === 'allocations') {
                 const res = await transportAPI.allocations.getAll({ page: pagination.allocations.page, page_size: pagination.allocations.pageSize, search: debouncedSearch });
                 setAllocations(res.data.results ?? []);
                 setPagination(prev => ({ ...prev, allocations: { ...prev.allocations, total: res.data.count } }));
@@ -254,7 +257,12 @@ const Transport = () => {
         e.preventDefault();
         setIsSaving(true);
         try {
-            const payload = { ...vehicleForm, insurance_expiry: vehicleForm.insurance_expiry || null };
+            const payload = { 
+                ...vehicleForm, 
+                registration_number: vehicleForm.registration_number.trim().toUpperCase(),
+                seating_capacity: Number(vehicleForm.seating_capacity) || 1,
+                insurance_expiry: vehicleForm.insurance_expiry || null 
+            };
             if (vehicleId) {
                 await transportAPI.vehicles.update(vehicleId, payload);
                 toast.success('Vehicle information updated');

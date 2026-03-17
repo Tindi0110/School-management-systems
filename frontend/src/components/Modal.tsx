@@ -32,11 +32,12 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, size = 
                         onClick={onClose}
                         className="btn-ghost rounded-full p-1 hover:bg-red-50 hover:text-red-500 transition-colors"
                         type="button"
+                        title="Close"
                     >
                         <X size={20} />
                     </button>
                 </div>
-                <div className="modal-body">
+                <div className="modal-body overflow-y-auto max-h-[calc(90vh-120px)] transition-all">
                     {children}
                 </div>
             </div>

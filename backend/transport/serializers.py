@@ -16,11 +16,11 @@ class VehicleListSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Vehicle
-        fields = ['id', 'registration_number', 'model', 'vehicle_type', 'capacity', 'status', 'assigned_driver_name']
+        fields = ['id', 'registration_number', 'make_model', 'vehicle_type', 'seating_capacity', 'status', 'assigned_driver_name']
 
     def get_assigned_driver_name(self, obj):
         # Optimized lookup for list view
-        driver = getattr(obj, 'driver_profile_annotated', None)
+        driver = getattr(obj, 'assigned_driver_name_annotated', None)
         if driver: return driver
         # Fallback if no annotation
         driver_profile = DriverProfile.objects.filter(assigned_vehicle=obj).select_related('staff__user').first()
@@ -91,7 +91,7 @@ class RouteListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Route
-        fields = ['id', 'name', 'start_location', 'end_location', 'base_fare', 'status', 'occupancy']
+        fields = ['id', 'name', 'route_code', 'distance_km', 'base_cost', 'status', 'occupancy']
 
     def get_occupancy(self, obj):
         if hasattr(obj, 'occupancy_count'):
