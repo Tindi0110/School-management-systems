@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Plus, Search, Bus } from 'lucide-react';
+import { Plus, Search, Bus, Download } from 'lucide-react';
 import { transportAPI, studentsAPI } from '../api/api';
 import { exportToCSV } from '../utils/export';
+import Button from '../components/common/Button';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 
@@ -550,6 +551,7 @@ const Transport = () => {
         }
     };
 
+    // ── Render ────────────────────────────────────────────────────────────────
     return (
         <div className="fade-in w-full max-w-full overflow-x-hidden min-w-0">
             {/* Gradient Header — mirrors Academics */}
@@ -563,29 +565,34 @@ const Transport = () => {
                         <h1 className="text-3xl font-black mb-1 capitalize text-white">Logistics &amp; Fleet</h1>
                         <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Institutional Transport &amp; Route Management</p>
                     </div>
-                    <div className="flex gap-3">
-                        <button
-                            className="px-5 py-2.5 rounded-xl bg-white/10 border border-white/20 text-[10px] font-black uppercase tracking-widest hover:bg-white/20 transition-all flex items-center gap-2"
+                    <div className="flex flex-wrap gap-2 w-full lg:w-auto justify-start lg:justify-end no-print">
+                        <Button
+                            variant="outline"
+                            className="flex-1 sm:flex-none"
                             onClick={handleExport}
+                            icon={<Download size={16} />}
                         >
                             Export
-                        </button>
-                        <button
-                            className="px-5 py-2.5 rounded-xl bg-white/10 border border-white/20 text-[10px] font-black uppercase tracking-widest hover:bg-white/20 transition-all flex items-center gap-2"
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            className="flex-1 sm:flex-none text-[10px] font-black uppercase tracking-widest"
                             onClick={() => { setEnrollmentId(null); setEnrollmentForm(INITIAL_ENROLLMENT_FORM); setIsAllocationModalOpen(true); }}
+                            icon={<Plus size={14} />}
                         >
-                            <Plus size={14} /> Enroll Student
-                        </button>
-                        <button
-                            className="px-5 py-2.5 rounded-xl bg-white text-primary text-[10px] font-black uppercase tracking-widest hover:bg-white/90 transition-all shadow-lg flex items-center gap-2"
+                            Enroll Student
+                        </Button>
+                        <Button
+                            className="flex-1 sm:flex-none shadow-lg"
                             onClick={() => { setVehicleId(null); setVehicleForm(INITIAL_VEHICLE_FORM); setIsVehicleModalOpen(true); }}
+                            icon={<Bus size={14} />}
                         >
-                            <Bus size={14} /> Add Vehicle
-                        </button>
+                            Add Vehicle
+                        </Button>
                     </div>
                 </div>
                 <div className="absolute top-0 right-0 p-12 opacity-10 pointer-events-none">
-                    <Bus size={200} />
+                    <Bus size={120} />
                 </div>
             </div>
 
