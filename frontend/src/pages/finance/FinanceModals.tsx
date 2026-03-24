@@ -174,7 +174,7 @@ const FinanceModals: React.FC<FinanceModalsProps> = ({
                             onSearch={async (term) => {
                                 if (term.length > 2) {
                                     try {
-                                        const res = await studentsAPI.minimalSearch({ search: term, has_debt: true });
+                                        const res = await studentsAPI.minimalSearch({ search: term });
                                         const results = res.data?.results ?? res.data ?? [];
                                         setStudents(prev => {
                                             const map = new Map(prev.map((s: any) => [s.id, s]));
@@ -494,6 +494,21 @@ const FinanceModals: React.FC<FinanceModalsProps> = ({
                             label: `${s.admission_number} - ${s.full_name} `,
                             subLabel: `Arrears: KES ${Number(s.fee_balance).toLocaleString()} `
                         }))}
+                        onSearch={async (term) => {
+                            if (term.length > 2) {
+                                try {
+                                    const res = await studentsAPI.minimalSearch({ search: term });
+                                    const results = res.data?.results ?? res.data ?? [];
+                                    setStudents(prev => {
+                                        const map = new Map(prev.map((s: any) => [s.id, s]));
+                                        results.forEach((r: any) => map.set(r.id, r));
+                                        return Array.from(map.values()) as any;
+                                    });
+                                } catch (e) {
+                                    console.error("Student search failed", e);
+                                }
+                            }
+                        }}
                         value={mpesaForm.admission_number}
                         onChange={async (val) => {
                             const adminNum = String(val);
