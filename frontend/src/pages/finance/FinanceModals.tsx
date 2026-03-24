@@ -1,29 +1,91 @@
-import { useState, type FormEvent } from 'react';
+import React, { useState, type FormEvent } from 'react';
 import { CreditCard, Printer, TrendingUp, CheckCircle, Bell, Send, Mail, MessageSquare } from 'lucide-react';
 import Modal from '../../components/Modal';
 import Button from '../../components/common/Button';
 import SearchableSelect from '../../components/SearchableSelect';
 import PremiumDateInput from '../../components/common/DatePicker';
 
+interface Student {
+    id: number;
+    admission_number: string;
+    full_name: string;
+    fee_balance: string | number;
+}
+
+interface AcademicYear {
+    id: number;
+    name: string;
+}
+
+interface SchoolClass {
+    id: number;
+    name: string;
+    stream: string;
+}
+
+interface InvoiceItem {
+    id: number;
+    description: string;
+    amount: string | number;
+    created_at?: string;
+}
+
+interface Adjustment {
+    id: number;
+    reason: string;
+    adjustment_type: 'DEBIT' | 'CREDIT';
+    amount: string | number;
+    created_at?: string;
+    date?: string;
+}
+
+interface Payment {
+    id: number;
+    method: string;
+    reference_number?: string;
+    amount: string | number;
+    created_at?: string;
+    date_received?: string;
+}
+
+interface Invoice {
+    id: number;
+    status: string;
+    balance: string | number;
+    academic_year_name: string;
+    academic_year_id?: number;
+    term: string | number;
+    date_generated: string;
+    student_name: string;
+    admission_number: string;
+    class_name: string;
+    stream_name: string;
+    total_amount: string | number;
+    paid_amount: string | number;
+    items?: InvoiceItem[];
+    adjustments?: Adjustment[];
+    payments?: Payment[];
+}
+
 interface FinanceModalsProps {
     // Invoice Gen
     showInvoiceModal: boolean;
     setShowInvoiceModal: (val: boolean) => void;
-    genForm: any;
+    genForm: { class_id: string; level: string; term: string; year_id: string };
     setGenForm: (val: any) => void;
     handleGenerateInvoices: (e: FormEvent) => void;
 
     // Payment
     showPaymentModal: boolean;
     setShowPaymentModal: (val: boolean) => void;
-    payForm: any;
+    payForm: { student_id: string; invoice_id: string; amount: string; method: string; reference: string };
     setPayForm: (val: any) => void;
     handlePaymentSubmit: (e: FormEvent) => void;
 
     // Fee Structure
     showFeeModal: boolean;
     setShowFeeModal: (val: boolean) => void;
-    feeForm: any;
+    feeForm: { name: string; amount: string; term: string; year_id: string; class_id: string };
     setFeeForm: (val: any) => void;
     handleFeeSubmit: (e: FormEvent) => void;
     editingFeeId: number | null;
@@ -31,45 +93,45 @@ interface FinanceModalsProps {
     // Expense
     showExpenseModal: boolean;
     setShowExpenseModal: (val: boolean) => void;
-    expenseForm: any;
+    expenseForm: { category: string; amount: string; description: string; paid_to: string; date_occurred: string; receipt_scan: File | null };
     setExpenseForm: (val: any) => void;
     handleExpenseSubmit: (e: FormEvent) => void;
 
     // M-Pesa
     showMpesaModal: boolean;
     setShowMpesaModal: (val: boolean) => void;
-    mpesaForm: any;
+    mpesaForm: { admission_number: string; phone_number: string; amount: string };
     setMpesaForm: (val: any) => void;
     handleMpesaPush: (e: FormEvent) => void;
 
     // Reminders
     showReminderModal: boolean;
     setShowReminderModal: (val: boolean) => void;
-    reminderForm: any;
+    reminderForm: { template: string; send_sms: boolean; send_email: boolean };
     setReminderForm: (val: any) => void;
     handleSendReminders: (e: FormEvent) => void;
     selectedInvoicesSize: number;
 
     // Invoice Detail
-    selectedInvoice: any;
-    setSelectedInvoice: (val: any) => void;
+    selectedInvoice: Invoice | null;
+    setSelectedInvoice: (val: Invoice | null) => void;
     formatDate: (d: string) => string;
     formatDateTime: (d: string) => string;
 
     // Shared Data
-    years: any[];
-    classes: any[];
+    years: AcademicYear[];
+    classes: SchoolClass[];
     uniqueClassNames: string[];
-    students: any[];
-    setStudents: React.Dispatch<React.SetStateAction<any[]>>;
-    activeStudentInvoices: any[];
-    setActiveStudentInvoices: React.Dispatch<React.SetStateAction<any[]>>;
+    students: Student[];
+    setStudents: React.Dispatch<React.SetStateAction<Student[]>>;
+    activeStudentInvoices: Invoice[];
+    setActiveStudentInvoices: React.Dispatch<React.SetStateAction<Invoice[]>>;
     isSubmitting: boolean;
     studentsAPI: any;
     financeAPI: any;
 }
 
-const FinanceModals = ({
+const FinanceModals: React.FC<FinanceModalsProps> = ({
     showInvoiceModal, setShowInvoiceModal, genForm, setGenForm, handleGenerateInvoices,
     showPaymentModal, setShowPaymentModal, payForm, setPayForm, handlePaymentSubmit,
     showFeeModal, setShowFeeModal, feeForm, setFeeForm, handleFeeSubmit, editingFeeId,
@@ -95,7 +157,7 @@ const FinanceModals = ({
                         <label className="label">Academic Year *</label>
                         <SearchableSelect
                             placeholder="Select Year"
-                            options={years.map((y: any) => ({ id: y.id.toString(), label: y.name }))}
+                            options={years.map((y: AcademicYear) => ({ id: y.id.toString(), label: y.name }))}
                             value={genForm.year_id}
                             onChange={(val) => setGenForm({ ...genForm, year_id: val.toString() })}
                             required
@@ -108,7 +170,7 @@ const FinanceModals = ({
                                 placeholder="Select Level"
                                 options={[
                                     { id: 'all', label: 'ALL CLASS LEVELS' },
-                                    ...uniqueClassNames.map(name => ({ id: name, label: name }))
+                                    ...uniqueClassNames.map((name: string) => ({ id: name, label: name }))
                                 ]}
                                 value={genForm.level}
                                 onChange={(val) => setGenForm({ ...genForm, level: val.toString(), class_id: '' })}
@@ -121,7 +183,7 @@ const FinanceModals = ({
                                 placeholder="Select Stream"
                                 options={[
                                     { id: 'all', label: 'ALL STREAMS' },
-                                    ...classes.filter((c: any) => c.name === genForm.level).map((c: any) => ({ id: c.id.toString(), label: c.stream }))
+                                    ...classes.filter((c: SchoolClass) => c.name === genForm.level).map((c: SchoolClass) => ({ id: c.id.toString(), label: c.stream }))
                                 ]}
                                 value={genForm.class_id}
                                 onChange={(val) => setGenForm({ ...genForm, class_id: val.toString() })}
@@ -171,7 +233,7 @@ const FinanceModals = ({
                                     type="checkbox" 
                                     className="checkbox checkbox-primary checkbox-xs" 
                                     checked={showOnlyWithDebt}
-                                    onChange={(e) => setShowOnlyWithDebt(e.target.checked)}
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setShowOnlyWithDebt(e.target.checked)}
                                 />
                                 <span className="text-[10px] font-black uppercase tracking-widest text-secondary opacity-70">Only Show Students with Arrears</span>
                             </label>
@@ -180,7 +242,7 @@ const FinanceModals = ({
                         <SearchableSelect
                             label="Search Student"
                             placeholder="Type Name or Admission Number..."
-                            options={students.map((s: any) => ({
+                            options={students.map((s: Student) => ({
                                 id: s.id,
                                 label: `${s.admission_number} - ${s.full_name} `,
                                 subLabel: (
@@ -189,7 +251,7 @@ const FinanceModals = ({
                                     </span>
                                 )
                             }))}
-                            onSearch={async (term) => {
+                            onSearch={async (term: string) => {
                                 if (term.length > 2) {
                                     try {
                                         const res = await studentsAPI.minimalSearch({ 
@@ -197,10 +259,10 @@ const FinanceModals = ({
                                             has_debt: showOnlyWithDebt 
                                         });
                                         const results = res.data?.results ?? res.data ?? [];
-                                        setStudents(prev => {
-                                            const map = new Map(prev.map((s: any) => [s.id, s]));
-                                            results.forEach((r: any) => map.set(r.id, r));
-                                            return Array.from(map.values()) as any;
+                                        setStudents((prev: Student[]) => {
+                                            const map = new Map(prev.map((s: Student) => [s.id, s]));
+                                            results.forEach((r: Student) => map.set(r.id, r));
+                                            return Array.from(map.values());
                                         });
                                     } catch (e) {
                                         console.error("Student search failed", e);
@@ -214,7 +276,7 @@ const FinanceModals = ({
                                     const res = await financeAPI.invoices.getAll({ student: studentId, page_size: 100 });
                                     const studentInvoices = res.data?.results ?? res.data ?? [];
                                     setActiveStudentInvoices(studentInvoices);
-                                    const validInvoices = studentInvoices.filter((i: any) => i.status !== 'PAID' && Number(i.balance) !== 0);
+                                    const validInvoices = studentInvoices.filter((i: Invoice) => i.status !== 'PAID' && Number(i.balance) !== 0);
                                     const latestInvoice = validInvoices.length > 0 ? validInvoices[0] : null;
                                     setPayForm({
                                         ...payForm,
@@ -235,8 +297,8 @@ const FinanceModals = ({
                                 <SearchableSelect
                                     placeholder="Select Active Invoice"
                                     options={activeStudentInvoices
-                                        .filter((i: any) => i.status !== 'PAID' && Number(i.balance) !== 0)
-                                        .map((i: any) => ({
+                                        .filter((i: Invoice) => i.status !== 'PAID' && Number(i.balance) !== 0)
+                                        .map((i: Invoice) => ({
                                             id: i.id.toString(),
                                             label: `Invoice #${i.id} | ${i.academic_year_name} T${i.term} `,
                                             subLabel: `Remaining: KES ${Number(i.balance).toLocaleString()} `
@@ -244,7 +306,7 @@ const FinanceModals = ({
                                     value={payForm.invoice_id}
                                     onChange={(val) => {
                                         const invId = val.toString();
-                                        const inv = activeStudentInvoices.find(i => String(i.id) === invId);
+                                        const inv = activeStudentInvoices.find((i: Invoice) => String(i.id) === invId);
                                         setPayForm({
                                             ...payForm,
                                             invoice_id: invId,
@@ -307,7 +369,7 @@ const FinanceModals = ({
                             <label className="label">Academic Year *</label>
                             <SearchableSelect
                                 placeholder="Select Year"
-                                options={years.map((y: any) => ({ id: y.id.toString(), label: y.name }))}
+                                options={years.map((y: AcademicYear) => ({ id: y.id.toString(), label: y.name }))}
                                 value={feeForm.year_id}
                                 onChange={(val) => setFeeForm({ ...feeForm, year_id: val.toString() })}
                                 required
@@ -317,7 +379,7 @@ const FinanceModals = ({
                             <label className="label">Class Level</label>
                             <SearchableSelect
                                 placeholder="All Levels"
-                                options={classes.map((c: any) => ({ id: c.id.toString(), label: c.name }))}
+                                options={classes.map((c: SchoolClass) => ({ id: c.id.toString(), label: c.name }))}
                                 value={feeForm.class_id}
                                 onChange={(val) => setFeeForm({ ...feeForm, class_id: val.toString() })}
                             />
@@ -374,7 +436,7 @@ const FinanceModals = ({
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {selectedInvoice.items?.map((item: any) => (
+                                        {selectedInvoice && selectedInvoice.items?.map((item: InvoiceItem) => (
                                             <tr key={item.id}>
                                                 <td>
                                                     {item.description}
@@ -383,14 +445,14 @@ const FinanceModals = ({
                                                 <td className="text-right font-mono">KES {Number(item.amount).toLocaleString()}</td>
                                             </tr>
                                         ))}
-                                        {selectedInvoice.adjustments?.length > 0 && (
+                                        {selectedInvoice && selectedInvoice.adjustments && selectedInvoice.adjustments.length > 0 && (
                                             <>
                                                 <tr className="bg-gray-50"><td colSpan={2} className="text-xs font-bold text-gray-400">ADJUSTMENTS (FINES/WAIVERS)</td></tr>
-                                                {selectedInvoice.adjustments.map((adj: any) => (
+                                                {selectedInvoice.adjustments.map((adj: Adjustment) => (
                                                     <tr key={adj.id}>
                                                         <td>
                                                             {adj.reason} <span className="text-xs text-gray-400">({adj.adjustment_type})</span>
-                                                            <span className="text-xs text-gray-400 block">{adj.created_at ? formatDateTime(adj.created_at) : formatDate(adj.date)}</span>
+                                                            <span className="text-xs text-gray-400 block">{adj.created_at ? formatDateTime(adj.created_at) : formatDate(adj.date || '')}</span>
                                                         </td>
                                                         <td className={`text-right font-mono ${adj.adjustment_type === 'DEBIT' ? 'text-error' : 'text-success'}`}>
                                                             {adj.adjustment_type === 'DEBIT' ? '+' : '-'} KES {Number(adj.amount).toLocaleString()}
@@ -399,14 +461,14 @@ const FinanceModals = ({
                                                 ))}
                                             </>
                                         )}
-                                        {selectedInvoice.payments?.length > 0 && (
+                                        {selectedInvoice && selectedInvoice.payments && selectedInvoice.payments.length > 0 && (
                                             <>
                                                 <tr className="bg-gray-50"><td colSpan={2} className="text-xs font-bold text-gray-400">PAYMENTS</td></tr>
-                                                {selectedInvoice.payments.map((pay: any) => (
+                                                {selectedInvoice.payments.map((pay: Payment) => (
                                                     <tr key={pay.id}>
                                                         <td>
                                                             Payment - {pay.method} {pay.reference_number && `(Ref: ${pay.reference_number})`}
-                                                            <span className="text-xs text-gray-400 block">{pay.created_at ? formatDateTime(pay.created_at) : formatDate(pay.date_received)}</span>
+                                                            <span className="text-xs text-gray-400 block">{pay.created_at ? formatDateTime(pay.created_at) : formatDate(pay.date_received || '')}</span>
                                                         </td>
                                                         <td className="text-right font-mono text-success">
                                                             - KES {Number(pay.amount).toLocaleString()}
@@ -510,7 +572,7 @@ const FinanceModals = ({
                     <SearchableSelect
                         label="Search Student"
                         placeholder="Type Name or Admission Number..."
-                        options={students.map((s: any) => ({
+                        options={students.map((s: Student) => ({
                             id: s.admission_number,
                             label: `${s.admission_number} - ${s.full_name} `,
                             subLabel: (
@@ -519,18 +581,18 @@ const FinanceModals = ({
                                 </span>
                             )
                         }))}
-                        onSearch={async (term) => {
+                        onSearch={async (term: string) => {
                             if (term.length > 2) {
                                 try {
-                                    const res = await studentsAPI.minimalSearch({ 
+                                    const res = await studentsAPI.minimalSearch({
                                         search: term,
                                         has_debt: showOnlyWithDebt
                                     });
                                     const results = res.data?.results ?? res.data ?? [];
-                                    setStudents(prev => {
-                                        const map = new Map(prev.map((s: any) => [s.id, s]));
-                                        results.forEach((r: any) => map.set(r.id, r));
-                                        return Array.from(map.values()) as any;
+                                    setStudents((prev: Student[]) => {
+                                        const map = new Map(prev.map((s: Student) => [s.id, s]));
+                                        results.forEach((r: Student) => map.set(r.id, r));
+                                        return Array.from(map.values());
                                     });
                                 } catch (e) {
                                     console.error("Student search failed", e);
@@ -540,7 +602,7 @@ const FinanceModals = ({
                         value={mpesaForm.admission_number}
                         onChange={async (val) => {
                             const adminNum = String(val);
-                            const stud: any = students.find((s: any) => String(s.admission_number) === adminNum);
+                            const stud = students.find((s: Student) => String(s.admission_number) === adminNum);
                             if (stud) {
                                 setMpesaForm({ ...mpesaForm, admission_number: adminNum, amount: String(stud.fee_balance || mpesaForm.amount) });
                             } else {
@@ -552,13 +614,13 @@ const FinanceModals = ({
                     <div className="form-group">
                         <label className="label">Phone Number (Safaricom) *</label>
                         <input type="text" className="input" placeholder="e.g. 0712345678" required
-                            value={mpesaForm.phone_number} onChange={e => setMpesaForm({ ...mpesaForm, phone_number: e.target.value })}
+                            value={mpesaForm.phone_number} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMpesaForm({ ...mpesaForm, phone_number: e.target.value })}
                         />
                     </div>
                     <div className="form-group">
                         <label className="label">Amount (KES) *</label>
                         <input type="number" className="input font-bold" required
-                            value={mpesaForm.amount} onChange={e => setMpesaForm({ ...mpesaForm, amount: e.target.value })}
+                            value={mpesaForm.amount} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMpesaForm({ ...mpesaForm, amount: e.target.value })}
                         />
                     </div>
                     <div className="modal-footer pt-6 border-top mt-4 flex justify-end gap-3">

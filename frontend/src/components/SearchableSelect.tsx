@@ -78,10 +78,10 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
     }, []);
 
     const filteredOptions = combinedOptions.filter(opt =>
-        // If onSearch is provided, we assume the backend handles filtering, so we show all options currently in array.
-        // Otherwise, we do local filtering.
-        onSearch ? true : opt.label.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-            opt.subLabel?.toLowerCase().includes(debouncedSearch.toLowerCase())
+        onSearch ? true : (
+            opt.label.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+            (typeof opt.subLabel === 'string' && opt.subLabel.toLowerCase().includes(debouncedSearch.toLowerCase()))
+        )
     );
 
     // Keyboard navigation
