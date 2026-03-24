@@ -22,6 +22,7 @@ const ALL_LINKS = [
   { name: 'Medical',       path: '/medical',   icon: <Pill size={20} />,           roles: ['ADMIN', 'NURSE', 'PRINCIPAL'] },
   { name: 'Transport',     path: '/transport', icon: <Bus size={20} />,            roles: ['ADMIN', 'PRINCIPAL', 'REGISTRAR', 'WARDEN', 'DRIVER'] },
   { name: 'Timetable',     path: '/timetable', icon: <Calendar size={20} />,       roles: ['ADMIN', 'PRINCIPAL', 'TEACHER', 'STUDENT', 'DOS'] },
+  { name: 'Academics',     path: '/academics', icon: <School size={20} />,            roles: ['ADMIN', 'PRINCIPAL', 'DOS', 'TEACHER'] },
   { name: 'System Health', path: '/health',    icon: <Activity size={20} />,       roles: ['ADMIN'] },
 ]
 
