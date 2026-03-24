@@ -14,15 +14,15 @@ interface SidebarProps {
 const ALL_LINKS = [
   { name: 'Dashboard',     path: '/',         icon: <LayoutDashboard size={20} />, roles: ['ALL'] },
   { name: 'Students',      path: '/students',  icon: <Users size={20} />,          roles: ['ADMIN', 'PRINCIPAL', 'DEPUTY', 'REGISTRAR'] },
-  { name: 'Parents',       path: '/parents',   icon: <Users size={20} />,          roles: ['ADMIN', 'PRINCIPAL', 'DEPUTY', 'REGISTRAR'] },
-  { name: 'Staff',         path: '/staff',     icon: <GraduationCap size={20} />,  roles: ['ADMIN', 'PRINCIPAL', 'REGISTRAR', 'DOS'] },
+  { name: 'Academics',     path: '/academics', icon: <School size={20} />,         roles: ['ADMIN', 'PRINCIPAL', 'DOS', 'TEACHER'] },
   { name: 'Finance',       path: '/finance',   icon: <DollarSign size={20} />,     roles: ['ADMIN', 'ACCOUNTANT', 'PRINCIPAL'] },
-  { name: 'Hostels',       path: '/hostels',   icon: <Building size={20} />,       roles: ['ADMIN', 'WARDEN', 'PRINCIPAL', 'REGISTRAR'] },
   { name: 'Library',       path: '/library',   icon: <BookOpen size={20} />,       roles: ['ADMIN', 'PRINCIPAL', 'LIBRARIAN', 'DOS'] },
-  { name: 'Medical',       path: '/medical',   icon: <Pill size={20} />,           roles: ['ADMIN', 'NURSE', 'PRINCIPAL'] },
+  { name: 'Hostels',       path: '/hostels',   icon: <Building size={20} />,       roles: ['ADMIN', 'WARDEN', 'PRINCIPAL', 'REGISTRAR'] },
   { name: 'Transport',     path: '/transport', icon: <Bus size={20} />,            roles: ['ADMIN', 'PRINCIPAL', 'REGISTRAR', 'WARDEN', 'DRIVER'] },
   { name: 'Timetable',     path: '/timetable', icon: <Calendar size={20} />,       roles: ['ADMIN', 'PRINCIPAL', 'TEACHER', 'STUDENT', 'DOS'] },
-  { name: 'Academics',     path: '/academics', icon: <School size={20} />,            roles: ['ADMIN', 'PRINCIPAL', 'DOS', 'TEACHER'] },
+  { name: 'Staff',         path: '/staff',     icon: <GraduationCap size={20} />,  roles: ['ADMIN', 'PRINCIPAL', 'REGISTRAR', 'DOS'] },
+  { name: 'Parents',       path: '/parents',   icon: <Users size={20} />,          roles: ['ADMIN', 'PRINCIPAL', 'DEPUTY', 'REGISTRAR'] },
+  { name: 'Medical',       path: '/medical',   icon: <Pill size={20} />,           roles: ['ADMIN', 'NURSE', 'PRINCIPAL'] },
   { name: 'System Health', path: '/health',    icon: <Activity size={20} />,       roles: ['ADMIN'] },
 ]
 

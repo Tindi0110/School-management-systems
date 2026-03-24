@@ -88,7 +88,7 @@ const Hostels = () => {
             const d = (r: any) => r?.data?.results ?? r?.data ?? [];
             const [hRes, sRes, studRes, rRes, bRes, stfRes, allAllocRes] = await Promise.all([
                 hostelAPI.hostels.getAll(), hostelAPI.hostels.getStats(), studentsAPI.getAll({ page_size: 500 }),
-                hostelAPI.rooms.getAll({ page_size: 1000 }), hostelAPI.beds.getAll({ page_size: 10000 }), staffAPI.getAll({ page_size: 200 }),
+                hostelAPI.rooms.getAll({ page_size: 1000 }), hostelAPI.beds.getAll({ page_size: 3000 }), staffAPI.getAll({ page_size: 200 }),
                 hostelAPI.allocations.getAll({ status: 'ACTIVE', page_size: 500 })
             ]);
             setHostels(d(hRes)); setStats(sRes.data); setStudents(d(studRes)); setRooms(d(rRes)); setBeds(d(bRes)); setStaff(d(stfRes)); setAllAllocations(d(allAllocRes));

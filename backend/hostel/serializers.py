@@ -35,7 +35,7 @@ class RoomSerializer(serializers.ModelSerializer):
         ]
     
     def get_available_beds(self, obj):
-        return obj.beds.filter(status='AVAILABLE').count()
+        return getattr(obj, 'available_beds_count', 0)
 
 class HostelListSerializer(serializers.ModelSerializer):
     warden_name = serializers.CharField(source='warden.get_full_name', read_only=True)

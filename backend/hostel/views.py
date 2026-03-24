@@ -51,9 +51,15 @@ class HostelViewSet(viewsets.ModelViewSet):
         })
 
 class RoomViewSet(viewsets.ModelViewSet):
-    queryset = Room.objects.select_related('hostel').prefetch_related('beds').all()
+    queryset = Room.objects.select_related('hostel').all()
     serializer_class = RoomSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        from django.db.models import Count, Q
+        return Room.objects.select_related('hostel').annotate(
+            available_beds_count=Count('beds', filter=Q(beds__status='AVAILABLE'))
+        ).all()
 
     def perform_create(self, serializer):
         room = serializer.save()
