@@ -1,4 +1,4 @@
-import React from 'react';
+import { useState, type FormEvent } from 'react';
 import { CreditCard, Printer, TrendingUp, CheckCircle, Bell, Send, Mail, MessageSquare } from 'lucide-react';
 import Modal from '../../components/Modal';
 import Button from '../../components/common/Button';
@@ -11,21 +11,21 @@ interface FinanceModalsProps {
     setShowInvoiceModal: (val: boolean) => void;
     genForm: any;
     setGenForm: (val: any) => void;
-    handleGenerateInvoices: (e: React.FormEvent) => void;
+    handleGenerateInvoices: (e: FormEvent) => void;
 
     // Payment
     showPaymentModal: boolean;
     setShowPaymentModal: (val: boolean) => void;
     payForm: any;
     setPayForm: (val: any) => void;
-    handlePaymentSubmit: (e: React.FormEvent) => void;
+    handlePaymentSubmit: (e: FormEvent) => void;
 
     // Fee Structure
     showFeeModal: boolean;
     setShowFeeModal: (val: boolean) => void;
     feeForm: any;
     setFeeForm: (val: any) => void;
-    handleFeeSubmit: (e: React.FormEvent) => void;
+    handleFeeSubmit: (e: FormEvent) => void;
     editingFeeId: number | null;
 
     // Expense
@@ -33,21 +33,21 @@ interface FinanceModalsProps {
     setShowExpenseModal: (val: boolean) => void;
     expenseForm: any;
     setExpenseForm: (val: any) => void;
-    handleExpenseSubmit: (e: React.FormEvent) => void;
+    handleExpenseSubmit: (e: FormEvent) => void;
 
     // M-Pesa
     showMpesaModal: boolean;
     setShowMpesaModal: (val: boolean) => void;
     mpesaForm: any;
     setMpesaForm: (val: any) => void;
-    handleMpesaPush: (e: React.FormEvent) => void;
+    handleMpesaPush: (e: FormEvent) => void;
 
     // Reminders
     showReminderModal: boolean;
     setShowReminderModal: (val: boolean) => void;
     reminderForm: any;
     setReminderForm: (val: any) => void;
-    handleSendReminders: (e: React.FormEvent) => void;
+    handleSendReminders: (e: FormEvent) => void;
     selectedInvoicesSize: number;
 
     // Invoice Detail
@@ -69,7 +69,7 @@ interface FinanceModalsProps {
     financeAPI: any;
 }
 
-const FinanceModals: React.FC<FinanceModalsProps> = ({
+const FinanceModals = ({
     showInvoiceModal, setShowInvoiceModal, genForm, setGenForm, handleGenerateInvoices,
     showPaymentModal, setShowPaymentModal, payForm, setPayForm, handlePaymentSubmit,
     showFeeModal, setShowFeeModal, feeForm, setFeeForm, handleFeeSubmit, editingFeeId,
@@ -80,6 +80,8 @@ const FinanceModals: React.FC<FinanceModalsProps> = ({
     years, classes, uniqueClassNames, students, setStudents, activeStudentInvoices, setActiveStudentInvoices, isSubmitting,
     studentsAPI, financeAPI
 }) => {
+    const [showOnlyWithDebt, setShowOnlyWithDebt] = useState(true);
+
     return (
         <>
             {/* Invoice Generation Modal */}
@@ -163,18 +165,37 @@ const FinanceModals: React.FC<FinanceModalsProps> = ({
                     </div>
 
                     <div className="space-y-4">
+                        <div className="flex items-center justify-between px-1">
+                            <label className="label mb-0 cursor-pointer flex items-center gap-2">
+                                <input 
+                                    type="checkbox" 
+                                    className="checkbox checkbox-primary checkbox-xs" 
+                                    checked={showOnlyWithDebt}
+                                    onChange={(e) => setShowOnlyWithDebt(e.target.checked)}
+                                />
+                                <span className="text-[10px] font-black uppercase tracking-widest text-secondary opacity-70">Only Show Students with Arrears</span>
+                            </label>
+                        </div>
+
                         <SearchableSelect
                             label="Search Student"
                             placeholder="Type Name or Admission Number..."
                             options={students.map((s: any) => ({
                                 id: s.id,
                                 label: `${s.admission_number} - ${s.full_name} `,
-                                subLabel: `Balance: KES ${Number(s.fee_balance).toLocaleString()} `
+                                subLabel: (
+                                    <span className={Number(s.fee_balance) > 0 ? 'text-rose-600 font-bold' : 'text-emerald-600'}>
+                                        Balance: KES {Number(s.fee_balance).toLocaleString()}
+                                    </span>
+                                )
                             }))}
                             onSearch={async (term) => {
                                 if (term.length > 2) {
                                     try {
-                                        const res = await studentsAPI.minimalSearch({ search: term });
+                                        const res = await studentsAPI.minimalSearch({ 
+                                            search: term, 
+                                            has_debt: showOnlyWithDebt 
+                                        });
                                         const results = res.data?.results ?? res.data ?? [];
                                         setStudents(prev => {
                                             const map = new Map(prev.map((s: any) => [s.id, s]));
@@ -492,12 +513,19 @@ const FinanceModals: React.FC<FinanceModalsProps> = ({
                         options={students.map((s: any) => ({
                             id: s.admission_number,
                             label: `${s.admission_number} - ${s.full_name} `,
-                            subLabel: `Arrears: KES ${Number(s.fee_balance).toLocaleString()} `
+                            subLabel: (
+                                <span className={Number(s.fee_balance) > 0 ? 'text-rose-600 font-bold' : 'text-emerald-600'}>
+                                    Arrears: KES {Number(s.fee_balance).toLocaleString()}
+                                </span>
+                            )
                         }))}
                         onSearch={async (term) => {
                             if (term.length > 2) {
                                 try {
-                                    const res = await studentsAPI.minimalSearch({ search: term });
+                                    const res = await studentsAPI.minimalSearch({ 
+                                        search: term,
+                                        has_debt: showOnlyWithDebt
+                                    });
                                     const results = res.data?.results ?? res.data ?? [];
                                     setStudents(prev => {
                                         const map = new Map(prev.map((s: any) => [s.id, s]));

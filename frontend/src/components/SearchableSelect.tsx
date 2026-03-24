@@ -4,7 +4,7 @@ import { X } from 'lucide-react';
 interface Option {
     id: string | number;
     label: string;
-    subLabel?: string;
+    subLabel?: string | React.ReactNode;
     [key: string]: any;
 }
 
@@ -219,7 +219,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                                             {opt.label}
                                         </div>
                                         {opt.subLabel && (
-                                            <div className="text-[10px] uppercase font-normal text-slate-400 tracking-tight">
+                                            <div className={`text-[10px] uppercase font-normal tracking-tight ${typeof opt.subLabel === 'string' ? 'text-slate-400' : ''}`}>
                                                 {opt.subLabel}
                                             </div>
                                         )}
