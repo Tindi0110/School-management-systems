@@ -267,10 +267,10 @@ const Hostels = () => {
                 ))}
             </div>
 
-            <div className="card mb-8 no-print p-4 bg-white/50 backdrop-blur-md border-slate-200/60 shadow-xl">
+            <div className="card mb-8 no-print p-4 bg-white border-slate-200 shadow-sm">
                 <div className="relative w-full max-w-md">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary opacity-50" size={18} />
-                    <input type="text" placeholder={`Search ${activeTab}...`} className="input pl-10 h-11 border-none bg-white/80 focus:ring-2 ring-primary/20 shadow-inner" onChange={(e) => setSearchTerm(e.target.value)} />
+                    <input type="text" placeholder={`Search ${activeTab}...`} className="input pl-10 h-11 border-slate-200 bg-white shadow-sm" onChange={(e) => setSearchTerm(e.target.value)} />
                 </div>
             </div>
 

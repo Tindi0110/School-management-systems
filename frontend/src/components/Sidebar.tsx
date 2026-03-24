@@ -13,7 +13,6 @@ interface SidebarProps {
 // Defined OUTSIDE component to avoid creating new objects on every render
 const ALL_LINKS = [
   { name: 'Dashboard',     path: '/',         icon: <LayoutDashboard size={20} />, roles: ['ALL'] },
-  { name: 'Academics',     path: '/academics', icon: <School size={20} />,         roles: ['ADMIN', 'PRINCIPAL', 'DOS', 'TEACHER'] },
   { name: 'Students',      path: '/students',  icon: <Users size={20} />,          roles: ['ADMIN', 'PRINCIPAL', 'DEPUTY', 'REGISTRAR'] },
   { name: 'Parents',       path: '/parents',   icon: <Users size={20} />,          roles: ['ADMIN', 'PRINCIPAL', 'DEPUTY', 'REGISTRAR'] },
   { name: 'Staff',         path: '/staff',     icon: <GraduationCap size={20} />,  roles: ['ADMIN', 'PRINCIPAL', 'REGISTRAR', 'DOS'] },

@@ -128,7 +128,7 @@ const Medical = () => {
                 </div>
             </div>
 
-            <div className="card mb-8 no-print p-4 bg-white/50 backdrop-blur-md border-slate-200/60 shadow-xl">
+            <div className="card mb-8 no-print p-4 bg-white border-slate-200 shadow-sm">
                 <div className="search-container max-w-2xl">
                     <Search className="search-icon text-primary" size={20} />
                     <input

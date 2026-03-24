@@ -127,7 +127,7 @@ const VerifyOTP = () => {
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-400/20 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="w-full max-w-md p-8 relative z-10">
-        <div className="bg-white/80 backdrop-blur-xl border border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.08)] rounded-[2rem] p-10 transform transition-all">
+        <div className="bg-white border border-slate-200 shadow-lg rounded-[2rem] p-10 transform transition-all">
           
           <div className="flex justify-center mb-6">
             <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center shadow-inner border border-blue-100/50">

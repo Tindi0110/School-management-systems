@@ -339,7 +339,7 @@ const Staff = () => {
             </div>
 
             {/* Premium Search & Tabs Bar */}
-            <div className="card mb-8 no-print p-4 bg-white/50 backdrop-blur-md border-slate-200/60 shadow-xl">
+            <div className="card mb-8 no-print p-4 bg-white border-slate-200 shadow-sm">
                 <div className="flex flex-col md:flex-row gap-6 justify-between items-center">
                     <div className="search-container flex-grow max-w-2xl w-full">
                         <Search className="search-icon text-primary" size={20} />

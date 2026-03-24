@@ -361,9 +361,9 @@ const Finance = () => {
             {activeTabLoading ? (activeTab === 'dashboard' ? renderSkeletonStats() : renderSkeletonTable()) : (
                 <div className="space-y-6">
             {activeTab !== 'dashboard' && (
-                <div className="card mb-8 no-print p-4 bg-white/50 backdrop-blur-md border-slate-200/60 shadow-xl">
+                <div className="card mb-8 no-print p-4 bg-white border-slate-200 shadow-sm">
                     <div className="flex justify-end">
-                        <SearchInput placeholder={`Search ${activeTab}...`} value={searchTerm} onChange={setSearchTerm} className="w-full max-w-md h-11 border-none bg-white/80 focus:ring-2 ring-primary/20 shadow-inner" />
+                        <SearchInput placeholder={`Search ${activeTab}...`} value={searchTerm} onChange={setSearchTerm} className="w-full max-w-md h-11 border-slate-200 bg-white shadow-sm" />
                     </div>
                 </div>
             )}
