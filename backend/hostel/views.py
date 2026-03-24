@@ -84,42 +84,67 @@ class HostelAllocationViewSet(viewsets.ModelViewSet):
         return HostelAllocationSerializer
 
     def perform_create(self, serializer):
-        student = serializer.validated_data.get('student')
-        if student and student.category != 'BOARDING':
-            from rest_framework.exceptions import ValidationError
-            raise ValidationError({"detail": "Student is not a boarder."})
-
-        bed = serializer.validated_data.get('bed')
-        if bed:
-            room = bed.room
-            # Strict Capacity Check
-            if room.current_occupancy >= room.capacity:
+        with transaction.atomic():
+            student = serializer.validated_data.get('student')
+            if student and student.category != 'BOARDING':
                 from rest_framework.exceptions import ValidationError
-                raise ValidationError({"room": f"Room {room.room_number} is already at full capacity ({room.capacity})."})
+                raise ValidationError({"detail": "Student is not a boarder."})
 
-            bed.status = 'OCCUPIED'
-            bed.save()
-            # Update room occupancy
-            room.current_occupancy += 1
-            if room.current_occupancy >= room.capacity:
-                room.status = 'FULL'
-            room.save()
+            bed = serializer.validated_data.get('bed')
+            if bed:
+                room = bed.room
+                # Strict Capacity Check
+                if room.current_occupancy >= room.capacity:
+                    from rest_framework.exceptions import ValidationError
+                    raise ValidationError({"room": f"Room {room.room_number} is already at full capacity ({room.capacity})."})
+
+                bed.status = 'OCCUPIED'
+                bed.save()
+                # Update room occupancy
+                room.current_occupancy += 1
+                if room.current_occupancy >= room.capacity:
+                    room.status = 'FULL'
+                room.save()
+                
+                # Fix: Cleanup Zombie Allocations (Bed is AVAILABLE but still linked)
+                if hasattr(bed, 'allocation'):
+                     old_alloc = bed.allocation
+                     old_alloc.bed = None
+                     old_alloc.save()
+            try:
+                serializer.save()
+            except Exception as e:
+                from rest_framework.exceptions import ValidationError
+                if "UNIQUE constraint failed" in str(e):
+                    raise ValidationError({"detail": "This student already has a hostel record. Please use 'Transfer' to move them."})
+                raise e
+
+    def perform_update(self, serializer):
+        with transaction.atomic():
+            old_instance = self.get_object()
+            old_bed = old_instance.bed
+            new_bed = serializer.validated_data.get('bed')
             
-            # Fix: Cleanup Zombie Allocations (Bed is AVAILABLE but still linked)
-            if hasattr(bed, 'allocation'):
-                 old_alloc = bed.allocation
-                 # If we are here, serializer validated bed.status == 'AVAILABLE'
-                 # So this link is stale.
-                 old_alloc.bed = None
-                 old_alloc.save()
-        try:
+            if new_bed and old_bed != new_bed:
+                # 1. Release Old Bed
+                if old_bed:
+                    old_bed.status = 'AVAILABLE'
+                    old_bed.save()
+                    old_room = old_bed.room
+                    old_room.current_occupancy = max(0, old_room.current_occupancy - 1)
+                    old_room.status = 'AVAILABLE'
+                    old_room.save()
+                
+                # 2. Occupy New Bed
+                new_bed.status = 'OCCUPIED'
+                new_bed.save()
+                new_room = new_bed.room
+                new_room.current_occupancy += 1
+                if new_room.current_occupancy >= new_room.capacity:
+                    new_room.status = 'FULL'
+                new_room.save()
+            
             serializer.save()
-        except Exception as e:
-
-            from rest_framework.exceptions import ValidationError
-            if "UNIQUE constraint failed" in str(e):
-                raise ValidationError({"detail": "This student already has a hostel record. Please use 'Transfer' to move them."})
-            raise e
 
     @action(detail=True, methods=['post'])
     def transfer(self, request, pk=None):

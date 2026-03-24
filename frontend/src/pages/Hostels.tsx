@@ -149,15 +149,29 @@ const Hostels = () => {
     const handleAllocationSubmit = async (e: React.FormEvent) => {
         e.preventDefault(); setIsSubmitting(true);
         try {
-            if (isTransferMode && allocationId) { await hostelAPI.allocations.transfer(allocationId, Number(allocationFormData.bed)); success('Transferred'); }
-            else {
-                const p = { student: Number(allocationFormData.student), room: Number(allocationFormData.room), bed: Number(allocationFormData.bed), status: allocationFormData.status };
-                if (allocationId) await hostelAPI.allocations.update(allocationId, p); else await hostelAPI.allocations.create(p);
-                success('Allocation saved');
+            if (isTransferMode && allocationId) { 
+                await hostelAPI.allocations.transfer(allocationId, Number(allocationFormData.bed)); 
+                success('Student transferred successfully'); 
+            } else {
+                const p = { 
+                    student: Number(allocationFormData.student), 
+                    hostel: Number(allocationFormData.hostel),
+                    room: Number(allocationFormData.room), 
+                    bed: Number(allocationFormData.bed), 
+                    status: allocationFormData.status 
+                };
+                if (allocationId) await hostelAPI.allocations.update(allocationId, p); 
+                else await hostelAPI.allocations.create(p);
+                success('Allocation saved successfully');
             }
-            setIsAllocationModalOpen(false); loadData();
-        } catch (err: any) { toastError('Allocation failed'); }
-        finally { setIsSubmitting(false); }
+            setIsAllocationModalOpen(false); 
+            loadData();
+        } catch (err: any) { 
+            const msg = err.response?.data?.detail || err.response?.data?.error || 
+                       (typeof err.response?.data === 'object' ? Object.values(err.response.data).flat()[0] : null) ||
+                       'Allocation failed. Please check bed availability.';
+            toastError(String(msg)); 
+        } finally { setIsSubmitting(false); }
     };
 
     const handleAttendanceSubmit = async (e: React.FormEvent) => {
