@@ -148,7 +148,7 @@ from django.utils import timezone
 
 class Attendance(models.Model):
     STATUS = (('PRESENT', 'Present'), ('ABSENT', 'Absent'), ('LATE', 'Late'))
-    student = models.ForeignKey('students.Student', on_delete=models.CASCADE)
+    student = models.ForeignKey('students.Student', on_delete=models.CASCADE, related_name='attendance')
     date = models.DateField(default=timezone.now, db_index=True)
     status = models.CharField(max_length=10, choices=STATUS, default='PRESENT')
     remark = models.CharField(max_length=255, blank=True)

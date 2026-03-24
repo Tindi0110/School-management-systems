@@ -135,13 +135,13 @@ class StudentSerializer(serializers.ModelSerializer):
     def get_hostel_name(self, obj):
         try:
             return obj.hostel_allocation.room.hostel.name
-        except (AttributeError, Student.hostel_allocation.RelatedObjectDoesNotExist):
+        except Exception:
             return "N/A"
 
     def get_room_number(self, obj):
         try:
             return obj.hostel_allocation.room.room_number
-        except (AttributeError, Student.hostel_allocation.RelatedObjectDoesNotExist):
+        except Exception:
             return "N/A"
 
     def get_attendance_percentage(self, obj):
