@@ -102,8 +102,8 @@ class StudentSerializer(serializers.ModelSerializer):
     class_stream = serializers.SerializerMethodField()
     
     # MethodFields for fields requiring logic
-    hostel_name = serializers.CharField(source='hostel_allocation.room.hostel.name', read_only=True)
-    room_number = serializers.CharField(source='hostel_allocation.room.room_number', read_only=True)
+    hostel_name = serializers.SerializerMethodField()
+    room_number = serializers.SerializerMethodField()
 
     # Nested Data for SIS Profile
     parents_detail = ParentSerializer(source='parents', many=True, read_only=True)
@@ -131,6 +131,18 @@ class StudentSerializer(serializers.ModelSerializer):
 
     def get_class_stream(self, obj):
         return obj.current_class.stream if obj.current_class else ""
+
+    def get_hostel_name(self, obj):
+        try:
+            return obj.hostel_allocation.room.hostel.name
+        except (AttributeError, Student.hostel_allocation.RelatedObjectDoesNotExist):
+            return "N/A"
+
+    def get_room_number(self, obj):
+        try:
+            return obj.hostel_allocation.room.room_number
+        except (AttributeError, Student.hostel_allocation.RelatedObjectDoesNotExist):
+            return "N/A"
 
     def get_attendance_percentage(self, obj):
         return obj.get_attendance_stats()

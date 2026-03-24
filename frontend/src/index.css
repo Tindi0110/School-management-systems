@@ -840,7 +840,7 @@ table.table {
   font-size: 0.875rem;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  background: var(--bg-secondary);
+  background: #ffffff;
   color: var(--text-primary);
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   min-height: 48px;
@@ -1872,7 +1872,6 @@ table.table {
 .auth-footer {
   padding: var(--spacing-lg);
   text-align: center;
-  background: var(--bg-tertiary);
   border-top: 1px solid var(--border);
 }
 
@@ -2069,7 +2068,7 @@ table.table {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background-color: rgba(15, 23, 42, 0.7);
+  background-color: rgba(15, 23, 42, 0.4);
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   display: flex;

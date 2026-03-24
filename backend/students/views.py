@@ -100,23 +100,28 @@ class StudentViewSet(viewsets.ModelViewSet):
         self.perform_create(serializer)
         student = serializer.instance
         
-        # 2. Create/Link Parent (Optimization)
-        if g_name:
+        # 2. Create/Link Parent (Robust approach)
+        if g_name and g_phone:
             try:
-                # Check for existing parent by phone to avoid duplicates
-                parent, created = Parent.objects.get_or_create(
-                    phone=g_phone,
-                    defaults={
-                        'full_name': g_name,
-                        'email': g_email,
-                        'relationship': g_relation,
-                        'address': g_address,
-                        'is_primary': g_is_primary
-                    }
-                )
-                student.parents.add(parent)
-            except Exception:
-                pass
+                # Check for existing parent by phone
+                parent = Parent.objects.filter(phone=g_phone).first()
+                if not parent:
+                    # Create if not found
+                    parent = Parent.objects.create(
+                        full_name=g_name,
+                        phone=g_phone,
+                        email=g_email,
+                        relationship=g_relation,
+                        address=g_address,
+                        is_primary=g_is_primary
+                    )
+                
+                # Link to student if not already linked
+                if parent and not student.parents.filter(id=parent.id).exists():
+                    student.parents.add(parent)
+            except Exception as e:
+                # Log error but don't crash registration
+                print(f"Parent linking failed: {str(e)}")
         
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=201, headers=headers)
