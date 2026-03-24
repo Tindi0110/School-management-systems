@@ -36,6 +36,10 @@ class Room(models.Model):
         
     def __str__(self):
         return f"{self.hostel.name} - Rm {self.room_number}"
+        
+    @property
+    def available_beds(self):
+        return self.beds.filter(status='AVAILABLE').count()
 
 class Bed(models.Model):
     STATUS_CHOICES = (('AVAILABLE', 'Available'), ('OCCUPIED', 'Occupied'), ('RESERVED', 'Reserved'), ('MAINTENANCE', 'Needs Repair'))
@@ -46,6 +50,10 @@ class Bed(models.Model):
     
     def __str__(self):
         return f"{self.room} - Bed {self.bed_number}"
+        
+    @property
+    def is_available(self):
+        return self.status == 'AVAILABLE'
 
 class HostelAllocation(models.Model):
     STATUS_CHOICES = (('ACTIVE', 'Current'), ('COMPLETED', 'Stay Finished'), ('CANCELLED', 'Cancelled'))

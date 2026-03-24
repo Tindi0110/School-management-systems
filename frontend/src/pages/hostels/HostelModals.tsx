@@ -205,7 +205,19 @@ const HostelModals: React.FC<HostelModalsProps> = ({
                     </div>
                     <div className="form-group">
                         <label className="label">Available Bed</label>
-                        <SearchableSelect options={beds.filter(b => String(b.room) === String(allocationFormData.room) && (b.is_available || String(b.id) === String(allocationFormData.bed))).map(b => ({ id: b.id.toString(), label: `Bed ${b.bed_number}` }))} value={allocationFormData.bed} onChange={(v) => setAllocationFormData({ ...allocationFormData, bed: v.toString() })} disabled={!allocationFormData.room} required />
+                        <SearchableSelect 
+                            options={beds
+                                .filter(b => 
+                                    String(b.room) === String(allocationFormData.room) && 
+                                    (b.is_available || b.status?.toUpperCase() === 'AVAILABLE' || String(b.id) === String(allocationFormData.bed))
+                                )
+                                .map(b => ({ id: b.id.toString(), label: `Bed ${b.bed_number}` || 'Unknown Bed' }))
+                            } 
+                            value={allocationFormData.bed} 
+                            onChange={(v) => setAllocationFormData({ ...allocationFormData, bed: v.toString() })} 
+                            disabled={!allocationFormData.room} 
+                            required 
+                        />
                     </div>
                     <div className="modal-action"><Button type="button" variant="ghost" onClick={() => setIsAllocationModalOpen(false)}>Cancel</Button><Button type="submit" variant="primary" loading={isSubmitting}>{isTransferMode ? "Transfer" : "Confirm Admission"}</Button></div>
                 </form>

@@ -123,8 +123,9 @@ class HostelAllocationViewSet(viewsets.ModelViewSet):
         with transaction.atomic():
             old_instance = self.get_object()
             old_bed = old_instance.bed
-            new_bed = serializer.validated_data.get('bed')
+            new_status = serializer.validated_data.get('status', old_instance.status)
             
+            # Case 1: Bed changed
             if new_bed and old_bed != new_bed:
                 # 1. Release Old Bed
                 if old_bed:
@@ -135,15 +136,37 @@ class HostelAllocationViewSet(viewsets.ModelViewSet):
                     old_room.status = 'AVAILABLE'
                     old_room.save()
                 
-                # 2. Occupy New Bed
-                new_bed.status = 'OCCUPIED'
-                new_bed.save()
-                new_room = new_bed.room
-                new_room.current_occupancy += 1
-                if new_room.current_occupancy >= new_room.capacity:
-                    new_room.status = 'FULL'
-                new_room.save()
+                # 2. Occupy New Bed (if the new allocation is ACTIVE)
+                if new_status == 'ACTIVE':
+                    new_bed.status = 'OCCUPIED'
+                    new_bed.save()
+                    new_room = new_bed.room
+                    new_room.current_occupancy += 1
+                    if new_room.current_occupancy >= new_room.capacity:
+                        new_room.status = 'FULL'
+                    new_room.save()
             
+            # Case 2: Status changed to non-ACTIVE (Bed stayed same)
+            elif old_instance.status == 'ACTIVE' and new_status != 'ACTIVE':
+                if old_bed:
+                    old_bed.status = 'AVAILABLE'
+                    old_bed.save()
+                    old_room = old_bed.room
+                    old_room.current_occupancy = max(0, old_room.current_occupancy - 1)
+                    old_room.status = 'AVAILABLE'
+                    old_room.save()
+            
+            # Case 3: Status changed back to ACTIVE (Bed stayed same)
+            elif old_instance.status != 'ACTIVE' and new_status == 'ACTIVE':
+                if old_bed:
+                    old_bed.status = 'OCCUPIED'
+                    old_bed.save()
+                    old_room = old_bed.room
+                    old_room.current_occupancy += 1
+                    if old_room.current_occupancy >= old_room.capacity:
+                        old_room.status = 'FULL'
+                    old_room.save()
+
             serializer.save()
 
     @action(detail=True, methods=['post'])

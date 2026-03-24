@@ -13,7 +13,10 @@ class BedSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Bed
-        fields = '__all__'
+        fields = [
+            'id', 'room', 'bed_number', 'status', 'is_available', 
+            'hostel_gender', 'room_number', 'hostel_name'
+        ]
     
     def get_is_available(self, obj):
         return obj.status == 'AVAILABLE'
@@ -25,7 +28,11 @@ class RoomSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Room
-        fields = '__all__'
+        fields = [
+            'id', 'hostel', 'room_number', 'room_type', 'floor', 
+            'capacity', 'current_occupancy', 'status', 'hostel_name', 
+            'beds', 'available_beds'
+        ]
     
     def get_available_beds(self, obj):
         return obj.beds.filter(status='AVAILABLE').count()
