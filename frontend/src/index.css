@@ -858,14 +858,14 @@ table.table {
   padding: 0 1.5rem;
   font-size: 1rem;
   font-weight: 700;
-  border: 1.5px solid #cbd5e1; /* Visible, distinct border as requested */
-  border-radius: 1rem;
-  background: #f9fafb; /* Flat, warm, neutral gray */
+  border: 1.5px solid #cbd5e1 !important;
+  border-radius: 1rem !important;
+  background: #f9fafb !important; /* Forces the flat, warm, neutral gray everywhere */
   color: #0f172a;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: none; /* Removed inset shadow causing depth/shine optical illusion */
-  appearance: none; /* Kill native WebKit gradients */
-  -webkit-appearance: none;
+  box-shadow: none !important; /* Destroys all scattered shadow-inner utilities */
+  appearance: none !important;
+  -webkit-appearance: none !important;
 }
 
 .textarea {
@@ -877,18 +877,18 @@ table.table {
 .input:hover:not(:disabled),
 .select:hover:not(:disabled),
 .textarea:hover:not(:disabled) {
-  border-color: #94a3b8;
-  background: #ffffff;
+  border-color: #94a3b8 !important;
+  background: #ffffff !important;
 }
 
 .input:focus,
 .select:focus,
 .textarea:focus {
   outline: none;
-  border-color: #6366f1;
-  background: #ffffff;
-  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12); /* Removed inset shadow from focus too */
-  transform: none;
+  border-color: #6366f1 !important;
+  background: #ffffff !important;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12) !important;
+  transform: none !important;
 }
 
 .input-sm,
