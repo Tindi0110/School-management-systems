@@ -93,7 +93,10 @@ const Hostels = () => {
             ]);
             setHostels(d(hRes)); setStats(sRes.data); setStudents(d(studRes)); setRooms(d(rRes)); setBeds(d(bRes)); setStaff(d(stfRes)); setAllAllocations(d(allAllocRes));
             loadTabSpecificData();
-        } catch (err) { toastError("Data sync lag detected."); }
+        } catch (err: any) {
+            const msg = err?.message || "Failed to load hostel data. Please refresh.";
+            toastError(msg);
+        }
         finally { setLoading(false); }
     };
 

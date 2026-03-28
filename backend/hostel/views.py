@@ -130,6 +130,7 @@ class HostelAllocationViewSet(viewsets.ModelViewSet):
             old_instance = self.get_object()
             old_bed = old_instance.bed
             new_status = serializer.validated_data.get('status', old_instance.status)
+            new_bed = serializer.validated_data.get('bed')
             
             # Case 1: Bed changed
             if new_bed and old_bed != new_bed:
