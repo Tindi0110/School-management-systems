@@ -831,7 +831,7 @@ table.table {
   color: var(--primary);
 }
 
-/* Form Elements - Crisp with Visible Borders (matching Budget Wear style) */
+/* Form Elements - Budget Wear UI Style */
 .form-group {
   display: flex;
   flex-direction: column;
@@ -839,54 +839,62 @@ table.table {
   margin-bottom: 0;
 }
 
+.label {
+  display: block;
+  font-size: 10px;
+  font-weight: 900;
+  color: #9ca3af;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding-left: 4px;
+}
+
 .input,
 .select,
 .textarea {
   width: 100%;
-  padding: 0.75rem 1.25rem;
-  font-size: 0.875rem;
-  border: 1.5px solid #94a3b8;  /* Visible slate-400 border, matching Budget Wear clarity */
-  border-radius: var(--radius-lg);
-  background: var(--bg-secondary);
-  color: var(--text-primary);
+  min-height: 56px;
+  padding: 0 1.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  border: 1.5px solid #cbd5e1; /* Visible, distinct border as requested */
+  border-radius: 1rem;
+  background: #f8fafc;
+  color: #0f172a;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  min-height: 48px;
-  box-shadow: inset 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+  box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.02);
+}
+
+.textarea {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  height: auto;
 }
 
 .input:hover:not(:disabled),
 .select:hover:not(:disabled),
 .textarea:hover:not(:disabled) {
-  border-color: #64748b;
-  background: var(--bg-primary);
+  border-color: #94a3b8;
+  background: #ffffff;
 }
 
 .input:focus,
 .select:focus,
 .textarea:focus {
   outline: none;
-  border-color: var(--primary-accent);
-  background: var(--bg-primary);
-  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12), inset 0 1px 3px 0 rgba(0, 0, 0, 0.04);
-  transform: translateY(-1px);
+  border-color: #6366f1;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12), inset 0 2px 4px 0 rgba(0, 0, 0, 0.02);
+  transform: none;
 }
 
 .input-sm,
 .select-sm {
-  padding: 0.4rem 0.75rem;
-  font-size: 0.8125rem;
-  min-height: 36px;
-}
-
-.label {
-  display: block;
-  font-size: 10px;
-  font-weight: 800;
-  color: var(--secondary);
-  margin-bottom: 8px;
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
-  opacity: 0.8;
+  min-height: 48px;
+  padding: 0 1rem;
+  font-size: 0.875rem;
+  border-radius: 0.75rem;
 }
 
 /* Progress & Checkbox Standard */
@@ -2107,8 +2115,8 @@ table.table {
 
 .modal-container {
   background-color: var(--bg-primary);
-  box-shadow: 0 32px 64px -12px rgba(0, 0, 0, 0.25), 0 16px 32px -8px rgba(0, 0, 0, 0.15);
-  border-radius: var(--radius-xl);   /* 1.5rem — Budget Wear's very rounded card */
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border-radius: 3rem; /* Budget Wear exact 3rem corner radius */
   display: flex;
   flex-direction: column;
   position: relative;
@@ -2119,9 +2127,9 @@ table.table {
 }
 
 .modal-header {
-  padding: 1.25rem 1.75rem;
-  background: #f8fafc;              /* Subtle off-white header like Budget Wear */
-  border-bottom: 1.5px solid #e2e8f0;
+  padding: 2.5rem 2.5rem 1.5rem 2.5rem;
+  background: #f8fafc; /* Subtle off-white header like Budget Wear */
+  border-bottom: 1px solid #f3f4f6;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -2129,20 +2137,20 @@ table.table {
 }
 
 .modal-title {
-  font-size: 1rem;
+  font-size: 1.5rem; /* Budget Wear uses 2xl text */
   font-weight: 900;
-  color: var(--primary);
-  text-transform: uppercase;         /* Uppercase title — Budget Wear style */
-  letter-spacing: 0.08em;
+  color: #111827;
+  text-transform: uppercase;
+  letter-spacing: -0.05em; /* tracking-tighter */
 }
 
 .modal-body {
-  padding: 1.75rem;
+  padding: 2.5rem; /* p-10 */
   overflow-y: auto;
   max-height: 70vh;
   flex-grow: 1;
   min-height: 0;
-  background: #f8fafc;              /* Matching off-white body */
+  background: #ffffff; /* Forms have gray bg, body is white */
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 transparent;
 }
@@ -2156,9 +2164,9 @@ table.table {
 }
 
 .modal-footer {
-  padding: 1.25rem 1.75rem;
-  border-top: 1.5px solid #e2e8f0;
-  background: #f8fafc;
+  padding: 1.5rem 2.5rem 2.5rem 2.5rem;
+  border-top: 1px solid #f3f4f6;
+  background: #ffffff;
   display: flex;
   justify-content: flex-end;
   gap: 1rem;
@@ -2170,10 +2178,10 @@ table.table {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  gap: 0.75rem;
-  padding-top: 1.25rem;
-  margin-top: 0.5rem;
-  border-top: 1.5px solid #e2e8f0;
+  gap: 1rem;
+  padding-top: 2.5rem;
+  margin-top: 1.5rem;
+  border-top: 1px solid #f3f4f6;
 }
 
 /* ===== SELECT & DROPDOWN ===== */
