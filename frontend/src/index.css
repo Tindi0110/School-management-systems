@@ -2101,6 +2101,8 @@ table.table {
   position: fixed;
   inset: 0;
   background-color: rgba(0, 0, 0, 0.4) !important;
+  backdrop-filter: none !important;      /* Explicitly kill any inline blur */
+  -webkit-backdrop-filter: none !important; /* Explicitly kill webkit blur */
   display: flex;
   align-items: center;
   justify-content: center;
