@@ -95,7 +95,7 @@ const CommandPalette: React.FC = () => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[999] bg-black/40 backdrop-blur-sm flex items-start justify-center pt-[15vh]">
+    <div className="fixed inset-0 z-[999] bg-black/20 flex items-start justify-center pt-[15vh]">
       <div 
         className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden"
         onKeyDown={handleKeyDown}

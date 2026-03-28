@@ -1925,35 +1925,11 @@ table.table {
   padding-left: 3rem !important;
 }
 
-.auth-gradient-bg {
-  position: absolute;
-  width: 600px;
-  height: 600px;
-  border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.15;
-  z-index: 1;
-}
-
-@media (max-width: 768px) {
-  .auth-gradient-bg {
-    width: 300px;
-    height: 300px;
-    filter: blur(40px);
-    opacity: 0.1;
-  }
-}
-
-.auth-gradient-1 {
-  background: var(--primary);
-  top: -200px;
-  right: -200px;
-}
-
+/* Remove modern background gradient blobs to maintain classic professional look */
+.auth-gradient-bg,
+.auth-gradient-1,
 .auth-gradient-2 {
-  background: var(--secondary);
-  bottom: -200px;
-  left: -200px;
+  display: none !important;
 }
 
 /* ===== COMPONENT GROUPING ===== */
@@ -2368,7 +2344,9 @@ table.table {
   .sidebar-overlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.4);
+    background: rgba(0,0,0,0.4) !important;
+    backdrop-filter: none !important;      /* Explicitly kill any modern blur */
+    -webkit-backdrop-filter: none !important;
     z-index: 90;
     opacity: 0;
     visibility: hidden;
