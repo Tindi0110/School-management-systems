@@ -18,6 +18,7 @@ import { LogOut, Bell, Menu, Search } from 'lucide-react'
 import { useToast } from '../context/ToastContext'
 import CommandPalette from '../components/CommandPalette'
 import PageTransition from '../components/common/PageTransition'
+import { academicsAPI, communicationAPI } from '../api/api'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -119,7 +120,6 @@ const DashboardLayout = () => {
 
   const fetchNotifications = useCallback(async () => {
     try {
-      const { communicationAPI } = await import('../api/api')
       const [notifsRes, alertsRes] = await Promise.all([
         communicationAPI.notifications.getUnread(),
         communicationAPI.alerts.getActive(),
@@ -133,7 +133,6 @@ const DashboardLayout = () => {
 
   const markAsRead = useCallback(async (id: number) => {
     try {
-      const { communicationAPI } = await import('../api/api')
       await communicationAPI.notifications.update(id, { is_read: true })
       fetchNotifications()
     } catch {
@@ -150,7 +149,6 @@ const DashboardLayout = () => {
 
       // Show toasts for events due today (max 3)
       try {
-        const { academicsAPI } = await import('../api/api')
         const today = new Date().toISOString().split('T')[0]
         const res = await academicsAPI.events.getAll({ start_date: today })
         const due = res.data?.results ?? res.data ?? []
