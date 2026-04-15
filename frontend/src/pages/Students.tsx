@@ -163,10 +163,30 @@ const Students = () => {
             closeModal();
             if (!editingStudent) {
                 success('Admission Successful! Redirecting to profile...');
-                // Ensure ID is valid before redirecting
-                if (response?.data?.id) {
-                    setTimeout(() => navigate(`/students/${response.data.id}`), 1000);
+                
+                // Identify the new student ID robustly
+                let studentId = response?.data?.id || response?.id;
+                
+                if (!studentId && response?.data) {
+                    // Try nested data just in case
+                    studentId = response.data.data?.id || response.data.student?.id;
+                }
+                
+                if (studentId) {
+                    setTimeout(() => navigate(`/students/${studentId}`), 1000);
                 } else {
+                    // Fallback: fetch the most recent student
+                    console.warn("ID not found in response, fetching newest student");
+                    try {
+                        const latestRes = await studentsAPI.getAll({ page_size: 1, ordering: '-id' });
+                        const latestId = latestRes?.data?.results?.[0]?.id;
+                        if (latestId) {
+                            setTimeout(() => navigate(`/students/${latestId}`), 1000);
+                            return;
+                        }
+                    } catch (e) {
+                        console.error("Failed to fetch latest student", e);
+                    }
                     navigate('/students');
                 }
             } else {
