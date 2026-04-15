@@ -252,7 +252,7 @@ const FinanceModals: React.FC<FinanceModalsProps> = ({
                                 )
                             }))}
                             onSearch={async (term: string) => {
-                                if (term.length > 2) {
+                                if (term.length > 0 || term === '*') {
                                     try {
                                         const res = await studentsAPI.minimalSearch({ 
                                             search: term, 
@@ -582,7 +582,7 @@ const FinanceModals: React.FC<FinanceModalsProps> = ({
                             )
                         }))}
                         onSearch={async (term: string) => {
-                            if (term.length > 2) {
+                            if (term.length > 0 || term === '*') {
                                 try {
                                     const res = await studentsAPI.minimalSearch({
                                         search: term,

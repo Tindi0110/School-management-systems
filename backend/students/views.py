@@ -62,7 +62,8 @@ class StudentViewSet(viewsets.ModelViewSet):
         if has_debt:
             qs = qs.filter(fee_balance__gt=0)
 
-        if search:
+        # Handle wildcard '*' as 'show all'
+        if search and search != '*':
             qs = qs.filter(Q(full_name__icontains=search) | Q(admission_number__icontains=search))
         
         # Optimize query by only fetching needed fields
@@ -82,6 +83,20 @@ class StudentViewSet(viewsets.ModelViewSet):
             for s in qs
         ]
         return Response(data)
+
+    @action(detail=False, methods=['post'])
+    def sync_all_fee_balances(self, request):
+        """Mass syncs fee_balance for all active students from their invoices."""
+        from django.db.models import Sum
+        students = Student.objects.filter(status='ACTIVE').prefetch_related('invoices')
+        updated = 0
+        for s in students:
+            total = s.invoices.aggregate(total=Sum('balance'))['total'] or 0
+            if s.fee_balance != total:
+                s.fee_balance = total
+                s.save(update_fields=['fee_balance'])
+                updated += 1
+        return Response({'status': 'synced', 'updated_count': updated, 'total_active': students.count()})
 
     def perform_create(self, serializer):
         serializer.save()

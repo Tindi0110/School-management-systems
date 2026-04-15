@@ -207,6 +207,26 @@ def update_invoice_totals(invoice):
     invoice.update_balance() # Saves the model
 
 @receiver(post_save, sender=Invoice)
+def update_student_fee_balance(sender, instance, **kwargs):
+    """
+    Recalculates total fee_balance for a student whenever an invoice changes.
+    This ensures de-normalized Search fields in Student model are accurate.
+    """
+    if kwargs.get('raw'):
+        return
+    
+    student = instance.student
+    # Sum up all invoice balances for this student
+    total_balance = student.invoices.aggregate(
+        total=models.Sum('balance')
+    )['total'] or 0
+    
+    if student.fee_balance != total_balance:
+        student.fee_balance = total_balance
+        student.save(update_fields=['fee_balance'])
+        print(f"Finance Sync: Updated fee_balance for {student.admission_number} to {total_balance}")
+
+@receiver(post_save, sender=Invoice)
 def sync_fine_payment(sender, instance, created, **kwargs):
     if kwargs.get('raw'):
         return
@@ -214,13 +234,6 @@ def sync_fine_payment(sender, instance, created, **kwargs):
     When Invoice is PAID or OVERPAID, mark linked Library Fines as PAID.
     """
     if instance.status in ['PAID', 'OVERPAID'] or instance.balance <= 0:
-        # distinct() is good practice if multiple adjustments link to same fine (unlikely OneToOne but safe)
-        # We need to find Adjustments on this invoice that have a library_fine
-        # library_fine is the related_name on Adjustment from LibraryFine model
-        
-        # We need to import LibraryFine but avoid circular import. 
-        # Best to use string relationship or check hasattr
-        
         for adjustment in instance.adjustments.all():
             if hasattr(adjustment, 'library_fine'):
                 fine = adjustment.library_fine
