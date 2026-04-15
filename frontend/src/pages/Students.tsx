@@ -165,11 +165,12 @@ const Students = () => {
                 success('Admission Successful! Redirecting to profile...');
                 
                 // Identify the new student ID robustly
-                let studentId = response?.data?.id || response?.id;
+                const resAny = response as any;
+                let studentId = resAny?.data?.id || resAny?.id;
                 
-                if (!studentId && response?.data) {
+                if (!studentId && resAny?.data) {
                     // Try nested data just in case
-                    studentId = response.data.data?.id || response.data.student?.id;
+                    studentId = resAny.data.data?.id || resAny.data.student?.id;
                 }
                 
                 if (studentId) {
