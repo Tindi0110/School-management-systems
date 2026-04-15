@@ -83,60 +83,112 @@ class StudentViewSet(viewsets.ModelViewSet):
         ]
         return Response(data)
 
+    def perform_create(self, serializer):
+        serializer.save()
+
+    def perform_update(self, serializer):
+        serializer.save()
+
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         # 1. Create Student (and trigger Hostel Allocation signal if Boarding)
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
-        # Extract guardian data before saving
-        g_name = serializer.validated_data.pop('guardian_name', None)
-        g_phone = serializer.validated_data.pop('guardian_phone', None)
-        g_email = serializer.validated_data.pop('guardian_email', None)
-        g_relation = serializer.validated_data.pop('guardian_relation', 'GUARDIAN')
-        g_address = serializer.validated_data.pop('guardian_address', '')
-        g_is_primary = serializer.validated_data.pop('is_primary_guardian', True)
+        # Extract guardian data
+        guardian_data = self._get_guardian_data(serializer.validated_data)
         
         self.perform_create(serializer)
         student = serializer.instance
         
-        # 2. Create/Link Parent (Robust approach)
-        if g_name and g_phone:
-            try:
-                # Check for existing parent by phone
-                parent = Parent.objects.filter(phone=g_phone).first()
-                if not parent:
-                    # Create if not found
-                    parent = Parent.objects.create(
-                        full_name=g_name,
-                        phone=g_phone,
-                        email=g_email,
-                        relationship=g_relation,
-                        address=g_address,
-                        is_primary=g_is_primary
-                    )
-                else:
-                    # Update fields if missing on existing parent
-                    if g_email and not parent.email:
-                        parent.email = g_email
-                    if g_address and not parent.address:
-                        parent.address = g_address
-                    parent.save()
-                
-                # Link to student if not already linked
-                if parent and not student.parents.filter(id=parent.id).exists():
-                    student.parents.add(parent)
-                
-                # IMPORTANT: Refresh the student instance to ensure 
-                #Many-to-Many updates are reflected in the serializer
-                student.refresh_from_db()
-                
-            except Exception as e:
-                # Log error but don't crash registration
-                print(f"Parent linking failed: {str(e)}")
+        # 2. Sync Parent Record
+        self._sync_parent_data(student, guardian_data)
         
+        # 3. Refresh and respond
+        student.refresh_from_db()
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=201, headers=headers)
+
+    @transaction.atomic
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        
+        # Extract guardian data
+        guardian_data = self._get_guardian_data(serializer.validated_data)
+        
+        self.perform_update(serializer)
+        student = serializer.instance
+        
+        # Sync Parent Record
+        self._sync_parent_data(student, guardian_data)
+        
+        student.refresh_from_db()
+        return Response(serializer.data)
+
+    def retrieve(self, request, *args, **kwargs):
+        """Diagnostic override to catch 500 errors during retrieval."""
+        try:
+            instance = self.get_object()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        except Exception as e:
+            import traceback
+            print(f"CRITICAL: Student Retrieval Error: {str(e)}")
+            traceback.print_exc()
+            return Response(
+                {"detail": "Server error while processing student profile data.", "error": str(e)}, 
+                status=500
+            )
+
+    def _get_guardian_data(self, validated_data):
+        """Helper to safely extract guardian fields from validated_data."""
+        return {
+            'name': validated_data.pop('guardian_name', None),
+            'phone': validated_data.pop('guardian_phone', None),
+            'email': validated_data.pop('guardian_email', None),
+            'relation': validated_data.pop('guardian_relation', 'GUARDIAN'),
+            'address': validated_data.pop('guardian_address', ''),
+            'is_primary': validated_data.pop('is_primary_guardian', True),
+        }
+
+    def _sync_parent_data(self, student, data):
+        """Robustly creates/updates a Parent record and links it to the student."""
+        if not data['name'] or not data['phone']:
+            return
+
+        try:
+            # Check for existing parent by phone
+            parent = Parent.objects.filter(phone=data['phone']).first()
+            if not parent:
+                parent = Parent.objects.create(
+                    full_name=data['name'],
+                    phone=data['phone'],
+                    email=data['email'],
+                    relationship=data['relation'],
+                    address=data['address'],
+                    is_primary=data['is_primary']
+                )
+            else:
+                # Update essential fields if they were missing
+                updated = False
+                if data['email'] and not parent.email:
+                    parent.email = data['email']
+                    updated = True
+                if data['address'] and not parent.address:
+                    parent.address = data['address']
+                    updated = True
+                if updated:
+                    parent.save()
+            
+            # Link to student if not already linked
+            if parent and not student.parents.filter(id=parent.id).exists():
+                student.parents.add(parent)
+                
+        except Exception as e:
+            print(f"Parent sync failed: {str(e)}")
 
 
     @action(detail=True, methods=['post', 'delete'])

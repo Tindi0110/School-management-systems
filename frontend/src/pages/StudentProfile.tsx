@@ -100,14 +100,17 @@ const StudentProfile = () => {
     const loadCoreStudentData = async () => {
         setLoading(true);
         try {
-            const [studentRes, parentsRes, libRes, resRes] = await Promise.all([
-                studentsAPI.getOne(Number(id)),
-                studentsAPI.parents.getForStudent(Number(id)),
-                libraryAPI.lendings.getAll({ student_id: Number(id) }), // Fetch all lendings for this student
-                academicsAPI.results.getAll({ student_id: Number(id) })
-            ]);
-
+            // Fetch core student data first
+            const studentRes = await studentsAPI.getOne(Number(id));
             setStudent(studentRes.data);
+            
+            // Try fetch auxiliary data in parallel but safely
+            const [parentsRes, libRes, resRes] = await Promise.all([
+                studentsAPI.parents.getForStudent(Number(id)).catch(e => { console.error("Parents Load Fail", e); return { data: [] }; }),
+                libraryAPI.lendings.getAll({ student_id: Number(id) }).catch(e => { console.error("Library Load Fail", e); return { data: { results: [] } }; }),
+                academicsAPI.results.getAll({ student_id: Number(id) }).catch(e => { console.error("Results Load Fail", e); return { data: { results: [] } }; })
+            ]);
+            
             setParents(parentsRes.data?.results ?? parentsRes.data ?? []);
 
             // Calculate unreturned books locally for accuracy

@@ -35,20 +35,34 @@ class HostelViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'])
     def dashboard_stats(self, request):
-        hostels = Hostel.objects.all()
-        total_hostels = hostels.count()
-        total_capacity = sum(h.capacity for h in hostels)
-        total_residents = HostelAllocation.objects.all().count()
-        
-        # Maintenance issues (Pending + In Progress)
-        maintenance_issues = HostelMaintenance.objects.exclude(status='COMPLETED').count()
-        
-        return Response({
-            'totalHostels': total_hostels,
-            'totalCapacity': total_capacity,
-            'totalResidents': total_residents,
-            'maintenanceIssues': maintenance_issues
-        })
+        try:
+            hostels = Hostel.objects.all()
+            total_hostels = hostels.count()
+            total_capacity = sum(h.capacity for h in hostels)
+            total_residents = HostelAllocation.objects.filter(status='ACTIVE').count()
+            
+            # Maintenance issues (Pending + In Progress)
+            maintenance_issues = HostelMaintenance.objects.exclude(status='COMPLETED').count()
+            
+            return Response({
+                'totalHostels': total_hostels,
+                'totalCapacity': total_capacity,
+                'totalResidents': total_residents,
+                'maintenanceIssues': maintenance_issues
+            })
+        except Exception as e:
+            print(f"Hostel Stats Error: {str(e)}")
+            return Response({"error": str(e)}, status=500)
+
+    def retrieve(self, request, *args, **kwargs):
+        """Diagnostic override for Hostel detail 500 errors."""
+        try:
+            return super().retrieve(request, *args, **kwargs)
+        except Exception as e:
+            import traceback
+            print(f"CRITICAL: Hostel Retrieval Error: {str(e)}")
+            traceback.print_exc()
+            return Response({"detail": "Server error while processing hostel data.", "error": str(e)}, status=500)
 
 class RoomViewSet(viewsets.ModelViewSet):
     queryset = Room.objects.select_related('hostel').all()
