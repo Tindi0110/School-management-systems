@@ -128,7 +128,7 @@ const Students = () => {
             }
 
             // clear payload of non-model fields
-            const { guardian_email, country_code, ...modelData } = formData;
+            const { country_code, ...modelData } = formData;
 
             const payload = {
                 ...modelData,

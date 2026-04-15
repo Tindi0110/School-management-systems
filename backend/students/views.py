@@ -115,10 +115,22 @@ class StudentViewSet(viewsets.ModelViewSet):
                         address=g_address,
                         is_primary=g_is_primary
                     )
+                else:
+                    # Update fields if missing on existing parent
+                    if g_email and not parent.email:
+                        parent.email = g_email
+                    if g_address and not parent.address:
+                        parent.address = g_address
+                    parent.save()
                 
                 # Link to student if not already linked
                 if parent and not student.parents.filter(id=parent.id).exists():
                     student.parents.add(parent)
+                
+                # IMPORTANT: Refresh the student instance to ensure 
+                #Many-to-Many updates are reflected in the serializer
+                student.refresh_from_db()
+                
             except Exception as e:
                 # Log error but don't crash registration
                 print(f"Parent linking failed: {str(e)}")
