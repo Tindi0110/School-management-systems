@@ -69,6 +69,10 @@ class HostelAllocation(models.Model):
     def __str__(self):
         return f"{self.student} in {self.bed}"
 
+    @property
+    def is_active(self):
+        return self.status == 'ACTIVE'
+
 class HostelAttendance(models.Model):
     SESSION_CHOICES = (('MORNING', 'Morning Call'), ('EVENING', 'Evening Call'), ('NIGHT', 'Night Call'))
     STATUS_CHOICES = (('PRESENT', 'Present'), ('ABSENT', 'Absent'), ('PERMITTED', 'On Leave/Exeat'))

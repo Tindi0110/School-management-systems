@@ -38,13 +38,18 @@ class RoomSerializer(serializers.ModelSerializer):
         return getattr(obj, 'available_beds_count', 0)
 
 class HostelListSerializer(serializers.ModelSerializer):
-    warden_name = serializers.CharField(source='warden.get_full_name', read_only=True)
+    warden_name = serializers.SerializerMethodField()
     total_rooms = serializers.IntegerField(source='rooms.count', read_only=True)
     occupancy_rate = serializers.SerializerMethodField()
     
     class Meta:
         model = Hostel
         fields = ['id', 'name', 'gender_allowed', 'hostel_type', 'capacity', 'warden_name', 'total_rooms', 'occupancy_rate']
+
+    def get_warden_name(self, obj):
+        if obj.warden:
+            return obj.warden.get_full_name()
+        return "No Warden Assigned"
 
     def get_occupancy_rate(self, obj):
         # Use annotated values if available
@@ -61,18 +66,35 @@ class HostelSerializer(serializers.ModelSerializer):
 class AllocationListSerializer(serializers.ModelSerializer):
     student_name = serializers.CharField(source='student.full_name', read_only=True)
     admission_number = serializers.CharField(source='student.admission_number', read_only=True)
-    room_number = serializers.CharField(source='room.room_number', read_only=True)
-    bed_number = serializers.CharField(source='bed.bed_number', read_only=True)
-    hostel_name = serializers.CharField(source='room.hostel.name', read_only=True)
+    room_number = serializers.SerializerMethodField()
+    bed_number = serializers.SerializerMethodField()
+    hostel_name = serializers.SerializerMethodField()
+    is_active = serializers.BooleanField(read_only=True)
     
     class Meta:
         model = HostelAllocation
         fields = ['id', 'student', 'student_name', 'admission_number', 'hostel_name', 'room', 'room_number', 'bed', 'bed_number', 'status', 'is_active', 'date_allocated']
 
+    def get_room_number(self, obj):
+        return obj.room.room_number if obj.room else "N/A"
+
+    def get_bed_number(self, obj):
+        return obj.bed.bed_number if obj.bed else "N/A"
+
+    def get_hostel_name(self, obj):
+        if obj.room and obj.room.hostel:
+            return obj.room.hostel.name
+        return "N/A"
+
 class HostelAllocationSerializer(serializers.ModelSerializer):
+    is_active = serializers.BooleanField(read_only=True)
+    
     class Meta:
         model = HostelAllocation
-        fields = '__all__'
+        fields = [
+            'id', 'student', 'bed', 'room', 'start_date', 
+            'end_date', 'status', 'date_allocated', 'is_active'
+        ]
 
     def validate(self, data):
         student = data.get('student')
@@ -122,11 +144,22 @@ class HostelDisciplineSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class HostelAssetSerializer(serializers.ModelSerializer):
-    room_number = serializers.CharField(source='room.room_number', read_only=True)
-    hostel_name = serializers.CharField(source='room.hostel.name', read_only=True)
+    room_number = serializers.SerializerMethodField()
+    hostel_name = serializers.SerializerMethodField()
+
     class Meta:
         model = HostelAsset
         fields = '__all__'
+
+    def get_room_number(self, obj):
+        return obj.room.room_number if obj.room else "N/A"
+
+    def get_hostel_name(self, obj):
+        if obj.hostel:
+            return obj.hostel.name
+        if obj.room and obj.room.hostel:
+            return obj.room.hostel.name
+        return "N/A"
 
 class GuestLogSerializer(serializers.ModelSerializer):
     student_name = serializers.CharField(source='student_visited.full_name', read_only=True)
@@ -135,9 +168,19 @@ class GuestLogSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class HostelMaintenanceSerializer(serializers.ModelSerializer):
-    hostel_name = serializers.CharField(source='hostel.name', read_only=True)
-    room_number = serializers.CharField(source='room.room_number', read_only=True)
-    reported_by_name = serializers.CharField(source='reported_by.get_full_name', read_only=True)
+    hostel_name = serializers.SerializerMethodField()
+    room_number = serializers.SerializerMethodField()
+    reported_by_name = serializers.SerializerMethodField()
+
     class Meta:
         model = HostelMaintenance
         fields = '__all__'
+
+    def get_hostel_name(self, obj):
+        return obj.hostel.name if obj.hostel else "N/A"
+
+    def get_room_number(self, obj):
+        return obj.room.room_number if obj.room else "N/A"
+
+    def get_reported_by_name(self, obj):
+        return obj.reported_by.get_full_name() if obj.reported_by else "System"
