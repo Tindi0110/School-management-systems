@@ -237,7 +237,7 @@ const StudentProfile = () => {
                 await studentsAPI.discipline.create({ ...disciplineForm, student: Number(id) });
                 toast.success('Discipline record created');
             }
-            loadStudentData();
+            await loadTabData(); // Only refresh tab-specific data
             setIsDisciplineModalOpen(false);
             setDisciplineId(null);
         } catch (err: any) {
@@ -278,7 +278,7 @@ const StudentProfile = () => {
             } else {
                 await studentsAPI.health.create({ ...healthForm, student: Number(id) });
             }
-            loadStudentData();
+            await loadCoreStudentData(); // Refresh health record in core data
             setIsHealthModalOpen(false);
             toast.success('Health record updated successfully');
         } catch (err) {
@@ -290,14 +290,23 @@ const StudentProfile = () => {
 
     const handleEditSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!student) return;
         setIsSubmitting(true);
         try {
-            await studentsAPI.update(Number(id), student);
-            loadStudentData();
+            // Clean payload: remove read-only nested objects and calculated fields
+            const { 
+                parents_detail, admission_details, health_record, 
+                attendance_percentage, average_grade, hostel_name, room_number,
+                admission_number, invoices,
+                ...updateData 
+            } = student as any;
+
+            await studentsAPI.patch(Number(id), updateData);
+            await loadCoreStudentData();
             setIsEditModalOpen(false);
             toast.success('Profile updated successfully');
-        } catch (error) {
-            toast.error('Failed to update profile');
+        } catch (error: any) {
+            toast.error(error.message || 'Failed to update profile');
         } finally {
             setIsSubmitting(false);
         }

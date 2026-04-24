@@ -87,16 +87,29 @@ class StudentViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'])
     def sync_all_fee_balances(self, request):
         """Mass syncs fee_balance for all active students from their invoices."""
-        from django.db.models import Sum
-        students = Student.objects.filter(status='ACTIVE').prefetch_related('invoices')
-        updated = 0
-        for s in students:
-            total = s.invoices.aggregate(total=Sum('balance'))['total'] or 0
-            if s.fee_balance != total:
-                s.fee_balance = total
-                s.save(update_fields=['fee_balance'])
-                updated += 1
-        return Response({'status': 'synced', 'updated_count': updated, 'total_active': students.count()})
+        from django.db.models import Sum, OuterRef, Subquery, Value
+        from django.db.models.functions import Coalesce
+        from finance.models import Invoice
+
+        # Subquery to calculate sum of invoice balances for each student
+        balances = Invoice.objects.filter(student=OuterRef('pk')).values('student').annotate(
+            total=Sum('balance')
+        ).values('total')
+
+        # Perform mass update efficiently
+        updated_count = Student.objects.filter(status='ACTIVE').update(
+            fee_balance=Coalesce(
+                Subquery(balances), 
+                Value(0), 
+                output_field=DecimalField()
+            )
+        )
+
+        return Response({
+            'status': 'synced', 
+            'updated_count': updated_count, 
+            'total_active': Student.objects.filter(status='ACTIVE').count()
+        })
 
     def perform_create(self, serializer):
         serializer.save()
@@ -311,7 +324,7 @@ class ParentViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
             return [IsAdminOrRegistrar()]
-        return [IsAuthenticated()]
+        return [permissions.IsAuthenticated()]
 
     def get_queryset(self):
         # Optimized query with prefetch_related to resolve N+1 issue
@@ -340,7 +353,7 @@ class StudentAdmissionViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
             return [IsAdminOrRegistrar()]
-        return [IsAuthenticated()]
+        return [permissions.IsAuthenticated()]
 
 class StudentDocumentViewSet(viewsets.ModelViewSet):
     queryset = StudentDocument.objects.select_related('student').all()

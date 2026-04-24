@@ -70,6 +70,7 @@ class Student(models.Model):
         if not self.admission_number:
             from academics.models import AcademicYear
             from django.db import transaction, models
+            from django.db.models import Max
             import datetime
             
             with transaction.atomic():
@@ -84,18 +85,23 @@ class Student(models.Model):
                     short_year = year_val[-2:]
                 
                 # 2. Determine the sequence Part (XXXX)
-                # Use select_for_update() to lock the rows for this year's prefix
                 year_prefix = f"{short_year}/"
                 
-                # We count existing students for this year. 
-                # select_for_update() on the queryset ensures that two concurrent saves 
-                # will wait for each other rather than getting the same count.
-                # Note: count() itself doesn't lock, so we fetch the IDs with lock and then count.
-                existing_ids = Student.objects.select_for_update().filter(
+                # Get the maximum current admission number for this year to avoid collisions
+                max_admission = Student.objects.select_for_update().filter(
                     admission_number__startswith=year_prefix
-                ).values_list('id', flat=True)
+                ).aggregate(max_num=Max('admission_number'))['max_num']
                 
-                next_num = len(existing_ids) + 1
+                if max_admission:
+                    try:
+                        # Extract the sequence part and increment it
+                        last_sequence = int(max_admission.split('/')[1])
+                        next_num = last_sequence + 1
+                    except (IndexError, ValueError):
+                        # Fallback if the format is corrupted
+                        next_num = Student.objects.filter(admission_number__startswith=year_prefix).count() + 1
+                else:
+                    next_num = 1
                 
                 # 3. Format: YY/XXXX (padded to 4)
                 self.admission_number = f"{short_year}/{next_num:04d}"
