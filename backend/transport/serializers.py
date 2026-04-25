@@ -125,10 +125,22 @@ class TransportAllocationSerializer(serializers.ModelSerializer):
     student_name = serializers.CharField(source='student.full_name', read_only=True)
     route_name = serializers.CharField(source='route.name', read_only=True)
     pickup_point_name = serializers.CharField(source='pickup_point.point_name', read_only=True)
+    monthly_fee = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
 
     class Meta:
         model = TransportAllocation
         fields = '__all__'
+
+    def validate_student(self, value):
+        """Ensure student isn't already enrolled (handled by OneToOne, but we want better error)."""
+        instance = getattr(self, 'instance', None)
+        # If we are updating an existing allocation, it's fine for the student to be the same
+        if instance and instance.student == value:
+            return value
+            
+        if TransportAllocation.objects.filter(student=value).exists():
+            raise serializers.ValidationError("This student is already enrolled in a transport route. Remove their existing allocation first or edit it.")
+        return value
 
 class TransportAttendanceSerializer(serializers.ModelSerializer):
     student_name = serializers.CharField(source='student.full_name', read_only=True)

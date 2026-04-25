@@ -74,6 +74,13 @@ class TransportAllocation(models.Model):
     
     def __str__(self): return f"{self.student} - {self.route.route_code}"
 
+    @property
+    def monthly_fee(self):
+        """Calculates total fee based on route base cost and pickup point additional cost."""
+        base = self.route.base_cost if self.route else 0
+        extra = self.pickup_point.additional_cost if self.pickup_point else 0
+        return base + extra
+
 class TripLog(models.Model):
     TYPES = (('MORNING', 'Morning Pickup'), ('EVENING', 'Evening Drop-off'), ('SPECIAL', 'Special Trip'))
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE)
