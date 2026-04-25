@@ -93,22 +93,34 @@ def link_student_profile(sender, instance, **kwargs):
     """
     Automatically links a User with role 'STUDENT' to a Student profile
     if the username matches the student's admission number.
+    Runs whenever a User is created or updated.
     """
-    if kwargs.get('raw') or instance.role != 'STUDENT':
+    if kwargs.get('raw') or instance.role != 'STUDENT' or not instance.username:
         return
 
-    from students.models import Student # Local import
+    from students.models import Student # Local import to avoid circularity
     
-    # If already linked, skip
+    # If already linked in the DB, skip
     if hasattr(instance, 'student_profile'):
         return
 
-    # Try to find a student with matching admission number
-    student = Student.objects.filter(admission_number=instance.username).first()
+    # Check for Student with matching admission number
+    # We strip and handle case-insensitivity just in case, though usually admission codes are specific
+    target_admission = instance.username.strip()
+    
+    student = Student.objects.filter(admission_number__iexact=target_admission).first()
+    
     if student and not student.user:
+        # Link them
         student.user = instance
         student.save(update_fields=['user'])
-        logger.info("Automatically linked User %s to Student %s", instance.username, student.admission_number)
+        logger.info(f"Successfully linked User {instance.username} to Student profile {student.admission_number}")
+    elif student:
+        # Student exists but already has a user
+        if student.user != instance:
+            logger.warning(f"Student {target_admission} already linked to another user (ID: {student.user_id})")
+    else:
+        logger.debug(f"No matching Student profile found for User {instance.username}")
 
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)

@@ -4,11 +4,15 @@ from django.db.models import Sum
 from finance.models import Invoice
 from .models import Student
 
+import logging
+logger = logging.getLogger(__name__)
+
 @receiver(post_save, sender=Student)
 def auto_link_user_account(sender, instance, created, **kwargs):
     """
     Automatically creates/links a User account for a Student.
     Uses admission_number as username.
+    Also synchronizes active status between student profile and user account.
     """
     if kwargs.get('raw') or not instance.admission_number:
         return
@@ -19,39 +23,61 @@ def auto_link_user_account(sender, instance, created, **kwargs):
     # Format username: strip and remove spaces
     username = instance.admission_number.strip().replace(" ", "")
     
+    # 1. Handle Account Creation/Linking
     if not instance.user:
         # Try to find existing user by username
         user = User.objects.filter(username=username).first()
         
         if not user:
-            # Create new user
-            # We generate a placeholder email to satisfy uniqueness if missing
-            email = f"{username}@placeholder.com"
-            user = User.objects.create(
-                username=username,
-                email=email,
-                role='STUDENT'
-            )
-            user.set_password(username)
+            # Create new user for the student
+            # Note: We use a placeholder email since we might not have student email yet
+            # Often students use admission_no@school.com or similar
+            email = f"{username.lower().replace('/', '_')}@placeholder.com"
             
-            # Set names
-            name_parts = instance.full_name.split(" ", 1)
-            user.first_name = name_parts[0]
-            user.last_name = name_parts[1] if len(name_parts) > 1 else ""
-            user.save()
+            try:
+                user = User.objects.create(
+                    username=username,
+                    email=email,
+                    role='STUDENT',
+                    is_approved=True,        # Students are auto-approved
+                    is_email_verified=True,  # Auto-created accounts are verified
+                    is_active=True
+                )
+                user.set_password(username) # Default password is admission number
+                
+                # Split name for first/last name fields
+                name_parts = instance.full_name.split(" ", 1)
+                user.first_name = name_parts[0]
+                if len(name_parts) > 1:
+                    user.last_name = name_parts[1]
+                user.save()
+                logger.info(f"Created auto-linked User {username} for Student {instance.admission_number}")
+            except Exception as e:
+                logger.error(f"Failed to create User for Student {instance.admission_number}: {e}")
+                return
+        else:
+            logger.info(f"Found existing User {username}, linking to Student {instance.admission_number}")
         
-        # Link the user
+        # Link the user - use update() to avoid triggering signals recursively
         Student.objects.filter(pk=instance.pk).update(user=user)
         instance.user = user
 
-    # Sync Status
-    if instance.user:
-        inactive_statuses = ['WITHDRAWN', 'ALUMNI', 'SUSPENDED', 'TRANSFERRED']
-        should_be_active = instance.status not in inactive_statuses
-        
-        if instance.user.is_active != should_be_active:
-            instance.user.is_active = should_be_active
-            instance.user.save(update_fields=['is_active'])
+    # 2. Sync Status
+    # Inactive statuses: ['WITHDRAWN', 'ALUMNI', 'SUSPENDED', 'TRANSFERRED']
+    inactive_statuses = ['WITHDRAWN', 'ALUMNI', 'SUSPENDED', 'TRANSFERRED']
+    should_be_active = instance.status not in inactive_statuses
+    
+    # Update Student's own is_active field if it exists and differs
+    if hasattr(instance, 'is_active') and instance.is_active != should_be_active:
+        Student.objects.filter(pk=instance.pk).update(is_active=should_be_active)
+        instance.is_active = should_be_active
+        logger.info(f"Synced Student {instance.admission_number} is_active to {should_be_active}")
+
+    # Update User's is_active field
+    if instance.user and instance.user.is_active != should_be_active:
+        instance.user.is_active = should_be_active
+        instance.user.save(update_fields=['is_active'])
+        logger.info(f"Synced User {instance.user.username} is_active to {should_be_active} based on Student status {instance.status}")
 
 @receiver(post_save, sender=Invoice)
 @receiver(post_delete, sender=Invoice)
