@@ -1,5 +1,5 @@
 import React from 'react';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Plus } from 'lucide-react';
 import Button from '../../components/common/Button';
 
 interface FuelManagerProps {
@@ -10,6 +10,7 @@ interface FuelManagerProps {
     total: number;
     pageSize: number;
     onPageChange: (page: number) => void;
+    onAdd: () => void;
 }
 
 const FuelManager: React.FC<FuelManagerProps> = ({
@@ -19,15 +20,19 @@ const FuelManager: React.FC<FuelManagerProps> = ({
     page,
     total,
     pageSize,
-    onPageChange
+    onPageChange,
+    onAdd
 }) => {
     return (
         <div className="card card-mobile-flat p-0 overflow-hidden fade-in">
-            <div className="card-header">
+            <div className="card-header flex justify-between items-center">
                 <div>
                     <h3 className="mb-0 text-sm font-black uppercase">Fuel Consumption Logs</h3>
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight mt-1">All fleet refuelling records</p>
                 </div>
+                <Button size="sm" onClick={onAdd} icon={<Plus size={14} />}>
+                    Log Fuel
+                </Button>
             </div>
 
             <div className="p-0 table-wrapper overflow-x-auto w-full block m-0">

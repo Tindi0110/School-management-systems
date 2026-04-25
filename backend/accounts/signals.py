@@ -89,6 +89,29 @@ def create_staff_profile(sender, instance, **kwargs):
 
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
+def link_student_profile(sender, instance, **kwargs):
+    """
+    Automatically links a User with role 'STUDENT' to a Student profile
+    if the username matches the student's admission number.
+    """
+    if kwargs.get('raw') or instance.role != 'STUDENT':
+        return
+
+    from students.models import Student # Local import
+    
+    # If already linked, skip
+    if hasattr(instance, 'student_profile'):
+        return
+
+    # Try to find a student with matching admission number
+    student = Student.objects.filter(admission_number=instance.username).first()
+    if student and not student.user:
+        student.user = instance
+        student.save(update_fields=['user'])
+        logger.info("Automatically linked User %s to Student %s", instance.username, student.admission_number)
+
+
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def sync_user_group(sender, instance, **kwargs):
     """
     Keeps Django Group membership in sync with the user's role field.

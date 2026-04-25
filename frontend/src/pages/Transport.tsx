@@ -703,6 +703,7 @@ const Transport = () => {
                         <FuelManager
                             records={fuelRecords}
                             vehicles={vehicles}
+                            onAdd={() => { setFuelForm(INITIAL_FUEL_FORM); setIsFuelModalOpen(true); }}
                             onDelete={handleDeleteFuel}
                             page={pagination.fuel.page}
                             total={pagination.fuel.total}
