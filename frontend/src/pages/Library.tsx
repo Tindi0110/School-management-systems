@@ -271,11 +271,25 @@ const Library = () => {
         const selectedStudent = students.find(s => s.id === Number(lendingForm.student));
         if (!selectedStudent) { toast.error('Invalid student selected.'); return; }
 
-        const userId = selectedStudent.user || selectedStudent.student_user_id;
+        let userId = selectedStudent.user || selectedStudent.student_user_id;
 
         if (!userId) {
-            toast.error(`Student ${selectedStudent.full_name} needs a linked User Account to borrow books.`);
-            return;
+            toast.info(`Linking user account for ${selectedStudent.full_name}...`);
+            try {
+                const res = await studentsAPI.update(selectedStudent.id, { is_active: selectedStudent.is_active });
+                userId = res.data.user || res.data.student_user_id;
+                if (userId) {
+                    setStudents((prev) => prev.map(s => s.id === selectedStudent.id ? { ...s, user: userId } : s));
+                } else {
+                    toast.error(`Student ${selectedStudent.full_name} needs a linked User Account. Auto-linking failed.`);
+                    setIsSubmitting(false);
+                    return;
+                }
+            } catch (err) {
+                toast.error(`Student ${selectedStudent.full_name} needs a linked User Account. Auto-linking failed.`);
+                setIsSubmitting(false);
+                return;
+            }
         }
 
         setIsSubmitting(true);
@@ -346,12 +360,32 @@ const Library = () => {
         setIsSubmitting(true);
         try {
             const selectedStudent = students.find(s => s.id === Number(fineForm.student));
-            if (!selectedStudent || (!selectedStudent.user && !selectedStudent.student_user_id)) {
-                toast.error(`Student ${selectedStudent?.full_name || 'selected'} needs a linked User Account to have a fine recorded.`);
+            if (!selectedStudent) {
+                toast.error(`Student needs a linked User Account to have a fine recorded.`);
                 setIsSubmitting(false);
                 return;
             }
-            const userId = selectedStudent.user || selectedStudent.student_user_id;
+
+            let userId = selectedStudent.user || selectedStudent.student_user_id;
+
+            if (!userId) {
+                toast.info(`Linking user account for ${selectedStudent.full_name}...`);
+                try {
+                    const res = await studentsAPI.update(selectedStudent.id, { is_active: selectedStudent.is_active });
+                    userId = res.data.user || res.data.student_user_id;
+                    if (userId) {
+                        setStudents((prev) => prev.map(s => s.id === selectedStudent.id ? { ...s, user: userId } : s));
+                    } else {
+                        toast.error(`Student needs a linked User Account. Auto-linking failed.`);
+                        setIsSubmitting(false);
+                        return;
+                    }
+                } catch (err) {
+                    toast.error(`Student needs a linked User Account. Auto-linking failed.`);
+                    setIsSubmitting(false);
+                    return;
+                }
+            }
 
             const payload = {
                 user: userId,
@@ -388,7 +422,10 @@ const Library = () => {
         [students]);
 
     const copyOptions = React.useMemo(() =>
-        copies.filter(c => c.status === 'AVAILABLE').map(c => ({ id: String(c.id), label: `${c.copy_number} - ${books.find(b => b.id === c.book)?.title}`, value: String(c.id) })),
+        copies.filter(c => c.status?.toUpperCase() === 'AVAILABLE').map(c => {
+            const bt = c.book_title || books.find(b => b.id === Number(c.book))?.title || 'Unknown Title';
+            return { id: String(c.id), label: `${c.copy_number} - ${bt}`, value: String(c.id) };
+        }),
         [copies, books]);
 
 

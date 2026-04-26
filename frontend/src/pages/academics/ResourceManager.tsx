@@ -211,9 +211,12 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
                                                 <span className="font-bold text-slate-600 uppercase">{t.name}</span>
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                <div className="absolute right-3 flex gap-1 bg-white opacity-0 group-hover/term:opacity-100 transition-opacity pl-2 shadow-[-8px_0_8px_white]">
-                                                    <Button variant="ghost" size="sm" className="text-primary p-1" onClick={() => openEditTerm(t)} icon={<Edit size={12} />} title="Edit Term" />
-                                                    <Button variant="ghost" size="sm" className="text-error p-1" onClick={() => handleDeleteTerm(t.id)} icon={<Trash2 size={12} />} title="Delete Term" />
+                                                <span className="text-slate-400 font-mono transition-opacity whitespace-nowrap overflow-hidden text-ellipsis max-w-[80px]">
+                                                    {new Date(t.start_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                                </span>
+                                                <div className="flex gap-1 pl-2">
+                                                    <Button variant="ghost" size="sm" className="text-primary p-1 hover:bg-slate-50" onClick={() => openEditTerm(t)} icon={<Edit size={12} />} title="Edit Term" />
+                                                    <Button variant="ghost" size="sm" className="text-error p-1 hover:bg-slate-50" onClick={() => handleDeleteTerm(t.id)} icon={<Trash2 size={12} />} title="Delete Term" />
                                                 </div>
                                             </div>
                                         </div>
