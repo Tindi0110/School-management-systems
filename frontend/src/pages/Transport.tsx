@@ -206,6 +206,41 @@ const Transport = () => {
         subLabel: `ID: ${s.admission_number}`,
     })), [students]);
 
+    const handleEditAllocation = (a: any) => {
+        setEnrollmentId(a.id);
+        setEnrollmentForm({
+            student: String(a.student),
+            route: String(a.route),
+            pickup_point: a.pickup_point ? String(a.pickup_point) : '',
+            start_date: a.start_date || TODAY
+        });
+        setIsAllocationModalOpen(true);
+    };
+
+    const handleEditRoute = (r: any) => {
+        setRouteId(r.id);
+        setRouteForm({
+            name: r.name,
+            route_code: r.route_code || '',
+            distance_km: parseFloat(r.distance_km || 0),
+            base_cost: parseFloat(r.base_cost || 0)
+        });
+        setIsRouteModalOpen(true);
+    };
+
+    const handleEditPoint = (p: any) => {
+        setPointId(p.id);
+        setPointForm({
+            route_id: p.route,
+            point_name: p.point_name,
+            pickup_time: p.pickup_time || '',
+            dropoff_time: p.dropoff_time || '',
+            distance_from_school: parseFloat(p.distance_from_school || 0),
+            additional_cost: parseFloat(p.additional_cost || 0)
+        });
+        setIsPointModalOpen(true);
+    };
+
     const routeOptions = useMemo(() => routes.map(r => ({
         id: String(r.id),
         label: `${r.route_code} - ${r.name}`,
@@ -235,12 +270,6 @@ const Transport = () => {
         }
     };
 
-    const handleEditAllocation = (a: any) => {
-        setEnrollmentId(a.id);
-        setEnrollmentForm({ student: String(a.student), route: String(a.route), pickup_point: String(a.pickup_point), start_date: a.start_date });
-        setIsAllocationModalOpen(true);
-    };
-
     const handleDeleteAllocation = async (id: number) => {
         if (!await confirm('Remove this student from transport?', { type: 'danger' })) return;
         try {
@@ -253,7 +282,7 @@ const Transport = () => {
     };
 
     // ── Handlers: Vehicles ────────────────────────────────────────────────────
-    const handleVehicleSubmit = async (e: React.FormEvent) => {
+    const handleRegisterVehicle = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSaving(true);
         try {
@@ -283,7 +312,14 @@ const Transport = () => {
 
     const handleEditVehicle = (v: any) => {
         setVehicleId(v.id);
-        setVehicleForm({ registration_number: v.registration_number, make_model: v.make_model, vehicle_type: v.vehicle_type, seating_capacity: v.seating_capacity, status: v.status, insurance_expiry: v.insurance_expiry || '' });
+        setVehicleForm({
+            registration_number: v.registration_number,
+            make_model: v.make_model || v.model || '',
+            vehicle_type: v.vehicle_type || 'BUS',
+            seating_capacity: v.seating_capacity || v.capacity || 14,
+            status: v.status || 'ACTIVE',
+            insurance_expiry: v.insurance_expiry || ''
+        });
         setIsVehicleModalOpen(true);
     };
 
@@ -323,7 +359,11 @@ const Transport = () => {
 
     const handleEditRoute = (r: any) => {
         setRouteId(r.id);
-        setRouteForm({ name: r.name, route_code: r.route_code, distance_km: parseFloat(r.distance_km || 0), base_cost: parseFloat(r.base_cost || 0) });
+        setRouteForm({
+            name: r.name,
+            description: r.description || '',
+            base_cost: r.base_cost || 0
+        });
         setIsRouteModalOpen(true);
     };
 
@@ -376,7 +416,12 @@ const Transport = () => {
 
     const handleEditPoint = (p: any) => {
         setPointId(p.id);
-        setPointForm({ route_id: p.route, point_name: p.point_name, pickup_time: p.pickup_time, dropoff_time: p.dropoff_time, distance_from_school: parseFloat(p.distance_from_school || 0), additional_cost: parseFloat(p.additional_cost) });
+        setPointForm({
+            route: String(p.route),
+            point_name: p.point_name,
+            pickup_time: p.pickup_time || '',
+            additional_cost: p.additional_cost || 0
+        });
         setIsPointModalOpen(true);
     };
 

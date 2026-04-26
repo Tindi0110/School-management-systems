@@ -77,7 +77,11 @@ const Students = () => {
                 page_size: pageSize,
                 search: searchTerm,
             };
-            if (selectedClassId) params.current_class = selectedClassId;
+            
+            // If user is searching, do global search by ignoring class filter
+            if (selectedClassId && !searchTerm) {
+                params.current_class = selectedClassId;
+            }
 
             const [studentsRes, classesRes, globalStatsRes] = await Promise.all([
                 studentsAPI.getAll(params),
@@ -443,15 +447,23 @@ const Students = () => {
             {/* Premium Search & Actions Bar */}
             <div className="card mb-8 no-print p-4 bg-white border-slate-200 shadow-sm">
                 <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
-                    <div className="search-container flex-grow max-w-2xl w-full">
+                    <div className="search-container flex-grow max-w-2xl w-full relative">
                         <Search className="search-icon text-primary" size={20} />
                         <input
                             type="text"
-                            className="input search-input pl-12 py-6 text-base font-medium bg-white/80 border-none shadow-inner"
-                            placeholder="Search by name, admission number, or class unit..."
+                            className="input search-input pl-12 pr-24 py-6 text-base font-medium bg-white border border-slate-100 shadow-inner rounded-xl w-full"
+                            placeholder="Find by name or admission number..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && loadData()}
                         />
+                        <button 
+                            className="absolute right-2 top-1/2 -translate-y-1/2 btn btn-primary flex items-center gap-2 h-10 min-h-0 px-4"
+                            onClick={() => loadData()}
+                        >
+                            <Search size={16} />
+                            Search
+                        </button>
                     </div>
                 </div>
             </div>

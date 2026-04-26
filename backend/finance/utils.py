@@ -17,21 +17,24 @@ def get_or_create_invoice(student, year_name=None, term_name=None):
     # Try to find active year/term
     active_year = AcademicYear.objects.filter(is_active=True).first()
     if not active_year:
-        active_year = AcademicYear.objects.first()
+        active_year = AcademicYear.objects.order_by('-name').first()
     if not active_year:
-        active_year = AcademicYear.objects.create(name=year_name or '2026', is_active=True)
+        name = year_name or '2026'
+        active_year, _ = AcademicYear.objects.get_or_create(name=name, defaults={'is_active': True})
 
     active_term = Term.objects.filter(year=active_year, is_active=True).first()
     if not active_term:
-        active_term = Term.objects.filter(year=active_year).first()
+        active_term = Term.objects.filter(year=active_year).order_by('-id').first()
     if not active_term:
-        active_term = Term.objects.create(
-            name=term_name or 'Term 1', 
+        name = term_name or 'Term 1'
+        active_term, _ = Term.objects.get_or_create(
+            name=name, 
             year=active_year, 
-            is_active=True,
-            start_date=timezone.now().date(),
-            # 3 months later
-            end_date=timezone.now().date() + timedelta(days=90)
+            defaults={
+                'is_active': True,
+                'start_date': timezone.now().date(),
+                'end_date': timezone.now().date() + timedelta(days=90)
+            }
         )
 
     # Get/Create Invoice

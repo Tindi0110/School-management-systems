@@ -65,7 +65,7 @@ class InvoiceListSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'student', 'student_name', 'admission_number', 
             'class_name', 'stream_name', 'academic_year', 'academic_year_name', 
-            'term', 'total_amount', 'paid_amount', 'balance', 'status', 'date_generated'
+            'term', 'total_amount', 'paid_amount', 'balance', 'status', 'date_generated', 'created_at'
         ]
 
 class InvoiceSerializer(serializers.ModelSerializer):

@@ -74,7 +74,12 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         
         if not all_time:
             active_year = AcademicYear.objects.filter(is_active=True).first()
+            if not active_year:
+                active_year = AcademicYear.objects.order_by('-name').first()
+            
             active_term = Term.objects.filter(is_active=True).first()
+            if not active_term and active_year:
+                active_term = Term.objects.filter(year=active_year).order_by('-id').first()
             
             if active_year:
                 inv_qs = inv_qs.filter(academic_year=active_year)

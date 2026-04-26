@@ -49,6 +49,7 @@ class Invoice(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='UNPAID', db_index=True)
     date_generated = models.DateField(default=timezone.now, db_index=True)
     due_date = models.DateField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
     
     is_finalized = models.BooleanField(default=True) # If False, can still add items. If True, locked.
 

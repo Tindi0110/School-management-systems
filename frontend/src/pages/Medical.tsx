@@ -21,6 +21,12 @@ const Medical = () => {
         diagnosis: '',
         treatment_given: '',
         notes: '',
+        status: 'COMPLETED',
+        height: '',
+        weight: '',
+        temperature: '',
+        blood_pressure: '',
+        pulse: '',
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const toast = useToast();
@@ -34,7 +40,7 @@ const Medical = () => {
         try {
             const [recordsRes, studentsRes] = await Promise.all([
                 medicalAPI.getAll(),
-                studentsAPI.getAll(),
+                studentsAPI.getAll({ page_size: 1000 }),
             ]);
             setRecords(recordsRes.data?.results ?? recordsRes.data ?? []);
             setStudents(studentsRes.data?.results ?? studentsRes.data ?? []);
@@ -49,11 +55,17 @@ const Medical = () => {
         e.preventDefault();
         setIsSubmitting(true);
         try {
+            const payload = {
+                ...formData,
+                height: formData.height ? parseFloat(formData.height) : null,
+                weight: formData.weight ? parseFloat(formData.weight) : null,
+                temperature: formData.temperature ? parseFloat(formData.temperature) : null,
+            };
             if (editingRecord) {
-                await medicalAPI.update(editingRecord.id, formData);
+                await medicalAPI.update(editingRecord.id, payload);
                 toast.success('Medical record updated successfully');
             } else {
-                await medicalAPI.create(formData);
+                await medicalAPI.create(payload);
                 toast.success('Medical record created successfully');
             }
             loadData();
@@ -83,14 +95,31 @@ const Medical = () => {
         if (record) {
             setEditingRecord(record);
             setFormData({
-                student: record.student,
-                diagnosis: record.diagnosis,
-                treatment_given: record.treatment_given,
+                student: record.student?.id?.toString() || record.student?.toString() || '',
+                diagnosis: record.diagnosis || '',
+                treatment_given: record.treatment_given || '',
                 notes: record.notes || '',
+                status: record.status || 'COMPLETED',
+                height: record.height?.toString() || '',
+                weight: record.weight?.toString() || '',
+                temperature: record.temperature?.toString() || '',
+                blood_pressure: record.blood_pressure || '',
+                pulse: record.pulse?.toString() || '',
             });
         } else {
             setEditingRecord(null);
-            setFormData({ student: '', diagnosis: '', treatment_given: '', notes: '' });
+            setFormData({
+                student: '',
+                diagnosis: '',
+                treatment_given: '',
+                notes: '',
+                status: 'COMPLETED',
+                height: '',
+                weight: '',
+                temperature: '',
+                blood_pressure: '',
+                pulse: '',
+            });
         }
         setIsModalOpen(true);
     };

@@ -27,13 +27,8 @@ class StudentViewSet(viewsets.ModelViewSet):
         'health_record',
     ).prefetch_related(
         'parents',
-        'parents__students',
-        'parents__students__current_class',
         'documents',
     ).annotate(
-        # Lighter attendance counts
-        attendance_total=Count('attendance', distinct=True),
-        attendance_present=Count('attendance', filter=Q(attendance__status='PRESENT'), distinct=True),
         avg_score=Avg('results__score'),
     ).order_by('admission_number')
 
@@ -80,7 +75,8 @@ class StudentViewSet(viewsets.ModelViewSet):
                 'admission_number': s['admission_number'] or 'N/A',
                 'class_name': s['current_class__name'] or 'General',
                 'class_stream': s['current_class__stream'] or '',
-                'fee_balance': float(s['fee_balance'] or 0)
+                'fee_balance': float(s['fee_balance'] or 0),
+                'user': s['user']
             }
             for s in qs
         ]

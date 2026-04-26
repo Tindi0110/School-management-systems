@@ -2,7 +2,7 @@ from django.db.models.signals import post_save, post_delete
 from django.db import models # for Q objects
 from django.dispatch import receiver
 from django.utils import timezone
-from .models import Invoice, InvoiceItem, Expense, FeeStructure
+from .models import Invoice, InvoiceItem, Expense, FeeStructure, Payment, Adjustment
 # Import sender models. Using strings to avoid circular imports if possible, or direct imports if apps are ready.
 # It is safer to use string references in ForeignKey, but for signals we need the actual model class or string.
 # Using string sender in @receiver is supported in Django.
@@ -208,23 +208,34 @@ def update_invoice_totals(invoice):
 
 @receiver(post_save, sender=Invoice)
 @receiver(post_delete, sender=Invoice)
+@receiver(post_save, sender=Payment)
+@receiver(post_save, sender=Adjustment)
 def update_student_fee_balance(sender, instance, **kwargs):
     """
     Recalculates total fee_balance for a student whenever an invoice changes or is deleted.
-    This ensures de-normalized Search fields in Student model are accurate.
+    Also clears the dashboard stats cache to ensure real-time updates.
     """
     if kwargs.get('raw'):
         return
     
-    student = instance.student
+    # 1. Clear Server-side Stats Cache
+    from django.core.cache import cache
+    cache.delete('finance_dashboard_stats_active')
+    cache.delete('finance_dashboard_stats_alltime')
+
+    # 2. Update Student Balance
+    # If the instance is Payment or Adjustment, we need to get the student from the linked invoice
+    invoice = instance if isinstance(instance, Invoice) else instance.invoice
+    student = invoice.student
+    
     # Sum up all invoice balances for this student
     total_balance = student.invoices.aggregate(
         total=models.Sum('balance')
     )['total'] or 0
     
     if student.fee_balance != total_balance:
+        Student.objects.filter(pk=student.pk).update(fee_balance=total_balance)
         student.fee_balance = total_balance
-        student.save(update_fields=['fee_balance'])
         print(f"Finance Sync: Updated fee_balance for {student.admission_number} to {total_balance}")
 
 @receiver(post_save, sender=Invoice)
