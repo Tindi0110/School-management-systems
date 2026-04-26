@@ -192,7 +192,7 @@ const HostelModals: React.FC<HostelModalsProps> = ({
             {/* Allocation Modal */}
             <Modal isOpen={isAllocationModalOpen} onClose={() => { setIsAllocationModalOpen(false); }} title={isTransferMode ? "Transfer Student" : allocationId ? "Edit Allocation" : "Student Admission to Hostel"}>
                 <form onSubmit={handleAllocationSubmit} className="space-y-4">
-                    <SearchableSelect label="Student" placeholder="Search student..." options={students.filter(s => s.category?.toUpperCase() === 'BOARDING' || s.category?.toUpperCase() === 'FULL BOARDING').map(s => ({ id: s.id.toString(), label: `${s.admission_number} - ${s.full_name}` }))} value={allocationFormData.student} onChange={(v) => setAllocationFormData({ ...allocationFormData, student: v.toString() })} disabled={isTransferMode || allocationId !== null} required />
+                    <SearchableSelect label="Student" placeholder="Search student..." options={students.filter(s => s.category?.toUpperCase() === 'BOARDING').map(s => ({ id: s.id.toString(), label: `${s.admission_number} - ${s.full_name}` }))} value={allocationFormData.student} onChange={(v) => setAllocationFormData({ ...allocationFormData, student: v.toString() })} disabled={isTransferMode || allocationId !== null} required />
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group">
                             <label className="label">Hostel</label>
@@ -263,7 +263,7 @@ const HostelModals: React.FC<HostelModalsProps> = ({
                             <SearchableSelect label="Student" options={students.map(s => ({ id: s.id.toString(), label: `${s.admission_number} - ${s.full_name}` }))} value={attendanceFormData.student} onChange={(v) => setAttendanceFormData({ ...attendanceFormData, student: v.toString() })} required />
                             <div className="form-group">
                                 <label className="label">Status</label>
-                                <SearchableSelect options={[{ id: 'PRESENT', label: 'Present' }, { id: 'ABSENT', label: 'Absent' }, { id: 'PERMITTED', label: 'On Leave/Exeat' }, { id: 'PERMISSION', label: 'On Permission' }, { id: 'SICK', label: 'In Sanatorium' }]} value={attendanceFormData.status} onChange={(v) => setAttendanceFormData({ ...attendanceFormData, status: v.toString() })} />
+                                <SearchableSelect options={[{ id: 'PRESENT', label: 'Present' }, { id: 'ABSENT', label: 'Absent' }, { id: 'PERMISSION', label: 'On Permission' }, { id: 'SICK', label: 'Sick Bay/Hospital' }]} value={attendanceFormData.status} onChange={(v) => setAttendanceFormData({ ...attendanceFormData, status: v.toString() })} />
                             </div>
                             <div className="form-group"><label className="label">Remarks</label><input type="text" className="input" value={attendanceFormData.remarks} onChange={(e) => setAttendanceFormData({ ...attendanceFormData, remarks: e.target.value })} /></div>
                             <div className="modal-action"><Button type="button" variant="ghost" onClick={() => setIsAttendanceModalOpen(false)}>Cancel</Button><Button type="submit" variant="primary">Log Status</Button></div>

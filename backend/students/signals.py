@@ -1,3 +1,4 @@
+from django.db import models
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.db.models import Sum
@@ -21,18 +22,21 @@ def auto_link_user_account(sender, instance, created, **kwargs):
     from django.contrib.auth import get_user_model
     User = get_user_model()
     
-    # Format username: strip and remove spaces
+    # Format username: strip, uppercase, and remove spaces/slashes for consistency if needed
+    # But usually, we keep the slashes as per the model's auto-gen.
     username = instance.admission_number.strip().replace(" ", "")
     
     # 1. Handle Account Creation/Linking
     # We attempt this even if not 'created' to catch students who were missed initially
     if not instance.user:
-        # Try to find existing user by username
-        user = User.objects.filter(username=username).first()
+        # Aggressive lookup: try exact and case-insensitive
+        user = User.objects.filter(models.Q(username=username) | models.Q(username__iexact=username)).first()
         
         if not user:
             # Create new user for the student
-            email = f"{username.lower().replace('/', '_')}@placeholder.com"
+            # Replace slashes with underscores for email if it's used in systems that don't like slashes
+            email_prefix = username.lower().replace('/', '_').replace('\\', '_')
+            email = f"{email_prefix}@school.com"
             try:
                 user = User.objects.create(
                     username=username,
@@ -49,16 +53,18 @@ def auto_link_user_account(sender, instance, created, **kwargs):
                 if len(name_parts) > 1:
                     user.last_name = name_parts[1]
                 user.save()
-                logger.info(f"Created auto-linked User {username} for Student {instance.admission_number}")
+                logger.info(f"Successfully created and linked auto-generated User {username} for Student {instance.admission_number}")
             except Exception as e:
-                logger.error(f"Failed to create User for Student {instance.admission_number}: {e}")
+                logger.error(f"CRITICAL: Failed to create User for Student {instance.admission_number}. Error: {str(e)}")
                 return
         else:
-            logger.info(f"Found existing User {username}, linking to Student {instance.admission_number}")
+            logger.info(f"Found existing User {user.username} matching Student {instance.admission_number}. Linking now.")
         
-        # Link the user
+        # Link the user to the student
+        # We use .update() to avoid re-triggering this signal if the model has other logic
         Student.objects.filter(pk=instance.pk).update(user=user)
         instance.user = user
+        logger.info(f"Link established between Student {instance.admission_number} and User PK {user.pk}")
 
     # 2. Sync Status
     inactive_statuses = ['WITHDRAWN', 'ALUMNI', 'SUSPENDED', 'TRANSFERRED']
