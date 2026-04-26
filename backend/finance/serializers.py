@@ -86,7 +86,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
 class ExpenseListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Expense
-        fields = ['id', 'category', 'amount', 'description', 'paid_to', 'date_occurred', 'status', 'created_at']
+        fields = ['id', 'category', 'amount', 'description', 'paid_to', 'date_occurred', 'status']
 
 class ExpenseSerializer(serializers.ModelSerializer):
     approved_by_name = serializers.SerializerMethodField()
