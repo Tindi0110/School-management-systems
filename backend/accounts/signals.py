@@ -104,11 +104,22 @@ def link_student_profile(sender, instance, **kwargs):
     if hasattr(instance, 'student_profile'):
         return
 
-    # Check for Student with matching admission number
-    # We strip and handle case-insensitivity just in case, though usually admission codes are specific
+    # Target admission is the username, which had spaces removed during creation.
     target_admission = instance.username.strip()
     
+    # Aggressively try finding the student
+    # 1. First try exact match (for cleanly formatted numbers)
     student = Student.objects.filter(admission_number__iexact=target_admission).first()
+    
+    # 2. If not found, try replacing spaces in DB if supported, or falling back
+    if not student:
+        # Check against replaced-space admission numbers in python
+        # (This handles the edge case where DB has '24 / 001' but username is '24/001')
+        from django.db.models.functions import Replace
+        from django.db.models import Value
+        student = Student.objects.annotate(
+            clean_adm=Replace('admission_number', Value(' '), Value(''))
+        ).filter(clean_adm__iexact=target_admission).first()
     
     if student and not student.user:
         # Link them

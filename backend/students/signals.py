@@ -38,21 +38,21 @@ def auto_link_user_account(sender, instance, created, **kwargs):
             email_prefix = username.lower().replace('/', '_').replace('\\', '_')
             email = f"{email_prefix}@school.com"
             try:
-                user = User.objects.create(
+                user = User.objects.create_user(
                     username=username,
                     email=email,
+                    password=username,
                     role='STUDENT',
                     is_approved=True,
                     is_email_verified=True,
                     is_active=True
                 )
-                user.set_password(username)
                 
                 name_parts = instance.full_name.split(" ", 1)
                 user.first_name = name_parts[0]
                 if len(name_parts) > 1:
                     user.last_name = name_parts[1]
-                user.save()
+                user.save(update_fields=['first_name', 'last_name'])
                 logger.info(f"Successfully created and linked auto-generated User {username} for Student {instance.admission_number}")
             except Exception as e:
                 logger.error(f"CRITICAL: Failed to create User for Student {instance.admission_number}. Error: {str(e)}")
