@@ -300,7 +300,7 @@ const Hostels = () => {
                 isMaintenanceModalOpen={isMaintenanceModalOpen} setIsMaintenanceModalOpen={setIsMaintenanceModalOpen} maintenanceFormData={maintenanceFormData} setMaintenanceFormData={setMaintenanceFormData} handleMaintenanceSubmit={handleMaintenanceSubmit} maintenanceId={maintenanceId}
                 isViewResidentsModalOpen={isViewResidentsModalOpen} setIsViewResidentsModalOpen={setIsViewResidentsModalOpen} viewHostelResidents={viewHostelResidents}
                 isViewRoomsModalOpen={isViewRoomsModalOpen} setIsViewRoomsModalOpen={setIsViewRoomsModalOpen} selectedHostel={selectedHostel} openAddRoom={openAddRoom} openEditRoom={(r) => { setRoomId(r.id); setRoomFormData({ ...r, hostel: String(r.hostel) }); setIsRoomModalOpen(true); }} handleDeleteRoom={async (id) => { if (await confirm('Delete Room?')) hostelAPI.rooms.delete(id).then(() => loadData()); }} openViewResidents={openViewResidents}
-                hostels={hostels} rooms={rooms} beds={beds} students={students} staff={staff} isSubmitting={isSubmitting}
+                hostels={hostels} rooms={rooms} beds={beds} students={students} allocations={allAllocations} staff={staff} isSubmitting={isSubmitting}
             />
         </div>
     );

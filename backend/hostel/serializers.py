@@ -127,11 +127,20 @@ class HostelAllocationSerializer(serializers.ModelSerializer):
 class HostelAttendanceSerializer(serializers.ModelSerializer):
     student_name = serializers.CharField(source='student.full_name', read_only=True)
     hostel_name = serializers.SerializerMethodField()
+    room_number = serializers.SerializerMethodField()
+
     def get_hostel_name(self, obj):
         try:
             return obj.student.hostel_allocation.room.hostel.name
         except AttributeError:
             return "No Active Allocation"
+
+    def get_room_number(self, obj):
+        try:
+            return obj.student.hostel_allocation.room.room_number
+        except AttributeError:
+            return "N/A"
+
     class Meta:
         model = HostelAttendance
         fields = '__all__'

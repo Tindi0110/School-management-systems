@@ -80,7 +80,7 @@ class StudentListSerializer(serializers.ModelSerializer):
         model = Student
         fields = [
             'id', 'full_name', 'admission_number', 'gender', 'date_of_birth',
-            'class_name', 'class_stream', 'status', 'category',
+            'current_class', 'class_name', 'class_stream', 'status', 'category',
             'fee_balance', 'is_active', 'attendance_percentage', 'average_grade',
             'parents_detail'
         ]

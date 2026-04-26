@@ -89,6 +89,7 @@ interface HostelModalsProps {
     rooms: any[];
     beds: any[];
     students: any[];
+    allocations: any[];  // Active allocations for room-to-student lookup
     staff: any[];
     isSubmitting: boolean;
 }
@@ -103,8 +104,17 @@ const HostelModals: React.FC<HostelModalsProps> = ({
     isMaintenanceModalOpen, setIsMaintenanceModalOpen, maintenanceFormData, setMaintenanceFormData, handleMaintenanceSubmit, maintenanceId,
     isViewResidentsModalOpen, setIsViewResidentsModalOpen, viewHostelResidents,
     isViewRoomsModalOpen, setIsViewRoomsModalOpen, selectedHostel, openAddRoom, openEditRoom, handleDeleteRoom, openViewResidents,
-    hostels, rooms, beds, students, staff, isSubmitting
+    hostels, rooms, beds, students, allocations, staff, isSubmitting
 }) => {
+    // Derive students in a room from active allocations (students have no direct current_room field)
+    const getStudentsInRoom = (roomId: number) => {
+        const allocsInRoom = allocations.filter(
+            (a: any) => String(a.room) === String(roomId) && a.status === 'ACTIVE'
+        );
+        return allocsInRoom
+            .map((a: any) => students.find((s: any) => String(s.id) === String(a.student)))
+            .filter(Boolean);
+    };
     return (
         <>
             {/* Hostel Modal */}
@@ -236,27 +246,33 @@ const HostelModals: React.FC<HostelModalsProps> = ({
 
                     {attendanceMode === 'BULK' ? (
                         <div className="space-y-4">
-                            <SearchableSelect label="Select Room" options={rooms.map(r => ({ id: r.id.toString(), label: `Room ${r.room_number} (${rooms.find(rm => rm.id === r.id)?.hostel_name || 'N/A'})` }))} value={bulkAttendanceRoom !== null ? bulkAttendanceRoom.toString() : ''} onChange={(v) => setBulkAttendanceRoom(Number(v))} />
-                            {bulkAttendanceRoom && (
-                                <div className="max-h-96 overflow-y-auto border rounded-lg p-2 space-y-2 bg-slate-50">
-                                    {students.filter(s => s.current_room === bulkAttendanceRoom).map(s => (
-                                        <div key={s.id} className="bg-white p-3 rounded-md shadow-sm border flex flex-col gap-2">
-                                            <div className="flex justify-between items-center">
-                                                <span className="font-bold text-sm">{s.full_name}</span>
-                                                <div className="flex gap-2">
-                                                    {['PRESENT', 'ABSENT', 'PERMISSION', 'SICK'].map(st => (
-                                                        <button key={st} onClick={() => setBulkAttendanceData({ ...bulkAttendanceData, [s.id]: { ...bulkAttendanceData[s.id], status: st } })} className={`btn btn-xs ${bulkAttendanceData[s.id]?.status === st ? (st === 'PRESENT' ? 'btn-success' : st === 'ABSENT' ? 'btn-error' : st === 'PERMISSION' ? 'btn-warning' : 'btn-info') : 'btn-outline opacity-50'}`}>
-                                                            {st[0]}
-                                                        </button>
-                                                    ))}
+                            <SearchableSelect label="Select Room" options={rooms.map(r => ({ id: r.id.toString(), label: `Room ${r.room_number} (${r.hostel_name || 'N/A'})` }))} value={bulkAttendanceRoom !== null ? bulkAttendanceRoom.toString() : ''} onChange={(v) => setBulkAttendanceRoom(Number(v))} />
+                            {bulkAttendanceRoom && (() => {
+                                const roomStudents = getStudentsInRoom(bulkAttendanceRoom);
+                                return (
+                                    <div className="max-h-96 overflow-y-auto border rounded-lg p-2 space-y-2 bg-slate-50">
+                                        {roomStudents.length === 0 && <p className="text-center py-6 text-slate-400 italic">No active residents found in this room</p>}
+                                        {roomStudents.map((s: any) => (
+                                            <div key={s.id} className="bg-white p-3 rounded-md shadow-sm border flex flex-col gap-2">
+                                                <div className="flex justify-between items-center">
+                                                    <div>
+                                                        <span className="font-bold text-sm">{s.full_name}</span>
+                                                        <span className="ml-2 text-[10px] text-slate-400 font-mono">{s.admission_number}</span>
+                                                    </div>
+                                                    <div className="flex gap-2">
+                                                        {['PRESENT', 'ABSENT', 'PERMISSION', 'SICK'].map(st => (
+                                                            <button key={st} type="button" onClick={() => setBulkAttendanceData({ ...bulkAttendanceData, [s.id]: { ...bulkAttendanceData[s.id], status: st } })} className={`btn btn-xs ${bulkAttendanceData[s.id]?.status === st ? (st === 'PRESENT' ? 'btn-success' : st === 'ABSENT' ? 'btn-error' : st === 'PERMISSION' ? 'btn-warning' : 'btn-info') : 'btn-outline opacity-50'}`}>
+                                                                {st[0]}
+                                                            </button>
+                                                        ))}
+                                                    </div>
                                                 </div>
+                                                <input type="text" placeholder="Remarks..." className="input input-xs bg-slate-50 border-none" value={bulkAttendanceData[s.id]?.remarks || ''} onChange={(e) => setBulkAttendanceData({ ...bulkAttendanceData, [s.id]: { ...bulkAttendanceData[s.id], remarks: e.target.value } })} />
                                             </div>
-                                            <input type="text" placeholder="Remarks..." className="input input-xs bg-slate-50 border-none" value={bulkAttendanceData[s.id]?.remarks || ''} onChange={(e) => setBulkAttendanceData({ ...bulkAttendanceData, [s.id]: { ...bulkAttendanceData[s.id], remarks: e.target.value } })} />
-                                        </div>
-                                    ))}
-                                    {students.filter(s => s.current_room === bulkAttendanceRoom).length === 0 && <p className="text-center py-6 text-slate-400 italic">No students assigned to this room</p>}
-                                </div>
-                            )}
+                                        ))}
+                                    </div>
+                                );
+                            })()}
                         </div>
                     ) : (
                         <form onSubmit={handleAttendanceSubmit} className="space-y-4">
