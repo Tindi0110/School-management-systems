@@ -96,6 +96,22 @@ const Finance = () => {
     const uniqueClassNames = useMemo(() => Array.from(new Set(classes.map((c: any) => c.name))).sort(), [classes]);
 
     // Data Loaders
+    const initialLoad = useCallback(async () => {
+        try {
+            const d = (r: any) => r?.data?.results ?? r?.data ?? [];
+            const [clsRes, yrRes, stdRes] = await Promise.all([
+                classesAPI.getAll({ page_size: 100 }),
+                academicsAPI.years.getAll({ page_size: 20 }),
+                studentsAPI.minimalSearch({ has_debt: true, page_size: 100 })
+            ]);
+            setClasses(d(clsRes));
+            setYears(d(yrRes));
+            setStudents(d(stdRes));
+        } catch (err) {
+            console.error("Initial data load failed:", err);
+        }
+    }, []);
+
     const loadData = useCallback(async () => {
         setActiveTabLoading(true);
         try {
@@ -114,12 +130,19 @@ const Finance = () => {
                 });
                 setInvoices(res.data.recentInvoices || []);
                 setStatsContext(res.data.context || null);
-                if (!invFilters.year_id && res.data.context?.year_id) {
-                    setInvFilters(prev => ({ ...prev, year_id: String(res.data.context.year_id), term: String(res.data.context.term_num || '') }));
+                if (res.data.context?.year_id) {
+                    const activeYearId = String(res.data.context.year_id);
+                    const activeTerm = String(res.data.context.term_num || '1');
+                    
+                    if (!invFilters.year_id) {
+                        setInvFilters(prev => ({ ...prev, year_id: activeYearId, term: activeTerm }));
+                    }
+                    
+                    // Propagate to creation forms
+                    setGenForm((prev: any) => ({ ...prev, year_id: activeYearId, term: activeTerm }));
+                    setFeeForm((prev: any) => ({ ...prev, year_id: activeYearId, term: activeTerm }));
                 }
             } else if (activeTab === 'invoices') {
-                const [cls, yrRes] = await Promise.all([classesAPI.getAll({ page_size: 100 }), academicsAPI.years.getAll({ page_size: 20 })]);
-                setClasses(d(cls)); setYears(d(yrRes));
                 const params: any = { page, page_size: pageSize, search: debouncedSearch, ...invFilters };
                 if (invFilters.year_id) params.academic_year = invFilters.year_id;
                 const res = await financeAPI.invoices.getAll(params);
@@ -157,6 +180,7 @@ const Finance = () => {
         return () => clearTimeout(handler);
     }, [searchTerm]);
 
+    useEffect(() => { initialLoad(); }, [initialLoad]);
     useEffect(() => { setPage(1); }, [debouncedSearch, invFilters, activeTab, isAllTime]);
     useEffect(() => { loadData(); }, [activeTab, isAllTime, page, invFilters, debouncedSearch, loadData]);
 

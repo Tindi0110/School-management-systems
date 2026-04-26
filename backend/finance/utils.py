@@ -1,5 +1,6 @@
 import logging
 from django.utils import timezone
+from datetime import timedelta
 from django.db import models
 from .models import Invoice, InvoiceItem, FeeStructure
 
@@ -30,7 +31,7 @@ def get_or_create_invoice(student, year_name=None, term_name=None):
             is_active=True,
             start_date=timezone.now().date(),
             # 3 months later
-            end_date=timezone.now().date() + timezone.timedelta(days=90)
+            end_date=timezone.now().date() + timedelta(days=90)
         )
 
     # Get/Create Invoice
