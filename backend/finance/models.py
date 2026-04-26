@@ -87,7 +87,7 @@ class Invoice(models.Model):
             self.status = 'PARTIAL'
         else:
             self.status = 'UNPAID'
-        self.save()
+        self.save(update_fields=['balance', 'status', 'total_amount', 'paid_amount'])
 
 class InvoiceItem(models.Model):
     """

@@ -10,6 +10,7 @@ from .serializers import (
 )
 from students.models import Student
 from academics.models import Class
+from communication.models import Notification
 from communication.utils import send_sms, send_email, send_whatsapp
 from django.db.models import Sum, Q
 from django.db import transaction
@@ -205,18 +206,24 @@ class InvoiceViewSet(viewsets.ModelViewSet):
                     # than hardcoded into new invoices to prevent double-counting.
                     # ---------------------------------------------
                     
+                    items_to_create = []
                     for fee in student_fees:
                         is_hostel_fee = 'board' in fee.name.lower() or 'hostel' in fee.name.lower()
                         if is_hostel_fee and student.category != 'BOARDING':
                             continue
                             
-                        InvoiceItem.objects.create(
-                            invoice=inv,
-                            fee_structure=fee,
-                            description=fee.name,
-                            amount=fee.amount
+                        items_to_create.append(
+                            InvoiceItem(
+                                invoice=inv,
+                                fee_structure=fee,
+                                description=fee.name,
+                                amount=fee.amount
+                            )
                         )
                         total += fee.amount
+                    
+                    # Batch save to bypass heavy N+1 save() hooks inside InvoiceItem
+                    InvoiceItem.objects.bulk_create(items_to_create)
 
                     inv.total_amount = total
                     inv.update_balance()
@@ -232,20 +239,30 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         """
         Recalculates totals and balances for ALL invoices in the background.
         """
-        def run_sync():
+        def run_sync(user):
             from django.db import connection
             try:
                 invoices = Invoice.objects.all()
+                count = 0
                 for inv in invoices:
                     try:
                         inv.recalculate_totals()
                         inv.recalculate_pricing()
+                        count += 1
                     except Exception:
                         continue
+                
+                # Notify the user on completion
+                if user.is_authenticated:
+                    Notification.objects.create(
+                        recipient=user,
+                        title="Background Sync Complete",
+                        message=f"Successfully synchronized pricing and totals for {count} invoices."
+                    )
             finally:
                 connection.close()
 
-        thread = threading.Thread(target=run_sync)
+        thread = threading.Thread(target=run_sync, args=(request.user,))
         thread.daemon = True
         thread.start()
         
@@ -265,48 +282,66 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         if not selected_ids:
             return Response({'error': 'No students selected'}, status=400)
 
-        # 1. Define the background task
-        def run_sending():
-            from django.db import connection
-            try:
-                invoices = Invoice.objects.filter(id__in=selected_ids).select_related('student')
-                for inv in invoices:
-                    try:
-                        student = inv.student
-                        phone = student.guardian_phone
-                        email = None
-                        
-                        primary_parent = student.parents.first()
-                        if primary_parent:
-                            phone = primary_parent.phone or phone
-                            email = primary_parent.email
-                        
-                        fullname = student.full_name
-                        balance = inv.balance
-                        
-                        msg = message_template.replace('{student_name}', fullname).replace('{balance}', str(balance))
-                        if not msg:
-                            msg = f"Dear Parent, this is a reminder regarding {fullname}'s outstanding fee balance of KES {balance}. Please settle as soon as possible."
+        # 1. Pre-evaluate contact loops strictly in primary thread to avoid DB pool leaks
+        contact_data = []
+        invoices = Invoice.objects.filter(id__in=selected_ids).select_related('student')
+        for inv in invoices:
+            student = inv.student
+            phone = student.guardian_phone
+            email = None
+            
+            primary_parent = student.parents.first()
+            if primary_parent:
+                phone = primary_parent.phone or phone
+                email = primary_parent.email
+            
+            contact_data.append({
+                'fullname': student.full_name,
+                'balance': inv.balance,
+                'phone': phone,
+                'email': email,
+                'student_name': student.full_name,
+            })
 
-                        if send_sms_flag and phone:
-                            send_sms(phone, msg)
-                            # Also send WhatsApp if requested (or default to sending both if same flag)
-                            # The user asked to make sending DM and WhatsApp catching phone from parent
-                            send_whatsapp(phone, msg)
-                        
-                        if send_email_flag and email:
-                            send_email(email, f"Fee Reminder: {fullname}", msg)
-                    except Exception as e:
-                        logger.error(f"Error sending reminder to student {inv.student_name}: {str(e)}")
-                        continue
-            except Exception as e:
-                logger.critical(f"Critical error in fee reminder background thread: {str(e)}")
-            finally:
-                # CRITICAL: Close the database connection to prevent connection pool exhaustion
-                connection.close()
+        # 2. Define the isolated background execution
+        def run_sending(contacts, user):
+            success_count = 0
+            fail_count = 0
+            
+            for data in contacts:
+                try:
+                    fullname = data['fullname']
+                    balance = data['balance']
+                    phone = data['phone']
+                    email = data['email']
+                    
+                    msg = message_template.replace('{student_name}', fullname).replace('{balance}', str(balance))
+                    if not msg:
+                        msg = f"Dear Parent, this is a reminder regarding {fullname}'s outstanding fee balance of KES {balance}. Please settle as soon as possible."
 
-        # 2. Trigger thread and return immediately
-        thread = threading.Thread(target=run_sending)
+                    if send_sms_flag and phone:
+                        send_sms(phone, msg)
+                        send_whatsapp(phone, msg)
+                    
+                    if send_email_flag and email:
+                        send_email(email, f"Fee Reminder: {fullname}", msg)
+                    
+                    success_count += 1
+                except Exception as e:
+                    logger.error(f"Error sending reminder to student {data.get('student_name', 'Unknown')}: {str(e)}")
+                    fail_count += 1
+                    continue
+            
+            # Send Final Confirmation to Dashboard
+            if user.is_authenticated:
+                Notification.objects.create(
+                    recipient=user,
+                    title="Fee Reminders Dispatch Summary",
+                    message=f"Completed background dispatch. {success_count} messages sent successfully. {fail_count} failed."
+                )
+
+        # 3. Trigger thread explicitly mapped to primitives
+        thread = threading.Thread(target=run_sending, args=(contact_data, request.user))
         thread.daemon = True
         thread.start()
 

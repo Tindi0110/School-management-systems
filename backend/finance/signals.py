@@ -1,4 +1,4 @@
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 from django.db import models # for Q objects
 from django.dispatch import receiver
 from django.utils import timezone
@@ -241,3 +241,21 @@ def sync_fine_payment(sender, instance, created, **kwargs):
                     fine.status = 'PAID'
                     fine.save()
                     print(f"Finance Sync: Marked Library Fine {fine.id} as PAID (Invoice {instance.id} cleared)")
+
+# --- CLEANUP SIGNALS (Preventing Orphaned Expenses) ---
+
+@receiver(post_delete, sender=HostelMaintenance)
+def cleanup_hostel_maintenance_expense(sender, instance, **kwargs):
+    Expense.objects.filter(origin_model='hostel.HostelMaintenance', origin_id=instance.id).delete()
+
+@receiver(post_delete, sender=VehicleMaintenance)
+def cleanup_vehicle_maintenance_expense(sender, instance, **kwargs):
+    Expense.objects.filter(origin_model='transport.VehicleMaintenance', origin_id=instance.id).delete()
+
+@receiver(post_delete, sender=FuelRecord)
+def cleanup_fuel_expense(sender, instance, **kwargs):
+    Expense.objects.filter(origin_model='transport.FuelRecord', origin_id=instance.id).delete()
+
+@receiver(post_delete, sender=HostelAsset)
+def cleanup_asset_expense(sender, instance, **kwargs):
+    Expense.objects.filter(origin_model='hostel.HostelAsset', origin_id=instance.id).delete()
