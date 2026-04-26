@@ -192,7 +192,7 @@ const HostelModals: React.FC<HostelModalsProps> = ({
             {/* Allocation Modal */}
             <Modal isOpen={isAllocationModalOpen} onClose={() => { setIsAllocationModalOpen(false); }} title={isTransferMode ? "Transfer Student" : allocationId ? "Edit Allocation" : "Student Admission to Hostel"}>
                 <form onSubmit={handleAllocationSubmit} className="space-y-4">
-                    <SearchableSelect label="Student" placeholder="Search student..." options={students.map(s => ({ id: s.id.toString(), label: `${s.admission_number} - ${s.full_name}` }))} value={allocationFormData.student} onChange={(v) => setAllocationFormData({ ...allocationFormData, student: v.toString() })} disabled={isTransferMode || allocationId !== null} required />
+                    <SearchableSelect label="Student" placeholder="Search student..." options={students.filter(s => s.category?.toUpperCase() === 'BOARDING' || s.category?.toUpperCase() === 'FULL BOARDING').map(s => ({ id: s.id.toString(), label: `${s.admission_number} - ${s.full_name}` }))} value={allocationFormData.student} onChange={(v) => setAllocationFormData({ ...allocationFormData, student: v.toString() })} disabled={isTransferMode || allocationId !== null} required />
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group">
                             <label className="label">Hostel</label>
@@ -230,7 +230,7 @@ const HostelModals: React.FC<HostelModalsProps> = ({
                         <PremiumDateInput label="Date" value={attendanceFormData.date} onChange={(d) => setAttendanceFormData({ ...attendanceFormData, date: d })} required />
                         <div className="form-group">
                             <label className="label">Session</label>
-                            <SearchableSelect options={[{ id: 'MORNING', label: 'Morning' }, { id: 'EVENING', label: 'Evening' }, { id: 'SPECIAL', label: 'Special Check' }]} value={attendanceFormData.session} onChange={(v) => setAttendanceFormData({ ...attendanceFormData, session: v.toString() })} />
+                            <SearchableSelect options={[{ id: 'MORNING', label: 'Morning Call' }, { id: 'EVENING', label: 'Evening Call' }, { id: 'NIGHT', label: 'Night Call' }, { id: 'SPECIAL', label: 'Special Check' }]} value={attendanceFormData.session} onChange={(v) => setAttendanceFormData({ ...attendanceFormData, session: v.toString() })} />
                         </div>
                     </div>
 
@@ -244,8 +244,8 @@ const HostelModals: React.FC<HostelModalsProps> = ({
                                             <div className="flex justify-between items-center">
                                                 <span className="font-bold text-sm">{s.full_name}</span>
                                                 <div className="flex gap-2">
-                                                    {['PRESENT', 'ABSENT', 'PERMISSION'].map(st => (
-                                                        <button key={st} onClick={() => setBulkAttendanceData({ ...bulkAttendanceData, [s.id]: { ...bulkAttendanceData[s.id], status: st } })} className={`btn btn-xs ${bulkAttendanceData[s.id]?.status === st ? (st === 'PRESENT' ? 'btn-success' : st === 'ABSENT' ? 'btn-error' : 'btn-warning') : 'btn-outline opacity-50'}`}>
+                                                    {['PRESENT', 'ABSENT', 'PERMISSION', 'SICK'].map(st => (
+                                                        <button key={st} onClick={() => setBulkAttendanceData({ ...bulkAttendanceData, [s.id]: { ...bulkAttendanceData[s.id], status: st } })} className={`btn btn-xs ${bulkAttendanceData[s.id]?.status === st ? (st === 'PRESENT' ? 'btn-success' : st === 'ABSENT' ? 'btn-error' : st === 'PERMISSION' ? 'btn-warning' : 'btn-info') : 'btn-outline opacity-50'}`}>
                                                             {st[0]}
                                                         </button>
                                                     ))}
@@ -263,7 +263,7 @@ const HostelModals: React.FC<HostelModalsProps> = ({
                             <SearchableSelect label="Student" options={students.map(s => ({ id: s.id.toString(), label: `${s.admission_number} - ${s.full_name}` }))} value={attendanceFormData.student} onChange={(v) => setAttendanceFormData({ ...attendanceFormData, student: v.toString() })} required />
                             <div className="form-group">
                                 <label className="label">Status</label>
-                                <SearchableSelect options={[{ id: 'PRESENT', label: 'Present' }, { id: 'ABSENT', label: 'Absent' }, { id: 'PERMISSION', label: 'On Permission' }, { id: 'SICK', label: 'In Sanatorium' }]} value={attendanceFormData.status} onChange={(v) => setAttendanceFormData({ ...attendanceFormData, status: v.toString() })} />
+                                <SearchableSelect options={[{ id: 'PRESENT', label: 'Present' }, { id: 'ABSENT', label: 'Absent' }, { id: 'PERMITTED', label: 'On Leave/Exeat' }, { id: 'PERMISSION', label: 'On Permission' }, { id: 'SICK', label: 'In Sanatorium' }]} value={attendanceFormData.status} onChange={(v) => setAttendanceFormData({ ...attendanceFormData, status: v.toString() })} />
                             </div>
                             <div className="form-group"><label className="label">Remarks</label><input type="text" className="input" value={attendanceFormData.remarks} onChange={(e) => setAttendanceFormData({ ...attendanceFormData, remarks: e.target.value })} /></div>
                             <div className="modal-action"><Button type="button" variant="ghost" onClick={() => setIsAttendanceModalOpen(false)}>Cancel</Button><Button type="submit" variant="primary">Log Status</Button></div>

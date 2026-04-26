@@ -89,17 +89,65 @@ def sync_maintenance_to_finance(sender, instance, created, **kwargs):
         )
 
 @receiver(post_save, sender=HostelAllocation)
-def sync_hostel_allocation(sender, instance, created, **kwargs):
+@receiver(post_delete, sender=HostelAllocation)
+def sync_hostel_allocation(sender, instance, **kwargs):
     if kwargs.get('raw'):
         return
+        
     student = instance.student
+    
+    # Handle Bed/Room release if deleted or status is no longer ACTIVE
+    if kwargs.get('created') is False and 'signal' in kwargs: # This marks a post_delete or post_save update
+        # If deleted OR status changed from ACTIVE to something else
+        # we check if we need to release the bed
+        pass 
+
+    # Robust Management of Bed and Room Occupancy
     if instance.status == 'ACTIVE':
-        # Use update to avoid triggering post_save signal loop on Student
+        # Update student residence details
         student.__class__.objects.filter(pk=student.pk).update(
             residence_details=f"{instance.room.hostel.name} - {instance.room.room_number}"
         )
+        
+        # Ensure bed is occupied
+        if instance.bed and instance.bed.status != 'OCCUPIED':
+            instance.bed.status = 'OCCUPIED'
+            instance.bed.save(update_fields=['status'])
     else:
+        # If status is COMPLETED or CANCELLED
         student.__class__.objects.filter(pk=student.pk).update(
             residence_details="Not Assigned"
         )
+        
+        # Release the bed
+        if instance.bed and instance.bed.status == 'OCCUPIED':
+            instance.bed.status = 'AVAILABLE'
+            instance.bed.save(update_fields=['status'])
+            
+            # Update room occupancy
+            room = instance.room
+            # Important: Only decrement if we are sure it was previously incremented
+            # We check if occupancy is > 0 to be safe
+            if room.current_occupancy > 0:
+                room.current_occupancy -= 1
+                if room.status == 'FULL' and room.current_occupancy < room.capacity:
+                    room.status = 'AVAILABLE'
+                room.save()
+
+@receiver(post_delete, sender=HostelAllocation)
+def release_bed_on_delete(sender, instance, **kwargs):
+    """
+    Ensure bed is marked AVAILABLE and room occupancy decremented when allocation is deleted.
+    """
+    if instance.bed:
+        instance.bed.status = 'AVAILABLE'
+        instance.bed.save(update_fields=['status'])
+        
+    if instance.room:
+        room = instance.room
+        if room.current_occupancy > 0:
+            room.current_occupancy -= 1
+            if room.status == 'FULL' and room.current_occupancy < room.capacity:
+                room.status = 'AVAILABLE'
+            room.save()
 

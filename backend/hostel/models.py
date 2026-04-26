@@ -74,8 +74,8 @@ class HostelAllocation(models.Model):
         return self.status == 'ACTIVE'
 
 class HostelAttendance(models.Model):
-    SESSION_CHOICES = (('MORNING', 'Morning Call'), ('EVENING', 'Evening Call'), ('NIGHT', 'Night Call'))
-    STATUS_CHOICES = (('PRESENT', 'Present'), ('ABSENT', 'Absent'), ('PERMITTED', 'On Leave/Exeat'))
+    SESSION_CHOICES = (('MORNING', 'Morning Call'), ('EVENING', 'Evening Call'), ('NIGHT', 'Night Call'), ('SPECIAL', 'Special Check'))
+    STATUS_CHOICES = (('PRESENT', 'Present'), ('ABSENT', 'Absent'), ('PERMITTED', 'On Leave/Exeat'), ('PERMISSION', 'On Permission'), ('SICK', 'Sick Bay/Hospital'))
     
     student = models.ForeignKey('students.Student', on_delete=models.CASCADE)
     date = models.DateField(default=timezone.now, db_index=True)
