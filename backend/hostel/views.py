@@ -5,6 +5,8 @@ from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db import transaction
 from django.utils import timezone
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from .models import (
     Hostel, Room, Bed, HostelAllocation, HostelAttendance, 
     HostelDiscipline, HostelAsset, GuestLog, HostelMaintenance
@@ -32,6 +34,10 @@ class HostelViewSet(viewsets.ModelViewSet):
         if self.action == 'list':
             return HostelListSerializer
         return HostelSerializer
+
+    @method_decorator(cache_page(60 * 15))
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
     @action(detail=False, methods=['get'])
     def dashboard_stats(self, request):

@@ -11,6 +11,8 @@ from .models import (
 from django.core.cache import cache
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 
 from .permissions import IsClassTeacherForSubject
 from .utils import sync_academic_statuses
@@ -61,11 +63,19 @@ class SubjectViewSet(viewsets.ModelViewSet):
     queryset = Subject.objects.select_related('group').all()
     serializer_class = SubjectSerializer
 
+    @method_decorator(cache_page(60 * 15))
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
 class ClassViewSet(viewsets.ModelViewSet):
     queryset = Class.objects.select_related('class_teacher').annotate(
         _student_count=Count('students')
     ).all()
     serializer_class = ClassSerializer
+
+    @method_decorator(cache_page(60 * 15))
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
 class GradeSystemViewSet(viewsets.ModelViewSet):
     queryset = GradeSystem.objects.all()

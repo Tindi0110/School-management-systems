@@ -27,6 +27,8 @@ class StudentViewSet(viewsets.ModelViewSet):
         'health_record',
     ).prefetch_related(
         'parents',
+        'parents__students',
+        'parents__students__current_class',
         'documents',
     ).annotate(
         # Lighter attendance counts
