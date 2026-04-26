@@ -317,17 +317,25 @@ const Students = () => {
                             </td>
                             <td className="no-print">
                                 <div className="flex gap-2">
-                                    <button className="btn btn-sm btn-ghost text-primary" onClick={async () => {
-                                        if (s.user) {
-                                            info(`User Account Active: ${s.user}`);
-                                        } else {
-                                            if (await confirm(`Generate User Account for ${s.full_name}?`)) {
-                                                try { await studentsAPI.linkUser(s.id); success('User generated successfully'); loadData(); }
-                                                catch (e) { errorToast('Linking failed'); }
+                                    <button 
+                                        className={`btn btn-sm ${s.user ? 'bg-success/10 text-success border-success/20 hover:bg-success/20' : 'btn-ghost text-primary opacity-50'}`} 
+                                        onClick={async () => {
+                                            if (s.user) {
+                                                info(`User Account Linked: ID #${s.user}`);
+                                            } else {
+                                                if (await confirm(`Generate User Account for ${s.full_name}?`)) {
+                                                    try { 
+                                                        await studentsAPI.linkUser(s.id); 
+                                                        success('User account generated and linked successfully'); 
+                                                        loadData(); 
+                                                    }
+                                                    catch (e) { errorToast('Account linking failed. Ensure student has an admission number.'); }
+                                                }
                                             }
-                                        }
-                                    }} title={s.user ? "User Linked" : "Generate User Account"}>
-                                        {s.user ? <UserCheck size={14} className="text-success" /> : <UserIcon size={14} className="opacity-50" />}
+                                        }} 
+                                        title={s.user ? "User Linked & Active" : "Generate User Account"}
+                                    >
+                                        {s.user ? <UserCheck size={14} className="font-bold" /> : <UserIcon size={14} />}
                                     </button>
                                     <button className="btn btn-sm btn-outline px-3" onClick={() => openModal(s)} title="Edit Student"><Edit size={14} /></button>
                                     <button className="btn btn-sm btn-primary px-3" onClick={() => navigate(`/students/${s.id}`)} title="View Profile"><UserIcon size={14} /></button>

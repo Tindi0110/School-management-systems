@@ -70,7 +70,7 @@ class StudentViewSet(viewsets.ModelViewSet):
         
         # Optimize query by only fetching needed fields
         qs = qs.select_related('current_class').values(
-            'id', 'full_name', 'admission_number', 'current_class__name', 'current_class__stream', 'fee_balance'
+            'id', 'full_name', 'admission_number', 'current_class__name', 'current_class__stream', 'fee_balance', 'user'
         )[:50]
         
         data = [

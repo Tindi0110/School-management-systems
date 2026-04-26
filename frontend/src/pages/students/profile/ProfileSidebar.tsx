@@ -49,6 +49,12 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
                         <span>Transport</span>
                         <span className="text-primary">{student.transport_details || 'NONE'}</span>
                     </div>
+                    <div className="flex justify-between items-center text-[10px] font-black uppercase text-secondary">
+                        <span>User Account</span>
+                        <span className={`px-2 py-0.5 rounded font-mono ${student.user ? 'bg-success/10 text-success' : 'bg-slate-200 text-slate-500'}`}>
+                            {student.user ? 'LINKED / ACTIVE' : 'NO ACCOUNT'}
+                        </span>
+                    </div>
 
                     <div className="pt-4 space-y-2 border-t border-slate-100">
                         <Button variant="outline" size="sm" className="w-full uppercase font-black py-2 tracking-widest text-[10px]" onClick={onTransfer}>
