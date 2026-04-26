@@ -112,6 +112,13 @@ interface FinanceModalsProps {
     handleSendReminders: (e: FormEvent) => void;
     selectedInvoicesSize: number;
 
+    // Adjustment
+    showAdjustmentModal: boolean;
+    setShowAdjustmentModal: (val: boolean) => void;
+    adjForm: { student_id: string; invoice_id: string; amount: string; type: string; reason: string };
+    setAdjForm: (val: any) => void;
+    handleAdjustmentSubmit: (e: FormEvent) => void;
+
     // Invoice Detail
     selectedInvoice: Invoice | null;
     setSelectedInvoice: (val: Invoice | null) => void;
@@ -138,6 +145,7 @@ const FinanceModals: React.FC<FinanceModalsProps> = ({
     showExpenseModal, setShowExpenseModal, expenseForm, setExpenseForm, handleExpenseSubmit,
     showMpesaModal, setShowMpesaModal, mpesaForm, setMpesaForm, handleMpesaPush,
     showReminderModal, setShowReminderModal, reminderForm, setReminderForm, handleSendReminders, selectedInvoicesSize,
+    showAdjustmentModal, setShowAdjustmentModal, adjForm, setAdjForm, handleAdjustmentSubmit,
     selectedInvoice, setSelectedInvoice, formatDate, formatDateTime,
     years, classes, uniqueClassNames, students, setStudents, activeStudentInvoices, setActiveStudentInvoices, isSubmitting,
     studentsAPI, financeAPI
@@ -499,6 +507,10 @@ const FinanceModals: React.FC<FinanceModalsProps> = ({
 
                         <div className="modal-action">
                             <Button variant="ghost" onClick={() => setSelectedInvoice(null)}>Close</Button>
+                            <Button variant="outline" className="text-purple-600 border-purple-200" onClick={() => {
+                                setAdjForm({ student_id: String(selectedInvoice.student), invoice_id: String(selectedInvoice.id), amount: '', type: 'CREDIT', reason: '' });
+                                setShowAdjustmentModal(true);
+                            }}>Apply Waiver/Fine</Button>
                             <Button variant="outline" icon={<Printer size={16} />} onClick={() => window.print()}>Print / Save PDF</Button>
                         </div>
                     </div>
@@ -670,6 +682,101 @@ const FinanceModals: React.FC<FinanceModalsProps> = ({
                         <Button type="button" variant="ghost" onClick={() => setShowReminderModal(false)}>Cancel</Button>
                         <Button type="submit" variant="primary" className="bg-orange-600 hover:bg-orange-700 border-none px-8" loading={isSubmitting} icon={<Send size={16} />}>
                             Send Reminders
+                        </Button>
+                    </div>
+                </form>
+            </Modal>
+
+            {/* Adjustment Modal */}
+            <Modal isOpen={showAdjustmentModal} onClose={() => setShowAdjustmentModal(false)} title="Invoice Adjustment (Waiver / Fine)">
+                <form onSubmit={handleAdjustmentSubmit} className="form-container-md mx-auto space-y-6">
+                    <div className="bg-purple-50/50 p-4 rounded-xl border border-purple-100 flex items-start gap-3">
+                        <TrendingUp size={16} className="text-purple-500 mt-0.5 shrink-0" />
+                        <span className="text-xs text-secondary-soft">
+                            Use <strong>Credit Note</strong> for Waivers/Worships (reducts balance) and <strong>Debit Note</strong> for Fines/Corrections (increases balance).
+                        </span>
+                    </div>
+
+                    <SearchableSelect
+                        label="Search Student"
+                        placeholder="Select Student..."
+                        options={students.map((s: Student) => ({
+                            id: s.id,
+                            label: `${s.admission_number} - ${s.full_name}`,
+                            subLabel: `Balance: KES ${Number(s.fee_balance).toLocaleString()}`
+                        }))}
+                        value={adjForm.student_id}
+                        onSearch={async (term: string) => {
+                            if (term.length > 0 || term === '*') {
+                                try {
+                                    const res = await studentsAPI.minimalSearch({ search: term });
+                                    const results = res.data?.results ?? res.data ?? [];
+                                    setStudents((prevItem: Student[]) => {
+                                        const map = new Map(prevItem.map((s: Student) => [s.id, s]));
+                                        results.forEach((r: Student) => map.set(r.id, r));
+                                        return Array.from(map.values());
+                                    });
+                                } catch (e) { console.error(e); }
+                            }
+                        }}
+                        onChange={async (val) => {
+                            const studentId = String(val);
+                            try {
+                                const res = await financeAPI.invoices.getAll({ student: studentId, status: 'UNPAID' });
+                                const studentInvoices = res.data?.results ?? res.data ?? [];
+                                setActiveStudentInvoices(studentInvoices);
+                                setAdjForm({ ...adjForm, student_id: studentId, invoice_id: studentInvoices[0]?.id.toString() || '' });
+                            } catch (err) { console.error(err); }
+                        }}
+                        required
+                        disabled={!!selectedInvoice}
+                    />
+
+                    {adjForm.student_id && (
+                        <div className="form-group">
+                            <label className="label">Target Invoice *</label>
+                            <SearchableSelect
+                                placeholder="Select Invoice"
+                                options={activeStudentInvoices.map((i: Invoice) => ({
+                                    id: i.id.toString(),
+                                    label: `Invoice #${i.id} | Term ${i.term} (${i.academic_year_name})`,
+                                    subLabel: `Balance: KES ${Number(i.balance).toLocaleString()}`
+                                }))}
+                                value={adjForm.invoice_id}
+                                onChange={(val) => setAdjForm({ ...adjForm, invoice_id: val.toString() })}
+                                required
+                            />
+                        </div>
+                    )}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="form-group">
+                            <label className="label">Adjustment Type *</label>
+                            <SearchableSelect
+                                options={[
+                                    { id: 'CREDIT', label: 'Waiver / Credit Note (-)' },
+                                    { id: 'DEBIT', label: 'Fine / Debit Note (+)' }
+                                ]}
+                                value={adjForm.type}
+                                onChange={(val) => setAdjForm({ ...adjForm, type: val.toString() })}
+                                required
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label className="label">Amount (KES) *</label>
+                            <input type="number" className="input" value={adjForm.amount} onChange={e => setAdjForm({ ...adjForm, amount: e.target.value })} required />
+                        </div>
+                    </div>
+
+                    <div className="form-group">
+                        <label className="label">Reason / Justification *</label>
+                        <textarea className="textarea h-20" placeholder="e.g. Sports Scholarship Waiver or Late Payment Fine" value={adjForm.reason} onChange={e => setAdjForm({ ...adjForm, reason: e.target.value })} required />
+                    </div>
+
+                    <div className="modal-footer pt-6 border-top mt-4 flex justify-end gap-3">
+                        <Button type="button" variant="outline" onClick={() => setShowAdjustmentModal(false)}>Cancel</Button>
+                        <Button type="submit" variant="primary" className="px-8 font-black shadow-lg bg-purple-600 border-none" loading={isSubmitting} disabled={isSubmitting}>
+                            APPLY ADJUSTMENT
                         </Button>
                     </div>
                 </form>

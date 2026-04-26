@@ -59,35 +59,45 @@ class Invoice(models.Model):
     def __str__(self):
         return f"INV-{self.id} | {self.student} | {self.status}"
     
-    def recalculate_totals(self):
-        """Recalculate paid_amount and balance from actual payments"""
-        total_paid = self.payments.aggregate(sum=Sum('amount'))['sum'] or 0
-        self.paid_amount = total_paid
-        self.update_balance()
-
-    def recalculate_pricing(self):
-        """Recalculate total_amount from Items + Adjustments"""
-        # 1. Base Items
+    def recalculate_ledger(self):
+        """
+        Single source of truth for full invoice calculation.
+        Pulls items, adjustments, and payments from DB to ensure ledger accuracy.
+        """
+        # 1. Base items
         item_total = self.items.aggregate(sum=Sum('amount'))['sum'] or 0
         
         # 2. Adjustments
-        credits = self.adjustments.filter(adjustment_type='CREDIT').aggregate(sum=Sum('amount'))['sum'] or 0
-        debits = self.adjustments.filter(adjustment_type='DEBIT').aggregate(sum=Sum('amount'))['sum'] or 0
+        adj_stats = self.adjustments.aggregate(
+            credits=Sum('amount', filter=models.Q(adjustment_type='CREDIT')),
+            debits=Sum('amount', filter=models.Q(adjustment_type='DEBIT'))
+        )
+        credits = adj_stats['credits'] or 0
+        debits = adj_stats['debits'] or 0
         
+        # 3. Payments
+        total_paid = self.payments.aggregate(sum=Sum('amount'))['sum'] or 0
+        
+        # 4. Core Metrics
         self.total_amount = item_total + debits - credits
-        self.update_balance()
-
-    def update_balance(self):
-        """Recalculate status based on payment vs total"""
+        self.paid_amount = total_paid
         self.balance = self.total_amount - self.paid_amount
-        if self.balance <= 0 and self.paid_amount > 0:
+        
+        # 5. Status Logic
+        if self.balance <= 0 and self.total_amount > 0:
             if self.balance < 0: self.status = 'OVERPAID'
             else: self.status = 'PAID'
         elif self.paid_amount > 0:
             self.status = 'PARTIAL'
         else:
             self.status = 'UNPAID'
-        self.save(update_fields=['balance', 'status', 'total_amount', 'paid_amount'])
+            
+        self.save(update_fields=['total_amount', 'paid_amount', 'balance', 'status'])
+    
+    # Aliases for backward compatibility if needed in signals
+    def recalculate_totals(self): self.recalculate_ledger()
+    def recalculate_pricing(self): self.recalculate_ledger()
+    def update_balance(self): self.recalculate_ledger()
 
 class InvoiceItem(models.Model):
     """
@@ -102,12 +112,12 @@ class InvoiceItem(models.Model):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        self.invoice.recalculate_pricing()
+        self.invoice.recalculate_ledger()
 
     def delete(self, *args, **kwargs):
         invoice = self.invoice
         super().delete(*args, **kwargs)
-        invoice.recalculate_pricing()
+        invoice.recalculate_ledger()
 
     def __str__(self):
         return f"{self.description}: {self.amount}"
@@ -136,12 +146,12 @@ class Payment(models.Model):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         # Update Invoice robustly
-        self.invoice.recalculate_totals()
+        self.invoice.recalculate_ledger()
         
     def delete(self, *args, **kwargs):
         invoice = self.invoice
         super().delete(*args, **kwargs)
-        invoice.recalculate_totals()
+        invoice.recalculate_ledger()
 
 class Adjustment(models.Model):
     """

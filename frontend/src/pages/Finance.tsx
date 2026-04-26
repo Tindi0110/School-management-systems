@@ -67,6 +67,7 @@ const Finance = () => {
     const [showExpenseModal, setShowExpenseModal] = useState(false);
     const [showMpesaModal, setShowMpesaModal] = useState(false);
     const [showReminderModal, setShowReminderModal] = useState(false);
+    const [showAdjustmentModal, setShowAdjustmentModal] = useState(false);
     const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
     const [activeTabLoading, setActiveTabLoading] = useState(true);
 
@@ -80,6 +81,7 @@ const Finance = () => {
         template: 'Dear Parent, this is a reminder regarding {student_name}\'s outstanding fee balance of KES {balance}. Please settle as soon as possible.',
         send_sms: true, send_email: true
     });
+    const [adjForm, setAdjForm] = useState({ student_id: '', invoice_id: '', amount: '', type: 'CREDIT', reason: '' });
     const [editingFeeId, setEditingFeeId] = useState<number | null>(null);
 
     // Pagination & Search
@@ -150,10 +152,7 @@ const Finance = () => {
                 setTotalItems(res.data?.count ?? d(res).length);
             } else if (activeTab === 'payments') {
                 const params: any = { page, page_size: pageSize, search: debouncedSearch };
-                if (!debouncedSearch && statsContext?.year_id) {
-                    params.invoice__academic_year = statsContext.year_id;
-                    params.invoice__term = statsContext.term_num;
-                }
+                // We show all payments by default to allow tracking older debt clearance
                 const res = await financeAPI.payments.getAll(params);
                 setPayments(d(res));
                 setTotalItems(res.data?.count ?? d(res).length);
@@ -272,6 +271,28 @@ const Finance = () => {
         finally { setIsSubmitting(false); }
     };
 
+    const handleAdjustmentSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        try {
+            await financeAPI.adjustments.create({
+                invoice: Number(adjForm.invoice_id),
+                amount: parseFloat(adjForm.amount),
+                adjustment_type: adjForm.type,
+                reason: adjForm.reason
+            });
+            success(`Adjustment applied: ${adjForm.type === 'CREDIT' ? 'Waiver' : 'Fine'}`);
+            setShowAdjustmentModal(false);
+            setAdjForm({ student_id: '', invoice_id: '', amount: '', type: 'CREDIT', reason: '' });
+            loadData();
+            if(selectedInvoice && selectedInvoice.id === Number(adjForm.invoice_id)) {
+                // Refresh detail modal if open
+                financeAPI.invoices.getOne(selectedInvoice.id).then(r => setSelectedInvoice(r.data));
+            }
+        } catch (err: any) { toastError(err.response?.data?.error || 'Failed to apply adjustment'); }
+        finally { setIsSubmitting(false); }
+    };
+
     const toggleInvoiceSelection = (id: number) => {
         setSelectedInvoices(prev => {
             const next = new Set(prev);
@@ -368,6 +389,7 @@ const Finance = () => {
                 {!isReadOnly && (
                     <div className="flex flex-wrap gap-2 w-full lg:w-auto mt-2 lg:mt-0">
                         <Button variant="ghost" className="text-[10px] font-black uppercase" icon={<TrendingUp size={16} />} onClick={() => financeAPI.invoices.syncAll().then(r => success(r.data.message))}>Sync</Button>
+                        <Button variant="outline" className="text-purple-600 border-purple-200 text-[10px] font-black uppercase" onClick={() => setShowAdjustmentModal(true)}>Adjustment</Button>
                         <Button variant="outline" className="text-green-600 border-green-200 text-[10px] font-black uppercase" onClick={() => setShowMpesaModal(true)}>M-Pesa</Button>
                         <Button variant="outline" className="text-[10px] font-black uppercase" icon={<CreditCard size={16} />} onClick={() => setShowPaymentModal(true)}>Payment</Button>
                         <Button variant="primary" className="text-[10px] font-black uppercase shadow-lg shadow-primary/20" icon={<FileText size={16} />} onClick={() => setShowInvoiceModal(true)}>Invoices</Button>
@@ -450,6 +472,7 @@ const Finance = () => {
                 showExpenseModal={showExpenseModal} setShowExpenseModal={setShowExpenseModal} expenseForm={expenseForm} setExpenseForm={setExpenseForm} handleExpenseSubmit={handleExpenseSubmit}
                 showMpesaModal={showMpesaModal} setShowMpesaModal={setShowMpesaModal} mpesaForm={mpesaForm} setMpesaForm={setMpesaForm} handleMpesaPush={handleMpesaPush}
                 showReminderModal={showReminderModal} setShowReminderModal={setShowReminderModal} reminderForm={reminderForm} setReminderForm={setReminderForm} handleSendReminders={handleSendReminders} selectedInvoicesSize={selectedInvoices.size}
+                showAdjustmentModal={showAdjustmentModal} setShowAdjustmentModal={setShowAdjustmentModal} adjForm={adjForm} setAdjForm={setAdjForm} handleAdjustmentSubmit={handleAdjustmentSubmit}
                 selectedInvoice={selectedInvoice} setSelectedInvoice={setSelectedInvoice} formatDate={formatDate} formatDateTime={formatDateTime}
                 years={years} classes={classes} uniqueClassNames={uniqueClassNames} students={students} setStudents={setStudents} activeStudentInvoices={activeStudentInvoices} setActiveStudentInvoices={setActiveStudentInvoices} isSubmitting={isSubmitting}
                 studentsAPI={studentsAPI} financeAPI={financeAPI}
