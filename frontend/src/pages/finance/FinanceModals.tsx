@@ -36,11 +36,13 @@ export interface Invoice {
     student_name: string;
     admission_number: string;
     class_name: string;
-    academic_year: number;
-    term: number;
-    total_amount: number;
-    paid_amount: number;
-    balance: number;
+    stream_name?: string;
+    academic_year: number | string;
+    academic_year_name?: string;
+    term: number | string;
+    total_amount: number | string;
+    paid_amount: number | string;
+    balance: number | string;
     status: string;
     date_generated: string;
     items?: InvoiceItem[];
@@ -304,7 +306,7 @@ const FinanceModals: React.FC<FinanceModalsProps> = ({
                                     const res = await financeAPI.invoices.getAll({ student: studentId, page_size: 100 });
                                     const studentInvoices = res.data?.results ?? res.data ?? [];
                                     setActiveStudentInvoices(studentInvoices);
-                                    const validInvoices = studentInvoices.filter((i: Invoice) => i.status !== 'PAID' && Number(i.balance) !== 0);
+                                    const validInvoices = studentInvoices.filter((i: InvoiceDetail) => i.status !== 'PAID' && Number(i.balance) !== 0);
                                     const latestInvoice = validInvoices.length > 0 ? validInvoices[0] : null;
                                     setPayForm({
                                         ...payForm,
@@ -325,8 +327,8 @@ const FinanceModals: React.FC<FinanceModalsProps> = ({
                                 <SearchableSelect
                                     placeholder="Select Active Invoice"
                                     options={activeStudentInvoices
-                                        .filter((i: Invoice) => i.status !== 'PAID' && Number(i.balance) !== 0)
-                                        .map((i: Invoice) => ({
+                                        .filter((i: InvoiceDetail) => i.status !== 'PAID' && Number(i.balance) !== 0)
+                                        .map((i: InvoiceDetail) => ({
                                             id: i.id.toString(),
                                             label: `Invoice #${i.id} | ${i.academic_year_name} T${i.term} `,
                                             subLabel: `Remaining: KES ${Number(i.balance).toLocaleString()} `
@@ -334,7 +336,7 @@ const FinanceModals: React.FC<FinanceModalsProps> = ({
                                     value={payForm.invoice_id}
                                     onChange={(val) => {
                                         const invId = val.toString();
-                                        const inv = activeStudentInvoices.find((i: Invoice) => String(i.id) === invId);
+                                        const inv = activeStudentInvoices.find((i: InvoiceDetail) => String(i.id) === invId);
                                         setPayForm({
                                             ...payForm,
                                             invoice_id: invId,
@@ -765,7 +767,7 @@ const FinanceModals: React.FC<FinanceModalsProps> = ({
                             <label className="label">Target Invoice *</label>
                             <SearchableSelect
                                 placeholder="Select Invoice"
-                                options={activeStudentInvoices.map((i: Invoice) => ({
+                                options={activeStudentInvoices.map((i: InvoiceDetail) => ({
                                     id: i.id.toString(),
                                     label: `Invoice #${i.id} | Term ${i.term} (${i.academic_year_name})`,
                                     subLabel: `Balance: KES ${Number(i.balance).toLocaleString()}`
