@@ -1,10 +1,23 @@
+export interface HealthRecord {
+    id: number;
+    blood_group?: string;
+    allergies?: string;
+    chronic_conditions?: string;
+    emergency_contact_name?: string;
+    emergency_contact_phone?: string;
+    height?: string | number;
+    weight?: string | number;
+    temperature?: string | number;
+    blood_pressure?: string;
+}
+
 export interface Student {
     id: number;
     full_name: string;
     admission_number: string;
     admission_date: string;
     date_of_birth: string;
-    gender: 'MALE' | 'FEMALE' | 'OTHER' | 'M' | 'F'; // Backend sometimes uses short versions
+    gender: 'MALE' | 'FEMALE' | 'OTHER' | 'M' | 'F';
     level?: string;
     stream?: string;
     class_unit?: number;
@@ -23,14 +36,8 @@ export interface Student {
     residence_details?: string;
     hostel_name?: string;
     transport_details?: string;
-    health_record?: {
-        id: number;
-        blood_group?: string;
-        allergies?: string;
-        chronic_conditions?: string;
-        emergency_contact_name?: string;
-        emergency_contact_phone?: string;
-    };
+    health_record?: HealthRecord;
+    user?: number;
 }
 
 export interface Parent {

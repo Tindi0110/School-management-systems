@@ -30,22 +30,41 @@ interface InvoiceItem {
     created_at?: string;
 }
 
-interface Adjustment {
+export interface Invoice {
     id: number;
-    reason: string;
-    adjustment_type: 'DEBIT' | 'CREDIT';
-    amount: string | number;
-    created_at?: string;
-    date?: string;
+    student: number;
+    student_name: string;
+    admission_number: string;
+    class_name: string;
+    academic_year: number;
+    term: number;
+    total_amount: number;
+    paid_amount: number;
+    balance: number;
+    status: string;
+    date_generated: string;
+    items?: InvoiceItem[];
 }
 
-interface Payment {
+export interface Payment {
     id: number;
+    invoice: number;
+    student_name?: string;
+    amount: number;
     method: string;
     reference_number?: string;
-    amount: string | number;
+    date_received: string;
     created_at?: string;
-    date_received?: string;
+}
+
+export interface Adjustment {
+    id: number;
+    invoice: number;
+    adjustment_type: 'CREDIT' | 'DEBIT';
+    amount: string | number;
+    reason: string;
+    date: string;
+    created_at?: string;
 }
 
 interface InvoiceDetail {

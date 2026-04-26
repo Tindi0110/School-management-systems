@@ -83,7 +83,7 @@ class StudentViewSet(viewsets.ModelViewSet):
         return Response(data)
 
     @action(detail=False, methods=['post'])
-    def sync_all_fee_balances(self, request):
+    def sync_all_balances(self, request):
         """Mass syncs fee_balance for all active students from their invoices."""
         from django.db.models import Sum, OuterRef, Subquery, Value
         from django.db.models.functions import Coalesce

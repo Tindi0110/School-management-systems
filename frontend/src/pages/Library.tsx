@@ -276,8 +276,8 @@ const Library = () => {
         if (!userId) {
             toast.info(`Linking user account for ${selectedStudent.full_name}...`);
             try {
-                const res = await studentsAPI.update(selectedStudent.id, { is_active: selectedStudent.is_active });
-                userId = res.data.user || res.data.student_user_id;
+                const res = await studentsAPI.linkUser(selectedStudent.id);
+                userId = res.data.user_id || res.data.user || res.data.id;
                 if (userId) {
                     setStudents((prev) => prev.map(s => s.id === selectedStudent.id ? { ...s, user: userId } : s));
                 } else {

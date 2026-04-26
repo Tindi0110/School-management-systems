@@ -217,30 +217,6 @@ const Transport = () => {
         setIsAllocationModalOpen(true);
     };
 
-    const handleEditRoute = (r: any) => {
-        setRouteId(r.id);
-        setRouteForm({
-            name: r.name,
-            route_code: r.route_code || '',
-            distance_km: parseFloat(r.distance_km || 0),
-            base_cost: parseFloat(r.base_cost || 0)
-        });
-        setIsRouteModalOpen(true);
-    };
-
-    const handleEditPoint = (p: any) => {
-        setPointId(p.id);
-        setPointForm({
-            route_id: p.route,
-            point_name: p.point_name,
-            pickup_time: p.pickup_time || '',
-            dropoff_time: p.dropoff_time || '',
-            distance_from_school: parseFloat(p.distance_from_school || 0),
-            additional_cost: parseFloat(p.additional_cost || 0)
-        });
-        setIsPointModalOpen(true);
-    };
-
     const routeOptions = useMemo(() => routes.map(r => ({
         id: String(r.id),
         label: `${r.route_code} - ${r.name}`,
@@ -282,7 +258,7 @@ const Transport = () => {
     };
 
     // ── Handlers: Vehicles ────────────────────────────────────────────────────
-    const handleRegisterVehicle = async (e: React.FormEvent) => {
+    const handleVehicleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSaving(true);
         try {
@@ -361,8 +337,9 @@ const Transport = () => {
         setRouteId(r.id);
         setRouteForm({
             name: r.name,
-            description: r.description || '',
-            base_cost: r.base_cost || 0
+            route_code: r.route_code || '',
+            distance_km: parseFloat(r.distance_km || 0),
+            base_cost: parseFloat(r.base_cost || 0)
         });
         setIsRouteModalOpen(true);
     };
@@ -417,10 +394,12 @@ const Transport = () => {
     const handleEditPoint = (p: any) => {
         setPointId(p.id);
         setPointForm({
-            route: String(p.route),
+            route_id: p.route,
             point_name: p.point_name,
             pickup_time: p.pickup_time || '',
-            additional_cost: p.additional_cost || 0
+            dropoff_time: p.dropoff_time || '',
+            distance_from_school: parseFloat(p.distance_from_school || 0),
+            additional_cost: parseFloat(p.additional_cost || 0)
         });
         setIsPointModalOpen(true);
     };
