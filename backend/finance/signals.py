@@ -207,9 +207,10 @@ def update_invoice_totals(invoice):
     invoice.update_balance() # Saves the model
 
 @receiver(post_save, sender=Invoice)
+@receiver(post_delete, sender=Invoice)
 def update_student_fee_balance(sender, instance, **kwargs):
     """
-    Recalculates total fee_balance for a student whenever an invoice changes.
+    Recalculates total fee_balance for a student whenever an invoice changes or is deleted.
     This ensures de-normalized Search fields in Student model are accurate.
     """
     if kwargs.get('raw'):

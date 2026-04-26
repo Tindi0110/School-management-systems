@@ -200,36 +200,78 @@ const Medical = () => {
                 </div>
             )}
 
-            <Modal isOpen={isModalOpen} onClose={closeModal} title={editingRecord ? 'Edit Health Entry' : 'Log Infirmary Visit'}>
-                <form onSubmit={handleSubmit} className="space-y-4 form-container-md mx-auto">
-                    <SearchableSelect
-                        label="Student *"
-                        options={studentOptions}
-                        value={formData.student}
-                        onChange={(val) => setFormData({ ...formData, student: val.toString() })}
-                        placeholder="Select student by name or ID..."
-                        required
-                    />
+            <Modal isOpen={isModalOpen} onClose={closeModal} title={editingRecord ? 'Edit Health Entry' : 'Log Infirmary Visit'} size="lg">
+                <form onSubmit={handleSubmit} className="space-y-6 form-container-md mx-auto">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <SearchableSelect
+                            label="Student *"
+                            options={studentOptions}
+                            value={formData.student}
+                            onChange={(val) => setFormData({ ...formData, student: val.toString() })}
+                            placeholder="Select student..."
+                            required
+                        />
+                        <div className="form-group">
+                            <label className="label text-[10px] font-black uppercase">Visit Status</label>
+                            <SearchableSelect
+                                options={[
+                                    { id: 'COMPLETED', label: 'Completed' },
+                                    { id: 'REFERRED', label: 'Referred' },
+                                    { id: 'PENDING', label: 'Pending Follow-up' }
+                                ]}
+                                value={(formData as any).status || 'COMPLETED'}
+                                onChange={(val) => setFormData({ ...formData, status: val.toString() } as any)}
+                            />
+                        </div>
+                    </div>
 
-                    <div className="form-group">
-                        <label className="label">Diagnosis / Reason for Visit *</label>
-                        <input type="text" className="input" placeholder="e.g. Headache, Malaria, Routine Checkup" value={formData.diagnosis} onChange={(e) => setFormData({ ...formData, diagnosis: e.target.value })} required />
+                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200">
+                        <h4 className="text-[10px] font-black uppercase text-secondary mb-4 tracking-widest flex items-center gap-2">
+                            <Activity size={14} className="text-info" /> Vital Signs (Optional)
+                        </h4>
+                        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                            <div className="form-group">
+                                <label className="label text-[9px] font-black uppercase">Height (cm)</label>
+                                <input type="number" step="0.1" className="input text-xs" value={(formData as any).height || ''} onChange={e => setFormData({ ...formData, height: e.target.value } as any)} />
+                            </div>
+                            <div className="form-group">
+                                <label className="label text-[9px] font-black uppercase">Weight (kg)</label>
+                                <input type="number" step="0.1" className="input text-xs" value={(formData as any).weight || ''} onChange={e => setFormData({ ...formData, weight: e.target.value } as any)} />
+                            </div>
+                            <div className="form-group">
+                                <label className="label text-[9px] font-black uppercase">Temp (°C)</label>
+                                <input type="number" step="0.1" className="input text-xs" value={(formData as any).temperature || ''} onChange={e => setFormData({ ...formData, temperature: e.target.value } as any)} />
+                            </div>
+                            <div className="form-group">
+                                <label className="label text-[9px] font-black uppercase">BP (s/d)</label>
+                                <input type="text" className="input text-xs" placeholder="120/80" value={(formData as any).blood_pressure || ''} onChange={e => setFormData({ ...formData, blood_pressure: e.target.value } as any)} />
+                            </div>
+                            <div className="form-group">
+                                <label className="label text-[9px] font-black uppercase">Pulse (bpm)</label>
+                                <input type="number" className="input text-xs" value={(formData as any).pulse_rate || ''} onChange={e => setFormData({ ...formData, pulse_rate: e.target.value } as any)} />
+                            </div>
+                        </div>
                     </div>
 
                     <div className="form-group">
-                        <label className="label">Treatment Given *</label>
-                        <textarea className="textarea" placeholder="Describe clinical actions taken..." value={formData.treatment_given} onChange={(e) => setFormData({ ...formData, treatment_given: e.target.value })} required rows={3} />
+                        <label className="label text-[10px] font-black uppercase text-primary">Diagnosis / Clinical Impression *</label>
+                        <input type="text" className="input" placeholder="e.g. Acute Malaria, Severe Migraine" value={formData.diagnosis} onChange={(e) => setFormData({ ...formData, diagnosis: e.target.value })} required />
                     </div>
 
                     <div className="form-group">
-                        <label className="label">Clinical Notes</label>
-                        <textarea className="textarea" placeholder="Any additional observations or follow-ups needed..." value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} rows={3} />
+                        <label className="label text-[10px] font-black uppercase text-primary">Treatment & Prescriptions *</label>
+                        <textarea className="textarea" placeholder="List medications dispensed or actions taken..." value={formData.treatment_given} onChange={(e) => setFormData({ ...formData, treatment_given: e.target.value })} required rows={3} />
                     </div>
 
-                    <div className="modal-footer">
-                        <Button type="button" variant="outline" onClick={closeModal}>Cancel</Button>
-                        <Button type="submit" variant="primary" loading={isSubmitting} loadingText={editingRecord ? 'Updating...' : 'Saving...'}>
-                            {editingRecord ? 'Update Log' : 'Save Record'}
+                    <div className="form-group">
+                        <label className="label text-[10px] font-black uppercase text-secondary">Clinical Notes</label>
+                        <textarea className="textarea" placeholder="Internal notes for medical staff..." value={formData.notes || ''} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} rows={2} />
+                    </div>
+
+                    <div className="modal-footer pt-4">
+                        <Button type="button" variant="outline" className="font-black uppercase" onClick={closeModal}>Discard</Button>
+                        <Button type="submit" variant="primary" className="font-black uppercase shadow-lg px-8" loading={isSubmitting} loadingText="Saving Record...">
+                            {editingRecord ? 'Update Registry' : 'Finalize Visit Log'}
                         </Button>
                     </div>
                 </form>

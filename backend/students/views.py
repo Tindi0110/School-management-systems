@@ -1,4 +1,4 @@
-from rest_framework import viewsets, permissions, filters
+from rest_framework import viewsets, permissions, filters, status
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -392,6 +392,19 @@ class HealthRecordViewSet(viewsets.ModelViewSet):
         if student_id:
             queryset = queryset.filter(student_id=student_id)
         return queryset
+
+    def create(self, request, *args, **kwargs):
+        """Handle 1-to-1 update_or_create logic to prevent integrity errors"""
+        student_id = request.data.get('student')
+        if not student_id:
+            return Response({'error': 'Student ID is required'}, status=400)
+            
+        instance, created = HealthRecord.objects.update_or_create(
+            student_id=student_id,
+            defaults=request.data
+        )
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
 
 class ActivityRecordViewSet(viewsets.ModelViewSet):
     queryset = ActivityRecord.objects.select_related('student').all()

@@ -50,6 +50,7 @@ interface Payment {
 
 interface Invoice {
     id: number;
+    student: number; // Added to fix build error
     status: string;
     balance: string | number;
     academic_year_name: string;

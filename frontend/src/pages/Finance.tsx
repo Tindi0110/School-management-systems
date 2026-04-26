@@ -388,7 +388,8 @@ const Finance = () => {
                 </div>
                 {!isReadOnly && (
                     <div className="flex flex-wrap gap-2 w-full lg:w-auto mt-2 lg:mt-0">
-                        <Button variant="ghost" className="text-[10px] font-black uppercase" icon={<TrendingUp size={16} />} onClick={() => financeAPI.invoices.syncAll().then(r => success(r.data.message))}>Sync</Button>
+                        <Button variant="ghost" className="text-[10px] font-black uppercase" icon={<TrendingUp size={16} />} onClick={() => financeAPI.invoices.syncAll().then(r => success(r.data.message))}>Sync Invoices</Button>
+                        <Button variant="ghost" className="text-[10px] font-black uppercase text-amber-600" onClick={() => studentsAPI.syncAllBalances().then(r => success(`Sync Complete: ${r.data.updated_count} students updated`))}>Sync Balances</Button>
                         <Button variant="outline" className="text-purple-600 border-purple-200 text-[10px] font-black uppercase" onClick={() => setShowAdjustmentModal(true)}>Adjustment</Button>
                         <Button variant="outline" className="text-green-600 border-green-200 text-[10px] font-black uppercase" onClick={() => setShowMpesaModal(true)}>M-Pesa</Button>
                         <Button variant="outline" className="text-[10px] font-black uppercase" icon={<CreditCard size={16} />} onClick={() => setShowPaymentModal(true)}>Payment</Button>
