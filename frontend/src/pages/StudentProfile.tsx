@@ -111,7 +111,8 @@ const StudentProfile = () => {
                 academicsAPI.results.getAll({ student_id: Number(id) }).catch(e => { console.error("Results Load Fail", e); return { data: { results: [] } }; })
             ]);
             
-            setParents(parentsRes.data?.results ?? parentsRes.data ?? []);
+            const parentsLoaded = parentsRes.data?.results ?? parentsRes.data ?? [];
+            setParents(parentsLoaded);
 
             // Calculate unreturned books locally for accuracy
             const allLendings = libRes.data?.results ?? libRes.data ?? [];
@@ -120,12 +121,16 @@ const StudentProfile = () => {
 
             setResults(resRes.data?.results ?? resRes.data ?? []);
 
+            // Auto-fill emergency contact from primary guardian when health record is blank
+            const primaryGuardian = parentsLoaded.find((p: any) => p.is_primary) || parentsLoaded[0] || null;
             setHealthForm({
                 blood_group: studentRes.data.health_record?.blood_group || '',
                 allergies: studentRes.data.health_record?.allergies || '',
                 chronic_conditions: studentRes.data.health_record?.chronic_conditions || '',
-                emergency_contact_name: studentRes.data.health_record?.emergency_contact_name || studentRes.data.guardian_name || '',
-                emergency_contact_phone: studentRes.data.health_record?.emergency_contact_phone || studentRes.data.guardian_phone || '',
+                emergency_contact_name: studentRes.data.health_record?.emergency_contact_name
+                    || (primaryGuardian as any)?.full_name || '',
+                emergency_contact_phone: studentRes.data.health_record?.emergency_contact_phone
+                    || (primaryGuardian as any)?.phone || '',
                 student: Number(id)
             });
             setHealthId(studentRes.data.health_record?.id || null);
@@ -580,9 +585,8 @@ const StudentProfile = () => {
                     {activeTab === 'HEALTH' && (
                         <HealthWelfare
                             student={student}
+                            parents={parents}
                             healthId={healthId}
-                            emergencyContactName={student.health_record?.emergency_contact_name || student.guardian_name || 'N/A'}
-                            emergencyContactPhone={student.health_record?.emergency_contact_phone || student.guardian_phone || 'N/A'}
                             onUpdateMedical={() => setIsHealthModalOpen(true)}
                             onDeleteHealth={handleDeleteHealth}
                         />
