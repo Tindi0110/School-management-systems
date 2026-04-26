@@ -83,6 +83,10 @@ const StudentProfile = () => {
         chronic_conditions: '',
         emergency_contact_name: '',
         emergency_contact_phone: '',
+        height: '',
+        weight: '',
+        blood_pressure: '',
+        temperature: '',
         student: Number(id)
     });
     const [healthId, setHealthId] = useState<number | null>(null);
@@ -131,6 +135,10 @@ const StudentProfile = () => {
                     || (primaryGuardian as any)?.full_name || '',
                 emergency_contact_phone: studentRes.data.health_record?.emergency_contact_phone
                     || (primaryGuardian as any)?.phone || '',
+                height: studentRes.data.health_record?.height || '',
+                weight: studentRes.data.health_record?.weight || '',
+                blood_pressure: studentRes.data.health_record?.blood_pressure || '',
+                temperature: studentRes.data.health_record?.temperature || '',
                 student: Number(id)
             });
             setHealthId(studentRes.data.health_record?.id || null);

@@ -195,6 +195,12 @@ class HealthRecord(models.Model):
     emergency_contact_name = models.CharField(max_length=255)
     emergency_contact_phone = models.CharField(max_length=20)
     special_needs = models.TextField(blank=True)
+    
+    # Vital Signs baseline
+    height = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    weight = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    blood_pressure = models.CharField(max_length=20, blank=True)
+    temperature = models.DecimalField(max_digits=4, decimal_places=1, null=True, blank=True)
 
 class ActivityRecord(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='activities')

@@ -63,6 +63,26 @@ const HealthWelfare: React.FC<HealthWelfareProps> = ({
                                 {student.health_record?.blood_group || 'UNDECLARED'}
                             </span>
                         </div>
+                        <div className="grid grid-cols-2 gap-4 border-bottom pb-2">
+                            <div className="flex flex-col">
+                                <span className="text-[9px] font-bold text-secondary uppercase opacity-60">Height (cm)</span>
+                                <span className="text-[11px] font-black">{student.health_record?.height || '--'}</span>
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-[9px] font-bold text-secondary uppercase opacity-60">Weight (kg)</span>
+                                <span className="text-[11px] font-black">{student.health_record?.weight || '--'}</span>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4 border-bottom pb-2">
+                            <div className="flex flex-col">
+                                <span className="text-[9px] font-bold text-secondary uppercase opacity-60">Temperature</span>
+                                <span className="text-[11px] font-black">{student.health_record?.temperature ? `${student.health_record.temperature}°C` : '--'}</span>
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-[9px] font-bold text-secondary uppercase opacity-60">Blood Pressure</span>
+                                <span className="text-[11px] font-black">{student.health_record?.blood_pressure || '--'}</span>
+                            </div>
+                        </div>
                         <div className="flex flex-col gap-1">
                             <span className="text-[11px] font-black text-secondary uppercase opacity-70 tracking-tight">Known Allergies</span>
                             <p className={`text-[10px] font-black p-2 rounded uppercase ${

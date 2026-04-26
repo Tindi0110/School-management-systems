@@ -48,7 +48,7 @@ interface Payment {
     date_received?: string;
 }
 
-interface Invoice {
+interface InvoiceDetail {
     id: number;
     student: number; // Added to fix build error
     status: string;
@@ -121,8 +121,8 @@ interface FinanceModalsProps {
     handleAdjustmentSubmit: (e: FormEvent) => void;
 
     // Invoice Detail
-    selectedInvoice: Invoice | null;
-    setSelectedInvoice: (val: Invoice | null) => void;
+    selectedInvoice: InvoiceDetail | null;
+    setSelectedInvoice: (val: InvoiceDetail | null) => void;
     formatDate: (d: string) => string;
     formatDateTime: (d: string) => string;
 
@@ -132,8 +132,8 @@ interface FinanceModalsProps {
     uniqueClassNames: string[];
     students: Student[];
     setStudents: React.Dispatch<React.SetStateAction<Student[]>>;
-    activeStudentInvoices: Invoice[];
-    setActiveStudentInvoices: React.Dispatch<React.SetStateAction<Invoice[]>>;
+    activeStudentInvoices: InvoiceDetail[];
+    setActiveStudentInvoices: React.Dispatch<React.SetStateAction<InvoiceDetail[]>>;
     isSubmitting: boolean;
     studentsAPI: any;
     financeAPI: any;
@@ -509,8 +509,16 @@ const FinanceModals: React.FC<FinanceModalsProps> = ({
                         <div className="modal-action">
                             <Button variant="ghost" onClick={() => setSelectedInvoice(null)}>Close</Button>
                             <Button variant="outline" className="text-purple-600 border-purple-200" onClick={() => {
-                                setAdjForm({ student_id: String(selectedInvoice.student), invoice_id: String(selectedInvoice.id), amount: '', type: 'CREDIT', reason: '' });
-                                setShowAdjustmentModal(true);
+                                if (selectedInvoice) {
+                                    setAdjForm({ 
+                                        student_id: String((selectedInvoice as any).student), 
+                                        invoice_id: String(selectedInvoice.id), 
+                                        amount: '', 
+                                        type: 'CREDIT', 
+                                        reason: '' 
+                                    });
+                                    setShowAdjustmentModal(true);
+                                }
                             }}>Apply Waiver/Fine</Button>
                             <Button variant="outline" icon={<Printer size={16} />} onClick={() => window.print()}>Print / Save PDF</Button>
                         </div>
