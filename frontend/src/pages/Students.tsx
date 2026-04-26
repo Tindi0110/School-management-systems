@@ -236,7 +236,7 @@ const Students = () => {
                 date_of_birth: student.date_of_birth,
                 category: student.category || 'DAY',
                 status: student.status || 'ACTIVE',
-                current_class: student.current_class?.toString() || '',
+                current_class: student.current_class?.id?.toString() || student.current_class?.toString() || '',
                 guardian_name: autoGuardianName,
                 guardian_phone: autoGuardianPhone,
                 country_code: (autoGuardianPhone || '').startsWith('+') ? autoGuardianPhone.slice(0, 4) : '+254',
@@ -322,7 +322,7 @@ const Students = () => {
                             <td className="no-print">
                                 <div className="flex gap-2">
                                     <button 
-                                        className={`btn btn-sm ${s.user ? 'bg-success/10 text-success border-success/20 hover:bg-success/20' : 'btn-ghost text-primary opacity-50'}`} 
+                                        className={`btn btn-sm ${s.user ? 'bg-green-600 text-white hover:bg-green-700 shadow-sm border-none' : 'btn-ghost text-primary opacity-50'}`} 
                                         onClick={async () => {
                                             if (s.user) {
                                                 info(`User Account Linked: ID #${s.user}`);

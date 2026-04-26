@@ -215,7 +215,7 @@ export const authAPI = {
 };
 
 export const statsAPI = {
-  getDashboard: () => api.get('/stats/'),
+  getDashboard: () => api.get('stats/'),
 };
 
 export const studentsAPI = {

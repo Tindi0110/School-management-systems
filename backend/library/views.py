@@ -111,9 +111,10 @@ class BookViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'])
     def dashboard_stats(self, request):
+        from django.db.models import Sum
         total_books = Book.objects.count()
         total_copies = BookCopy.objects.count()
-        total_fines = sum(fine.amount for fine in LibraryFine.objects.filter(status='PENDING'))
+        total_fines = LibraryFine.objects.filter(status='PENDING').aggregate(total=Sum('amount'))['total'] or 0
         active_lendings = BookLending.objects.filter(date_returned__isnull=True).count()
         available_copies = BookCopy.objects.filter(status='AVAILABLE').count()
         overdue_lendings = BookLending.objects.filter(date_returned__isnull=True, due_date__lt=timezone.now().date()).count()
@@ -121,7 +122,7 @@ class BookViewSet(viewsets.ModelViewSet):
         return Response({
             'totalBooks': total_books,
             'totalCopies': total_copies,
-            'totalFines': total_fines,
+            'totalFines': float(total_fines),
             'activeLendings': active_lendings,
             'available': available_copies,
             'overdue': overdue_lendings
