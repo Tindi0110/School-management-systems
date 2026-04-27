@@ -137,8 +137,8 @@ class InvoiceViewSet(viewsets.ModelViewSet):
             'recentInvoices': recent_data,
             'context': active_context
         }
-        # Cache for 5 minutes
-        cache.set(cache_key, result, 300)
+        # Cache for 15 minutes
+        cache.set(cache_key, result, 900)
         return Response(result)
 
     @action(detail=False, methods=['post'])

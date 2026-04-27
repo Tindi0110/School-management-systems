@@ -119,9 +119,15 @@ const Library = () => {
     useEffect(() => {
         const initLibrary = async () => {
             try {
+                // 1. Load Stats first (Critical for UI header)
                 const statsRes = await libraryAPI.books.getDashboardStats();
                 setStats(statsRes.data);
-                await Promise.all([loadCatalog(), loadLendings(), loadFines(), loadStudents()]);
+                
+                // 2. Load lists sequentially to stay within DB connection limits (20 on Render Free)
+                await loadCatalog();
+                await loadLendings();
+                await loadFines();
+                await loadStudents();
             } catch (error) { 
                 console.error('Error initializing library:', error); 
                 toast.error("Network synchronization lag. Retrying...");

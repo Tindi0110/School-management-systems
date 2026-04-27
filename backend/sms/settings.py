@@ -96,7 +96,7 @@ WSGI_APPLICATION = 'sms.wsgi.application'
 DATABASES = {
     'default': dj_database_url.config(
         default=f"sqlite:///{os.path.join(BASE_DIR, 'db.sqlite3')}",
-        conn_max_age=60 # Enabled connection pooling to prevent HTTP handshake overhead on Render
+        conn_max_age=0 # Set to 0 to release connections immediately on low-limit databases (Render Free Tier)
     )
 }
 
@@ -211,8 +211,14 @@ REST_FRAMEWORK = {
 }
 
 # CORS
-CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:5173').split(',')
-CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', 'http://localhost:5173').split(',')
+CORS_ALLOWED_ORIGINS = os.getenv(
+    'CORS_ALLOWED_ORIGINS', 
+    'https://school-management-systems-4n8d.onrender.com,https://school-management-systems-tinditech.onrender.com,http://localhost:5173'
+).split(',')
+CSRF_TRUSTED_ORIGINS = os.getenv(
+    'CSRF_TRUSTED_ORIGINS', 
+    'https://school-management-systems-4n8d.onrender.com,https://school-management-systems-tinditech.onrender.com,http://localhost:5173'
+).split(',')
 CORS_ALLOW_CREDENTIALS = True
 FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173')
 

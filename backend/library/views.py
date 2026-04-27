@@ -111,6 +111,12 @@ class BookViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'])
     def dashboard_stats(self, request):
+        from django.core.cache import cache
+        cache_key = 'library_dashboard_stats'
+        cached_data = cache.get(cache_key)
+        if cached_data:
+            return Response(cached_data)
+
         from django.db.models import Sum
         total_books = Book.objects.count()
         total_copies = BookCopy.objects.count()
@@ -119,14 +125,17 @@ class BookViewSet(viewsets.ModelViewSet):
         available_copies = BookCopy.objects.filter(status='AVAILABLE').count()
         overdue_lendings = BookLending.objects.filter(date_returned__isnull=True, due_date__lt=timezone.now().date()).count()
 
-        return Response({
+        result = {
             'totalBooks': total_books,
             'totalCopies': total_copies,
             'totalFines': float(total_fines),
             'activeLendings': active_lendings,
             'available': available_copies,
             'overdue': overdue_lendings
-        })
+        }
+        # Cache for 15 minutes
+        cache.set(cache_key, result, 900)
+        return Response(result)
 
 class BookCopyViewSet(viewsets.ModelViewSet):
     queryset = BookCopy.objects.select_related('book').all()

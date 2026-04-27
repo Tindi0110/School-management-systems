@@ -83,22 +83,23 @@ const Students = () => {
                 params.current_class = selectedClassId;
             }
 
-            const [studentsRes, classesRes, globalStatsRes] = await Promise.all([
-                studentsAPI.getAll(params),
-                academicsAPI.classes.getAll({ page_size: 100 }),
-                statsAPI.getDashboard(),
-            ]);
+            // 1. Load Classes first (Metadata needed for UI navigator)
+            const classesRes = await academicsAPI.classes.getAll({ page_size: 100 });
+            setClasses(classesRes.data?.results ?? classesRes.data ?? []);
 
+            // 2. Load Students List (Main Content)
+            const studentsRes = await studentsAPI.getAll(params);
             setStudents(studentsRes.data?.results ?? studentsRes.data ?? []);
             setTotalItems(studentsRes.data?.count ?? (studentsRes.data?.results ? studentsRes.data.results.length : 0));
 
+            // 3. Load Global Stats (Background)
+            const globalStatsRes = await statsAPI.getDashboard();
             const counts = globalStatsRes.data?.counts || {};
             setInstitutionalTotal(counts.total_students || 0);
             setActiveCount(counts.active_students || 0);
             setBoarderCount(counts.boarder_count || 0);
             setDayScholarCount(counts.day_scholar_count || 0);
 
-            setClasses(classesRes.data?.results ?? classesRes.data ?? []);
         } catch (error) {
             errorToast("Failed to load students.");
         } finally {

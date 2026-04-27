@@ -41,6 +41,12 @@ class HostelViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'])
     def dashboard_stats(self, request):
+        from django.core.cache import cache
+        cache_key = 'hostel_dashboard_stats'
+        cached_data = cache.get(cache_key)
+        if cached_data:
+            return Response(cached_data)
+
         try:
             hostels = Hostel.objects.all()
             total_hostels = hostels.count()
@@ -50,12 +56,15 @@ class HostelViewSet(viewsets.ModelViewSet):
             # Maintenance issues (Pending + In Progress)
             maintenance_issues = HostelMaintenance.objects.exclude(status='COMPLETED').count()
             
-            return Response({
+            result = {
                 'totalHostels': total_hostels,
                 'totalCapacity': total_capacity,
                 'totalResidents': total_residents,
                 'maintenanceIssues': maintenance_issues
-            })
+            }
+            # Cache for 15 minutes
+            cache.set(cache_key, result, 900)
+            return Response(result)
         except Exception as e:
             print(f"Hostel Stats Error: {str(e)}")
             return Response({"error": str(e)}, status=500)

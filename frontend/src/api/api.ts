@@ -6,6 +6,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000
 // Create axios instance
 const api = axios.create({
   baseURL: API_BASE_URL.endsWith('/') ? API_BASE_URL : `${API_BASE_URL}/`,
+  timeout: 30000, // 30 seconds
   headers: {
     'Content-Type': 'application/json',
   },
@@ -14,7 +15,12 @@ const api = axios.create({
 // --- Network Resilience (Axios Retry) ---
 axiosRetry(api, {
   retries: 3,
-  retryDelay: axiosRetry.exponentialDelay,
+  retryDelay: (retryCount) => {
+    // Exponential backoff with jitter
+    const delay = Math.pow(2, retryCount) * 1000;
+    const jitter = Math.random() * 1000;
+    return delay + jitter;
+  },
   retryCondition: (error) => {
     // Retry on 5xx errors or network errors
     return axiosRetry.isNetworkOrIdempotentRequestError(error) || 

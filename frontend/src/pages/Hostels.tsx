@@ -86,12 +86,24 @@ const Hostels = () => {
         setLoading(hostels.length === 0);
         try {
             const d = (r: any) => r?.data?.results ?? r?.data ?? [];
-            const [hRes, sRes, studRes, rRes, bRes, stfRes, allAllocRes] = await Promise.all([
-                hostelAPI.hostels.getAll(), hostelAPI.hostels.getStats(), studentsAPI.getAll({ page_size: 500 }),
-                hostelAPI.rooms.getAll({ page_size: 1000 }), hostelAPI.beds.getAll({ page_size: 3000 }), staffAPI.getAll({ page_size: 200 }),
+            
+            // Stage 1: Load Core Data & Stats (Critical for UI)
+            const [hRes, sRes, allAllocRes] = await Promise.all([
+                hostelAPI.hostels.getAll(), 
+                hostelAPI.hostels.getStats(),
                 hostelAPI.allocations.getAll({ status: 'ACTIVE', page_size: 500 })
             ]);
-            setHostels(d(hRes)); setStats(sRes.data); setStudents(d(studRes)); setRooms(d(rRes)); setBeds(d(bRes)); setStaff(d(stfRes)); setAllAllocations(d(allAllocRes));
+            setHostels(d(hRes)); setStats(sRes.data); setAllAllocations(d(allAllocRes));
+
+            // Stage 2: Load Metadata (Large datasets that can follow)
+            const [studRes, rRes, bRes, stfRes] = await Promise.all([
+                studentsAPI.getAll({ page_size: 500 }),
+                hostelAPI.rooms.getAll({ page_size: 1000 }), 
+                hostelAPI.beds.getAll({ page_size: 3000 }), 
+                staffAPI.getAll({ page_size: 200 })
+            ]);
+            setStudents(d(studRes)); setRooms(d(rRes)); setBeds(d(bRes)); setStaff(d(stfRes));
+            
             loadTabSpecificData();
         } catch (err: any) {
             const msg = err?.message || "Failed to load hostel data. Please refresh.";

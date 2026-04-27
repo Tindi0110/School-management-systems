@@ -106,7 +106,7 @@ def dashboard_stats(request):
         'events': events_data[:5] # Return top 5 combined
     }
     
-    # Cache for 15 minutes
-    cache.set(DASHBOARD_CACHE_KEY, response_data, 60 * 15)
+    # Cache for 30 minutes (1800s) - significantly reduces DB load
+    cache.set(DASHBOARD_CACHE_KEY, response_data, 1800)
     
     return Response(response_data)
