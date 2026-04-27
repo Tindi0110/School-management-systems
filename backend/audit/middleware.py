@@ -28,6 +28,7 @@ class AuditMiddleware(MiddlewareMixin):
                     # Perform the creation in a background thread
                     import threading
                     def log_change():
+                        from django.db import connection
                         try:
                             AuditLog.objects.create(
                                 user=user,
@@ -38,6 +39,8 @@ class AuditMiddleware(MiddlewareMixin):
                             )
                         except Exception as e:
                             logger.error(f"Async Audit Logging Error: {str(e)}")
+                        finally:
+                            connection.close() # CRITICAL: Close thread-local connection
 
                     threading.Thread(target=log_change, daemon=True).start()
                 except Exception as e:

@@ -130,6 +130,4 @@ urlpatterns = [
     path('api/', include(router.urls)),
     path('api/audit/', include('audit.urls')),
     path('api/stats/', dashboard_stats, name='dashboard_stats'),
-    # Catch-all for SPA handling (Must be last)
-    re_path(r'^.*$', TemplateView.as_view(template_name='index.html')),
 ]
