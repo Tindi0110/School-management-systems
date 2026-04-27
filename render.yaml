@@ -3,8 +3,8 @@ services:
   - type: web
     name: sms-backend
     env: python
-    buildCommand: ./build.sh
-    startCommand: gunicorn sms.wsgi:application
+    buildCommand: cd backend && ./build.sh
+    startCommand: cd backend && gunicorn sms.wsgi:application
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -23,8 +23,8 @@ services:
   - type: web
     name: sms-frontend
     env: static
-    buildCommand: npm run build
-    staticPublishDir: dist
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishDir: frontend/dist
     envVars:
       - key: VITE_API_BASE_URL
         fromService:
