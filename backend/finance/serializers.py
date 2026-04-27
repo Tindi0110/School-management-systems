@@ -56,8 +56,8 @@ class AdjustmentSerializer(serializers.ModelSerializer):
 class InvoiceListSerializer(serializers.ModelSerializer):
     student_name = serializers.CharField(source='student.full_name', read_only=True)
     admission_number = serializers.CharField(source='student.admission_number', read_only=True)
-    class_name = serializers.CharField(source='student.current_class.name', read_only=True, default=None)
-    stream_name = serializers.CharField(source='student.current_class.stream', read_only=True, default=None)
+    class_name = serializers.SerializerMethodField()
+    stream_name = serializers.SerializerMethodField()
     academic_year_name = serializers.CharField(source='academic_year.name', read_only=True)
     
     class Meta:
@@ -68,12 +68,22 @@ class InvoiceListSerializer(serializers.ModelSerializer):
             'term', 'total_amount', 'paid_amount', 'balance', 'status', 'date_generated', 'created_at'
         ]
 
+    def get_class_name(self, obj):
+        if obj.student and obj.student.current_class:
+            return obj.student.current_class.name
+        return 'General'
+
+    def get_stream_name(self, obj):
+        if obj.student and obj.student.current_class:
+            return obj.student.current_class.stream
+        return ''
+
 class InvoiceSerializer(serializers.ModelSerializer):
     student_name = serializers.CharField(source='student.full_name', read_only=True)
     academic_year_name = serializers.CharField(source='academic_year.name', read_only=True)
     admission_number = serializers.CharField(source='student.admission_number', read_only=True)
-    class_name = serializers.CharField(source='student.current_class.name', read_only=True, default=None)
-    stream_name = serializers.CharField(source='student.current_class.stream', read_only=True, default=None)
+    class_name = serializers.SerializerMethodField()
+    stream_name = serializers.SerializerMethodField()
     items = InvoiceItemSerializer(many=True, read_only=True)
     payments = PaymentSerializer(many=True, read_only=True)
     adjustments = AdjustmentSerializer(many=True, read_only=True)
@@ -82,6 +92,16 @@ class InvoiceSerializer(serializers.ModelSerializer):
         model = Invoice
         fields = '__all__'
         read_only_fields = ['total_amount', 'paid_amount', 'balance', 'status', 'items', 'is_finalized', 'adjustments']
+
+    def get_class_name(self, obj):
+        if obj.student and obj.student.current_class:
+            return obj.student.current_class.name
+        return 'General'
+
+    def get_stream_name(self, obj):
+        if obj.student and obj.student.current_class:
+            return obj.student.current_class.stream
+        return ''
 
 class ExpenseListSerializer(serializers.ModelSerializer):
     class Meta:

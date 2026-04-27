@@ -19,20 +19,37 @@ from .serializers import (
 from accounts.permissions import IsAdminOrRegistrar, IsAdminUser
 
 class StudentViewSet(viewsets.ModelViewSet):
-    queryset = Student.objects.select_related(
-        'current_class', 'user',
-        'hostel_allocation__room__hostel',
-        'hostel_allocation__bed',
-        'admission_details',
-        'health_record',
-    ).prefetch_related(
-        'parents',
-        'documents',
-    ).annotate(
-        avg_score=Avg('results__score'),
-        attendance_total=Count('attendance'),
-        attendance_present=Count('attendance', filter=Q(attendance__status='PRESENT'))
-    ).order_by('admission_number')
+    def get_queryset(self):
+        """
+        Optimized queryset based on action to prevent heavy join overhead on list views.
+        List view (Registry) only needs class and basic user/parent info.
+        Detail view needs full profile including hostels, health, and documents.
+        """
+        if self.action == 'list':
+            return Student.objects.select_related(
+                'current_class', 'user'
+            ).prefetch_related(
+                'parents'
+            ).annotate(
+                avg_score=Avg('results__score'),
+                attendance_total=Count('attendance', distinct=True),
+                attendance_present=Count('attendance', filter=Q(attendance__status='PRESENT'), distinct=True)
+            ).order_by('admission_number')
+            
+        return Student.objects.select_related(
+            'current_class', 'user',
+            'hostel_allocation__room__hostel',
+            'hostel_allocation__bed',
+            'admission_details',
+            'health_record',
+        ).prefetch_related(
+            'parents',
+            'documents',
+        ).annotate(
+            avg_score=Avg('results__score'),
+            attendance_total=Count('attendance', distinct=True),
+            attendance_present=Count('attendance', filter=Q(attendance__status='PRESENT'), distinct=True)
+        ).order_by('admission_number')
 
     def get_serializer_class(self):
         if self.action == 'list':
