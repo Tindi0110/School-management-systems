@@ -30,6 +30,8 @@ class StudentViewSet(viewsets.ModelViewSet):
         'documents',
     ).annotate(
         avg_score=Avg('results__score'),
+        attendance_total=Count('attendance'),
+        attendance_present=Count('attendance', filter=Q(attendance__status='PRESENT'))
     ).order_by('admission_number')
 
     def get_serializer_class(self):
