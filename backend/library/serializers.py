@@ -5,10 +5,15 @@ from .models import (
 )
 
 class LibraryConfigSerializer(serializers.ModelSerializer):
-    librarian_name = serializers.CharField(source='librarian.get_full_name', read_only=True)
+    librarian_name = serializers.SerializerMethodField()
     class Meta:
         model = LibraryConfig
         fields = '__all__'
+    
+    def get_librarian_name(self, obj):
+        if obj.librarian:
+            return obj.librarian.get_full_name() or obj.librarian.username
+        return 'System Assigned'
 
 class BookCopySerializer(serializers.ModelSerializer):
     book_title = serializers.CharField(source='book.title', read_only=True)
@@ -40,13 +45,18 @@ class BookSerializer(serializers.ModelSerializer):
 class BookLendingSerializer(serializers.ModelSerializer):
     book_title = serializers.CharField(source='copy.book.title', read_only=True)
     copy_number = serializers.CharField(source='copy.copy_number', read_only=True)
-    user_name = serializers.CharField(source='user.get_full_name', read_only=True)
+    user_name = serializers.SerializerMethodField()
     is_overdue = serializers.SerializerMethodField()
     
     class Meta:
         model = BookLending
         fields = '__all__'
         
+    def get_user_name(self, obj):
+        if obj.user:
+            return obj.user.get_full_name() or obj.user.username
+        return 'Unknown'
+
     def get_is_overdue(self, obj):
         from django.utils import timezone
         if obj.date_returned:
@@ -54,14 +64,24 @@ class BookLendingSerializer(serializers.ModelSerializer):
         return timezone.now().date() > obj.due_date
 
 class LibraryFineSerializer(serializers.ModelSerializer):
-    user_name = serializers.CharField(source='user.get_full_name', read_only=True)
+    user_name = serializers.SerializerMethodField()
     class Meta:
         model = LibraryFine
         fields = '__all__'
 
+    def get_user_name(self, obj):
+        if obj.user:
+            return obj.user.get_full_name() or obj.user.username
+        return 'Unknown'
+
 class BookReservationSerializer(serializers.ModelSerializer):
     book_title = serializers.CharField(source='book.title', read_only=True)
-    user_name = serializers.CharField(source='user.get_full_name', read_only=True)
+    user_name = serializers.SerializerMethodField()
     class Meta:
         model = BookReservation
         fields = '__all__'
+
+    def get_user_name(self, obj):
+        if obj.user:
+            return obj.user.get_full_name() or obj.user.username
+        return 'Unknown'
