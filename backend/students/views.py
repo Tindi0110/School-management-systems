@@ -19,6 +19,8 @@ from .serializers import (
 from accounts.permissions import IsAdminOrRegistrar, IsAdminUser
 
 class StudentViewSet(viewsets.ModelViewSet):
+    queryset = Student.objects.all()
+
     def get_queryset(self):
         """
         Optimized queryset based on action to prevent heavy join overhead on list views.
