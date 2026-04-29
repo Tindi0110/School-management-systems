@@ -1,0 +1,3808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <title>ImproperlyConfigured
+          at /api/students/</title>
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background-color:#fff; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; }
+    h2 { margin-bottom:.8em; }
+    h3 { margin:1em 0 .5em 0; }
+    h4 { margin:0 0 .5em 0; font-weight: normal; }
+    code, pre { font-size: 100%; white-space: pre-wrap; word-break: break-word; }
+    summary { cursor: pointer; }
+    table { border:1px solid #ccc; border-collapse: collapse; width:100%; background:white; }
+    tbody td, tbody th { vertical-align:top; padding:2px 3px; }
+    thead th {
+      padding:1px 6px 1px 3px; background:#fefefe; text-align:left;
+      font-weight:normal; font-size: 0.6875rem; border:1px solid #ddd;
+    }
+    tbody th { width:12em; text-align:right; color:#666; padding-right:.5em; }
+    table.vars { margin:5px 10px 2px 40px; width: auto; }
+    table.vars td, table.req td { font-family:monospace; }
+    table td.code { width:100%; }
+    table td.code pre { overflow:hidden; }
+    table.source th { color:#666; }
+    table.source td { font-family:monospace; white-space:pre; border-bottom:1px solid #eee; }
+    ul.traceback { list-style-type:none; color: #222; }
+    ul.traceback li.cause { word-break: break-word; }
+    ul.traceback li.frame { padding-bottom:1em; color:#4f4f4f; }
+    ul.traceback li.user { background-color:#e0e0e0; color:#000 }
+    div.context { padding:10px 0; overflow:hidden; }
+    div.context ol { padding-left:30px; margin:0 10px; list-style-position: inside; }
+    div.context ol li { font-family:monospace; white-space:pre; color:#777; cursor:pointer; padding-left: 2px; }
+    div.context ol li pre { display:inline; }
+    div.context ol.context-line li { color:#464646; background-color:#dfdfdf; padding: 3px 2px; }
+    div.context ol.context-line li span { position:absolute; right:32px; }
+    .user div.context ol.context-line li { background-color:#bbb; color:#000; }
+    .user div.context ol li { color:#666; }
+    div.commands, summary.commands { margin-left: 40px; }
+    div.commands a, summary.commands { color:#555; text-decoration:none; }
+    .user div.commands a { color: black; }
+    #summary { background: #ffc; }
+    #summary h2 { font-weight: normal; color: #666; }
+    #info { padding: 0; }
+    #info > * { padding:10px 20px; }
+    #explanation { background:#eee; }
+    #template, #template-not-exist { background:#f6f6f6; }
+    #template-not-exist ul { margin: 0 0 10px 20px; }
+    #template-not-exist .postmortem-section { margin-bottom: 3px; }
+    #unicode-hint { background:#eee; }
+    #traceback { background:#eee; }
+    #requestinfo { background:#f6f6f6; padding-left:120px; }
+    #summary table { border:none; background:transparent; }
+    #requestinfo h2, #requestinfo h3 { position:relative; margin-left:-100px; }
+    #requestinfo h3 { margin-bottom:-1em; }
+    .error { background: #ffc; }
+    .specific { color:#cc3300; font-weight:bold; }
+    h2 span.commands { font-size: 0.7rem; font-weight:normal; }
+    span.commands a:link {color:#5E5694;}
+    pre.exception_value { font-family: sans-serif; color: #575757; font-size: 1.5rem; margin: 10px 0 10px 0; }
+    .append-bottom { margin-bottom: 10px; }
+    .fname { user-select: all; }
+  </style>
+  
+  <script>
+    function hideAll(elems) {
+      for (var e = 0; e < elems.length; e++) {
+        elems[e].style.display = 'none';
+      }
+    }
+    window.onload = function() {
+      hideAll(document.querySelectorAll('ol.pre-context'));
+      hideAll(document.querySelectorAll('ol.post-context'));
+      hideAll(document.querySelectorAll('div.pastebin'));
+    }
+    function toggle() {
+      for (var i = 0; i < arguments.length; i++) {
+        var e = document.getElementById(arguments[i]);
+        if (e) {
+          e.style.display = e.style.display == 'none' ? 'block': 'none';
+        }
+      }
+      return false;
+    }
+    function switchPastebinFriendly(link) {
+      s1 = "Switch to copy-and-paste view";
+      s2 = "Switch back to interactive view";
+      link.textContent = link.textContent.trim() == s1 ? s2: s1;
+      toggle('browserTraceback', 'pastebinTraceback');
+      return false;
+    }
+  </script>
+  
+</head>
+<body>
+<header id="summary">
+  <h1>ImproperlyConfigured
+       at /api/students/</h1>
+  <pre class="exception_value">Field name `guardian_email` is not valid for model `Student` in `students.serializers.StudentListSerializer`.</pre>
+  <table class="meta">
+
+    <tr>
+      <th scope="row">Request Method:</th>
+      <td>GET</td>
+    </tr>
+    <tr>
+      <th scope="row">Request URL:</th>
+      <td>http://localhost:8000/api/students/</td>
+    </tr>
+
+    <tr>
+      <th scope="row">Django Version:</th>
+      <td>6.0.1</td>
+    </tr>
+
+    <tr>
+      <th scope="row">Exception Type:</th>
+      <td>ImproperlyConfigured</td>
+    </tr>
+
+
+    <tr>
+      <th scope="row">Exception Value:</th>
+      <td><pre>Field name `guardian_email` is not valid for model `Student` in `students.serializers.StudentListSerializer`.</pre></td>
+    </tr>
+
+
+    <tr>
+      <th scope="row">Exception Location:</th>
+      <td><span class="fname">C:\Users\Evans\School management system\backend\venv\Lib\site-packages\rest_framework\serializers.py</span>, line 1369, in build_unknown_field</td>
+    </tr>
+
+
+    <tr>
+      <th scope="row">Raised during:</th>
+      <td>students.views.StudentViewSet</td>
+    </tr>
+
+    <tr>
+      <th scope="row">Python Executable:</th>
+      <td>C:\Users\Evans\School management system\backend\venv\Scripts\python.exe</td>
+    </tr>
+    <tr>
+      <th scope="row">Python Version:</th>
+      <td>3.13.5</td>
+    </tr>
+    <tr>
+      <th scope="row">Python Path:</th>
+      <td><pre><code>[&#x27;C:\\Users\\Evans\\School management system\\backend&#x27;,
+ &#x27;C:\\Users\\Evans\\AppData\\Local\\Programs\\Python\\Python313\\python313.zip&#x27;,
+ &#x27;C:\\Users\\Evans\\AppData\\Local\\Programs\\Python\\Python313\\DLLs&#x27;,
+ &#x27;C:\\Users\\Evans\\AppData\\Local\\Programs\\Python\\Python313\\Lib&#x27;,
+ &#x27;C:\\Users\\Evans\\AppData\\Local\\Programs\\Python\\Python313&#x27;,
+ &#x27;C:\\Users\\Evans\\School management system\\backend\\venv&#x27;,
+ &#x27;C:\\Users\\Evans\\School management &#x27;
+ &#x27;system\\backend\\venv\\Lib\\site-packages&#x27;]</code></pre></td>
+    </tr>
+    <tr>
+      <th scope="row">Server time:</th>
+      <td>Wed, 29 Apr 2026 22:43:29 +0300</td>
+    </tr>
+  </table>
+</header>
+
+<main id="info">
+
+
+
+
+<div id="traceback">
+  <h2>Traceback <span class="commands"><a href="#" role="button" onclick="return switchPastebinFriendly(this);">
+    Switch to copy-and-paste view</a></span>
+  </h2>
+  <div id="browserTraceback">
+    <ul class="traceback">
+      
+        
+        <li class="frame django">
+          
+            <code class="fname">C:\Users\Evans\School management system\backend\venv\Lib\site-packages\django\core\handlers\exception.py</code>, line 55, in inner
+          
+
+          
+            <div class="context" id="c2107819421120">
+              
+                <ol start="48" class="pre-context" id="pre2107819421120">
+                
+                  <li onclick="toggle('pre2107819421120', 'post2107819421120')"><pre></pre></li>
+                
+                  <li onclick="toggle('pre2107819421120', 'post2107819421120')"><pre>        return inner</pre></li>
+                
+                  <li onclick="toggle('pre2107819421120', 'post2107819421120')"><pre>    else:</pre></li>
+                
+                  <li onclick="toggle('pre2107819421120', 'post2107819421120')"><pre></pre></li>
+                
+                  <li onclick="toggle('pre2107819421120', 'post2107819421120')"><pre>        @wraps(get_response)</pre></li>
+                
+                  <li onclick="toggle('pre2107819421120', 'post2107819421120')"><pre>        def inner(request):</pre></li>
+                
+                  <li onclick="toggle('pre2107819421120', 'post2107819421120')"><pre>            try:</pre></li>
+                
+                </ol>
+              
+              <ol start="55" class="context-line">
+                <li onclick="toggle('pre2107819421120', 'post2107819421120')"><pre>                response = get_response(request)
+                               ^^^^^^^^^^^^^^^^^^^^^</pre> <span>â¦</span></li>
+              </ol>
+              
+                <ol start='56' class="post-context" id="post2107819421120">
+                  
+                  <li onclick="toggle('pre2107819421120', 'post2107819421120')"><pre>            except Exception as exc:</pre></li>
+                  
+                  <li onclick="toggle('pre2107819421120', 'post2107819421120')"><pre>                response = response_for_exception(request, exc)</pre></li>
+                  
+                  <li onclick="toggle('pre2107819421120', 'post2107819421120')"><pre>            return response</pre></li>
+                  
+                  <li onclick="toggle('pre2107819421120', 'post2107819421120')"><pre></pre></li>
+                  
+                  <li onclick="toggle('pre2107819421120', 'post2107819421120')"><pre>        return inner</pre></li>
+                  
+                  <li onclick="toggle('pre2107819421120', 'post2107819421120')"><pre></pre></li>
+                  
+              </ol>
+              
+            </div>
+          
+
+          
+            
+              <details>
+                <summary class="commands">Local vars</summary>
+            
+            <table class="vars" id="v2107819421120">
+              <thead>
+                <tr>
+                  <th scope="col">Variable</th>
+                  <th scope="col">Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                
+                  <tr>
+                    <td>exc</td>
+                    <td class="code"><pre>ImproperlyConfigured(&#x27;Field name `guardian_email` is not valid for model `Student` in `students.serializers.StudentListSerializer`.&#x27;)</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>get_response</td>
+                    <td class="code"><pre>&lt;bound method BaseHandler._get_response of &lt;django.core.handlers.wsgi.WSGIHandler object at 0x000001EAC1534AD0&gt;&gt;</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>request</td>
+                    <td class="code"><pre>&lt;WSGIRequest: GET &#x27;/api/students/&#x27;&gt;</pre></td>
+                  </tr>
+                
+              </tbody>
+            </table>
+            </details>
+          
+        </li>
+      
+        
+        <li class="frame django">
+          
+            <code class="fname">C:\Users\Evans\School management system\backend\venv\Lib\site-packages\django\core\handlers\base.py</code>, line 198, in _get_response
+          
+
+          
+            <div class="context" id="c2107819421056">
+              
+                <ol start="191" class="pre-context" id="pre2107819421056">
+                
+                  <li onclick="toggle('pre2107819421056', 'post2107819421056')"><pre></pre></li>
+                
+                  <li onclick="toggle('pre2107819421056', 'post2107819421056')"><pre>        if response is None:</pre></li>
+                
+                  <li onclick="toggle('pre2107819421056', 'post2107819421056')"><pre>            wrapped_callback = self.make_view_atomic(callback)</pre></li>
+                
+                  <li onclick="toggle('pre2107819421056', 'post2107819421056')"><pre>            # If it is an asynchronous view, run it in a subthread.</pre></li>
+                
+                  <li onclick="toggle('pre2107819421056', 'post2107819421056')"><pre>            if iscoroutinefunction(wrapped_callback):</pre></li>
+                
+                  <li onclick="toggle('pre2107819421056', 'post2107819421056')"><pre>                wrapped_callback = async_to_sync(wrapped_callback)</pre></li>
+                
+                  <li onclick="toggle('pre2107819421056', 'post2107819421056')"><pre>            try:</pre></li>
+                
+                </ol>
+              
+              <ol start="198" class="context-line">
+                <li onclick="toggle('pre2107819421056', 'post2107819421056')"><pre>                response = wrapped_callback(request, *callback_args, **callback_kwargs)
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</pre> <span>â¦</span></li>
+              </ol>
+              
+                <ol start='199' class="post-context" id="post2107819421056">
+                  
+                  <li onclick="toggle('pre2107819421056', 'post2107819421056')"><pre>            except Exception as e:</pre></li>
+                  
+                  <li onclick="toggle('pre2107819421056', 'post2107819421056')"><pre>                response = self.process_exception_by_middleware(e, request)</pre></li>
+                  
+                  <li onclick="toggle('pre2107819421056', 'post2107819421056')"><pre>                if response is None:</pre></li>
+                  
+                  <li onclick="toggle('pre2107819421056', 'post2107819421056')"><pre>                    raise</pre></li>
+                  
+                  <li onclick="toggle('pre2107819421056', 'post2107819421056')"><pre></pre></li>
+                  
+                  <li onclick="toggle('pre2107819421056', 'post2107819421056')"><pre>        # Complain if the view returned None (a common error).</pre></li>
+                  
+              </ol>
+              
+            </div>
+          
+
+          
+            
+              <details>
+                <summary class="commands">Local vars</summary>
+            
+            <table class="vars" id="v2107819421056">
+              <thead>
+                <tr>
+                  <th scope="col">Variable</th>
+                  <th scope="col">Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                
+                  <tr>
+                    <td>callback</td>
+                    <td class="code"><pre>&lt;function StudentViewSet at 0x000001EAC331CAE0&gt;</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>callback_args</td>
+                    <td class="code"><pre>()</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>callback_kwargs</td>
+                    <td class="code"><pre>{}</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>middleware_method</td>
+                    <td class="code"><pre>&lt;bound method CsrfViewMiddleware.process_view of &lt;CsrfViewMiddleware get_response=convert_exception_to_response.&lt;locals&gt;.inner&gt;&gt;</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>request</td>
+                    <td class="code"><pre>&lt;WSGIRequest: GET &#x27;/api/students/&#x27;&gt;</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>response</td>
+                    <td class="code"><pre>None</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>self</td>
+                    <td class="code"><pre>&lt;django.core.handlers.wsgi.WSGIHandler object at 0x000001EAC1534AD0&gt;</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>wrapped_callback</td>
+                    <td class="code"><pre>&lt;function StudentViewSet at 0x000001EAC331CAE0&gt;</pre></td>
+                  </tr>
+                
+              </tbody>
+            </table>
+            </details>
+          
+        </li>
+      
+        
+        <li class="frame django">
+          
+            <code class="fname">C:\Users\Evans\School management system\backend\venv\Lib\site-packages\django\views\decorators\csrf.py</code>, line 65, in _view_wrapper
+          
+
+          
+            <div class="context" id="c2107819420992">
+              
+                <ol start="58" class="pre-context" id="pre2107819420992">
+                
+                  <li onclick="toggle('pre2107819420992', 'post2107819420992')"><pre></pre></li>
+                
+                  <li onclick="toggle('pre2107819420992', 'post2107819420992')"><pre>        async def _view_wrapper(request, *args, **kwargs):</pre></li>
+                
+                  <li onclick="toggle('pre2107819420992', 'post2107819420992')"><pre>            return await view_func(request, *args, **kwargs)</pre></li>
+                
+                  <li onclick="toggle('pre2107819420992', 'post2107819420992')"><pre></pre></li>
+                
+                  <li onclick="toggle('pre2107819420992', 'post2107819420992')"><pre>    else:</pre></li>
+                
+                  <li onclick="toggle('pre2107819420992', 'post2107819420992')"><pre></pre></li>
+                
+                  <li onclick="toggle('pre2107819420992', 'post2107819420992')"><pre>        def _view_wrapper(request, *args, **kwargs):</pre></li>
+                
+                </ol>
+              
+              <ol start="65" class="context-line">
+                <li onclick="toggle('pre2107819420992', 'post2107819420992')"><pre>            return view_func(request, *args, **kwargs)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</pre> <span>â¦</span></li>
+              </ol>
+              
+                <ol start='66' class="post-context" id="post2107819420992">
+                  
+                  <li onclick="toggle('pre2107819420992', 'post2107819420992')"><pre></pre></li>
+                  
+                  <li onclick="toggle('pre2107819420992', 'post2107819420992')"><pre>    _view_wrapper.csrf_exempt = True</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420992', 'post2107819420992')"><pre></pre></li>
+                  
+                  <li onclick="toggle('pre2107819420992', 'post2107819420992')"><pre>    return wraps(view_func)(_view_wrapper)</pre></li>
+                  
+              </ol>
+              
+            </div>
+          
+
+          
+            
+              <details>
+                <summary class="commands">Local vars</summary>
+            
+            <table class="vars" id="v2107819420992">
+              <thead>
+                <tr>
+                  <th scope="col">Variable</th>
+                  <th scope="col">Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                
+                  <tr>
+                    <td>args</td>
+                    <td class="code"><pre>()</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>kwargs</td>
+                    <td class="code"><pre>{}</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>request</td>
+                    <td class="code"><pre>&lt;WSGIRequest: GET &#x27;/api/students/&#x27;&gt;</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>view_func</td>
+                    <td class="code"><pre>&lt;function StudentViewSet at 0x000001EAC331CA40&gt;</pre></td>
+                  </tr>
+                
+              </tbody>
+            </table>
+            </details>
+          
+        </li>
+      
+        
+        <li class="frame user">
+          
+            <code class="fname">C:\Users\Evans\School management system\backend\venv\Lib\site-packages\rest_framework\viewsets.py</code>, line 125, in view
+          
+
+          
+            <div class="context" id="c2107819399616">
+              
+                <ol start="118" class="pre-context" id="pre2107819399616">
+                
+                  <li onclick="toggle('pre2107819399616', 'post2107819399616')"><pre>                setattr(self, method, handler)</pre></li>
+                
+                  <li onclick="toggle('pre2107819399616', 'post2107819399616')"><pre></pre></li>
+                
+                  <li onclick="toggle('pre2107819399616', 'post2107819399616')"><pre>            self.request = request</pre></li>
+                
+                  <li onclick="toggle('pre2107819399616', 'post2107819399616')"><pre>            self.args = args</pre></li>
+                
+                  <li onclick="toggle('pre2107819399616', 'post2107819399616')"><pre>            self.kwargs = kwargs</pre></li>
+                
+                  <li onclick="toggle('pre2107819399616', 'post2107819399616')"><pre></pre></li>
+                
+                  <li onclick="toggle('pre2107819399616', 'post2107819399616')"><pre>            # And continue as usual</pre></li>
+                
+                </ol>
+              
+              <ol start="125" class="context-line">
+                <li onclick="toggle('pre2107819399616', 'post2107819399616')"><pre>            return self.dispatch(request, *args, **kwargs)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</pre> <span>â¦</span></li>
+              </ol>
+              
+                <ol start='126' class="post-context" id="post2107819399616">
+                  
+                  <li onclick="toggle('pre2107819399616', 'post2107819399616')"><pre></pre></li>
+                  
+                  <li onclick="toggle('pre2107819399616', 'post2107819399616')"><pre>        # take name and docstring from class</pre></li>
+                  
+                  <li onclick="toggle('pre2107819399616', 'post2107819399616')"><pre>        update_wrapper(view, cls, updated=())</pre></li>
+                  
+                  <li onclick="toggle('pre2107819399616', 'post2107819399616')"><pre></pre></li>
+                  
+                  <li onclick="toggle('pre2107819399616', 'post2107819399616')"><pre>        # and possible attributes set by decorators</pre></li>
+                  
+                  <li onclick="toggle('pre2107819399616', 'post2107819399616')"><pre>        # like csrf_exempt from dispatch</pre></li>
+                  
+              </ol>
+              
+            </div>
+          
+
+          
+            
+              <details>
+                <summary class="commands">Local vars</summary>
+            
+            <table class="vars" id="v2107819399616">
+              <thead>
+                <tr>
+                  <th scope="col">Variable</th>
+                  <th scope="col">Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                
+                  <tr>
+                    <td>action</td>
+                    <td class="code"><pre>&#x27;list&#x27;</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>actions</td>
+                    <td class="code"><pre>{&#x27;get&#x27;: &#x27;list&#x27;, &#x27;head&#x27;: &#x27;list&#x27;, &#x27;post&#x27;: &#x27;create&#x27;}</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>args</td>
+                    <td class="code"><pre>()</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>cls</td>
+                    <td class="code"><pre>&lt;class &#x27;students.views.StudentViewSet&#x27;&gt;</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>handler</td>
+                    <td class="code"><pre>&lt;bound method ListModelMixin.list of &lt;students.views.StudentViewSet object at 0x000001EAC142B750&gt;&gt;</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>initkwargs</td>
+                    <td class="code"><pre>{&#x27;basename&#x27;: &#x27;student&#x27;, &#x27;detail&#x27;: False, &#x27;suffix&#x27;: &#x27;List&#x27;}</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>kwargs</td>
+                    <td class="code"><pre>{}</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>method</td>
+                    <td class="code"><pre>&#x27;head&#x27;</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>request</td>
+                    <td class="code"><pre>&lt;WSGIRequest: GET &#x27;/api/students/&#x27;&gt;</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>self</td>
+                    <td class="code"><pre>&lt;students.views.StudentViewSet object at 0x000001EAC142B750&gt;</pre></td>
+                  </tr>
+                
+              </tbody>
+            </table>
+            </details>
+          
+        </li>
+      
+        
+        <li class="frame user">
+          
+            <code class="fname">C:\Users\Evans\School management system\backend\venv\Lib\site-packages\rest_framework\views.py</code>, line 515, in dispatch
+          
+
+          
+            <div class="context" id="c2107819420928">
+              
+                <ol start="508" class="pre-context" id="pre2107819420928">
+                
+                  <li onclick="toggle('pre2107819420928', 'post2107819420928')"><pre>                                  self.http_method_not_allowed)</pre></li>
+                
+                  <li onclick="toggle('pre2107819420928', 'post2107819420928')"><pre>            else:</pre></li>
+                
+                  <li onclick="toggle('pre2107819420928', 'post2107819420928')"><pre>                handler = self.http_method_not_allowed</pre></li>
+                
+                  <li onclick="toggle('pre2107819420928', 'post2107819420928')"><pre></pre></li>
+                
+                  <li onclick="toggle('pre2107819420928', 'post2107819420928')"><pre>            response = handler(request, *args, **kwargs)</pre></li>
+                
+                  <li onclick="toggle('pre2107819420928', 'post2107819420928')"><pre></pre></li>
+                
+                  <li onclick="toggle('pre2107819420928', 'post2107819420928')"><pre>        except Exception as exc:</pre></li>
+                
+                </ol>
+              
+              <ol start="515" class="context-line">
+                <li onclick="toggle('pre2107819420928', 'post2107819420928')"><pre>            response = self.handle_exception(exc)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^</pre> <span>â¦</span></li>
+              </ol>
+              
+                <ol start='516' class="post-context" id="post2107819420928">
+                  
+                  <li onclick="toggle('pre2107819420928', 'post2107819420928')"><pre></pre></li>
+                  
+                  <li onclick="toggle('pre2107819420928', 'post2107819420928')"><pre>        self.response = self.finalize_response(request, response, *args, **kwargs)</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420928', 'post2107819420928')"><pre>        return self.response</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420928', 'post2107819420928')"><pre></pre></li>
+                  
+                  <li onclick="toggle('pre2107819420928', 'post2107819420928')"><pre>    def options(self, request, *args, **kwargs):</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420928', 'post2107819420928')"><pre>        &quot;&quot;&quot;</pre></li>
+                  
+              </ol>
+              
+            </div>
+          
+
+          
+            
+              <details>
+                <summary class="commands">Local vars</summary>
+            
+            <table class="vars" id="v2107819420928">
+              <thead>
+                <tr>
+                  <th scope="col">Variable</th>
+                  <th scope="col">Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                
+                  <tr>
+                    <td>args</td>
+                    <td class="code"><pre>()</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>handler</td>
+                    <td class="code"><pre>&lt;bound method ListModelMixin.list of &lt;students.views.StudentViewSet object at 0x000001EAC142B750&gt;&gt;</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>kwargs</td>
+                    <td class="code"><pre>{}</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>request</td>
+                    <td class="code"><pre>&lt;rest_framework.request.Request: GET &#x27;/api/students/&#x27;&gt;</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>self</td>
+                    <td class="code"><pre>&lt;students.views.StudentViewSet object at 0x000001EAC142B750&gt;</pre></td>
+                  </tr>
+                
+              </tbody>
+            </table>
+            </details>
+          
+        </li>
+      
+        
+        <li class="frame user">
+          
+            <code class="fname">C:\Users\Evans\School management system\backend\venv\Lib\site-packages\rest_framework\views.py</code>, line 475, in handle_exception
+          
+
+          
+            <div class="context" id="c2107819420864">
+              
+                <ol start="468" class="pre-context" id="pre2107819420864">
+                
+                  <li onclick="toggle('pre2107819420864', 'post2107819420864')"><pre></pre></li>
+                
+                  <li onclick="toggle('pre2107819420864', 'post2107819420864')"><pre>        exception_handler = self.get_exception_handler()</pre></li>
+                
+                  <li onclick="toggle('pre2107819420864', 'post2107819420864')"><pre></pre></li>
+                
+                  <li onclick="toggle('pre2107819420864', 'post2107819420864')"><pre>        context = self.get_exception_handler_context()</pre></li>
+                
+                  <li onclick="toggle('pre2107819420864', 'post2107819420864')"><pre>        response = exception_handler(exc, context)</pre></li>
+                
+                  <li onclick="toggle('pre2107819420864', 'post2107819420864')"><pre></pre></li>
+                
+                  <li onclick="toggle('pre2107819420864', 'post2107819420864')"><pre>        if response is None:</pre></li>
+                
+                </ol>
+              
+              <ol start="475" class="context-line">
+                <li onclick="toggle('pre2107819420864', 'post2107819420864')"><pre>            self.raise_uncaught_exception(exc)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</pre> <span>â¦</span></li>
+              </ol>
+              
+                <ol start='476' class="post-context" id="post2107819420864">
+                  
+                  <li onclick="toggle('pre2107819420864', 'post2107819420864')"><pre></pre></li>
+                  
+                  <li onclick="toggle('pre2107819420864', 'post2107819420864')"><pre>        response.exception = True</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420864', 'post2107819420864')"><pre>        return response</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420864', 'post2107819420864')"><pre></pre></li>
+                  
+                  <li onclick="toggle('pre2107819420864', 'post2107819420864')"><pre>    def raise_uncaught_exception(self, exc):</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420864', 'post2107819420864')"><pre>        if settings.DEBUG:</pre></li>
+                  
+              </ol>
+              
+            </div>
+          
+
+          
+            
+              <details>
+                <summary class="commands">Local vars</summary>
+            
+            <table class="vars" id="v2107819420864">
+              <thead>
+                <tr>
+                  <th scope="col">Variable</th>
+                  <th scope="col">Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                
+                  <tr>
+                    <td>context</td>
+                    <td class="code"><pre>{&#x27;args&#x27;: (),
+ &#x27;kwargs&#x27;: {},
+ &#x27;request&#x27;: &lt;rest_framework.request.Request: GET &#x27;/api/students/&#x27;&gt;,
+ &#x27;view&#x27;: &lt;students.views.StudentViewSet object at 0x000001EAC142B750&gt;}</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>exc</td>
+                    <td class="code"><pre>ImproperlyConfigured(&#x27;Field name `guardian_email` is not valid for model `Student` in `students.serializers.StudentListSerializer`.&#x27;)</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>exception_handler</td>
+                    <td class="code"><pre>&lt;function custom_exception_handler at 0x000001EAC3BD32E0&gt;</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>response</td>
+                    <td class="code"><pre>None</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>self</td>
+                    <td class="code"><pre>&lt;students.views.StudentViewSet object at 0x000001EAC142B750&gt;</pre></td>
+                  </tr>
+                
+              </tbody>
+            </table>
+            </details>
+          
+        </li>
+      
+        
+        <li class="frame user">
+          
+            <code class="fname">C:\Users\Evans\School management system\backend\venv\Lib\site-packages\rest_framework\views.py</code>, line 486, in raise_uncaught_exception
+          
+
+          
+            <div class="context" id="c2107819420800">
+              
+                <ol start="479" class="pre-context" id="pre2107819420800">
+                
+                  <li onclick="toggle('pre2107819420800', 'post2107819420800')"><pre></pre></li>
+                
+                  <li onclick="toggle('pre2107819420800', 'post2107819420800')"><pre>    def raise_uncaught_exception(self, exc):</pre></li>
+                
+                  <li onclick="toggle('pre2107819420800', 'post2107819420800')"><pre>        if settings.DEBUG:</pre></li>
+                
+                  <li onclick="toggle('pre2107819420800', 'post2107819420800')"><pre>            request = self.request</pre></li>
+                
+                  <li onclick="toggle('pre2107819420800', 'post2107819420800')"><pre>            renderer_format = getattr(request.accepted_renderer, &#x27;format&#x27;)</pre></li>
+                
+                  <li onclick="toggle('pre2107819420800', 'post2107819420800')"><pre>            use_plaintext_traceback = renderer_format not in (&#x27;html&#x27;, &#x27;api&#x27;, &#x27;admin&#x27;)</pre></li>
+                
+                  <li onclick="toggle('pre2107819420800', 'post2107819420800')"><pre>            request.force_plaintext_errors(use_plaintext_traceback)</pre></li>
+                
+                </ol>
+              
+              <ol start="486" class="context-line">
+                <li onclick="toggle('pre2107819420800', 'post2107819420800')"><pre>        raise exc
+             ^^^^^^^^^</pre> <span>â¦</span></li>
+              </ol>
+              
+                <ol start='487' class="post-context" id="post2107819420800">
+                  
+                  <li onclick="toggle('pre2107819420800', 'post2107819420800')"><pre></pre></li>
+                  
+                  <li onclick="toggle('pre2107819420800', 'post2107819420800')"><pre>    # Note: Views are made CSRF exempt from within `as_view` as to prevent</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420800', 'post2107819420800')"><pre>    # accidental removal of this exemption in cases where `dispatch` needs to</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420800', 'post2107819420800')"><pre>    # be overridden.</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420800', 'post2107819420800')"><pre>    def dispatch(self, request, *args, **kwargs):</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420800', 'post2107819420800')"><pre>        &quot;&quot;&quot;</pre></li>
+                  
+              </ol>
+              
+            </div>
+          
+
+          
+            
+              <details>
+                <summary class="commands">Local vars</summary>
+            
+            <table class="vars" id="v2107819420800">
+              <thead>
+                <tr>
+                  <th scope="col">Variable</th>
+                  <th scope="col">Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                
+                  <tr>
+                    <td>exc</td>
+                    <td class="code"><pre>ImproperlyConfigured(&#x27;Field name `guardian_email` is not valid for model `Student` in `students.serializers.StudentListSerializer`.&#x27;)</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>renderer_format</td>
+                    <td class="code"><pre>&#x27;json&#x27;</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>request</td>
+                    <td class="code"><pre>&lt;rest_framework.request.Request: GET &#x27;/api/students/&#x27;&gt;</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>self</td>
+                    <td class="code"><pre>&lt;students.views.StudentViewSet object at 0x000001EAC142B750&gt;</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>use_plaintext_traceback</td>
+                    <td class="code"><pre>True</pre></td>
+                  </tr>
+                
+              </tbody>
+            </table>
+            </details>
+          
+        </li>
+      
+        
+        <li class="frame user">
+          
+            <code class="fname">C:\Users\Evans\School management system\backend\venv\Lib\site-packages\rest_framework\views.py</code>, line 512, in dispatch
+          
+
+          
+            <div class="context" id="c2107819420736">
+              
+                <ol start="505" class="pre-context" id="pre2107819420736">
+                
+                  <li onclick="toggle('pre2107819420736', 'post2107819420736')"><pre>            # Get the appropriate handler method</pre></li>
+                
+                  <li onclick="toggle('pre2107819420736', 'post2107819420736')"><pre>            if request.method.lower() in self.http_method_names:</pre></li>
+                
+                  <li onclick="toggle('pre2107819420736', 'post2107819420736')"><pre>                handler = getattr(self, request.method.lower(),</pre></li>
+                
+                  <li onclick="toggle('pre2107819420736', 'post2107819420736')"><pre>                                  self.http_method_not_allowed)</pre></li>
+                
+                  <li onclick="toggle('pre2107819420736', 'post2107819420736')"><pre>            else:</pre></li>
+                
+                  <li onclick="toggle('pre2107819420736', 'post2107819420736')"><pre>                handler = self.http_method_not_allowed</pre></li>
+                
+                  <li onclick="toggle('pre2107819420736', 'post2107819420736')"><pre></pre></li>
+                
+                </ol>
+              
+              <ol start="512" class="context-line">
+                <li onclick="toggle('pre2107819420736', 'post2107819420736')"><pre>            response = handler(request, *args, **kwargs)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</pre> <span>â¦</span></li>
+              </ol>
+              
+                <ol start='513' class="post-context" id="post2107819420736">
+                  
+                  <li onclick="toggle('pre2107819420736', 'post2107819420736')"><pre></pre></li>
+                  
+                  <li onclick="toggle('pre2107819420736', 'post2107819420736')"><pre>        except Exception as exc:</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420736', 'post2107819420736')"><pre>            response = self.handle_exception(exc)</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420736', 'post2107819420736')"><pre></pre></li>
+                  
+                  <li onclick="toggle('pre2107819420736', 'post2107819420736')"><pre>        self.response = self.finalize_response(request, response, *args, **kwargs)</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420736', 'post2107819420736')"><pre>        return self.response</pre></li>
+                  
+              </ol>
+              
+            </div>
+          
+
+          
+            
+              <details>
+                <summary class="commands">Local vars</summary>
+            
+            <table class="vars" id="v2107819420736">
+              <thead>
+                <tr>
+                  <th scope="col">Variable</th>
+                  <th scope="col">Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                
+                  <tr>
+                    <td>args</td>
+                    <td class="code"><pre>()</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>handler</td>
+                    <td class="code"><pre>&lt;bound method ListModelMixin.list of &lt;students.views.StudentViewSet object at 0x000001EAC142B750&gt;&gt;</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>kwargs</td>
+                    <td class="code"><pre>{}</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>request</td>
+                    <td class="code"><pre>&lt;rest_framework.request.Request: GET &#x27;/api/students/&#x27;&gt;</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>self</td>
+                    <td class="code"><pre>&lt;students.views.StudentViewSet object at 0x000001EAC142B750&gt;</pre></td>
+                  </tr>
+                
+              </tbody>
+            </table>
+            </details>
+          
+        </li>
+      
+        
+        <li class="frame user">
+          
+            <code class="fname">C:\Users\Evans\School management system\backend\venv\Lib\site-packages\rest_framework\mixins.py</code>, line 43, in list
+          
+
+          
+            <div class="context" id="c2107819420672">
+              
+                <ol start="36" class="pre-context" id="pre2107819420672">
+                
+                  <li onclick="toggle('pre2107819420672', 'post2107819420672')"><pre>    &quot;&quot;&quot;</pre></li>
+                
+                  <li onclick="toggle('pre2107819420672', 'post2107819420672')"><pre>    def list(self, request, *args, **kwargs):</pre></li>
+                
+                  <li onclick="toggle('pre2107819420672', 'post2107819420672')"><pre>        queryset = self.filter_queryset(self.get_queryset())</pre></li>
+                
+                  <li onclick="toggle('pre2107819420672', 'post2107819420672')"><pre></pre></li>
+                
+                  <li onclick="toggle('pre2107819420672', 'post2107819420672')"><pre>        page = self.paginate_queryset(queryset)</pre></li>
+                
+                  <li onclick="toggle('pre2107819420672', 'post2107819420672')"><pre>        if page is not None:</pre></li>
+                
+                  <li onclick="toggle('pre2107819420672', 'post2107819420672')"><pre>            serializer = self.get_serializer(page, many=True)</pre></li>
+                
+                </ol>
+              
+              <ol start="43" class="context-line">
+                <li onclick="toggle('pre2107819420672', 'post2107819420672')"><pre>            return self.get_paginated_response(serializer.data)
+                                                   ^^^^^^^^^^^^^^^</pre> <span>â¦</span></li>
+              </ol>
+              
+                <ol start='44' class="post-context" id="post2107819420672">
+                  
+                  <li onclick="toggle('pre2107819420672', 'post2107819420672')"><pre></pre></li>
+                  
+                  <li onclick="toggle('pre2107819420672', 'post2107819420672')"><pre>        serializer = self.get_serializer(queryset, many=True)</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420672', 'post2107819420672')"><pre>        return Response(serializer.data)</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420672', 'post2107819420672')"><pre></pre></li>
+                  
+                  <li onclick="toggle('pre2107819420672', 'post2107819420672')"><pre></pre></li>
+                  
+                  <li onclick="toggle('pre2107819420672', 'post2107819420672')"><pre>class RetrieveModelMixin:</pre></li>
+                  
+              </ol>
+              
+            </div>
+          
+
+          
+            
+              <details>
+                <summary class="commands">Local vars</summary>
+            
+            <table class="vars" id="v2107819420672">
+              <thead>
+                <tr>
+                  <th scope="col">Variable</th>
+                  <th scope="col">Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                
+                  <tr>
+                    <td>args</td>
+                    <td class="code"><pre>()</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>kwargs</td>
+                    <td class="code"><pre>{}</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>page</td>
+                    <td class="code"><pre>[&lt;Student: Zariah Jade Evans (26/0001)&gt;,
+ &lt;Student: Damaris Njoki (26/0002)&gt;,
+ &lt;Student: Elvis Muthomi (26/0003)&gt;,
+ &lt;Student: Celine kiende (26/0004)&gt;,
+ &lt;Student: Kimani john (26/0005)&gt;,
+ &lt;Student: stellah kathambi (26/0006)&gt;,
+ &lt;Student: molly moo (26/0007)&gt;]</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>queryset</td>
+                    <td class="code"><pre>&lt;QuerySet [&lt;Student: Zariah Jade Evans (26/0001)&gt;, &lt;Student: Damaris Njoki (26/0002)&gt;, &lt;Student: Elvis Muthomi (26/0003)&gt;, &lt;Student: Celine kiende (26/0004)&gt;, &lt;Student: Kimani john (26/0005)&gt;, &lt;Student: stellah kathambi (26/0006)&gt;, &lt;Student: molly moo (26/0007)&gt;]&gt;</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>request</td>
+                    <td class="code"><pre>&lt;rest_framework.request.Request: GET &#x27;/api/students/&#x27;&gt;</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>self</td>
+                    <td class="code"><pre>&lt;students.views.StudentViewSet object at 0x000001EAC142B750&gt;</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>serializer</td>
+                    <td class="code"><pre>Error in formatting: ImproperlyConfigured: Field name `guardian_email` is not valid for model `Student` in `students.serializers.StudentListSerializer`.</pre></td>
+                  </tr>
+                
+              </tbody>
+            </table>
+            </details>
+          
+        </li>
+      
+        
+        <li class="frame user">
+          
+            <code class="fname">C:\Users\Evans\School management system\backend\venv\Lib\site-packages\rest_framework\serializers.py</code>, line 797, in data
+          
+
+          
+            <div class="context" id="c2107819420608">
+              
+                <ol start="790" class="pre-context" id="pre2107819420608">
+                
+                  <li onclick="toggle('pre2107819420608', 'post2107819420608')"><pre>        return representation.list_repr(self, indent=1)</pre></li>
+                
+                  <li onclick="toggle('pre2107819420608', 'post2107819420608')"><pre></pre></li>
+                
+                  <li onclick="toggle('pre2107819420608', 'post2107819420608')"><pre>    # Include a backlink to the serializer class on return objects.</pre></li>
+                
+                  <li onclick="toggle('pre2107819420608', 'post2107819420608')"><pre>    # Allows renderers such as HTMLFormRenderer to get the full field info.</pre></li>
+                
+                  <li onclick="toggle('pre2107819420608', 'post2107819420608')"><pre></pre></li>
+                
+                  <li onclick="toggle('pre2107819420608', 'post2107819420608')"><pre>    @property</pre></li>
+                
+                  <li onclick="toggle('pre2107819420608', 'post2107819420608')"><pre>    def data(self):</pre></li>
+                
+                </ol>
+              
+              <ol start="797" class="context-line">
+                <li onclick="toggle('pre2107819420608', 'post2107819420608')"><pre>        ret = super().data
+                   ^^^^^^^^^^^^</pre> <span>â¦</span></li>
+              </ol>
+              
+                <ol start='798' class="post-context" id="post2107819420608">
+                  
+                  <li onclick="toggle('pre2107819420608', 'post2107819420608')"><pre>        return ReturnList(ret, serializer=self)</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420608', 'post2107819420608')"><pre></pre></li>
+                  
+                  <li onclick="toggle('pre2107819420608', 'post2107819420608')"><pre>    @property</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420608', 'post2107819420608')"><pre>    def errors(self):</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420608', 'post2107819420608')"><pre>        ret = super().errors</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420608', 'post2107819420608')"><pre>        if isinstance(ret, list) and len(ret) == 1 and getattr(ret[0], &#x27;code&#x27;, None) == &#x27;null&#x27;:</pre></li>
+                  
+              </ol>
+              
+            </div>
+          
+
+          
+            
+              <details>
+                <summary class="commands">Local vars</summary>
+            
+            <table class="vars" id="v2107819420608">
+              <thead>
+                <tr>
+                  <th scope="col">Variable</th>
+                  <th scope="col">Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                
+                  <tr>
+                    <td>__class__</td>
+                    <td class="code"><pre>&lt;class &#x27;rest_framework.serializers.ListSerializer&#x27;&gt;</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>self</td>
+                    <td class="code"><pre>Error in formatting: ImproperlyConfigured: Field name `guardian_email` is not valid for model `Student` in `students.serializers.StudentListSerializer`.</pre></td>
+                  </tr>
+                
+              </tbody>
+            </table>
+            </details>
+          
+        </li>
+      
+        
+        <li class="frame user">
+          
+            <code class="fname">C:\Users\Evans\School management system\backend\venv\Lib\site-packages\rest_framework\serializers.py</code>, line 251, in data
+          
+
+          
+            <div class="context" id="c2107819522624">
+              
+                <ol start="244" class="pre-context" id="pre2107819522624">
+                
+                  <li onclick="toggle('pre2107819522624', 'post2107819522624')"><pre>                &#x27;You should either call `.is_valid()` first, &#x27;</pre></li>
+                
+                  <li onclick="toggle('pre2107819522624', 'post2107819522624')"><pre>                &#x27;or access `.initial_data` instead.&#x27;</pre></li>
+                
+                  <li onclick="toggle('pre2107819522624', 'post2107819522624')"><pre>            )</pre></li>
+                
+                  <li onclick="toggle('pre2107819522624', 'post2107819522624')"><pre>            raise AssertionError(msg)</pre></li>
+                
+                  <li onclick="toggle('pre2107819522624', 'post2107819522624')"><pre></pre></li>
+                
+                  <li onclick="toggle('pre2107819522624', 'post2107819522624')"><pre>        if not hasattr(self, &#x27;_data&#x27;):</pre></li>
+                
+                  <li onclick="toggle('pre2107819522624', 'post2107819522624')"><pre>            if self.instance is not None and not getattr(self, &#x27;_errors&#x27;, None):</pre></li>
+                
+                </ol>
+              
+              <ol start="251" class="context-line">
+                <li onclick="toggle('pre2107819522624', 'post2107819522624')"><pre>                self._data = self.to_representation(self.instance)
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</pre> <span>â¦</span></li>
+              </ol>
+              
+                <ol start='252' class="post-context" id="post2107819522624">
+                  
+                  <li onclick="toggle('pre2107819522624', 'post2107819522624')"><pre>            elif hasattr(self, &#x27;_validated_data&#x27;) and not getattr(self, &#x27;_errors&#x27;, None):</pre></li>
+                  
+                  <li onclick="toggle('pre2107819522624', 'post2107819522624')"><pre>                self._data = self.to_representation(self.validated_data)</pre></li>
+                  
+                  <li onclick="toggle('pre2107819522624', 'post2107819522624')"><pre>            else:</pre></li>
+                  
+                  <li onclick="toggle('pre2107819522624', 'post2107819522624')"><pre>                self._data = self.get_initial()</pre></li>
+                  
+                  <li onclick="toggle('pre2107819522624', 'post2107819522624')"><pre>        return self._data</pre></li>
+                  
+                  <li onclick="toggle('pre2107819522624', 'post2107819522624')"><pre></pre></li>
+                  
+              </ol>
+              
+            </div>
+          
+
+          
+            
+              <details>
+                <summary class="commands">Local vars</summary>
+            
+            <table class="vars" id="v2107819522624">
+              <thead>
+                <tr>
+                  <th scope="col">Variable</th>
+                  <th scope="col">Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                
+                  <tr>
+                    <td>self</td>
+                    <td class="code"><pre>Error in formatting: ImproperlyConfigured: Field name `guardian_email` is not valid for model `Student` in `students.serializers.StudentListSerializer`.</pre></td>
+                  </tr>
+                
+              </tbody>
+            </table>
+            </details>
+          
+        </li>
+      
+        
+        <li class="frame user">
+          
+            <code class="fname">C:\Users\Evans\School management system\backend\venv\Lib\site-packages\rest_framework\serializers.py</code>, line 716, in to_representation
+          
+
+          
+            <div class="context" id="c2107819420544">
+              
+                <ol start="709" class="pre-context" id="pre2107819420544">
+                
+                  <li onclick="toggle('pre2107819420544', 'post2107819420544')"><pre>        List of object instances -&gt; List of dicts of primitive datatypes.</pre></li>
+                
+                  <li onclick="toggle('pre2107819420544', 'post2107819420544')"><pre>        &quot;&quot;&quot;</pre></li>
+                
+                  <li onclick="toggle('pre2107819420544', 'post2107819420544')"><pre>        # Dealing with nested relationships, data can be a Manager,</pre></li>
+                
+                  <li onclick="toggle('pre2107819420544', 'post2107819420544')"><pre>        # so, first get a queryset from the Manager if needed</pre></li>
+                
+                  <li onclick="toggle('pre2107819420544', 'post2107819420544')"><pre>        iterable = data.all() if isinstance(data, models.manager.BaseManager) else data</pre></li>
+                
+                  <li onclick="toggle('pre2107819420544', 'post2107819420544')"><pre></pre></li>
+                
+                  <li onclick="toggle('pre2107819420544', 'post2107819420544')"><pre>        return [</pre></li>
+                
+                </ol>
+              
+              <ol start="716" class="context-line">
+                <li onclick="toggle('pre2107819420544', 'post2107819420544')"><pre>            self.child.to_representation(item) for item in iterable
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</pre> <span>â¦</span></li>
+              </ol>
+              
+                <ol start='717' class="post-context" id="post2107819420544">
+                  
+                  <li onclick="toggle('pre2107819420544', 'post2107819420544')"><pre>        ]</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420544', 'post2107819420544')"><pre></pre></li>
+                  
+                  <li onclick="toggle('pre2107819420544', 'post2107819420544')"><pre>    def validate(self, attrs):</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420544', 'post2107819420544')"><pre>        return attrs</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420544', 'post2107819420544')"><pre></pre></li>
+                  
+                  <li onclick="toggle('pre2107819420544', 'post2107819420544')"><pre>    def update(self, instance, validated_data):</pre></li>
+                  
+              </ol>
+              
+            </div>
+          
+
+          
+            
+              <details>
+                <summary class="commands">Local vars</summary>
+            
+            <table class="vars" id="v2107819420544">
+              <thead>
+                <tr>
+                  <th scope="col">Variable</th>
+                  <th scope="col">Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                
+                  <tr>
+                    <td>data</td>
+                    <td class="code"><pre>[&lt;Student: Zariah Jade Evans (26/0001)&gt;,
+ &lt;Student: Damaris Njoki (26/0002)&gt;,
+ &lt;Student: Elvis Muthomi (26/0003)&gt;,
+ &lt;Student: Celine kiende (26/0004)&gt;,
+ &lt;Student: Kimani john (26/0005)&gt;,
+ &lt;Student: stellah kathambi (26/0006)&gt;,
+ &lt;Student: molly moo (26/0007)&gt;]</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>iterable</td>
+                    <td class="code"><pre>[&lt;Student: Zariah Jade Evans (26/0001)&gt;,
+ &lt;Student: Damaris Njoki (26/0002)&gt;,
+ &lt;Student: Elvis Muthomi (26/0003)&gt;,
+ &lt;Student: Celine kiende (26/0004)&gt;,
+ &lt;Student: Kimani john (26/0005)&gt;,
+ &lt;Student: stellah kathambi (26/0006)&gt;,
+ &lt;Student: molly moo (26/0007)&gt;]</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>self</td>
+                    <td class="code"><pre>Error in formatting: ImproperlyConfigured: Field name `guardian_email` is not valid for model `Student` in `students.serializers.StudentListSerializer`.</pre></td>
+                  </tr>
+                
+              </tbody>
+            </table>
+            </details>
+          
+        </li>
+      
+        
+        <li class="frame user">
+          
+            <code class="fname">C:\Users\Evans\School management system\backend\venv\Lib\site-packages\rest_framework\serializers.py</code>, line 525, in to_representation
+          
+
+          
+            <div class="context" id="c2107819420480">
+              
+                <ol start="518" class="pre-context" id="pre2107819420480">
+                
+                  <li onclick="toggle('pre2107819420480', 'post2107819420480')"><pre>    def to_representation(self, instance):</pre></li>
+                
+                  <li onclick="toggle('pre2107819420480', 'post2107819420480')"><pre>        &quot;&quot;&quot;</pre></li>
+                
+                  <li onclick="toggle('pre2107819420480', 'post2107819420480')"><pre>        Object instance -&gt; Dict of primitive datatypes.</pre></li>
+                
+                  <li onclick="toggle('pre2107819420480', 'post2107819420480')"><pre>        &quot;&quot;&quot;</pre></li>
+                
+                  <li onclick="toggle('pre2107819420480', 'post2107819420480')"><pre>        ret = {}</pre></li>
+                
+                  <li onclick="toggle('pre2107819420480', 'post2107819420480')"><pre>        fields = self._readable_fields</pre></li>
+                
+                  <li onclick="toggle('pre2107819420480', 'post2107819420480')"><pre></pre></li>
+                
+                </ol>
+              
+              <ol start="525" class="context-line">
+                <li onclick="toggle('pre2107819420480', 'post2107819420480')"><pre>        for field in fields:
+                          ^^^^^^</pre> <span>â¦</span></li>
+              </ol>
+              
+                <ol start='526' class="post-context" id="post2107819420480">
+                  
+                  <li onclick="toggle('pre2107819420480', 'post2107819420480')"><pre>            try:</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420480', 'post2107819420480')"><pre>                attribute = field.get_attribute(instance)</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420480', 'post2107819420480')"><pre>            except SkipField:</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420480', 'post2107819420480')"><pre>                continue</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420480', 'post2107819420480')"><pre></pre></li>
+                  
+                  <li onclick="toggle('pre2107819420480', 'post2107819420480')"><pre>            # We skip `to_representation` for `None` values so that fields do</pre></li>
+                  
+              </ol>
+              
+            </div>
+          
+
+          
+            
+              <details>
+                <summary class="commands">Local vars</summary>
+            
+            <table class="vars" id="v2107819420480">
+              <thead>
+                <tr>
+                  <th scope="col">Variable</th>
+                  <th scope="col">Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                
+                  <tr>
+                    <td>fields</td>
+                    <td class="code"><pre>&lt;generator object Serializer._readable_fields at 0x000001EAC39FFB80&gt;</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>instance</td>
+                    <td class="code"><pre>&lt;Student: Zariah Jade Evans (26/0001)&gt;</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>ret</td>
+                    <td class="code"><pre>{}</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>self</td>
+                    <td class="code"><pre>Error in formatting: ImproperlyConfigured: Field name `guardian_email` is not valid for model `Student` in `students.serializers.StudentListSerializer`.</pre></td>
+                  </tr>
+                
+              </tbody>
+            </table>
+            </details>
+          
+        </li>
+      
+        
+        <li class="frame user">
+          
+            <code class="fname">C:\Users\Evans\School management system\backend\venv\Lib\site-packages\rest_framework\serializers.py</code>, line 386, in _readable_fields
+          
+
+          
+            <div class="context" id="c2107819420416">
+              
+                <ol start="379" class="pre-context" id="pre2107819420416">
+                
+                  <li onclick="toggle('pre2107819420416', 'post2107819420416')"><pre>    def _writable_fields(self):</pre></li>
+                
+                  <li onclick="toggle('pre2107819420416', 'post2107819420416')"><pre>        for field in self.fields.values():</pre></li>
+                
+                  <li onclick="toggle('pre2107819420416', 'post2107819420416')"><pre>            if not field.read_only:</pre></li>
+                
+                  <li onclick="toggle('pre2107819420416', 'post2107819420416')"><pre>                yield field</pre></li>
+                
+                  <li onclick="toggle('pre2107819420416', 'post2107819420416')"><pre></pre></li>
+                
+                  <li onclick="toggle('pre2107819420416', 'post2107819420416')"><pre>    @property</pre></li>
+                
+                  <li onclick="toggle('pre2107819420416', 'post2107819420416')"><pre>    def _readable_fields(self):</pre></li>
+                
+                </ol>
+              
+              <ol start="386" class="context-line">
+                <li onclick="toggle('pre2107819420416', 'post2107819420416')"><pre>        for field in self.fields.values():
+                          ^^^^^^^^^^^</pre> <span>â¦</span></li>
+              </ol>
+              
+                <ol start='387' class="post-context" id="post2107819420416">
+                  
+                  <li onclick="toggle('pre2107819420416', 'post2107819420416')"><pre>            if not field.write_only:</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420416', 'post2107819420416')"><pre>                yield field</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420416', 'post2107819420416')"><pre></pre></li>
+                  
+                  <li onclick="toggle('pre2107819420416', 'post2107819420416')"><pre>    def get_fields(self):</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420416', 'post2107819420416')"><pre>        &quot;&quot;&quot;</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420416', 'post2107819420416')"><pre>        Returns a dictionary of {field_name: field_instance}.</pre></li>
+                  
+              </ol>
+              
+            </div>
+          
+
+          
+            
+              <details>
+                <summary class="commands">Local vars</summary>
+            
+            <table class="vars" id="v2107819420416">
+              <thead>
+                <tr>
+                  <th scope="col">Variable</th>
+                  <th scope="col">Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                
+                  <tr>
+                    <td>self</td>
+                    <td class="code"><pre>Error in formatting: ImproperlyConfigured: Field name `guardian_email` is not valid for model `Student` in `students.serializers.StudentListSerializer`.</pre></td>
+                  </tr>
+                
+              </tbody>
+            </table>
+            </details>
+          
+        </li>
+      
+        
+        <li class="frame django">
+          
+            <code class="fname">C:\Users\Evans\School management system\backend\venv\Lib\site-packages\django\utils\functional.py</code>, line 47, in __get__
+          
+
+          
+            <div class="context" id="c2107819420352">
+              
+                <ol start="40" class="pre-context" id="pre2107819420352">
+                
+                  <li onclick="toggle('pre2107819420352', 'post2107819420352')"><pre>        &quot;&quot;&quot;</pre></li>
+                
+                  <li onclick="toggle('pre2107819420352', 'post2107819420352')"><pre>        Call the function and put the return value in instance.__dict__ so that</pre></li>
+                
+                  <li onclick="toggle('pre2107819420352', 'post2107819420352')"><pre>        subsequent attribute access on the instance returns the cached value</pre></li>
+                
+                  <li onclick="toggle('pre2107819420352', 'post2107819420352')"><pre>        instead of calling cached_property.__get__().</pre></li>
+                
+                  <li onclick="toggle('pre2107819420352', 'post2107819420352')"><pre>        &quot;&quot;&quot;</pre></li>
+                
+                  <li onclick="toggle('pre2107819420352', 'post2107819420352')"><pre>        if instance is None:</pre></li>
+                
+                  <li onclick="toggle('pre2107819420352', 'post2107819420352')"><pre>            return self</pre></li>
+                
+                </ol>
+              
+              <ol start="47" class="context-line">
+                <li onclick="toggle('pre2107819420352', 'post2107819420352')"><pre>        res = instance.__dict__[self.name] = self.func(instance)
+                                                 ^^^^^^^^^^^^^^^^^^^</pre> <span>â¦</span></li>
+              </ol>
+              
+                <ol start='48' class="post-context" id="post2107819420352">
+                  
+                  <li onclick="toggle('pre2107819420352', 'post2107819420352')"><pre>        return res</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420352', 'post2107819420352')"><pre></pre></li>
+                  
+                  <li onclick="toggle('pre2107819420352', 'post2107819420352')"><pre></pre></li>
+                  
+                  <li onclick="toggle('pre2107819420352', 'post2107819420352')"><pre>class classproperty:</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420352', 'post2107819420352')"><pre>    &quot;&quot;&quot;</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420352', 'post2107819420352')"><pre>    Decorator that converts a method with a single cls argument into a property</pre></li>
+                  
+              </ol>
+              
+            </div>
+          
+
+          
+            
+              <details>
+                <summary class="commands">Local vars</summary>
+            
+            <table class="vars" id="v2107819420352">
+              <thead>
+                <tr>
+                  <th scope="col">Variable</th>
+                  <th scope="col">Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                
+                  <tr>
+                    <td>cls</td>
+                    <td class="code"><pre>&lt;class &#x27;students.serializers.StudentListSerializer&#x27;&gt;</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>instance</td>
+                    <td class="code"><pre>Error in formatting: ImproperlyConfigured: Field name `guardian_email` is not valid for model `Student` in `students.serializers.StudentListSerializer`.</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>self</td>
+                    <td class="code"><pre>&lt;django.utils.functional.cached_property object at 0x000001EAC20EF8C0&gt;</pre></td>
+                  </tr>
+                
+              </tbody>
+            </table>
+            </details>
+          
+        </li>
+      
+        
+        <li class="frame user">
+          
+            <code class="fname">C:\Users\Evans\School management system\backend\venv\Lib\site-packages\rest_framework\serializers.py</code>, line 374, in fields
+          
+
+          
+            <div class="context" id="c2107819420288">
+              
+                <ol start="367" class="pre-context" id="pre2107819420288">
+                
+                  <li onclick="toggle('pre2107819420288', 'post2107819420288')"><pre>        &quot;&quot;&quot;</pre></li>
+                
+                  <li onclick="toggle('pre2107819420288', 'post2107819420288')"><pre>        A dictionary of {field_name: field_instance}.</pre></li>
+                
+                  <li onclick="toggle('pre2107819420288', 'post2107819420288')"><pre>        &quot;&quot;&quot;</pre></li>
+                
+                  <li onclick="toggle('pre2107819420288', 'post2107819420288')"><pre>        # `fields` is evaluated lazily. We do this to ensure that we don&#x27;t</pre></li>
+                
+                  <li onclick="toggle('pre2107819420288', 'post2107819420288')"><pre>        # have issues importing modules that use ModelSerializers as fields,</pre></li>
+                
+                  <li onclick="toggle('pre2107819420288', 'post2107819420288')"><pre>        # even if Django&#x27;s app-loading stage has not yet run.</pre></li>
+                
+                  <li onclick="toggle('pre2107819420288', 'post2107819420288')"><pre>        fields = BindingDict(self)</pre></li>
+                
+                </ol>
+              
+              <ol start="374" class="context-line">
+                <li onclick="toggle('pre2107819420288', 'post2107819420288')"><pre>        for key, value in self.get_fields().items():
+                               ^^^^^^^^^^^^^^^^^</pre> <span>â¦</span></li>
+              </ol>
+              
+                <ol start='375' class="post-context" id="post2107819420288">
+                  
+                  <li onclick="toggle('pre2107819420288', 'post2107819420288')"><pre>            fields[key] = value</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420288', 'post2107819420288')"><pre>        return fields</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420288', 'post2107819420288')"><pre></pre></li>
+                  
+                  <li onclick="toggle('pre2107819420288', 'post2107819420288')"><pre>    @property</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420288', 'post2107819420288')"><pre>    def _writable_fields(self):</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420288', 'post2107819420288')"><pre>        for field in self.fields.values():</pre></li>
+                  
+              </ol>
+              
+            </div>
+          
+
+          
+            
+              <details>
+                <summary class="commands">Local vars</summary>
+            
+            <table class="vars" id="v2107819420288">
+              <thead>
+                <tr>
+                  <th scope="col">Variable</th>
+                  <th scope="col">Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                
+                  <tr>
+                    <td>fields</td>
+                    <td class="code"><pre>{}</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>self</td>
+                    <td class="code"><pre>Error in formatting: ImproperlyConfigured: Field name `guardian_email` is not valid for model `Student` in `students.serializers.StudentListSerializer`.</pre></td>
+                  </tr>
+                
+              </tbody>
+            </table>
+            </details>
+          
+        </li>
+      
+        
+        <li class="frame user">
+          
+            <code class="fname">C:\Users\Evans\School management system\backend\venv\Lib\site-packages\rest_framework\serializers.py</code>, line 1105, in get_fields
+          
+
+          
+            <div class="context" id="c2107819420224">
+              
+                <ol start="1098" class="pre-context" id="pre2107819420224">
+                
+                  <li onclick="toggle('pre2107819420224', 'post2107819420224')"><pre></pre></li>
+                
+                  <li onclick="toggle('pre2107819420224', 'post2107819420224')"><pre>            extra_field_kwargs = extra_kwargs.get(field_name, {})</pre></li>
+                
+                  <li onclick="toggle('pre2107819420224', 'post2107819420224')"><pre>            source = extra_field_kwargs.get(&#x27;source&#x27;, &#x27;*&#x27;)</pre></li>
+                
+                  <li onclick="toggle('pre2107819420224', 'post2107819420224')"><pre>            if source == &#x27;*&#x27;:</pre></li>
+                
+                  <li onclick="toggle('pre2107819420224', 'post2107819420224')"><pre>                source = field_name</pre></li>
+                
+                  <li onclick="toggle('pre2107819420224', 'post2107819420224')"><pre></pre></li>
+                
+                  <li onclick="toggle('pre2107819420224', 'post2107819420224')"><pre>            # Determine the serializer field class and keyword arguments.</pre></li>
+                
+                </ol>
+              
+              <ol start="1105" class="context-line">
+                <li onclick="toggle('pre2107819420224', 'post2107819420224')"><pre>            field_class, field_kwargs = self.build_field(
+                                              </pre> <span>â¦</span></li>
+              </ol>
+              
+                <ol start='1106' class="post-context" id="post2107819420224">
+                  
+                  <li onclick="toggle('pre2107819420224', 'post2107819420224')"><pre>                source, info, model, depth</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420224', 'post2107819420224')"><pre>            )</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420224', 'post2107819420224')"><pre></pre></li>
+                  
+                  <li onclick="toggle('pre2107819420224', 'post2107819420224')"><pre>            # Include any kwargs defined in `Meta.extra_kwargs`</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420224', 'post2107819420224')"><pre>            field_kwargs = self.include_extra_kwargs(</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420224', 'post2107819420224')"><pre>                field_kwargs, extra_field_kwargs</pre></li>
+                  
+              </ol>
+              
+            </div>
+          
+
+          
+            
+              <details>
+                <summary class="commands">Local vars</summary>
+            
+            <table class="vars" id="v2107819420224">
+              <thead>
+                <tr>
+                  <th scope="col">Variable</th>
+                  <th scope="col">Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                
+                  <tr>
+                    <td>declared_fields</td>
+                    <td class="code"><pre>{&#x27;attendance_percentage&#x27;: SerializerMethodField(),
+ &#x27;average_grade&#x27;: SerializerMethodField(),
+ &#x27;class_name&#x27;: SerializerMethodField(),
+ &#x27;class_stream&#x27;: SerializerMethodField(),
+ &#x27;parents_detail&#x27;: ParentSerializer(many=True, read_only=True, source=&#x27;parents&#x27;):
+    id = IntegerField(label=&#x27;ID&#x27;, read_only=True)
+    full_name = CharField(max_length=255)
+    relationship = ChoiceField(choices=[(&#x27;FATHER&#x27;, &#x27;Father&#x27;), (&#x27;MOTHER&#x27;, &#x27;Mother&#x27;), (&#x27;GUARDIAN&#x27;, &#x27;Guardian&#x27;)])
+    phone = CharField(max_length=20)
+    email = EmailField(allow_blank=True, allow_null=True, max_length=254, required=False)
+    occupation = CharField(allow_blank=True, max_length=100, required=False)
+    address = CharField(allow_blank=True, required=False, style={&#x27;base_template&#x27;: &#x27;textarea.html&#x27;})
+    is_primary = BooleanField(help_text=&#x27;Designates the primary contact for financial and medical alerts.&#x27;, required=False)
+    students = SimpleStudentSerializer(many=True, read_only=True):
+        id = IntegerField(label=&#x27;ID&#x27;, read_only=True)
+        full_name = CharField(max_length=255)
+        admission_number = CharField(allow_blank=True, max_length=20, required=False, validators=[&lt;UniqueValidator(queryset=Student.objects.all())&gt;])
+        class_name = SerializerMethodField()
+        stream = SerializerMethodField()}</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>depth</td>
+                    <td class="code"><pre>0</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>extra_field_kwargs</td>
+                    <td class="code"><pre>{}</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>extra_kwargs</td>
+                    <td class="code"><pre>{}</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>field_class</td>
+                    <td class="code"><pre>&lt;class &#x27;rest_framework.fields.CharField&#x27;&gt;</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>field_kwargs</td>
+                    <td class="code"><pre>{&#x27;allow_blank&#x27;: True, &#x27;max_length&#x27;: 20, &#x27;required&#x27;: False}</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>field_name</td>
+                    <td class="code"><pre>&#x27;guardian_email&#x27;</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>field_names</td>
+                    <td class="code"><pre>[&#x27;id&#x27;,
+ &#x27;full_name&#x27;,
+ &#x27;admission_number&#x27;,
+ &#x27;gender&#x27;,
+ &#x27;date_of_birth&#x27;,
+ &#x27;current_class&#x27;,
+ &#x27;class_name&#x27;,
+ &#x27;class_stream&#x27;,
+ &#x27;status&#x27;,
+ &#x27;category&#x27;,
+ &#x27;fee_balance&#x27;,
+ &#x27;is_active&#x27;,
+ &#x27;attendance_percentage&#x27;,
+ &#x27;average_grade&#x27;,
+ &#x27;parents_detail&#x27;,
+ &#x27;user&#x27;,
+ &#x27;guardian_name&#x27;,
+ &#x27;guardian_phone&#x27;,
+ &#x27;guardian_email&#x27;]</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>fields</td>
+                    <td class="code"><pre>{&#x27;admission_number&#x27;: CharField(allow_blank=True, max_length=20, required=False, validators=[&lt;UniqueValidator(queryset=Student.objects.all())&gt;]),
+ &#x27;attendance_percentage&#x27;: SerializerMethodField(),
+ &#x27;average_grade&#x27;: SerializerMethodField(),
+ &#x27;category&#x27;: ChoiceField(choices=[(&#x27;DAY&#x27;, &#x27;Day Scholar&#x27;), (&#x27;BOARDING&#x27;, &#x27;Boarding&#x27;)], required=False),
+ &#x27;class_name&#x27;: SerializerMethodField(),
+ &#x27;class_stream&#x27;: SerializerMethodField(),
+ &#x27;current_class&#x27;: PrimaryKeyRelatedField(allow_null=True, queryset=Class.objects.all(), required=False),
+ &#x27;date_of_birth&#x27;: DateField(),
+ &#x27;fee_balance&#x27;: DecimalField(decimal_places=2, max_digits=12, required=False),
+ &#x27;full_name&#x27;: CharField(max_length=255),
+ &#x27;gender&#x27;: ChoiceField(choices=[(&#x27;M&#x27;, &#x27;Male&#x27;), (&#x27;F&#x27;, &#x27;Female&#x27;)]),
+ &#x27;guardian_name&#x27;: CharField(allow_blank=True, max_length=255, required=False),
+ &#x27;guardian_phone&#x27;: CharField(allow_blank=True, max_length=20, required=False),
+ &#x27;id&#x27;: IntegerField(label=&#x27;ID&#x27;, read_only=True),
+ &#x27;is_active&#x27;: BooleanField(required=False),
+ &#x27;parents_detail&#x27;: ParentSerializer(many=True, read_only=True, source=&#x27;parents&#x27;):
+    id = IntegerField(label=&#x27;ID&#x27;, read_only=True)
+    full_name = CharField(max_length=255)
+    relationship = ChoiceField(choices=[(&#x27;FATHER&#x27;, &#x27;Father&#x27;), (&#x27;MOTHER&#x27;, &#x27;Mother&#x27;), (&#x27;GUARDIAN&#x27;, &#x27;Guardian&#x27;)])
+    phone = CharField(max_length=20)
+    email = EmailField(allow_blank=True, allow_null=True, max_length=254, required=False)
+    occupation = CharField(allow_blank=True, max_length=100, required=False)
+    address = CharField(allow_blank=True, required=False, style={&#x27;base_template&#x27;: &#x27;textarea.html&#x27;})
+    is_primary = BooleanField(help_text=&#x27;Designates the primary contact for financial and medical alerts.&#x27;, required=False)
+    students = SimpleStudentSerializer(many=True, read_only=True):
+        id = IntegerField(label=&#x27;ID&#x27;, read_only=True)
+        full_name = CharField(max_length=255)
+        admission_number = CharField(allow_blank=True, max_length=20, required=False, validators=[&lt;UniqueValidator(queryset=Student.objects.all())&gt;])
+        class_name = SerializerMethodField()
+        stream = SerializerMethodField(),
+ &#x27;status&#x27;: ChoiceField(choices=[(&#x27;ACTIVE&#x27;, &#x27;Active&#x27;), (&#x27;SUSPENDED&#x27;, &#x27;Suspended&#x27;), (&#x27;WITHDRAWN&#x27;, &#x27;Withdrawn&#x27;), (&#x27;ALUMNI&#x27;, &#x27;Alumni&#x27;), (&#x27;TRANSFERRED&#x27;, &#x27;Transferred Out&#x27;)], required=False),
+ &#x27;user&#x27;: PrimaryKeyRelatedField(allow_null=True, queryset=User.objects.all(), required=False, validators=[&lt;UniqueValidator(queryset=Student.objects.all())&gt;])}</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>hidden_fields</td>
+                    <td class="code"><pre>{}</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>info</td>
+                    <td class="code"><pre>FieldInfo(pk=&lt;django.db.models.fields.BigAutoField: id&gt;, fields={&#x27;admission_number&#x27;: &lt;django.db.models.fields.CharField: admission_number&gt;, &#x27;full_name&#x27;: &lt;django.db.models.fields.CharField: full_name&gt;, &#x27;gender&#x27;: &lt;django.db.models.fields.CharField: gender&gt;, &#x27;date_of_birth&#x27;: &lt;django.db.models.fields.DateField: date_of_birth&gt;, &#x27;photo&#x27;: &lt;django.db.models.fields.files.FileField: photo&gt;, &#x27;category&#x27;: &lt;django.db.models.fields.CharField: category&gt;, &#x27;status&#x27;: &lt;django.db.models.fields.CharField: status&gt;, &#x27;residence_details&#x27;: &lt;django.db.models.fields.CharField: residence_details&gt;, &#x27;transport_details&#x27;: &lt;django.db.models.fields.CharField: transport_details&gt;, &#x27;guardian_name&#x27;: &lt;django.db.models.fields.CharField: guardian_name&gt;, &#x27;guardian_phone&#x27;: &lt;django.db.models.fields.CharField: guardian_phone&gt;, &#x27;admission_date&#x27;: &lt;django.db.models.fields.DateField: admission_date&gt;, &#x27;is_active&#x27;: &lt;django.db.models.fields.BooleanField: is_active&gt;, &#x27;fee_balance&#x27;: &lt;django.db.models.fields.DecimalField: fee_balance&gt;}, forward_relations={&#x27;user&#x27;: RelationInfo(model_field=&lt;django.db.models.fields.related.OneToOneField: user&gt;, related_model=&lt;class &#x27;accounts.models.User&#x27;&gt;, to_many=False, to_field=None, has_through_model=False, reverse=False), &#x27;current_class&#x27;: RelationInfo(model_field=&lt;django.db.models.fields.related.ForeignKey: current_class&gt;, related_model=&lt;class &#x27;academics.models.Class&#x27;&gt;, to_many=False, to_field=None, has_through_model=False, reverse=False), &#x27;parents&#x27;: RelationInfo(model_field=&lt;django.db.models.fields.related.ManyToManyField: parents&gt;, related_model=&lt;class &#x27;students.models.Parent&#x27;&gt;, to_many=True, to_field=None, has_through_model=False, reverse=False)}, reverse_relations={&#x27;admission_details&#x27;: RelationInfo(model_field=None, related_model=&lt;class &#x27;students.models.StudentAdmission&#x27;&gt;, to_many=False, to_field=&#x27;id&#x27;, has_through_model=False, reverse=True), &#x27;documents&#x27;: RelationInfo(model_field=None, related_model=&lt;class &#x27;students.models.StudentDocument&#x27;&gt;, to_many=True, to_field=&#x27;id&#x27;, has_through_model=False, reverse=True), &#x27;discipline_records&#x27;: RelationInfo(model_field=None, related_model=&lt;class &#x27;students.models.DisciplineRecord&#x27;&gt;, to_many=True, to_field=&#x27;id&#x27;, has_through_model=False, reverse=True), &#x27;health_record&#x27;: RelationInfo(model_field=None, related_model=&lt;class &#x27;students.models.HealthRecord&#x27;&gt;, to_many=False, to_field=&#x27;id&#x27;, has_through_model=False, reverse=True), &#x27;activities&#x27;: RelationInfo(model_field=None, related_model=&lt;class &#x27;students.models.ActivityRecord&#x27;&gt;, to_many=True, to_field=&#x27;id&#x27;, has_through_model=False, reverse=True), &#x27;enrolled_subjects&#x27;: RelationInfo(model_field=None, related_model=&lt;class &#x27;academics.models.StudentSubject&#x27;&gt;, to_many=True, to_field=None, has_through_model=False, reverse=True), &#x27;results&#x27;: RelationInfo(model_field=None, related_model=&lt;class &#x27;academics.models.StudentResult&#x27;&gt;, to_many=True, to_field=None, has_through_model=False, reverse=True), &#x27;attendance&#x27;: RelationInfo(model_field=None, related_model=&lt;class &#x27;academics.models.Attendance&#x27;&gt;, to_many=True, to_field=None, has_through_model=False, reverse=True), &#x27;hostel_allocation&#x27;: RelationInfo(model_field=None, related_model=&lt;class &#x27;hostel.models.HostelAllocation&#x27;&gt;, to_many=False, to_field=None, has_through_model=False, reverse=True), &#x27;hostelattendance_set&#x27;: RelationInfo(model_field=None, related_model=&lt;class &#x27;hostel.models.HostelAttendance&#x27;&gt;, to_many=True, to_field=None, has_through_model=False, reverse=True), &#x27;hosteldiscipline_set&#x27;: RelationInfo(model_field=None, related_model=&lt;class &#x27;hostel.models.HostelDiscipline&#x27;&gt;, to_many=True, to_field=None, has_through_model=False, reverse=True), &#x27;guestlog_set&#x27;: RelationInfo(model_field=None, related_model=&lt;class &#x27;hostel.models.GuestLog&#x27;&gt;, to_many=True, to_field=None, has_through_model=False, reverse=True), &#x27;invoices&#x27;: RelationInfo(model_field=None, related_model=&lt;class &#x27;finance.models.Invoice&#x27;&gt;, to_many=True, to_field=None, has_through_model=False, reverse=True), &#x27;transport_allocation&#x27;: RelationInfo(model_field=None, related_model=&lt;class &#x27;transport.models.TransportAllocation&#x27;&gt;, to_many=False, to_field=None, has_through_model=False, reâ¦ &lt;trimmed 8965 bytes string&gt;</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>model</td>
+                    <td class="code"><pre>&lt;class &#x27;students.models.Student&#x27;&gt;</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>self</td>
+                    <td class="code"><pre>Error in formatting: ImproperlyConfigured: Field name `guardian_email` is not valid for model `Student` in `students.serializers.StudentListSerializer`.</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>source</td>
+                    <td class="code"><pre>&#x27;guardian_email&#x27;</pre></td>
+                  </tr>
+                
+              </tbody>
+            </table>
+            </details>
+          
+        </li>
+      
+        
+        <li class="frame user">
+          
+            <code class="fname">C:\Users\Evans\School management system\backend\venv\Lib\site-packages\rest_framework\serializers.py</code>, line 1251, in build_field
+          
+
+          
+            <div class="context" id="c2107819420160">
+              
+                <ol start="1244" class="pre-context" id="pre2107819420160">
+                
+                  <li onclick="toggle('pre2107819420160', 'post2107819420160')"><pre></pre></li>
+                
+                  <li onclick="toggle('pre2107819420160', 'post2107819420160')"><pre>        elif hasattr(model_class, field_name):</pre></li>
+                
+                  <li onclick="toggle('pre2107819420160', 'post2107819420160')"><pre>            return self.build_property_field(field_name, model_class)</pre></li>
+                
+                  <li onclick="toggle('pre2107819420160', 'post2107819420160')"><pre></pre></li>
+                
+                  <li onclick="toggle('pre2107819420160', 'post2107819420160')"><pre>        elif field_name == self.url_field_name:</pre></li>
+                
+                  <li onclick="toggle('pre2107819420160', 'post2107819420160')"><pre>            return self.build_url_field(field_name, model_class)</pre></li>
+                
+                  <li onclick="toggle('pre2107819420160', 'post2107819420160')"><pre></pre></li>
+                
+                </ol>
+              
+              <ol start="1251" class="context-line">
+                <li onclick="toggle('pre2107819420160', 'post2107819420160')"><pre>        return self.build_unknown_field(field_name, model_class)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</pre> <span>â¦</span></li>
+              </ol>
+              
+                <ol start='1252' class="post-context" id="post2107819420160">
+                  
+                  <li onclick="toggle('pre2107819420160', 'post2107819420160')"><pre></pre></li>
+                  
+                  <li onclick="toggle('pre2107819420160', 'post2107819420160')"><pre>    def build_standard_field(self, field_name, model_field):</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420160', 'post2107819420160')"><pre>        &quot;&quot;&quot;</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420160', 'post2107819420160')"><pre>        Create regular model fields.</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420160', 'post2107819420160')"><pre>        &quot;&quot;&quot;</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420160', 'post2107819420160')"><pre>        field_mapping = ClassLookupDict(self.serializer_field_mapping)</pre></li>
+                  
+              </ol>
+              
+            </div>
+          
+
+          
+            
+              <details>
+                <summary class="commands">Local vars</summary>
+            
+            <table class="vars" id="v2107819420160">
+              <thead>
+                <tr>
+                  <th scope="col">Variable</th>
+                  <th scope="col">Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                
+                  <tr>
+                    <td>field_name</td>
+                    <td class="code"><pre>&#x27;guardian_email&#x27;</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>info</td>
+                    <td class="code"><pre>FieldInfo(pk=&lt;django.db.models.fields.BigAutoField: id&gt;, fields={&#x27;admission_number&#x27;: &lt;django.db.models.fields.CharField: admission_number&gt;, &#x27;full_name&#x27;: &lt;django.db.models.fields.CharField: full_name&gt;, &#x27;gender&#x27;: &lt;django.db.models.fields.CharField: gender&gt;, &#x27;date_of_birth&#x27;: &lt;django.db.models.fields.DateField: date_of_birth&gt;, &#x27;photo&#x27;: &lt;django.db.models.fields.files.FileField: photo&gt;, &#x27;category&#x27;: &lt;django.db.models.fields.CharField: category&gt;, &#x27;status&#x27;: &lt;django.db.models.fields.CharField: status&gt;, &#x27;residence_details&#x27;: &lt;django.db.models.fields.CharField: residence_details&gt;, &#x27;transport_details&#x27;: &lt;django.db.models.fields.CharField: transport_details&gt;, &#x27;guardian_name&#x27;: &lt;django.db.models.fields.CharField: guardian_name&gt;, &#x27;guardian_phone&#x27;: &lt;django.db.models.fields.CharField: guardian_phone&gt;, &#x27;admission_date&#x27;: &lt;django.db.models.fields.DateField: admission_date&gt;, &#x27;is_active&#x27;: &lt;django.db.models.fields.BooleanField: is_active&gt;, &#x27;fee_balance&#x27;: &lt;django.db.models.fields.DecimalField: fee_balance&gt;}, forward_relations={&#x27;user&#x27;: RelationInfo(model_field=&lt;django.db.models.fields.related.OneToOneField: user&gt;, related_model=&lt;class &#x27;accounts.models.User&#x27;&gt;, to_many=False, to_field=None, has_through_model=False, reverse=False), &#x27;current_class&#x27;: RelationInfo(model_field=&lt;django.db.models.fields.related.ForeignKey: current_class&gt;, related_model=&lt;class &#x27;academics.models.Class&#x27;&gt;, to_many=False, to_field=None, has_through_model=False, reverse=False), &#x27;parents&#x27;: RelationInfo(model_field=&lt;django.db.models.fields.related.ManyToManyField: parents&gt;, related_model=&lt;class &#x27;students.models.Parent&#x27;&gt;, to_many=True, to_field=None, has_through_model=False, reverse=False)}, reverse_relations={&#x27;admission_details&#x27;: RelationInfo(model_field=None, related_model=&lt;class &#x27;students.models.StudentAdmission&#x27;&gt;, to_many=False, to_field=&#x27;id&#x27;, has_through_model=False, reverse=True), &#x27;documents&#x27;: RelationInfo(model_field=None, related_model=&lt;class &#x27;students.models.StudentDocument&#x27;&gt;, to_many=True, to_field=&#x27;id&#x27;, has_through_model=False, reverse=True), &#x27;discipline_records&#x27;: RelationInfo(model_field=None, related_model=&lt;class &#x27;students.models.DisciplineRecord&#x27;&gt;, to_many=True, to_field=&#x27;id&#x27;, has_through_model=False, reverse=True), &#x27;health_record&#x27;: RelationInfo(model_field=None, related_model=&lt;class &#x27;students.models.HealthRecord&#x27;&gt;, to_many=False, to_field=&#x27;id&#x27;, has_through_model=False, reverse=True), &#x27;activities&#x27;: RelationInfo(model_field=None, related_model=&lt;class &#x27;students.models.ActivityRecord&#x27;&gt;, to_many=True, to_field=&#x27;id&#x27;, has_through_model=False, reverse=True), &#x27;enrolled_subjects&#x27;: RelationInfo(model_field=None, related_model=&lt;class &#x27;academics.models.StudentSubject&#x27;&gt;, to_many=True, to_field=None, has_through_model=False, reverse=True), &#x27;results&#x27;: RelationInfo(model_field=None, related_model=&lt;class &#x27;academics.models.StudentResult&#x27;&gt;, to_many=True, to_field=None, has_through_model=False, reverse=True), &#x27;attendance&#x27;: RelationInfo(model_field=None, related_model=&lt;class &#x27;academics.models.Attendance&#x27;&gt;, to_many=True, to_field=None, has_through_model=False, reverse=True), &#x27;hostel_allocation&#x27;: RelationInfo(model_field=None, related_model=&lt;class &#x27;hostel.models.HostelAllocation&#x27;&gt;, to_many=False, to_field=None, has_through_model=False, reverse=True), &#x27;hostelattendance_set&#x27;: RelationInfo(model_field=None, related_model=&lt;class &#x27;hostel.models.HostelAttendance&#x27;&gt;, to_many=True, to_field=None, has_through_model=False, reverse=True), &#x27;hosteldiscipline_set&#x27;: RelationInfo(model_field=None, related_model=&lt;class &#x27;hostel.models.HostelDiscipline&#x27;&gt;, to_many=True, to_field=None, has_through_model=False, reverse=True), &#x27;guestlog_set&#x27;: RelationInfo(model_field=None, related_model=&lt;class &#x27;hostel.models.GuestLog&#x27;&gt;, to_many=True, to_field=None, has_through_model=False, reverse=True), &#x27;invoices&#x27;: RelationInfo(model_field=None, related_model=&lt;class &#x27;finance.models.Invoice&#x27;&gt;, to_many=True, to_field=None, has_through_model=False, reverse=True), &#x27;transport_allocation&#x27;: RelationInfo(model_field=None, related_model=&lt;class &#x27;transport.models.TransportAllocation&#x27;&gt;, to_many=False, to_field=None, has_through_model=False, reâ¦ &lt;trimmed 8965 bytes string&gt;</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>model_class</td>
+                    <td class="code"><pre>&lt;class &#x27;students.models.Student&#x27;&gt;</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>nested_depth</td>
+                    <td class="code"><pre>0</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>self</td>
+                    <td class="code"><pre>Error in formatting: ImproperlyConfigured: Field name `guardian_email` is not valid for model `Student` in `students.serializers.StudentListSerializer`.</pre></td>
+                  </tr>
+                
+              </tbody>
+            </table>
+            </details>
+          
+        </li>
+      
+        
+        <li class="frame user">
+          
+            <code class="fname">C:\Users\Evans\School management system\backend\venv\Lib\site-packages\rest_framework\serializers.py</code>, line 1369, in build_unknown_field
+          
+
+          
+            <div class="context" id="c2107819420096">
+              
+                <ol start="1362" class="pre-context" id="pre2107819420096">
+                
+                  <li onclick="toggle('pre2107819420096', 'post2107819420096')"><pre></pre></li>
+                
+                  <li onclick="toggle('pre2107819420096', 'post2107819420096')"><pre>        return field_class, field_kwargs</pre></li>
+                
+                  <li onclick="toggle('pre2107819420096', 'post2107819420096')"><pre></pre></li>
+                
+                  <li onclick="toggle('pre2107819420096', 'post2107819420096')"><pre>    def build_unknown_field(self, field_name, model_class):</pre></li>
+                
+                  <li onclick="toggle('pre2107819420096', 'post2107819420096')"><pre>        &quot;&quot;&quot;</pre></li>
+                
+                  <li onclick="toggle('pre2107819420096', 'post2107819420096')"><pre>        Raise an error on any unknown fields.</pre></li>
+                
+                  <li onclick="toggle('pre2107819420096', 'post2107819420096')"><pre>        &quot;&quot;&quot;</pre></li>
+                
+                </ol>
+              
+              <ol start="1369" class="context-line">
+                <li onclick="toggle('pre2107819420096', 'post2107819420096')"><pre>        raise ImproperlyConfigured(
+              ^</pre> <span>â¦</span></li>
+              </ol>
+              
+                <ol start='1370' class="post-context" id="post2107819420096">
+                  
+                  <li onclick="toggle('pre2107819420096', 'post2107819420096')"><pre>            &#x27;Field name `%s` is not valid for model `%s` in `%s.%s`.&#x27; %</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420096', 'post2107819420096')"><pre>            (field_name, model_class.__name__, self.__class__.__module__, self.__class__.__name__)</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420096', 'post2107819420096')"><pre>        )</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420096', 'post2107819420096')"><pre></pre></li>
+                  
+                  <li onclick="toggle('pre2107819420096', 'post2107819420096')"><pre>    def include_extra_kwargs(self, kwargs, extra_kwargs):</pre></li>
+                  
+                  <li onclick="toggle('pre2107819420096', 'post2107819420096')"><pre>        &quot;&quot;&quot;</pre></li>
+                  
+              </ol>
+              
+            </div>
+          
+
+          
+            
+              <details>
+                <summary class="commands">Local vars</summary>
+            
+            <table class="vars" id="v2107819420096">
+              <thead>
+                <tr>
+                  <th scope="col">Variable</th>
+                  <th scope="col">Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                
+                  <tr>
+                    <td>field_name</td>
+                    <td class="code"><pre>&#x27;guardian_email&#x27;</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>model_class</td>
+                    <td class="code"><pre>&lt;class &#x27;students.models.Student&#x27;&gt;</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>self</td>
+                    <td class="code"><pre>Error in formatting: ImproperlyConfigured: Field name `guardian_email` is not valid for model `Student` in `students.serializers.StudentListSerializer`.</pre></td>
+                  </tr>
+                
+              </tbody>
+            </table>
+            </details>
+          
+        </li>
+      
+    </ul>
+  </div>
+
+  <form action="https://dpaste.com/" name="pasteform" id="pasteform" method="post">
+  <div id="pastebinTraceback" class="pastebin">
+    <input type="hidden" name="language" value="PythonConsole">
+    <input type="hidden" name="title"
+      value="ImproperlyConfigured at /api/students/">
+    <input type="hidden" name="source" value="Django Dpaste Agent">
+    <input type="hidden" name="poster" value="Django">
+    <textarea name="content" id="traceback_area" cols="140" rows="25">
+Environment:
+
+
+Request Method: GET
+Request URL: http://localhost:8000/api/students/
+
+Django Version: 6.0.1
+Python Version: 3.13.5
+Installed Applications:
+[&#x27;django.contrib.admin&#x27;,
+ &#x27;django.contrib.auth&#x27;,
+ &#x27;django.contrib.contenttypes&#x27;,
+ &#x27;django.contrib.sessions&#x27;,
+ &#x27;django.contrib.messages&#x27;,
+ &#x27;whitenoise.runserver_nostatic&#x27;,
+ &#x27;django.contrib.staticfiles&#x27;,
+ &#x27;rest_framework&#x27;,
+ &#x27;rest_framework.authtoken&#x27;,
+ &#x27;corsheaders&#x27;,
+ &#x27;accounts&#x27;,
+ &#x27;students&#x27;,
+ &#x27;staff&#x27;,
+ &#x27;academics&#x27;,
+ &#x27;timetable&#x27;,
+ &#x27;hostel&#x27;,
+ &#x27;finance&#x27;,
+ &#x27;transport&#x27;,
+ &#x27;library&#x27;,
+ &#x27;medical&#x27;,
+ &#x27;audit&#x27;,
+ &#x27;reports&#x27;,
+ &#x27;communication&#x27;,
+ &#x27;mpesa&#x27;,
+ &#x27;django_filters&#x27;]
+Installed Middleware:
+[&#x27;corsheaders.middleware.CorsMiddleware&#x27;,
+ &#x27;django.middleware.security.SecurityMiddleware&#x27;,
+ &#x27;whitenoise.middleware.WhiteNoiseMiddleware&#x27;,
+ &#x27;django.contrib.sessions.middleware.SessionMiddleware&#x27;,
+ &#x27;django.middleware.common.CommonMiddleware&#x27;,
+ &#x27;django.middleware.csrf.CsrfViewMiddleware&#x27;,
+ &#x27;django.contrib.auth.middleware.AuthenticationMiddleware&#x27;,
+ &#x27;django.contrib.messages.middleware.MessageMiddleware&#x27;,
+ &#x27;django.middleware.clickjacking.XFrameOptionsMiddleware&#x27;,
+ &#x27;audit.middleware.AuditMiddleware&#x27;]
+
+
+
+Traceback (most recent call last):
+  File "C:\Users\Evans\School management system\backend\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Evans\School management system\backend\venv\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Evans\School management system\backend\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Evans\School management system\backend\venv\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Evans\School management system\backend\venv\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Evans\School management system\backend\venv\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Evans\School management system\backend\venv\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+    ^^^^^^^^^
+  File "C:\Users\Evans\School management system\backend\venv\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Evans\School management system\backend\venv\Lib\site-packages\rest_framework\mixins.py", line 43, in list
+    return self.get_paginated_response(serializer.data)
+                                       ^^^^^^^^^^^^^^^
+  File "C:\Users\Evans\School management system\backend\venv\Lib\site-packages\rest_framework\serializers.py", line 797, in data
+    ret = super().data
+          ^^^^^^^^^^^^
+  File "C:\Users\Evans\School management system\backend\venv\Lib\site-packages\rest_framework\serializers.py", line 251, in data
+    self._data = self.to_representation(self.instance)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Evans\School management system\backend\venv\Lib\site-packages\rest_framework\serializers.py", line 716, in to_representation
+    self.child.to_representation(item) for item in iterable
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Evans\School management system\backend\venv\Lib\site-packages\rest_framework\serializers.py", line 525, in to_representation
+    for field in fields:
+                 ^^^^^^
+  File "C:\Users\Evans\School management system\backend\venv\Lib\site-packages\rest_framework\serializers.py", line 386, in _readable_fields
+    for field in self.fields.values():
+                 ^^^^^^^^^^^
+  File "C:\Users\Evans\School management system\backend\venv\Lib\site-packages\django\utils\functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Evans\School management system\backend\venv\Lib\site-packages\rest_framework\serializers.py", line 374, in fields
+    for key, value in self.get_fields().items():
+                      ^^^^^^^^^^^^^^^^^
+  File "C:\Users\Evans\School management system\backend\venv\Lib\site-packages\rest_framework\serializers.py", line 1105, in get_fields
+    field_class, field_kwargs = self.build_field(
+                                
+  File "C:\Users\Evans\School management system\backend\venv\Lib\site-packages\rest_framework\serializers.py", line 1251, in build_field
+    return self.build_unknown_field(field_name, model_class)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Evans\School management system\backend\venv\Lib\site-packages\rest_framework\serializers.py", line 1369, in build_unknown_field
+    raise ImproperlyConfigured(
+    ^
+
+Exception Type: ImproperlyConfigured at /api/students/
+Exception Value: Field name `guardian_email` is not valid for model `Student` in `students.serializers.StudentListSerializer`.
+</textarea>
+  <br><br>
+  <input type="submit" value="Share this traceback on a public website">
+  </div>
+</form>
+
+</div>
+
+
+<div id="requestinfo">
+  <h2>Request information</h2>
+
+
+  
+    <h3 id="user-info">USER</h3>
+    <p>tindievans0110@gmail.com (Administrator)</p>
+  
+
+  <h3 id="get-info">GET</h3>
+  
+    <p>No GET data</p>
+  
+
+  <h3 id="post-info">POST</h3>
+  
+    <p>No POST data</p>
+  
+
+  <h3 id="files-info">FILES</h3>
+  
+    <p>No FILES data</p>
+  
+
+  <h3 id="cookie-info">COOKIES</h3>
+  
+    <p>No cookie data</p>
+  
+
+  <h3 id="meta-info">META</h3>
+  <table class="req">
+    <thead>
+      <tr>
+        <th scope="col">Variable</th>
+        <th scope="col">Value</th>
+      </tr>
+    </thead>
+    <tbody>
+      
+        <tr>
+          <td>ALLOWED_HOSTS</td>
+          <td class="code"><pre>&#x27;school-management-systems-tinditech.onrender.com,localhost,127.0.0.1&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>ALLUSERSPROFILE</td>
+          <td class="code"><pre>&#x27;C:\\ProgramData&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>ANTIGRAVITY_AGENT</td>
+          <td class="code"><pre>&#x27;1&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>ANTIGRAVITY_EDITOR_APP_ROOT</td>
+          <td class="code"><pre>&#x27;c:\\Users\\Evans\\AppData\\Local\\Programs\\Antigravity\\resources\\app&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>ANTIGRAVITY_TRAJECTORY_ID</td>
+          <td class="code"><pre>&#x27;0ca52af2-5a1c-4bff-9b32-e4633702d06a&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>APPDATA</td>
+          <td class="code"><pre>&#x27;C:\\Users\\Evans\\AppData\\Roaming&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>CHOCOLATEYINSTALL</td>
+          <td class="code"><pre>&#x27;C:\\ProgramData\\chocolatey&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>CHOCOLATEYLASTPATHUPDATE</td>
+          <td class="code"><pre>&#x27;134144225397469729&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>CHROME_CRASHPAD_PIPE_NAME</td>
+          <td class="code"><pre>&#x27;\\\\.\\pipe\\crashpad_17312_PJZHVKOBTRWVCOUU&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>COMMONPROGRAMFILES</td>
+          <td class="code"><pre>&#x27;C:\\Program Files\\Common Files&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>COMMONPROGRAMFILES(X86)</td>
+          <td class="code"><pre>&#x27;C:\\Program Files (x86)\\Common Files&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>COMMONPROGRAMW6432</td>
+          <td class="code"><pre>&#x27;C:\\Program Files\\Common Files&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>COMPUTERNAME</td>
+          <td class="code"><pre>&#x27;DESKTOP-8VJIND5&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>COMSPEC</td>
+          <td class="code"><pre>&#x27;C:\\Windows\\system32\\cmd.exe&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>CONTENT_LENGTH</td>
+          <td class="code"><pre>&#x27;&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>CONTENT_TYPE</td>
+          <td class="code"><pre>&#x27;text/plain&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>CORS_ALLOWED_ORIGINS</td>
+          <td class="code"><pre>&#x27;https://school-management-systems-4n8d.onrender.com,https://school-management-systems-tinditech.onrender.com,http://localhost:5173&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>CSRF_TRUSTED_ORIGINS</td>
+          <td class="code"><pre>&#x27;https://school-management-systems-4n8d.onrender.com,https://school-management-systems-tinditech.onrender.com,http://localhost:5173&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>DATABASE_URL</td>
+          <td class="code"><pre>&#x27;postgresql://postgres.pjqmhqzebovvvvxpqjdg:IXPCbXEBc6pcjimh@aws-0-us-west-2.pooler.supabase.com:6543/postgres&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>DEBUG</td>
+          <td class="code"><pre>&#x27;True&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>DJANGO_SETTINGS_MODULE</td>
+          <td class="code"><pre>&#x27;sms.settings&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>DRIVERDATA</td>
+          <td class="code"><pre>&#x27;C:\\Windows\\System32\\Drivers\\DriverData&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>EFC_7968</td>
+          <td class="code"><pre>&#x27;1&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>FRONTEND_URL</td>
+          <td class="code"><pre>&#x27;https://school-management-systems-4n8d.onrender.com&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>GATEWAY_INTERFACE</td>
+          <td class="code"><pre>&#x27;CGI/1.1&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>GLOG_LOGBUFSECS</td>
+          <td class="code"><pre>&#x27;0&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>HOMEDRIVE</td>
+          <td class="code"><pre>&#x27;C:&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>HOMEPATH</td>
+          <td class="code"><pre>&#x27;\\Users\\Evans&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>HTTP_ACCEPT</td>
+          <td class="code"><pre>&#x27;*/*&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>HTTP_ACCEPT_ENCODING</td>
+          <td class="code"><pre>&#x27;gzip, deflate&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>HTTP_AUTHORIZATION</td>
+          <td class="code"><pre>&#x27;********************&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>HTTP_CONNECTION</td>
+          <td class="code"><pre>&#x27;keep-alive&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>HTTP_HOST</td>
+          <td class="code"><pre>&#x27;localhost:8000&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>HTTP_USER_AGENT</td>
+          <td class="code"><pre>&#x27;python-requests/2.32.5&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>LOCALAPPDATA</td>
+          <td class="code"><pre>&#x27;C:\\Users\\Evans\\AppData\\Local&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>LOGONSERVER</td>
+          <td class="code"><pre>&#x27;\\\\DESKTOP-8VJIND5&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>MAIL_DEFAULT_SENDER</td>
+          <td class="code"><pre>&#x27;tinditechnologies@gmail.com&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>MAIL_PASSWORD</td>
+          <td class="code"><pre>&#x27;********************&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>MAIL_PORT</td>
+          <td class="code"><pre>&#x27;587&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>MAIL_SERVER</td>
+          <td class="code"><pre>&#x27;smtp.gmail.com&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>MAIL_USERNAME</td>
+          <td class="code"><pre>&#x27;tinditechnologies@gmail.com&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>MAIL_USE_SSL</td>
+          <td class="code"><pre>&#x27;False&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>MAIL_USE_TLS</td>
+          <td class="code"><pre>&#x27;True&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>MPESA_CALLBACK_URL</td>
+          <td class="code"><pre>&#x27;https://school-management-systems-tinditech.onrender.com/api/mpesa/callback&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>MPESA_CONSUMER_KEY</td>
+          <td class="code"><pre>&#x27;********************&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>MPESA_CONSUMER_SECRET</td>
+          <td class="code"><pre>&#x27;********************&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>MPESA_PASSKEY</td>
+          <td class="code"><pre>&#x27;********************&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>MPESA_SHORTCODE</td>
+          <td class="code"><pre>&#x27;174379&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>NUMBER_OF_PROCESSORS</td>
+          <td class="code"><pre>&#x27;4&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>ONEDRIVE</td>
+          <td class="code"><pre>&#x27;C:\\Users\\Evans\\OneDrive&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>ONEDRIVECONSUMER</td>
+          <td class="code"><pre>&#x27;C:\\Users\\Evans\\OneDrive&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>OPENSSL_CONF</td>
+          <td class="code"><pre>&#x27;C:\\Program Files\\PostgreSQL\\psqlODBC\\etc\\openssl.cnf&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>OS</td>
+          <td class="code"><pre>&#x27;Windows_NT&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>PATH</td>
+          <td class="code"><pre>(&#x27;C:\\Program Files\\Common Files\\Oracle\\Java\\javapath;C:\\Program Files &#x27;
+ &#x27;(x86)\\Intel\\iCLS Client\\;C:\\Program Files\\Intel\\iCLS &#x27;
+ &#x27;Client\\;C:\\Windows\\system32;C:\\Windows;C:\\Windows\\System32\\Wbem;C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\;C:\\Windows\\System32\\OpenSSH\\;C:\\Program &#x27;
+ &#x27;Files\\dotnet\\;C:\\Program Files (x86)\\Intel\\Intel(R) Management Engine &#x27;
+ &#x27;Components\\DAL;C:\\Program Files\\Intel\\Intel(R) Management Engine &#x27;
+ &#x27;Components\\DAL;C:\\Program Files (x86)\\Intel\\Intel(R) Management Engine &#x27;
+ &#x27;Components\\IPT;C:\\Program Files\\Intel\\Intel(R) Management Engine &#x27;
+ &#x27;Components\\IPT;C:\\Program Files\\Intel\\WiFi\\bin\\;C:\\Program &#x27;
+ &#x27;Files\\Common Files\\Intel\\WirelessCommon\\;C:\\Program &#x27;
+ &#x27;Files\\Git\\cmd;C:\\Program &#x27;
+ &#x27;Files\\nodejs\\;C:\\ProgramData\\chocolatey\\bin;C:\\Users\\Evans\\AppData\\Local\\Programs\\Python\\Python314\\Scripts\\;C:\\Users\\Evans\\AppData\\Local\\Programs\\Python\\Python314\\;C:\\Users\\Evans\\AppData\\Local\\Programs\\Python\\Launcher\\;C:\\Users\\Evans\\AppData\\Local\\Microsoft\\WindowsApps;C:\\Users\\Evans\\AppData\\Local\\JetBrains\\Toolbox\\scripts;C:\\Program &#x27;
+ &#x27;Files\\JetBrains\\PyCharm &#x27;
+ &#x27;2025.2.4\\bin;C:\\Users\\Evans\\AppData\\Local\\Programs\\Microsoft VS &#x27;
+ &#x27;Code\\bin;C:\\Program Files (x86)\\MongoDB Atlas CLI\\;C:\\Program Files &#x27;
+ &#x27;(x86)\\MongoDB &#x27;
+ &#x27;CLI\\;C:\\Users\\Evans\\AppData\\Roaming\\npm;C:\\Users\\Evans\\AppData\\Local\\Programs\\Antigravity\\bin&#x27;)</pre></td>
+        </tr>
+      
+        <tr>
+          <td>PATHEXT</td>
+          <td class="code"><pre>&#x27;.COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC;.CPL&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>PATH_INFO</td>
+          <td class="code"><pre>&#x27;/api/students/&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>POSTGIS_ENABLE_OUTDB_RASTERS</td>
+          <td class="code"><pre>&#x27;1&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>POSTGIS_GDAL_ENABLED_DRIVERS</td>
+          <td class="code"><pre>&#x27;ENABLE_ALL&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>PROCESSOR_ARCHITECTURE</td>
+          <td class="code"><pre>&#x27;AMD64&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>PROCESSOR_IDENTIFIER</td>
+          <td class="code"><pre>&#x27;Intel64 Family 6 Model 69 Stepping 1, GenuineIntel&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>PROCESSOR_LEVEL</td>
+          <td class="code"><pre>&#x27;6&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>PROCESSOR_REVISION</td>
+          <td class="code"><pre>&#x27;4501&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>PROGRAMDATA</td>
+          <td class="code"><pre>&#x27;C:\\ProgramData&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>PROGRAMFILES</td>
+          <td class="code"><pre>&#x27;C:\\Program Files&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>PROGRAMFILES(X86)</td>
+          <td class="code"><pre>&#x27;C:\\Program Files (x86)&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>PROGRAMW6432</td>
+          <td class="code"><pre>&#x27;C:\\Program Files&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>PSMODULEPATH</td>
+          <td class="code"><pre>(&#x27;C:\\Users\\Evans\\OneDrive\\Documenten\\WindowsPowerShell\\Modules;C:\\Program &#x27;
+ &#x27;Files\\WindowsPowerShell\\Modules;C:\\Windows\\system32\\WindowsPowerShell\\v1.0\\Modules&#x27;)</pre></td>
+        </tr>
+      
+        <tr>
+          <td>PT8HOME</td>
+          <td class="code"><pre>&#x27;C:\\Program Files\\Cisco Packet Tracer 8.0&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>PUBLIC</td>
+          <td class="code"><pre>&#x27;C:\\Users\\Public&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>PYCHARM</td>
+          <td class="code"><pre>&#x27;C:\\Program Files\\JetBrains\\PyCharm 2025.2.4\\bin&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>QT_DEVICE_PIXEL_RATIO</td>
+          <td class="code"><pre>&#x27;auto&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>QUERY_STRING</td>
+          <td class="code"><pre>&#x27;&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>REMOTE_ADDR</td>
+          <td class="code"><pre>&#x27;127.0.0.1&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>REMOTE_HOST</td>
+          <td class="code"><pre>&#x27;&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>REQUEST_METHOD</td>
+          <td class="code"><pre>&#x27;GET&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>RUN_MAIN</td>
+          <td class="code"><pre>&#x27;true&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>SCRIPT_NAME</td>
+          <td class="code"><pre>&#x27;&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>SECRET_KEY</td>
+          <td class="code"><pre>&#x27;********************&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>SERVER_NAME</td>
+          <td class="code"><pre>&#x27;DESKTOP-8VJIND5&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>SERVER_PORT</td>
+          <td class="code"><pre>&#x27;8000&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>SERVER_PROTOCOL</td>
+          <td class="code"><pre>&#x27;HTTP/1.1&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>SERVER_SOFTWARE</td>
+          <td class="code"><pre>&#x27;WSGIServer/0.2&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>SESSIONNAME</td>
+          <td class="code"><pre>&#x27;Console&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>SYSTEMDRIVE</td>
+          <td class="code"><pre>&#x27;C:&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>SYSTEMROOT</td>
+          <td class="code"><pre>&#x27;C:\\Windows&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>TEMP</td>
+          <td class="code"><pre>&#x27;C:\\Users\\Evans\\AppData\\Local\\Temp&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>TMP</td>
+          <td class="code"><pre>&#x27;C:\\Users\\Evans\\AppData\\Local\\Temp&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>USERDOMAIN</td>
+          <td class="code"><pre>&#x27;DESKTOP-8VJIND5&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>USERDOMAIN_ROAMINGPROFILE</td>
+          <td class="code"><pre>&#x27;DESKTOP-8VJIND5&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>USERNAME</td>
+          <td class="code"><pre>&#x27;Evans&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>USERPROFILE</td>
+          <td class="code"><pre>&#x27;C:\\Users\\Evans&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>VSCODE_CODE_CACHE_PATH</td>
+          <td class="code"><pre>&#x27;C:\\Users\\Evans\\AppData\\Roaming\\Antigravity\\CachedData\\15487b3041e65228cae24980a3f796c905ef582c&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>VSCODE_CWD</td>
+          <td class="code"><pre>&#x27;C:\\Users\\Evans\\AppData\\Local\\Programs\\Antigravity&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>VSCODE_IPC_HOOK</td>
+          <td class="code"><pre>&#x27;\\\\.\\pipe\\0ee2beb1-1.107.0-main-sock&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>VSCODE_NLS_CONFIG</td>
+          <td class="code"><pre>&#x27;{&quot;userLocale&quot;:&quot;en-us&quot;,&quot;osLocale&quot;:&quot;en-ke&quot;,&quot;resolvedLanguage&quot;:&quot;en&quot;,&quot;defaultMessagesFile&quot;:&quot;C:\\\\Users\\\\Evans\\\\AppData\\\\Local\\\\Programs\\\\Antigravity\\\\resources\\\\app\\\\out\\\\nls.messages.json&quot;,&quot;locale&quot;:&quot;en-us&quot;,&quot;availableLanguages&quot;:{}}&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>VSCODE_PID</td>
+          <td class="code"><pre>&#x27;17312&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>WINDIR</td>
+          <td class="code"><pre>&#x27;C:\\Windows&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>wsgi.errors</td>
+          <td class="code"><pre>&lt;_io.TextIOWrapper name=&#x27;&lt;stderr&gt;&#x27; mode=&#x27;w&#x27; encoding=&#x27;cp1252&#x27;&gt;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>wsgi.file_wrapper</td>
+          <td class="code"><pre>&lt;class &#x27;wsgiref.util.FileWrapper&#x27;&gt;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>wsgi.input</td>
+          <td class="code"><pre>&lt;django.core.handlers.wsgi.LimitedStream object at 0x000001EAC3BA7100&gt;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>wsgi.multiprocess</td>
+          <td class="code"><pre>False</pre></td>
+        </tr>
+      
+        <tr>
+          <td>wsgi.multithread</td>
+          <td class="code"><pre>True</pre></td>
+        </tr>
+      
+        <tr>
+          <td>wsgi.run_once</td>
+          <td class="code"><pre>False</pre></td>
+        </tr>
+      
+        <tr>
+          <td>wsgi.url_scheme</td>
+          <td class="code"><pre>&#x27;http&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>wsgi.version</td>
+          <td class="code"><pre>(1, 0)</pre></td>
+        </tr>
+      
+    </tbody>
+  </table>
+
+
+  <h3 id="settings-info">Settings</h3>
+  <h4>Using settings module <code>sms.settings</code></h4>
+  <table class="req">
+    <thead>
+      <tr>
+        <th scope="col">Setting</th>
+        <th scope="col">Value</th>
+      </tr>
+    </thead>
+    <tbody>
+      
+        <tr>
+          <td>ABSOLUTE_URL_OVERRIDES</td>
+          <td class="code"><pre>{}</pre></td>
+        </tr>
+      
+        <tr>
+          <td>ADMINS</td>
+          <td class="code"><pre>[]</pre></td>
+        </tr>
+      
+        <tr>
+          <td>ALLOWED_HOSTS</td>
+          <td class="code"><pre>[&#x27;school-management-systems-tinditech.onrender.com&#x27;, &#x27;localhost&#x27;, &#x27;127.0.0.1&#x27;]</pre></td>
+        </tr>
+      
+        <tr>
+          <td>APPEND_SLASH</td>
+          <td class="code"><pre>True</pre></td>
+        </tr>
+      
+        <tr>
+          <td>AUTHENTICATION_BACKENDS</td>
+          <td class="code"><pre>&#x27;********************&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>AUTH_PASSWORD_VALIDATORS</td>
+          <td class="code"><pre>&#x27;********************&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>AUTH_USER_MODEL</td>
+          <td class="code"><pre>&#x27;********************&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>BASE_DIR</td>
+          <td class="code"><pre>WindowsPath(&#x27;C:/Users/Evans/School management system/backend&#x27;)</pre></td>
+        </tr>
+      
+        <tr>
+          <td>CACHES</td>
+          <td class="code"><pre>{&#x27;default&#x27;: {&#x27;BACKEND&#x27;: &#x27;django.core.cache.backends.locmem.LocMemCache&#x27;,
+             &#x27;LOCATION&#x27;: &#x27;unique-snowflake&#x27;}}</pre></td>
+        </tr>
+      
+        <tr>
+          <td>CACHE_MIDDLEWARE_ALIAS</td>
+          <td class="code"><pre>&#x27;default&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>CACHE_MIDDLEWARE_KEY_PREFIX</td>
+          <td class="code"><pre>&#x27;********************&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>CACHE_MIDDLEWARE_SECONDS</td>
+          <td class="code"><pre>600</pre></td>
+        </tr>
+      
+        <tr>
+          <td>CORS_ALLOWED_ORIGINS</td>
+          <td class="code"><pre>[&#x27;https://school-management-systems-4n8d.onrender.com&#x27;,
+ &#x27;https://school-management-systems-tinditech.onrender.com&#x27;,
+ &#x27;http://localhost:5173&#x27;]</pre></td>
+        </tr>
+      
+        <tr>
+          <td>CORS_ALLOW_CREDENTIALS</td>
+          <td class="code"><pre>True</pre></td>
+        </tr>
+      
+        <tr>
+          <td>CSRF_COOKIE_AGE</td>
+          <td class="code"><pre>31449600</pre></td>
+        </tr>
+      
+        <tr>
+          <td>CSRF_COOKIE_DOMAIN</td>
+          <td class="code"><pre>None</pre></td>
+        </tr>
+      
+        <tr>
+          <td>CSRF_COOKIE_HTTPONLY</td>
+          <td class="code"><pre>True</pre></td>
+        </tr>
+      
+        <tr>
+          <td>CSRF_COOKIE_NAME</td>
+          <td class="code"><pre>&#x27;csrftoken&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>CSRF_COOKIE_PATH</td>
+          <td class="code"><pre>&#x27;/&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>CSRF_COOKIE_SAMESITE</td>
+          <td class="code"><pre>&#x27;Lax&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>CSRF_COOKIE_SECURE</td>
+          <td class="code"><pre>False</pre></td>
+        </tr>
+      
+        <tr>
+          <td>CSRF_FAILURE_VIEW</td>
+          <td class="code"><pre>&#x27;django.views.csrf.csrf_failure&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>CSRF_HEADER_NAME</td>
+          <td class="code"><pre>&#x27;HTTP_X_CSRFTOKEN&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>CSRF_TRUSTED_ORIGINS</td>
+          <td class="code"><pre>[&#x27;https://school-management-systems-4n8d.onrender.com&#x27;,
+ &#x27;https://school-management-systems-tinditech.onrender.com&#x27;,
+ &#x27;http://localhost:5173&#x27;]</pre></td>
+        </tr>
+      
+        <tr>
+          <td>CSRF_USE_SESSIONS</td>
+          <td class="code"><pre>False</pre></td>
+        </tr>
+      
+        <tr>
+          <td>DATABASES</td>
+          <td class="code"><pre>{&#x27;default&#x27;: {&#x27;ATOMIC_REQUESTS&#x27;: False,
+             &#x27;AUTOCOMMIT&#x27;: True,
+             &#x27;CONN_HEALTH_CHECKS&#x27;: False,
+             &#x27;CONN_MAX_AGE&#x27;: 0,
+             &#x27;DISABLE_SERVER_SIDE_CURSORS&#x27;: False,
+             &#x27;ENGINE&#x27;: &#x27;django.db.backends.postgresql&#x27;,
+             &#x27;HOST&#x27;: &#x27;aws-0-us-west-2.pooler.supabase.com&#x27;,
+             &#x27;NAME&#x27;: &#x27;postgres&#x27;,
+             &#x27;OPTIONS&#x27;: {},
+             &#x27;PASSWORD&#x27;: &#x27;********************&#x27;,
+             &#x27;PORT&#x27;: 6543,
+             &#x27;TEST&#x27;: {&#x27;CHARSET&#x27;: None,
+                      &#x27;COLLATION&#x27;: None,
+                      &#x27;MIGRATE&#x27;: True,
+                      &#x27;MIRROR&#x27;: None,
+                      &#x27;NAME&#x27;: None},
+             &#x27;TIME_ZONE&#x27;: None,
+             &#x27;USER&#x27;: &#x27;postgres.pjqmhqzebovvvvxpqjdg&#x27;}}</pre></td>
+        </tr>
+      
+        <tr>
+          <td>DATABASE_ROUTERS</td>
+          <td class="code"><pre>[]</pre></td>
+        </tr>
+      
+        <tr>
+          <td>DATA_UPLOAD_MAX_MEMORY_SIZE</td>
+          <td class="code"><pre>2621440</pre></td>
+        </tr>
+      
+        <tr>
+          <td>DATA_UPLOAD_MAX_NUMBER_FIELDS</td>
+          <td class="code"><pre>1000</pre></td>
+        </tr>
+      
+        <tr>
+          <td>DATA_UPLOAD_MAX_NUMBER_FILES</td>
+          <td class="code"><pre>100</pre></td>
+        </tr>
+      
+        <tr>
+          <td>DATETIME_FORMAT</td>
+          <td class="code"><pre>&#x27;N j, Y, P&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>DATETIME_INPUT_FORMATS</td>
+          <td class="code"><pre>[&#x27;%Y-%m-%d %H:%M:%S&#x27;,
+ &#x27;%Y-%m-%d %H:%M:%S.%f&#x27;,
+ &#x27;%Y-%m-%d %H:%M&#x27;,
+ &#x27;%m/%d/%Y %H:%M:%S&#x27;,
+ &#x27;%m/%d/%Y %H:%M:%S.%f&#x27;,
+ &#x27;%m/%d/%Y %H:%M&#x27;,
+ &#x27;%m/%d/%y %H:%M:%S&#x27;,
+ &#x27;%m/%d/%y %H:%M:%S.%f&#x27;,
+ &#x27;%m/%d/%y %H:%M&#x27;]</pre></td>
+        </tr>
+      
+        <tr>
+          <td>DATE_FORMAT</td>
+          <td class="code"><pre>&#x27;N j, Y&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>DATE_INPUT_FORMATS</td>
+          <td class="code"><pre>[&#x27;%Y-%m-%d&#x27;,
+ &#x27;%m/%d/%Y&#x27;,
+ &#x27;%m/%d/%y&#x27;,
+ &#x27;%b %d %Y&#x27;,
+ &#x27;%b %d, %Y&#x27;,
+ &#x27;%d %b %Y&#x27;,
+ &#x27;%d %b, %Y&#x27;,
+ &#x27;%B %d %Y&#x27;,
+ &#x27;%B %d, %Y&#x27;,
+ &#x27;%d %B %Y&#x27;,
+ &#x27;%d %B, %Y&#x27;]</pre></td>
+        </tr>
+      
+        <tr>
+          <td>DEBUG</td>
+          <td class="code"><pre>True</pre></td>
+        </tr>
+      
+        <tr>
+          <td>DEBUG_PROPAGATE_EXCEPTIONS</td>
+          <td class="code"><pre>False</pre></td>
+        </tr>
+      
+        <tr>
+          <td>DECIMAL_SEPARATOR</td>
+          <td class="code"><pre>&#x27;.&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>DEFAULT_AUTO_FIELD</td>
+          <td class="code"><pre>&#x27;django.db.models.BigAutoField&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>DEFAULT_CHARSET</td>
+          <td class="code"><pre>&#x27;utf-8&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>DEFAULT_EXCEPTION_REPORTER</td>
+          <td class="code"><pre>&#x27;django.views.debug.ExceptionReporter&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>DEFAULT_EXCEPTION_REPORTER_FILTER</td>
+          <td class="code"><pre>&#x27;django.views.debug.SafeExceptionReporterFilter&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>DEFAULT_FROM_EMAIL</td>
+          <td class="code"><pre>&#x27;tinditechnologies@gmail.com&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>DEFAULT_INDEX_TABLESPACE</td>
+          <td class="code"><pre>&#x27;&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>DEFAULT_TABLESPACE</td>
+          <td class="code"><pre>&#x27;&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>DISALLOWED_USER_AGENTS</td>
+          <td class="code"><pre>[]</pre></td>
+        </tr>
+      
+        <tr>
+          <td>EMAIL_BACKEND</td>
+          <td class="code"><pre>&#x27;django.core.mail.backends.smtp.EmailBackend&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>EMAIL_HOST</td>
+          <td class="code"><pre>&#x27;smtp.gmail.com&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>EMAIL_HOST_PASSWORD</td>
+          <td class="code"><pre>&#x27;********************&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>EMAIL_HOST_USER</td>
+          <td class="code"><pre>&#x27;tinditechnologies@gmail.com&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>EMAIL_PORT</td>
+          <td class="code"><pre>587</pre></td>
+        </tr>
+      
+        <tr>
+          <td>EMAIL_SSL_CERTFILE</td>
+          <td class="code"><pre>None</pre></td>
+        </tr>
+      
+        <tr>
+          <td>EMAIL_SSL_KEYFILE</td>
+          <td class="code"><pre>&#x27;********************&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>EMAIL_SUBJECT_PREFIX</td>
+          <td class="code"><pre>&#x27;[Django] &#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>EMAIL_TIMEOUT</td>
+          <td class="code"><pre>10</pre></td>
+        </tr>
+      
+        <tr>
+          <td>EMAIL_USE_LOCALTIME</td>
+          <td class="code"><pre>False</pre></td>
+        </tr>
+      
+        <tr>
+          <td>EMAIL_USE_SSL</td>
+          <td class="code"><pre>False</pre></td>
+        </tr>
+      
+        <tr>
+          <td>EMAIL_USE_TLS</td>
+          <td class="code"><pre>True</pre></td>
+        </tr>
+      
+        <tr>
+          <td>FILE_UPLOAD_DIRECTORY_PERMISSIONS</td>
+          <td class="code"><pre>None</pre></td>
+        </tr>
+      
+        <tr>
+          <td>FILE_UPLOAD_HANDLERS</td>
+          <td class="code"><pre>[&#x27;django.core.files.uploadhandler.MemoryFileUploadHandler&#x27;,
+ &#x27;django.core.files.uploadhandler.TemporaryFileUploadHandler&#x27;]</pre></td>
+        </tr>
+      
+        <tr>
+          <td>FILE_UPLOAD_MAX_MEMORY_SIZE</td>
+          <td class="code"><pre>2621440</pre></td>
+        </tr>
+      
+        <tr>
+          <td>FILE_UPLOAD_PERMISSIONS</td>
+          <td class="code"><pre>420</pre></td>
+        </tr>
+      
+        <tr>
+          <td>FILE_UPLOAD_TEMP_DIR</td>
+          <td class="code"><pre>None</pre></td>
+        </tr>
+      
+        <tr>
+          <td>FIRST_DAY_OF_WEEK</td>
+          <td class="code"><pre>0</pre></td>
+        </tr>
+      
+        <tr>
+          <td>FIXTURE_DIRS</td>
+          <td class="code"><pre>[]</pre></td>
+        </tr>
+      
+        <tr>
+          <td>FORCE_SCRIPT_NAME</td>
+          <td class="code"><pre>None</pre></td>
+        </tr>
+      
+        <tr>
+          <td>FORMAT_MODULE_PATH</td>
+          <td class="code"><pre>None</pre></td>
+        </tr>
+      
+        <tr>
+          <td>FORM_RENDERER</td>
+          <td class="code"><pre>&#x27;django.forms.renderers.DjangoTemplates&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>FRONTEND_DIR</td>
+          <td class="code"><pre>WindowsPath(&#x27;C:/Users/Evans/School management system/frontend&#x27;)</pre></td>
+        </tr>
+      
+        <tr>
+          <td>FRONTEND_URL</td>
+          <td class="code"><pre>&#x27;https://school-management-systems-4n8d.onrender.com&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>IGNORABLE_404_URLS</td>
+          <td class="code"><pre>[]</pre></td>
+        </tr>
+      
+        <tr>
+          <td>INSTALLED_APPS</td>
+          <td class="code"><pre>[&#x27;django.contrib.admin&#x27;,
+ &#x27;django.contrib.auth&#x27;,
+ &#x27;django.contrib.contenttypes&#x27;,
+ &#x27;django.contrib.sessions&#x27;,
+ &#x27;django.contrib.messages&#x27;,
+ &#x27;whitenoise.runserver_nostatic&#x27;,
+ &#x27;django.contrib.staticfiles&#x27;,
+ &#x27;rest_framework&#x27;,
+ &#x27;rest_framework.authtoken&#x27;,
+ &#x27;corsheaders&#x27;,
+ &#x27;accounts&#x27;,
+ &#x27;students&#x27;,
+ &#x27;staff&#x27;,
+ &#x27;academics&#x27;,
+ &#x27;timetable&#x27;,
+ &#x27;hostel&#x27;,
+ &#x27;finance&#x27;,
+ &#x27;transport&#x27;,
+ &#x27;library&#x27;,
+ &#x27;medical&#x27;,
+ &#x27;audit&#x27;,
+ &#x27;reports&#x27;,
+ &#x27;communication&#x27;,
+ &#x27;mpesa&#x27;,
+ &#x27;django_filters&#x27;]</pre></td>
+        </tr>
+      
+        <tr>
+          <td>INTERNAL_IPS</td>
+          <td class="code"><pre>[]</pre></td>
+        </tr>
+      
+        <tr>
+          <td>LANGUAGES</td>
+          <td class="code"><pre>[(&#x27;af&#x27;, &#x27;Afrikaans&#x27;),
+ (&#x27;ar&#x27;, &#x27;Arabic&#x27;),
+ (&#x27;ar-dz&#x27;, &#x27;Algerian Arabic&#x27;),
+ (&#x27;ast&#x27;, &#x27;Asturian&#x27;),
+ (&#x27;az&#x27;, &#x27;Azerbaijani&#x27;),
+ (&#x27;bg&#x27;, &#x27;Bulgarian&#x27;),
+ (&#x27;be&#x27;, &#x27;Belarusian&#x27;),
+ (&#x27;bn&#x27;, &#x27;Bengali&#x27;),
+ (&#x27;br&#x27;, &#x27;Breton&#x27;),
+ (&#x27;bs&#x27;, &#x27;Bosnian&#x27;),
+ (&#x27;ca&#x27;, &#x27;Catalan&#x27;),
+ (&#x27;ckb&#x27;, &#x27;Central Kurdish (Sorani)&#x27;),
+ (&#x27;cs&#x27;, &#x27;Czech&#x27;),
+ (&#x27;cy&#x27;, &#x27;Welsh&#x27;),
+ (&#x27;da&#x27;, &#x27;Danish&#x27;),
+ (&#x27;de&#x27;, &#x27;German&#x27;),
+ (&#x27;dsb&#x27;, &#x27;Lower Sorbian&#x27;),
+ (&#x27;el&#x27;, &#x27;Greek&#x27;),
+ (&#x27;en&#x27;, &#x27;English&#x27;),
+ (&#x27;en-au&#x27;, &#x27;Australian English&#x27;),
+ (&#x27;en-gb&#x27;, &#x27;British English&#x27;),
+ (&#x27;eo&#x27;, &#x27;Esperanto&#x27;),
+ (&#x27;es&#x27;, &#x27;Spanish&#x27;),
+ (&#x27;es-ar&#x27;, &#x27;Argentinian Spanish&#x27;),
+ (&#x27;es-co&#x27;, &#x27;Colombian Spanish&#x27;),
+ (&#x27;es-mx&#x27;, &#x27;Mexican Spanish&#x27;),
+ (&#x27;es-ni&#x27;, &#x27;Nicaraguan Spanish&#x27;),
+ (&#x27;es-ve&#x27;, &#x27;Venezuelan Spanish&#x27;),
+ (&#x27;et&#x27;, &#x27;Estonian&#x27;),
+ (&#x27;eu&#x27;, &#x27;Basque&#x27;),
+ (&#x27;fa&#x27;, &#x27;Persian&#x27;),
+ (&#x27;fi&#x27;, &#x27;Finnish&#x27;),
+ (&#x27;fr&#x27;, &#x27;French&#x27;),
+ (&#x27;fy&#x27;, &#x27;Frisian&#x27;),
+ (&#x27;ga&#x27;, &#x27;Irish&#x27;),
+ (&#x27;gd&#x27;, &#x27;Scottish Gaelic&#x27;),
+ (&#x27;gl&#x27;, &#x27;Galician&#x27;),
+ (&#x27;he&#x27;, &#x27;Hebrew&#x27;),
+ (&#x27;hi&#x27;, &#x27;Hindi&#x27;),
+ (&#x27;hr&#x27;, &#x27;Croatian&#x27;),
+ (&#x27;hsb&#x27;, &#x27;Upper Sorbian&#x27;),
+ (&#x27;ht&#x27;, &#x27;Haitian Creole&#x27;),
+ (&#x27;hu&#x27;, &#x27;Hungarian&#x27;),
+ (&#x27;hy&#x27;, &#x27;Armenian&#x27;),
+ (&#x27;ia&#x27;, &#x27;Interlingua&#x27;),
+ (&#x27;id&#x27;, &#x27;Indonesian&#x27;),
+ (&#x27;ig&#x27;, &#x27;Igbo&#x27;),
+ (&#x27;io&#x27;, &#x27;Ido&#x27;),
+ (&#x27;is&#x27;, &#x27;Icelandic&#x27;),
+ (&#x27;it&#x27;, &#x27;Italian&#x27;),
+ (&#x27;ja&#x27;, &#x27;Japanese&#x27;),
+ (&#x27;ka&#x27;, &#x27;Georgian&#x27;),
+ (&#x27;kab&#x27;, &#x27;Kabyle&#x27;),
+ (&#x27;kk&#x27;, &#x27;Kazakh&#x27;),
+ (&#x27;km&#x27;, &#x27;Khmer&#x27;),
+ (&#x27;kn&#x27;, &#x27;Kannada&#x27;),
+ (&#x27;ko&#x27;, &#x27;Korean&#x27;),
+ (&#x27;ky&#x27;, &#x27;Kyrgyz&#x27;),
+ (&#x27;lb&#x27;, &#x27;Luxembourgish&#x27;),
+ (&#x27;lt&#x27;, &#x27;Lithuanian&#x27;),
+ (&#x27;lv&#x27;, &#x27;Latvian&#x27;),
+ (&#x27;mk&#x27;, &#x27;Macedonian&#x27;),
+ (&#x27;ml&#x27;, &#x27;Malayalam&#x27;),
+ (&#x27;mn&#x27;, &#x27;Mongolian&#x27;),
+ (&#x27;mr&#x27;, &#x27;Marathi&#x27;),
+ (&#x27;ms&#x27;, &#x27;Malay&#x27;),
+ (&#x27;my&#x27;, &#x27;Burmese&#x27;),
+ (&#x27;nb&#x27;, &#x27;Norwegian BokmÃ¥l&#x27;),
+ (&#x27;ne&#x27;, &#x27;Nepali&#x27;),
+ (&#x27;nl&#x27;, &#x27;Dutch&#x27;),
+ (&#x27;nn&#x27;, &#x27;Norwegian Nynorsk&#x27;),
+ (&#x27;os&#x27;, &#x27;Ossetic&#x27;),
+ (&#x27;pa&#x27;, &#x27;Punjabi&#x27;),
+ (&#x27;pl&#x27;, &#x27;Polish&#x27;),
+ (&#x27;pt&#x27;, &#x27;Portuguese&#x27;),
+ (&#x27;pt-br&#x27;, &#x27;Brazilian Portuguese&#x27;),
+ (&#x27;ro&#x27;, &#x27;Romanian&#x27;),
+ (&#x27;ru&#x27;, &#x27;Russian&#x27;),
+ (&#x27;sk&#x27;, &#x27;Slovak&#x27;),
+ (&#x27;sl&#x27;, &#x27;Slovenian&#x27;),
+ (&#x27;sq&#x27;, &#x27;Albanian&#x27;),
+ (&#x27;sr&#x27;, &#x27;Serbian&#x27;),
+ (&#x27;sr-latn&#x27;, &#x27;Serbian Latin&#x27;),
+ (&#x27;sv&#x27;, &#x27;Swedish&#x27;),
+ (&#x27;sw&#x27;, &#x27;Swahili&#x27;),
+ (&#x27;ta&#x27;, &#x27;Tamil&#x27;),
+ (&#x27;te&#x27;, &#x27;Telugu&#x27;),
+ (&#x27;tg&#x27;, &#x27;Tajik&#x27;),
+ (&#x27;th&#x27;, &#x27;Thai&#x27;),
+ (&#x27;tk&#x27;, &#x27;Turkmen&#x27;),
+ (&#x27;tr&#x27;, &#x27;Turkish&#x27;),
+ (&#x27;tt&#x27;, &#x27;Tatar&#x27;),
+ (&#x27;udm&#x27;, &#x27;Udmurt&#x27;),
+ (&#x27;ug&#x27;, &#x27;Uyghur&#x27;),
+ (&#x27;uk&#x27;, &#x27;Ukrainian&#x27;),
+ (&#x27;ur&#x27;, &#x27;Urdu&#x27;),
+ (&#x27;uz&#x27;, &#x27;Uzbek&#x27;),
+ (&#x27;vi&#x27;, &#x27;Vietnamese&#x27;),
+ (&#x27;zh-hans&#x27;, &#x27;Simplified Chinese&#x27;),
+ (&#x27;zh-hant&#x27;, &#x27;Traditional Chinese&#x27;)]</pre></td>
+        </tr>
+      
+        <tr>
+          <td>LANGUAGES_BIDI</td>
+          <td class="code"><pre>[&#x27;he&#x27;, &#x27;ar&#x27;, &#x27;ar-dz&#x27;, &#x27;ckb&#x27;, &#x27;fa&#x27;, &#x27;ug&#x27;, &#x27;ur&#x27;]</pre></td>
+        </tr>
+      
+        <tr>
+          <td>LANGUAGE_CODE</td>
+          <td class="code"><pre>&#x27;en-us&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>LANGUAGE_COOKIE_AGE</td>
+          <td class="code"><pre>None</pre></td>
+        </tr>
+      
+        <tr>
+          <td>LANGUAGE_COOKIE_DOMAIN</td>
+          <td class="code"><pre>None</pre></td>
+        </tr>
+      
+        <tr>
+          <td>LANGUAGE_COOKIE_HTTPONLY</td>
+          <td class="code"><pre>False</pre></td>
+        </tr>
+      
+        <tr>
+          <td>LANGUAGE_COOKIE_NAME</td>
+          <td class="code"><pre>&#x27;django_language&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>LANGUAGE_COOKIE_PATH</td>
+          <td class="code"><pre>&#x27;/&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>LANGUAGE_COOKIE_SAMESITE</td>
+          <td class="code"><pre>None</pre></td>
+        </tr>
+      
+        <tr>
+          <td>LANGUAGE_COOKIE_SECURE</td>
+          <td class="code"><pre>False</pre></td>
+        </tr>
+      
+        <tr>
+          <td>LOCALE_PATHS</td>
+          <td class="code"><pre>[]</pre></td>
+        </tr>
+      
+        <tr>
+          <td>LOGGING</td>
+          <td class="code"><pre>{&#x27;disable_existing_loggers&#x27;: False,
+ &#x27;formatters&#x27;: {&#x27;simple&#x27;: {&#x27;format&#x27;: &#x27;{levelname} {message}&#x27;, &#x27;style&#x27;: &#x27;{&#x27;},
+                &#x27;verbose&#x27;: {&#x27;format&#x27;: &#x27;{levelname} {asctime} {module} &#x27;
+                                      &#x27;{process:d} {thread:d} {message}&#x27;,
+                            &#x27;style&#x27;: &#x27;{&#x27;}},
+ &#x27;handlers&#x27;: {&#x27;console&#x27;: {&#x27;class&#x27;: &#x27;logging.StreamHandler&#x27;,
+                          &#x27;formatter&#x27;: &#x27;simple&#x27;},
+              &#x27;file&#x27;: {&#x27;class&#x27;: &#x27;logging.FileHandler&#x27;,
+                       &#x27;filename&#x27;: &#x27;C:\\Users\\Evans\\School management &#x27;
+                                   &#x27;system\\backend\\django_errors.log&#x27;,
+                       &#x27;formatter&#x27;: &#x27;verbose&#x27;,
+                       &#x27;level&#x27;: &#x27;ERROR&#x27;}},
+ &#x27;loggers&#x27;: {&#x27;&#x27;: {&#x27;handlers&#x27;: [&#x27;console&#x27;, &#x27;file&#x27;], &#x27;level&#x27;: &#x27;INFO&#x27;},
+             &#x27;django&#x27;: {&#x27;handlers&#x27;: [&#x27;console&#x27;, &#x27;file&#x27;],
+                        &#x27;level&#x27;: &#x27;INFO&#x27;,
+                        &#x27;propagate&#x27;: False},
+             &#x27;django.request&#x27;: {&#x27;handlers&#x27;: [&#x27;file&#x27;],
+                                &#x27;level&#x27;: &#x27;ERROR&#x27;,
+                                &#x27;propagate&#x27;: False}},
+ &#x27;version&#x27;: 1}</pre></td>
+        </tr>
+      
+        <tr>
+          <td>LOGGING_CONFIG</td>
+          <td class="code"><pre>&#x27;logging.config.dictConfig&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>LOGIN_REDIRECT_URL</td>
+          <td class="code"><pre>&#x27;/accounts/profile/&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>LOGIN_URL</td>
+          <td class="code"><pre>&#x27;/accounts/login/&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>LOGOUT_REDIRECT_URL</td>
+          <td class="code"><pre>None</pre></td>
+        </tr>
+      
+        <tr>
+          <td>MANAGERS</td>
+          <td class="code"><pre>[]</pre></td>
+        </tr>
+      
+        <tr>
+          <td>MEDIA_ROOT</td>
+          <td class="code"><pre>&#x27;&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>MEDIA_URL</td>
+          <td class="code"><pre>&#x27;/&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>MESSAGE_STORAGE</td>
+          <td class="code"><pre>&#x27;django.contrib.messages.storage.fallback.FallbackStorage&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>MIDDLEWARE</td>
+          <td class="code"><pre>[&#x27;corsheaders.middleware.CorsMiddleware&#x27;,
+ &#x27;django.middleware.security.SecurityMiddleware&#x27;,
+ &#x27;whitenoise.middleware.WhiteNoiseMiddleware&#x27;,
+ &#x27;django.contrib.sessions.middleware.SessionMiddleware&#x27;,
+ &#x27;django.middleware.common.CommonMiddleware&#x27;,
+ &#x27;django.middleware.csrf.CsrfViewMiddleware&#x27;,
+ &#x27;django.contrib.auth.middleware.AuthenticationMiddleware&#x27;,
+ &#x27;django.contrib.messages.middleware.MessageMiddleware&#x27;,
+ &#x27;django.middleware.clickjacking.XFrameOptionsMiddleware&#x27;,
+ &#x27;audit.middleware.AuditMiddleware&#x27;]</pre></td>
+        </tr>
+      
+        <tr>
+          <td>MIGRATION_MODULES</td>
+          <td class="code"><pre>{}</pre></td>
+        </tr>
+      
+        <tr>
+          <td>MONTH_DAY_FORMAT</td>
+          <td class="code"><pre>&#x27;F j&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>NUMBER_GROUPING</td>
+          <td class="code"><pre>0</pre></td>
+        </tr>
+      
+        <tr>
+          <td>PASSWORD_HASHERS</td>
+          <td class="code"><pre>&#x27;********************&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>PASSWORD_RESET_TIMEOUT</td>
+          <td class="code"><pre>&#x27;********************&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>PREPEND_WWW</td>
+          <td class="code"><pre>False</pre></td>
+        </tr>
+      
+        <tr>
+          <td>REDIS_URL</td>
+          <td class="code"><pre>None</pre></td>
+        </tr>
+      
+        <tr>
+          <td>REST_FRAMEWORK</td>
+          <td class="code"><pre>{&#x27;DEFAULT_AUTHENTICATION_CLASSES&#x27;: &#x27;********************&#x27;,
+ &#x27;DEFAULT_FILTER_BACKENDS&#x27;: [&#x27;django_filters.rest_framework.DjangoFilterBackend&#x27;,
+                             &#x27;rest_framework.filters.SearchFilter&#x27;,
+                             &#x27;rest_framework.filters.OrderingFilter&#x27;],
+ &#x27;DEFAULT_PAGINATION_CLASS&#x27;: &#x27;sms.pagination.LargeResultsSetPagination&#x27;,
+ &#x27;DEFAULT_PERMISSION_CLASSES&#x27;: (&#x27;rest_framework.permissions.IsAuthenticated&#x27;,),
+ &#x27;EXCEPTION_HANDLER&#x27;: &#x27;sms.utils.custom_exception_handler&#x27;,
+ &#x27;PAGE_SIZE&#x27;: 50}</pre></td>
+        </tr>
+      
+        <tr>
+          <td>ROOT_URLCONF</td>
+          <td class="code"><pre>&#x27;sms.urls&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>SECRET_KEY</td>
+          <td class="code"><pre>&#x27;********************&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>SECRET_KEY_FALLBACKS</td>
+          <td class="code"><pre>&#x27;********************&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>SECURE_CONTENT_TYPE_NOSNIFF</td>
+          <td class="code"><pre>True</pre></td>
+        </tr>
+      
+        <tr>
+          <td>SECURE_CROSS_ORIGIN_OPENER_POLICY</td>
+          <td class="code"><pre>&#x27;same-origin&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>SECURE_CSP</td>
+          <td class="code"><pre>{}</pre></td>
+        </tr>
+      
+        <tr>
+          <td>SECURE_CSP_REPORT_ONLY</td>
+          <td class="code"><pre>{}</pre></td>
+        </tr>
+      
+        <tr>
+          <td>SECURE_HSTS_INCLUDE_SUBDOMAINS</td>
+          <td class="code"><pre>False</pre></td>
+        </tr>
+      
+        <tr>
+          <td>SECURE_HSTS_PRELOAD</td>
+          <td class="code"><pre>False</pre></td>
+        </tr>
+      
+        <tr>
+          <td>SECURE_HSTS_SECONDS</td>
+          <td class="code"><pre>0</pre></td>
+        </tr>
+      
+        <tr>
+          <td>SECURE_PROXY_SSL_HEADER</td>
+          <td class="code"><pre>None</pre></td>
+        </tr>
+      
+        <tr>
+          <td>SECURE_REDIRECT_EXEMPT</td>
+          <td class="code"><pre>[]</pre></td>
+        </tr>
+      
+        <tr>
+          <td>SECURE_REFERRER_POLICY</td>
+          <td class="code"><pre>&#x27;same-origin&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>SECURE_SSL_HOST</td>
+          <td class="code"><pre>None</pre></td>
+        </tr>
+      
+        <tr>
+          <td>SECURE_SSL_REDIRECT</td>
+          <td class="code"><pre>False</pre></td>
+        </tr>
+      
+        <tr>
+          <td>SENTRY_DSN</td>
+          <td class="code"><pre>None</pre></td>
+        </tr>
+      
+        <tr>
+          <td>SERVER_EMAIL</td>
+          <td class="code"><pre>&#x27;root@localhost&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>SESSION_CACHE_ALIAS</td>
+          <td class="code"><pre>&#x27;default&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>SESSION_COOKIE_AGE</td>
+          <td class="code"><pre>3600</pre></td>
+        </tr>
+      
+        <tr>
+          <td>SESSION_COOKIE_DOMAIN</td>
+          <td class="code"><pre>None</pre></td>
+        </tr>
+      
+        <tr>
+          <td>SESSION_COOKIE_HTTPONLY</td>
+          <td class="code"><pre>True</pre></td>
+        </tr>
+      
+        <tr>
+          <td>SESSION_COOKIE_NAME</td>
+          <td class="code"><pre>&#x27;sessionid&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>SESSION_COOKIE_PATH</td>
+          <td class="code"><pre>&#x27;/&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>SESSION_COOKIE_SAMESITE</td>
+          <td class="code"><pre>&#x27;Lax&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>SESSION_COOKIE_SECURE</td>
+          <td class="code"><pre>False</pre></td>
+        </tr>
+      
+        <tr>
+          <td>SESSION_ENGINE</td>
+          <td class="code"><pre>&#x27;django.contrib.sessions.backends.db&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>SESSION_EXPIRE_AT_BROWSER_CLOSE</td>
+          <td class="code"><pre>True</pre></td>
+        </tr>
+      
+        <tr>
+          <td>SESSION_FILE_PATH</td>
+          <td class="code"><pre>None</pre></td>
+        </tr>
+      
+        <tr>
+          <td>SESSION_SAVE_EVERY_REQUEST</td>
+          <td class="code"><pre>False</pre></td>
+        </tr>
+      
+        <tr>
+          <td>SESSION_SERIALIZER</td>
+          <td class="code"><pre>&#x27;django.contrib.sessions.serializers.JSONSerializer&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>SETTINGS_MODULE</td>
+          <td class="code"><pre>&#x27;sms.settings&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>SHORT_DATETIME_FORMAT</td>
+          <td class="code"><pre>&#x27;m/d/Y P&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>SHORT_DATE_FORMAT</td>
+          <td class="code"><pre>&#x27;m/d/Y&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>SIGNING_BACKEND</td>
+          <td class="code"><pre>&#x27;django.core.signing.TimestampSigner&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>SILENCED_SYSTEM_CHECKS</td>
+          <td class="code"><pre>[]</pre></td>
+        </tr>
+      
+        <tr>
+          <td>STATICFILES_DIRS</td>
+          <td class="code"><pre>[&#x27;C:\\Users\\Evans\\School management system\\frontend\\dist&#x27;]</pre></td>
+        </tr>
+      
+        <tr>
+          <td>STATICFILES_FINDERS</td>
+          <td class="code"><pre>[&#x27;django.contrib.staticfiles.finders.FileSystemFinder&#x27;,
+ &#x27;django.contrib.staticfiles.finders.AppDirectoriesFinder&#x27;]</pre></td>
+        </tr>
+      
+        <tr>
+          <td>STATICFILES_STORAGE</td>
+          <td class="code"><pre>&#x27;whitenoise.storage.CompressedManifestStaticFilesStorage&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>STATIC_ROOT</td>
+          <td class="code"><pre>&#x27;C:\\Users\\Evans\\School management system\\backend\\staticfiles&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>STATIC_URL</td>
+          <td class="code"><pre>&#x27;/static/&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>STORAGES</td>
+          <td class="code"><pre>{&#x27;default&#x27;: {&#x27;BACKEND&#x27;: &#x27;django.core.files.storage.FileSystemStorage&#x27;},
+ &#x27;staticfiles&#x27;: {&#x27;BACKEND&#x27;: &#x27;django.contrib.staticfiles.storage.StaticFilesStorage&#x27;}}</pre></td>
+        </tr>
+      
+        <tr>
+          <td>TASKS</td>
+          <td class="code"><pre>{&#x27;default&#x27;: {&#x27;BACKEND&#x27;: &#x27;django.tasks.backends.immediate.ImmediateBackend&#x27;}}</pre></td>
+        </tr>
+      
+        <tr>
+          <td>TEMPLATES</td>
+          <td class="code"><pre>[{&#x27;APP_DIRS&#x27;: True,
+  &#x27;BACKEND&#x27;: &#x27;django.template.backends.django.DjangoTemplates&#x27;,
+  &#x27;DIRS&#x27;: [&#x27;C:\\Users\\Evans\\School management system\\backend\\static&#x27;,
+           &#x27;C:\\Users\\Evans\\School management system\\frontend\\dist&#x27;],
+  &#x27;OPTIONS&#x27;: {&#x27;context_processors&#x27;: [&#x27;django.template.context_processors.request&#x27;,
+                                     &#x27;django.contrib.auth.context_processors.auth&#x27;,
+                                     &#x27;django.contrib.messages.context_processors.messages&#x27;]}}]</pre></td>
+        </tr>
+      
+        <tr>
+          <td>TEST_NON_SERIALIZED_APPS</td>
+          <td class="code"><pre>[]</pre></td>
+        </tr>
+      
+        <tr>
+          <td>TEST_RUNNER</td>
+          <td class="code"><pre>&#x27;django.test.runner.DiscoverRunner&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>THOUSAND_SEPARATOR</td>
+          <td class="code"><pre>&#x27;,&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>TIME_FORMAT</td>
+          <td class="code"><pre>&#x27;P&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>TIME_INPUT_FORMATS</td>
+          <td class="code"><pre>[&#x27;%H:%M:%S&#x27;, &#x27;%H:%M:%S.%f&#x27;, &#x27;%H:%M&#x27;]</pre></td>
+        </tr>
+      
+        <tr>
+          <td>TIME_ZONE</td>
+          <td class="code"><pre>&#x27;Africa/Nairobi&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>URLIZE_ASSUME_HTTPS</td>
+          <td class="code"><pre>False</pre></td>
+        </tr>
+      
+        <tr>
+          <td>USE_I18N</td>
+          <td class="code"><pre>True</pre></td>
+        </tr>
+      
+        <tr>
+          <td>USE_THOUSAND_SEPARATOR</td>
+          <td class="code"><pre>False</pre></td>
+        </tr>
+      
+        <tr>
+          <td>USE_TZ</td>
+          <td class="code"><pre>True</pre></td>
+        </tr>
+      
+        <tr>
+          <td>USE_X_FORWARDED_HOST</td>
+          <td class="code"><pre>False</pre></td>
+        </tr>
+      
+        <tr>
+          <td>USE_X_FORWARDED_PORT</td>
+          <td class="code"><pre>False</pre></td>
+        </tr>
+      
+        <tr>
+          <td>WSGI_APPLICATION</td>
+          <td class="code"><pre>&#x27;sms.wsgi.application&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>X_FRAME_OPTIONS</td>
+          <td class="code"><pre>&#x27;DENY&#x27;</pre></td>
+        </tr>
+      
+        <tr>
+          <td>YEAR_MONTH_FORMAT</td>
+          <td class="code"><pre>&#x27;F Y&#x27;</pre></td>
+        </tr>
+      
+    </tbody>
+  </table>
+
+</div>
+</main>
+
+
+  <footer id="explanation">
+    <p>
+      Youâre seeing this error because you have <code>DEBUG = True</code> in your
+      Django settings file. Change that to <code>False</code>, and Django will
+      display a standard page generated by the handler for this status code.
+    </p>
+  </footer>
+
+</body>
+</html>
