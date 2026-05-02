@@ -121,13 +121,13 @@ class StudentResultViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         exam = serializer.validated_data.get('exam')
         if exam.is_locked or not exam.is_active:
-            raise ValidationError("Marks entry is locked for this exam.")
+            raise ValidationError("The marks entry period for this exam has concluded. Access is now restricted.")
         serializer.save()
 
     def perform_update(self, serializer):
         instance = self.get_object()
         if instance.exam.is_locked or not instance.exam.is_active:
-            raise ValidationError("Results for this exam are locked and cannot be modified.")
+            raise ValidationError("Results for this exam are currently locked. The official entry period has ended.")
         serializer.save()
 
 

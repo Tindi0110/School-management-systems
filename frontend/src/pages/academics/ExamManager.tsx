@@ -1,5 +1,5 @@
 import React from 'react';
-import { ClipboardCheck, Calendar, Plus, Edit, Trash2, ArrowRight } from 'lucide-react';
+import { ClipboardCheck, Calendar, Plus, Edit, Trash2, ArrowRight, Lock } from 'lucide-react';
 import Button from '../../components/common/Button';
 
 interface ExamManagerProps {
@@ -28,11 +28,13 @@ const ExamManager: React.FC<ExamManagerProps> = ({
                 exam.name.toLowerCase().includes(searchTerm.toLowerCase())
             ).map(exam => (
                 <div key={exam.id} className="col-span-12 md:col-span-6 lg:col-span-4 min-w-0">
-                    <div className="card h-full flex flex-col p-6 overflow-hidden hover:shadow-2xl transition-all">
+                    <div className={`card h-full flex flex-col p-6 overflow-hidden hover:shadow-2xl transition-all ${!exam.is_active ? 'opacity-80 bg-slate-50' : ''}`}>
                         <div className="flex justify-between items-start mb-4">
-                            <div className="p-2.5 rounded-lg bg-amber-100 text-amber-600"><ClipboardCheck size={16} /></div>
+                            <div className={`p-2.5 rounded-lg ${exam.is_active ? 'bg-amber-100 text-amber-600' : 'bg-slate-200 text-slate-500'}`}>
+                                {exam.is_active ? <ClipboardCheck size={16} /> : <Lock size={16} />}
+                            </div>
                             <span className={`badge ${exam.is_active ? 'badge-success' : 'badge-ghost text-slate-400'} badge-xs font-black uppercase tracking-widest`}>
-                                {exam.is_active ? 'ACTIVE' : 'CLOSED'}
+                                {exam.is_active ? 'OPEN' : 'CLOSED'}
                             </span>
                         </div>
                         <h3 className="mb-0 text-sm font-black uppercase text-slate-800">{exam.name}</h3>
@@ -41,10 +43,17 @@ const ExamManager: React.FC<ExamManagerProps> = ({
                         </p>
 
                         <div className="card-body p-0 mt-6 space-y-3">
-                            <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100 group cursor-pointer hover:bg-white hover:border-primary transition-all shadow-sm active:scale-95" onClick={() => openEnterResults(exam)}>
+                            <div
+                                className={`flex items-center justify-between p-3 rounded-xl border shadow-sm transition-all ${exam.is_active ? 'bg-slate-50 border-slate-100 group cursor-pointer hover:bg-white hover:border-primary active:scale-95' : 'bg-amber-50 border-amber-200 cursor-pointer hover:bg-amber-100'}`}
+                                onClick={() => openEnterResults(exam)}
+                            >
                                 <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors"><Plus size={14} /></div>
-                                    <span className="text-[10px] font-black uppercase text-slate-600">Enter Student Results</span>
+                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${exam.is_active ? 'bg-blue-50 text-blue-500 group-hover:bg-primary group-hover:text-white' : 'bg-amber-100 text-amber-600'}`}>
+                                        {exam.is_active ? <Plus size={14} /> : <Lock size={14} />}
+                                    </div>
+                                    <span className={`text-[10px] font-black uppercase ${exam.is_active ? 'text-slate-600' : 'text-amber-700'}`}>
+                                        {exam.is_active ? 'Enter Student Results' : 'Entry Closed — View Only'}
+                                    </span>
                                 </div>
                                 <ArrowRight size={14} className="text-slate-300 transform translate-x-0 group-hover:translate-x-1 transition-transform" />
                             </div>

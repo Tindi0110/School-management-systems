@@ -3,6 +3,7 @@ import Modal from '../Modal';
 import Button from '../common/Button';
 import SearchableSelect from '../SearchableSelect';
 import StudentResultRow from './StudentResultRow';
+import { Lock, AlertTriangle } from 'lucide-react';
 import type { Student } from '../../types/student.types';
 import type { ClassUnit, Subject, GradeSystem } from '../../types/academic.types';
 
@@ -32,6 +33,21 @@ export const ResultEntryModal: React.FC<ResultEntryModalProps> = ({
 }) => (
     <Modal isOpen={isOpen} onClose={onClose} title={`Enter Results: ${selectedExam?.name || ''}`} size="lg">
         <form onSubmit={handleBulkResultSubmit} className="max-w-7xl mx-auto">
+            {/* Locked Exam Banner */}
+            {!selectedExam?.is_active && (
+                <div className="mb-4 flex items-start gap-3 p-4 rounded-xl border border-amber-200 bg-amber-50">
+                    <div className="flex-shrink-0 mt-0.5 p-1.5 bg-amber-100 rounded-lg text-amber-700">
+                        <Lock size={16} />
+                    </div>
+                    <div>
+                        <p className="text-sm font-black uppercase text-amber-800 mb-0.5">Marks Entry Period Closed</p>
+                        <p className="text-xs text-amber-700 leading-relaxed">
+                            This exam (<strong>{selectedExam?.name}</strong>) is no longer open for marks entry. 
+                            Results are now locked and read-only. To re-open entry, an administrator must set the exam back to <strong>"Open for Marks Entry"</strong> in the exam settings.
+                        </p>
+                    </div>
+                </div>
+            )}
             {/* Cascading Class Selector */}
             <div className="form-group p-3 mb-4 bg-gray-50">
                 <label className="label text-[10px] font-black uppercase mb-2">Select Class to Enter Marks</label>
@@ -113,11 +129,16 @@ export const ResultEntryModal: React.FC<ResultEntryModalProps> = ({
 
             <div className="mt-4 pt-4 border-t flex justify-between items-center">
                 <p className="text-[10px] text-secondary">
-                    <span className="font-bold text-primary">Tip:</span> Existing marks are shown in <span className="font-bold text-primary">blue</span>. Enter new marks and click Save.
+                    {selectedExam?.is_active
+                        ? <><span className="font-bold text-primary">Tip:</span> Existing marks are shown in <span className="font-bold text-primary">blue</span>. Enter new marks and click Save.</>
+                        : <span className="flex items-center gap-1 text-amber-700 font-bold"><AlertTriangle size={12} /> Read-only mode — entry period has ended.</span>
+                    }
                 </p>
                 <div className="flex gap-2">
-                    <Button variant="ghost" size="sm" onClick={onClose}>Cancel</Button>
-                    <Button type="submit" variant="primary" size="sm" className="font-black uppercase shadow-md px-6" loading={isSubmitting} loadingText="Saving Matrix...">Save Matrix Payload</Button>
+                    <Button variant="ghost" size="sm" onClick={onClose}>Close</Button>
+                    {selectedExam?.is_active && (
+                        <Button type="submit" variant="primary" size="sm" className="font-black uppercase shadow-md px-6" loading={isSubmitting} loadingText="Saving Matrix...">Save Matrix Payload</Button>
+                    )}
                 </div>
             </div>
         </form>

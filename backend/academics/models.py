@@ -116,8 +116,12 @@ class StudentResult(models.Model):
         unique_together = ('student', 'exam', 'subject')
 
     def save(self, *args, **kwargs):
-        if not self.grade:
+        # Force grade calculation if missing or if score changed
+        if not self.grade or (kwargs.get('update_fields') and 'score' in kwargs.get('update_fields')):
             self.calculate_grade()
+        elif not kwargs.get('update_fields'):
+             self.calculate_grade()
+             
         super().save(*args, **kwargs)
 
     def calculate_grade(self):
