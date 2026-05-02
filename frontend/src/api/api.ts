@@ -624,6 +624,7 @@ export const communicationAPI = {
     getAll: (params?: any) => api.get('notifications/', recentWith(params)),
     getUnread: () => api.get('notifications/', recentWith({ is_read: false })),
     update: (id: number, data: any) => api.patch(`notifications/${id}/`, data),
+    markAllRead: () => api.post('notifications/mark_all_as_read/'),
   },
   alerts: {
     getAll: (params?: any) => api.get('alerts/', recentWith(params)),

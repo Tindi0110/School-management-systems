@@ -1,4 +1,6 @@
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from .models import Notification, SystemAlert, SchoolEvent
 from .serializers import NotificationSerializer, SystemAlertSerializer, SchoolEventSerializer
 
@@ -8,7 +10,12 @@ class NotificationViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return self.queryset.filter(recipient=self.request.user)
+        return self.queryset.filter(recipient=self.request.user).order_by('-timestamp')
+
+    @action(detail=False, methods=['post'])
+    def mark_all_as_read(self, request):
+        self.get_queryset().filter(is_read=False).update(is_read=True)
+        return Response({'status': 'notifications marked as read'}, status=status.HTTP_200_OK)
 
 class SystemAlertViewSet(viewsets.ModelViewSet):
     queryset = SystemAlert.objects.filter(is_active=True).order_by('-created_at')

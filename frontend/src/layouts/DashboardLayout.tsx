@@ -14,7 +14,7 @@ import { Outlet, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { logout } from '../store/authSlice'
 import Sidebar from '../components/Sidebar'
-import { LogOut, Bell, Menu, Search } from 'lucide-react'
+import { LogOut, Bell, Menu, Search, X, CheckCheck, Check } from 'lucide-react'
 import { useToast } from '../context/ToastContext'
 import CommandPalette from '../components/CommandPalette'
 import PageTransition from '../components/common/PageTransition'
@@ -46,28 +46,54 @@ interface NotificationPanelProps {
   notifications: Notification[]
   alerts: Alert[]
   onMarkRead: (id: number) => void
+  onMarkAllRead: () => void
   onClose: () => void
 }
 
-const NotificationPanel = ({ notifications, alerts, onMarkRead, onClose }: NotificationPanelProps) => (
-  <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-2xl border border-gray-100 z-[100] max-h-[400px] overflow-hidden flex flex-col">
-    <div className="p-3 border-b bg-gray-50 flex justify-between items-center">
-      <span className="font-black text-xs uppercase tracking-wider text-gray-500">Notifications</span>
-      <button className="text-[10px] font-bold text-primary hover:underline" onClick={onClose}>Close</button>
+const NotificationPanel = ({ notifications, alerts, onMarkRead, onMarkAllRead, onClose }: NotificationPanelProps) => (
+  <div className="absolute right-0 top-full mt-3 w-[350px] bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-gray-100 z-[100] max-h-[500px] overflow-hidden flex flex-col animate-in fade-in slide-in-from-top-4 duration-300">
+    <div className="p-4 border-b bg-gray-50/50 flex justify-between items-center">
+      <div className="flex items-center gap-2">
+        <span className="font-black text-[10px] uppercase tracking-[0.2em] text-gray-400">Notifications</span>
+        {notifications.filter(n => !n.is_read).length > 0 && (
+          <span className="bg-primary text-white text-[9px] px-1.5 py-0.5 rounded-full font-bold">
+            {notifications.filter(n => !n.is_read).length} New
+          </span>
+        )}
+      </div>
+      <div className="flex items-center gap-3">
+        {notifications.some(n => !n.is_read) && (
+          <button 
+            className="text-[10px] font-bold text-primary hover:text-primary-accent flex items-center gap-1 transition-colors" 
+            onClick={onMarkAllRead}
+          >
+            <CheckCheck size={12} />
+            Mark all read
+          </button>
+        )}
+        <button className="text-gray-400 hover:text-gray-600 transition-colors" onClick={onClose}>
+          <X size={16} />
+        </button>
+      </div>
     </div>
 
-    <div className="overflow-y-auto flex-1">
+    <div className="overflow-y-auto flex-1 custom-scrollbar">
       {alerts.length === 0 && notifications.length === 0 && (
-        <div className="p-8 text-center text-gray-400 italic text-xs">No active notifications</div>
+        <div className="py-12 px-6 text-center">
+          <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3">
+            <Bell size={20} className="text-gray-300" />
+          </div>
+          <p className="text-gray-400 italic text-xs font-medium">No active notifications</p>
+        </div>
       )}
 
       {alerts.map(alert => (
-        <div key={`alert-${alert.id}`} className="p-3 border-b bg-red-50">
-          <div className="flex gap-2">
-            <div className="mt-1 w-2 h-2 rounded-full bg-red-500 flex-shrink-0" />
-            <div>
+        <div key={`alert-${alert.id}`} className="p-4 border-b bg-red-50/50 hover:bg-red-50 transition-colors group relative">
+          <div className="flex gap-3">
+            <div className="mt-1 w-2 h-2 rounded-full bg-red-500 flex-shrink-0 animate-pulse" />
+            <div className="flex-1">
               <p className="m-0 font-bold text-xs text-red-900 uppercase tracking-tight">{alert.title}</p>
-              <p className="m-0 text-xs text-red-700 leading-tight mt-1">{alert.message}</p>
+              <p className="m-0 text-xs text-red-700 leading-relaxed mt-1">{alert.message}</p>
             </div>
           </div>
         </div>
@@ -76,22 +102,48 @@ const NotificationPanel = ({ notifications, alerts, onMarkRead, onClose }: Notif
       {notifications.map(notif => (
         <div
           key={`notif-${notif.id}`}
-          className={`p-3 border-b hover:bg-gray-50 transition-colors cursor-pointer ${notif.is_read ? 'opacity-60' : 'bg-blue-50/30'}`}
-          onClick={() => !notif.is_read && onMarkRead(notif.id)}
+          className={`p-4 border-b hover:bg-gray-50 transition-all group relative ${notif.is_read ? 'bg-white' : 'bg-blue-50/30'}`}
         >
-          <div className="flex gap-2">
-            {!notif.is_read && <div className="mt-1.5 w-2 h-2 rounded-full bg-blue-500 flex-shrink-0" />}
-            <div className={notif.is_read ? 'pl-4' : ''}>
-              <p className="m-0 font-bold text-xs text-gray-800 tracking-tight">{notif.title}</p>
-              <p className="m-0 text-xs text-gray-600 leading-tight mt-1">{notif.message}</p>
-              <p className="m-0 text-[9px] text-gray-400 mt-1 uppercase font-bold">
+          <div className="flex gap-3">
+            {!notif.is_read ? (
+              <div className="mt-1.5 w-2 h-2 rounded-full bg-blue-500 flex-shrink-0" />
+            ) : (
+              <div className="mt-1.5 w-2 h-2 rounded-full bg-gray-200 flex-shrink-0" />
+            )}
+            <div className="flex-1 pr-6">
+              <p className={`m-0 text-xs tracking-tight ${notif.is_read ? 'text-gray-500 font-medium' : 'text-gray-900 font-bold'}`}>
+                {notif.title}
+              </p>
+              <p className={`m-0 text-xs leading-relaxed mt-1 ${notif.is_read ? 'text-gray-400' : 'text-gray-600'}`}>
+                {notif.message}
+              </p>
+              <p className="m-0 text-[9px] text-gray-400 mt-2 uppercase font-black tracking-widest flex items-center gap-2">
                 {new Date(notif.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                {!notif.is_read && <span className="w-1 h-1 bg-gray-300 rounded-full" />}
+                {!notif.is_read && "New Notification"}
               </p>
             </div>
+            {!notif.is_read && (
+              <button 
+                onClick={(e) => { e.stopPropagation(); onMarkRead(notif.id); }}
+                className="absolute right-4 top-4 opacity-0 group-hover:opacity-100 transition-opacity bg-white p-1 rounded shadow-sm border border-gray-100 text-blue-600 hover:bg-blue-50"
+                title="Mark as read"
+              >
+                <Check size={14} />
+              </button>
+            )}
           </div>
         </div>
       ))}
     </div>
+    
+    {notifications.length > 0 && (
+      <div className="p-3 bg-gray-50 border-top text-center">
+        <button className="text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-primary transition-colors">
+          View all history
+        </button>
+      </div>
+    )}
   </div>
 )
 
@@ -136,7 +188,16 @@ const DashboardLayout = () => {
       await communicationAPI.notifications.update(id, { is_read: true })
       fetchNotifications()
     } catch {
-      // Non-critical; user can retry by closing and reopening the panel
+      // Non-critical
+    }
+  }, [fetchNotifications])
+
+  const markAllAsRead = useCallback(async () => {
+    try {
+      await communicationAPI.notifications.markAllRead()
+      fetchNotifications()
+    } catch {
+      // Non-critical
     }
   }, [fetchNotifications])
 
@@ -224,6 +285,7 @@ const DashboardLayout = () => {
                   notifications={notifications}
                   alerts={alerts}
                   onMarkRead={markAsRead}
+                  onMarkAllRead={markAllAsRead}
                   onClose={() => setIsNotifOpen(false)}
                 />
               )}
