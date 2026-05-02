@@ -59,7 +59,12 @@ const AllocationManager: React.FC<AllocationManagerProps> = ({
                                 Sync to Students
                             </Button>
                         </div>
-                        <div className="p-0 table-wrapper overflow-x-auto overflow-y-auto w-full block flex-1 m-0">
+
+                        {/* Info Banner */}
+                        <div className="mx-4 mt-3 p-3 rounded-xl bg-blue-50 border border-blue-100 text-[10px] font-bold text-blue-700">
+                            ⚠️ Only subjects allocated here will appear in the results entry sheet. Subjects not assigned = no marks column for students in this class. Mean grade is calculated from entered subjects only.
+                        </div>
+
                             <table className="table min-w-[600px] border-collapse">
                                 <thead className="sticky top-0 bg-slate-50 z-10 shadow-sm text-[10px] uppercase">
                                     <tr>
@@ -88,23 +93,42 @@ const AllocationManager: React.FC<AllocationManagerProps> = ({
                                                 <td className="py-4 px-6 font-bold text-xs">{subject.name}</td>
                                                 <td className="py-4 px-6"><code className="bg-slate-100 px-2 py-1 rounded text-[10px]">{subject.code}</code></td>
                                                 <td className="py-4 px-6 text-[10px] uppercase font-bold text-slate-400">{(subject as any).category || (subject as any).group_name || '-'}</td>
-                                                <td className="py-4 px-6 min-w-[200px]">
+                                                <td className="py-4 px-6 min-w-[220px]">
                                                     {isAllocated ? (
-                                                        <SearchableSelect
-                                                            placeholder="Assign Teacher..."
-                                                            options={staff.filter(s => s.role === 'TEACHER' || s.role === 'STAFF').map(s => ({ id: (s.user || s.id).toString(), label: s.full_name }))}
-                                                            value={allocation?.teacher?.toString() || ''}
-                                                            onChange={(val) => updateAllocationTeacher(allocation.id, val.toString())}
-                                                        />
+                                                        <div className="space-y-1">
+                                                            {allocation?.teacher_name && allocation.teacher_name !== 'Unassigned' && (
+                                                                <p className="text-[9px] font-black text-success uppercase tracking-tight">
+                                                                    ✓ {allocation.teacher_name}
+                                                                </p>
+                                                            )}
+                                                            <SearchableSelect
+                                                                placeholder={allocation?.teacher_name && allocation.teacher_name !== 'Unassigned' ? 'Change Teacher...' : 'Assign Teacher...'}
+                                                                options={staff
+                                                                    .filter(s => s.role && s.role !== 'STUDENT')
+                                                                    .map(s => ({
+                                                                        id: (s.user || s.id).toString(),
+                                                                        label: `${s.full_name} (${s.role || 'Staff'})`
+                                                                    }))
+                                                                }
+                                                                value={allocation?.teacher?.toString() || ''}
+                                                                onChange={(val) => updateAllocationTeacher(allocation.id, val.toString())}
+                                                            />
+                                                        </div>
                                                     ) : (
-                                                        <span className="text-[10px] text-slate-300 italic">Select subject first</span>
+                                                        <span className="text-[10px] text-slate-300 italic">Activate subject first</span>
                                                     )}
                                                 </td>
                                                 <td className="py-4 px-6">
-                                                    {isAllocated ?
-                                                        <span className="badge badge-success text-[9px] font-black">ALLOCATED</span> :
+                                                    {isAllocated ? (
+                                                        <div className="flex flex-col gap-1">
+                                                            <span className="badge badge-success text-[9px] font-black">ALLOCATED</span>
+                                                            {(!allocation?.teacher) && (
+                                                                <span className="text-[9px] text-amber-600 font-bold">No teacher</span>
+                                                            )}
+                                                        </div>
+                                                    ) : (
                                                         <span className="badge badge-ghost text-[9px] font-black opacity-40">AVAILABLE</span>
-                                                    }
+                                                    )}
                                                 </td>
                                             </tr>
                                         );

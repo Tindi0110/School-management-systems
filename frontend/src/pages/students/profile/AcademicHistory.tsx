@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { BookOpen, TrendingUp, ShieldCheck, Printer } from 'lucide-react';
 import { StatCard } from '../../../components/Card';
 import Button from '../../../components/common/Button';
@@ -10,23 +10,46 @@ interface AcademicHistoryProps {
     onGenerateTranscript: () => void;
 }
 
+// Mirror of backend get_grade_from_score
+const getGradeFromScore = (score: number): string => {
+    if (score >= 80) return 'A';
+    if (score >= 75) return 'A-';
+    if (score >= 70) return 'B+';
+    if (score >= 65) return 'B';
+    if (score >= 60) return 'B-';
+    if (score >= 55) return 'C+';
+    if (score >= 50) return 'C';
+    if (score >= 45) return 'C-';
+    if (score >= 40) return 'D+';
+    if (score >= 35) return 'D';
+    if (score >= 30) return 'D-';
+    return 'E';
+};
+
 const AcademicHistory: React.FC<AcademicHistoryProps> = ({ student, results, onGenerateTranscript }) => {
+    const meanScore = useMemo(() => {
+        const valid = results.map((r: any) => parseFloat(r.score || r.marks_attained || 0)).filter(s => !isNaN(s) && s > 0);
+        return valid.length > 0 ? valid.reduce((a, b) => a + b, 0) / valid.length : null;
+    }, [results]);
+
+    const meanGrade = useMemo(() => {
+        if (meanScore === null) return student.average_grade || '—';
+        return `${getGradeFromScore(meanScore)} (${meanScore.toFixed(1)}%)`;
+    }, [meanScore, student.average_grade]);
+
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Performance Analytics Dashboard */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <StatCard
                     title="Mean Score"
-                    value={`${(() => {
-                        const validScores = results.map((r: any) => parseFloat(r.score || r.marks_attained || 0)).filter(s => !isNaN(s));
-                        return validScores.length > 0 ? (validScores.reduce((a: number, b: number) => a + b, 0) / validScores.length).toFixed(1) : '0';
-                    })()}%`}
+                    value={meanScore !== null ? `${meanScore.toFixed(1)}%` : '—'}
                     icon={<TrendingUp size={18} />}
                     gradient="linear-gradient(135deg, #1e3c72, #2a5298)"
                 />
                 <StatCard
                     title="Mean Grade"
-                    value={student.average_grade || '—'}
+                    value={meanGrade}
                     icon={<ShieldCheck size={18} />}
                     gradient="linear-gradient(135deg, #4facfe, #00f2fe)"
                 />
@@ -123,10 +146,10 @@ const AcademicHistory: React.FC<AcademicHistoryProps> = ({ student, results, onG
                                     <tr>
                                         <td colSpan={2} className="py-4 px-6 text-[10px] font-black uppercase tracking-widest text-white/50">Cumulative Mean Performance</td>
                                         <td className="py-4 px-6 text-center text-sm font-black">
-                                            {(results.reduce((s: number, r: any) => s + parseFloat(r.score || 0), 0) / (results.length || 1)).toFixed(1)}%
+                                            {meanScore !== null ? `${meanScore.toFixed(1)}%` : '—'}
                                         </td>
                                         <td colSpan={2} className="py-4 px-6 text-right text-sm font-black text-success">
-                                            OVERALL: {student.average_grade}
+                                            OVERALL: {meanGrade}
                                         </td>
                                     </tr>
                                 </tfoot>
