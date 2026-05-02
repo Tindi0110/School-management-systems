@@ -286,16 +286,25 @@ const StudentProfile = () => {
         e.preventDefault();
         setIsSubmitting(true);
         try {
+            // Clean data: convert empty numeric strings to null to avoid backend Decimal errors
+            const cleanedData = {
+                ...healthForm,
+                height: healthForm.height === '' ? null : healthForm.height,
+                weight: healthForm.weight === '' ? null : healthForm.weight,
+                temperature: healthForm.temperature === '' ? null : healthForm.temperature,
+                student: Number(id)
+            };
+
             if (healthId) {
-                await studentsAPI.health.update(healthId, { ...healthForm, student: Number(id) });
+                await studentsAPI.health.update(healthId, cleanedData);
             } else {
-                await studentsAPI.health.create({ ...healthForm, student: Number(id) });
+                await studentsAPI.health.create(cleanedData);
             }
             await loadCoreStudentData(); // Refresh health record in core data
             setIsHealthModalOpen(false);
             toast.success('Health record updated successfully');
-        } catch (err) {
-            toast.error('Failed to update medical info');
+        } catch (err: any) {
+            toast.error(err.message || 'Failed to update medical info');
         } finally {
             setIsSubmitting(false);
         }

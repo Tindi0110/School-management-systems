@@ -411,17 +411,17 @@ class HealthRecordViewSet(viewsets.ModelViewSet):
         return queryset
 
     def create(self, request, *args, **kwargs):
-        """Handle 1-to-1 update_or_create logic to prevent integrity errors"""
+        """Handle 1-to-1 update_or_create logic via serializer"""
         student_id = request.data.get('student')
         if not student_id:
-            return Response({'error': 'Student ID is required'}, status=400)
+            return Response({'error': 'Student ID is required'}, status=status.HTTP_400_BAD_REQUEST)
             
-        instance, created = HealthRecord.objects.update_or_create(
-            student_id=student_id,
-            defaults=request.data
-        )
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
+        instance = HealthRecord.objects.filter(student_id=student_id).first()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        
+        return Response(serializer.data, status=status.HTTP_201_CREATED if not instance else status.HTTP_200_OK)
 
 class ActivityRecordViewSet(viewsets.ModelViewSet):
     queryset = ActivityRecord.objects.select_related('student').all()
