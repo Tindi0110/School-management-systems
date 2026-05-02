@@ -105,7 +105,7 @@ const ExamBroadsheet: React.FC<ExamBroadsheetProps> = ({
                     });
                     downloadCSV('Exam_Broadsheet', cols, csvData);
                 }} icon={<Printer size={14} />}>Export CSV</Button>
-                <Button variant="outline" size="sm" onClick={() => printSection('broadsheet-print-area')} icon={<Printer size={14} />}>Print Broadsheet</Button>
+                <Button variant="outline" size="sm" onClick={() => printSection('Exam Broadsheet', 'broadsheet-print-area')} icon={<Printer size={14} />}>Print Broadsheet</Button>
             </div>
 
             <div id="broadsheet-print-area" className="table-wrapper max-h-70vh overflow-auto border rounded bg-white relative min-w-0">

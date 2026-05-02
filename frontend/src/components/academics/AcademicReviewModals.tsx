@@ -39,7 +39,7 @@ export const ViewClassModal: React.FC<ViewClassModalProps> = ({
             <Button
                 variant="outline"
                 size="sm"
-                onClick={() => printSection('class-list-print-area')}
+                onClick={() => printSection('Class List', 'class-list-print-area')}
                 className="border-primary text-primary hover:bg-primary hover:text-white"
                 icon={<Printer size={16} />}
             >

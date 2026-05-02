@@ -125,7 +125,7 @@ const InvoiceManager: React.FC<InvoiceManagerProps> = ({
                     }} title="Export Filtered Invoices">
                         CSV
                     </button>
-                    <button className="btn btn-sm btn-outline no-print ml-2" onClick={() => printSection('invoices-print-area')} title="Print Filtered Invoices">
+                    <button className="btn btn-sm btn-outline no-print ml-2" onClick={() => printSection('Invoices List', 'invoices-print-area')} title="Print Filtered Invoices">
                         <Printer size={14} className="mr-1" /> Print All
                     </button>
                 </div>

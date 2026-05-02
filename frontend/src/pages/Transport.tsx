@@ -300,7 +300,7 @@ const Transport = () => {
             registration_number: v.registration_number,
             make_model: v.make_model || v.model || '',
             vehicle_type: v.vehicle_type || 'BUS',
-            seating_capacity: v.seating_capacity || v.capacity || 14,
+            seating_capacity: Number(v.seating_capacity || v.capacity || 14),
             status: v.status || 'ACTIVE',
             insurance_expiry: v.insurance_expiry || ''
         });
@@ -346,8 +346,8 @@ const Transport = () => {
         setRouteForm({
             name: r.name,
             route_code: r.route_code || '',
-            distance_km: parseFloat(r.distance_km || 0),
-            base_cost: parseFloat(r.base_cost || 0)
+            distance_km: String(r.distance_km || ''),
+            base_cost: String(r.base_cost || '')
         });
         setIsRouteModalOpen(true);
     };
@@ -369,17 +369,17 @@ const Transport = () => {
         setIsSaving(true);
         try {
             const parentRoute = routes.find(r => r.id === pointForm.route_id);
-            let calculatedCost = pointForm.additional_cost;
-            if (parentRoute && pointForm.distance_from_school > 0 && calculatedCost === 0) {
-                calculatedCost = (pointForm.distance_from_school / parentRoute.distance_km) * parseFloat(parentRoute.base_cost);
+            let calculatedCost = Number(pointForm.additional_cost || 0);
+            if (parentRoute && Number(pointForm.distance_from_school) > 0 && calculatedCost === 0) {
+                calculatedCost = (Number(pointForm.distance_from_school) / Number(parentRoute.distance_km)) * parseFloat(parentRoute.base_cost);
             }
             const payload = {
                 route: pointForm.route_id,
                 point_name: pointForm.point_name,
                 pickup_time: pointForm.pickup_time,
                 dropoff_time: pointForm.dropoff_time,
-                distance_from_school: parseFloat(pointForm.distance_from_school.toFixed(2)),
-                additional_cost: parseFloat(calculatedCost.toFixed(2)),
+                distance_from_school: parseFloat(Number(pointForm.distance_from_school || 0).toFixed(2)),
+                additional_cost: parseFloat(Number(calculatedCost).toFixed(2)),
             };
             if (pointId) {
                 await transportAPI.pickupPoints.update(pointId, payload);
@@ -406,8 +406,8 @@ const Transport = () => {
             point_name: p.point_name,
             pickup_time: p.pickup_time || '',
             dropoff_time: p.dropoff_time || '',
-            distance_from_school: parseFloat(p.distance_from_school || 0),
-            additional_cost: parseFloat(p.additional_cost || 0)
+            distance_from_school: String(p.distance_from_school || ''),
+            additional_cost: String(p.additional_cost || '')
         });
         setIsPointModalOpen(true);
     };
@@ -432,7 +432,16 @@ const Transport = () => {
         }
         setIsSaving(true);
         try {
-            const payload = { route: Number(tripForm.route), vehicle: Number(tripForm.vehicle), date: tripForm.date, departure_time: tripForm.start_time, arrival_time: tripForm.end_time, attendant: tripForm.driver_name, trip_type: 'MORNING', driver: null };
+            const payload = { 
+                route: Number(tripForm.route), 
+                vehicle: Number(tripForm.vehicle), 
+                date: tripForm.date, 
+                departure_time: tripForm.start_time, 
+                arrival_time: tripForm.end_time, 
+                attendant: tripForm.driver_name, 
+                trip_type: 'MORNING', 
+                driver: null 
+            };
             if (tripId) {
                 await transportAPI.tripLogs.update(tripId, payload);
                 toast.success('Trip log updated');
@@ -477,7 +486,13 @@ const Transport = () => {
         }
         setIsSaving(true);
         try {
-            const payload = { vehicle: Number(maintenanceForm.vehicle), description: maintenanceForm.description, cost: maintenanceForm.cost, service_date: maintenanceForm.date, status: maintenanceForm.status };
+            const payload = { 
+                vehicle: Number(maintenanceForm.vehicle), 
+                description: maintenanceForm.description, 
+                cost: Number(maintenanceForm.cost || 0), 
+                service_date: maintenanceForm.date, 
+                status: maintenanceForm.status 
+            };
             if (maintenanceId) {
                 await transportAPI.maintenance.update(maintenanceId, payload);
                 toast.success('Maintenance record updated');
@@ -498,7 +513,7 @@ const Transport = () => {
 
     const handleEditMaintenance = (m: any) => {
         setMaintenanceId(m.id);
-        setMaintenanceForm({ vehicle: String(m.vehicle), description: m.description, cost: parseFloat(m.cost), date: m.date, status: m.status });
+        setMaintenanceForm({ vehicle: String(m.vehicle), description: m.description, cost: String(m.cost || ''), date: m.date, status: m.status });
         setIsMaintenanceModalOpen(true);
     };
 
@@ -570,9 +585,9 @@ const Transport = () => {
         setFuelForm({
             date: f.date,
             vehicle: String(f.vehicle),
-            liters: f.liters,
-            amount: f.amount,
-            mileage: f.mileage,
+            liters: String(f.liters || ''),
+            amount: String(f.amount || ''),
+            mileage: String(f.mileage || ''),
             receipt_no: f.receipt_no || '',
             status: f.status || 'PENDING'
         });
@@ -583,7 +598,13 @@ const Transport = () => {
         e.preventDefault();
         setIsSaving(true);
         try {
-            const payload = { ...fuelForm, vehicle: Number(fuelForm.vehicle) };
+            const payload = { 
+                ...fuelForm, 
+                vehicle: Number(fuelForm.vehicle),
+                liters: Number(fuelForm.liters || 0),
+                amount: Number(fuelForm.amount || 0),
+                mileage: Number(fuelForm.mileage || 0)
+            };
             if (fuelId) {
                 await transportAPI.fuel.update(fuelId, payload);
                 toast.success('Fuel record updated');

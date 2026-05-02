@@ -153,7 +153,7 @@ const Medical = () => {
                 <div className="flex flex-wrap gap-2 w-full lg:w-auto mt-2 lg:mt-0 no-print">
                     <Button variant="ghost" className="text-[10px] font-black uppercase" onClick={() => {
                         const cols = [
-                            { label: 'Visit Date', key: 'date_visited', format: (val) => new Date(val).toLocaleDateString() },
+                            { label: 'Visit Date', key: 'date_visited', format: (val: any) => new Date(val).toLocaleDateString() },
                             { label: 'Student', key: 'student_name' },
                             { label: 'Diagnosis', key: 'diagnosis' },
                             { label: 'Treatment', key: 'treatment_given' },

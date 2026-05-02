@@ -202,7 +202,7 @@ const Timetable = () => {
                                 ];
                                 downloadCSV(`Timetable_Class_${selectedClass}`, cols, exportData);
                             }} icon={<Download size={16} />}>Export</Button>
-                            <Button variant="ghost" className="text-[10px] font-black uppercase" onClick={() => printSection('timetable-print-area')} icon={<Printer size={16} />}>Print</Button>
+                            <Button variant="ghost" className="text-[10px] font-black uppercase" onClick={() => printSection('Class Timetable', 'timetable-print-area')} icon={<Printer size={16} />}>Print</Button>
                         </div>
                     )}
                     {canAdd && (

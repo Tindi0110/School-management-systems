@@ -316,7 +316,7 @@ export const RankingModal: React.FC<RankingModalProps> = ({
                         }} title="Export Ranking Report" icon={<Printer size={14} />}>
                             CSV
                         </Button>
-                        <Button variant="outline" size="sm" className="no-print font-black uppercase text-[10px] h-8 mt-4 bg-white" onClick={() => printSection('ranking-print-area')} title="Print Ranking Report" icon={<Printer size={14} />}>
+                        <Button variant="outline" size="sm" className="no-print font-black uppercase text-[10px] h-8 mt-4 bg-white" onClick={() => printSection('Ranking Report', 'ranking-print-area')} title="Print Ranking Report" icon={<Printer size={14} />}>
                             PRINT
                         </Button>
                     </div>

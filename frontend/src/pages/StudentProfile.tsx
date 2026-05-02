@@ -498,7 +498,7 @@ const StudentProfile = () => {
     };
 
     const handlePrintClearance = () => {
-        printSection('clearance-form');
+        printSection('Student Clearance Form', 'clearance-form');
     };
 
     const handleSuspend = async () => {
@@ -557,7 +557,7 @@ const StudentProfile = () => {
     };
 
     const handleTranscriptPrint = () => {
-        printSection('academic-history-print-area');
+        printSection('Academic History', 'academic-history-print-area');
     };
 
     // --- State ---
@@ -604,7 +604,7 @@ const StudentProfile = () => {
                             invoices={invoices}
                             payments={payments}
                             statement={statement}
-                            onPrintStatement={() => printSection('accounting-ledger-print-area')}
+                            onPrintStatement={() => printSection('Financial Statement', 'accounting-ledger-print-area')}
                         />
                     )}
                     {activeTab === 'ACTIVITIES' && (

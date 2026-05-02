@@ -541,7 +541,7 @@ const FinanceModals: React.FC<FinanceModalsProps> = ({
                                     setShowAdjustmentModal(true);
                                 }
                             }}>Apply Waiver/Fine</Button>
-                            <Button variant="outline" icon={<Printer size={16} />} onClick={() => printSection('invoice-detail-print-area')}>Print / Save PDF</Button>
+                            <Button variant="outline" icon={<Printer size={16} />} onClick={() => printSection('Invoice Details', 'invoice-detail-print-area')}>Print / Save PDF</Button>
                         </div>
                     </div>
                 )}

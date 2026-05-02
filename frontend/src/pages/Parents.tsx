@@ -98,6 +98,15 @@ const Parents = () => {
     const [sortField, setSortField] = useState<string>('full_name');
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
+    const toggleSort = (field: string) => {
+        if (sortField === field) {
+            setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortField(field);
+            setSortDirection('asc');
+        }
+    };
+
     const filteredParents = React.useMemo(() => {
         const lowerSearch = searchTerm.toLowerCase();
         let result = parents.filter(p =>
@@ -187,7 +196,9 @@ const Parents = () => {
                 <table className="table min-w-[1000px]">
                     <thead>
                         <tr className="bg-secondary-light text-left">
-                            <th className="p-4 text-xs font-black uppercase text-secondary tracking-wider">Guardian Identity</th>
+                            <th className="p-4 text-xs font-black uppercase text-secondary tracking-wider cursor-pointer hover:text-primary" onClick={() => toggleSort('full_name')}>
+                                Guardian Identity {sortField === 'full_name' && (sortDirection === 'asc' ? '↑' : '↓')}
+                            </th>
                             <th className="p-4 text-xs font-black uppercase text-secondary tracking-wider">Contact Info</th>
                             <th className="p-4 text-xs font-black uppercase text-secondary tracking-wider">Occupation & Address</th>
                             <th className="p-4 text-xs font-black uppercase text-secondary tracking-wider">Children / Wards</th>
