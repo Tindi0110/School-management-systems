@@ -89,7 +89,7 @@ const AttendanceManager: React.FC<AttendanceManagerProps> = ({
                                     const cls = classes.find(c => c.id === student?.current_class);
                                     const groupKey = cls ? `${cls.name} ${cls.stream}` : 'Unassigned';
                                     if (!acc[groupKey]) acc[groupKey] = [];
-                                    acc[groupKey].push({ ...att, student_name: student?.full_name, class_name: groupKey });
+                                    acc[groupKey].push({ ...att, student_name: student?.full_name, admission_number: student?.admission_number, class_name: groupKey });
                                     return acc;
                                 }, {});
 
@@ -104,7 +104,7 @@ const AttendanceManager: React.FC<AttendanceManagerProps> = ({
                                                 <td>
                                                     <div className="flex flex-col">
                                                         <span className="font-bold text-xs">{att.student_name || 'Unknown'}</span>
-                                                        <span className="text-[9px] text-secondary">ADM_NOT_STORED</span>
+                                                        <span className="text-[9px] text-secondary font-mono">{att.admission_number || '—'}</span>
                                                     </div>
                                                 </td>
                                                 <td>
