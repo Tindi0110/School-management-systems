@@ -20,6 +20,7 @@ import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 import type { Student, Parent, DisciplineIncident, StudentDocument, Activity } from '../types/student.types';
 import type { StudentResult } from '../types/academic.types';
+import { printSection } from '../utils/exportUtils';
 
 type TabType = 'SUMMARY' | 'ACADEMIC' | 'FINANCE' | 'DISCIPLINE' | 'HEALTH' | 'ACTIVITIES' | 'DOCUMENTS' | 'FAMILY';
 
@@ -497,12 +498,7 @@ const StudentProfile = () => {
     };
 
     const handlePrintClearance = () => {
-        const printContent = document.getElementById('clearance-form');
-        if (!printContent) return;
-
-        // Temporarily reveal for print styles to pick it up if needed, 
-        // but window.print() usually handles print-only CSS better.
-        window.print();
+        printSection('clearance-form');
     };
 
     const handleSuspend = async () => {
@@ -561,14 +557,7 @@ const StudentProfile = () => {
     };
 
     const handleTranscriptPrint = () => {
-        const printContent = document.getElementById('transcript-form');
-        const win = window.open('', '', 'height=700,width=800');
-        win?.document.write('<html><head><title>Academic Transcript</title>');
-        win?.document.write('</head><body>');
-        win?.document.write(printContent?.innerHTML || '');
-        win?.document.write('</body></html>');
-        win?.document.close();
-        win?.print();
+        printSection('academic-history-print-area');
     };
 
     // --- State ---
@@ -615,7 +604,7 @@ const StudentProfile = () => {
                             invoices={invoices}
                             payments={payments}
                             statement={statement}
-                            onPrintStatement={() => window.print()}
+                            onPrintStatement={() => printSection('accounting-ledger-print-area')}
                         />
                     )}
                     {activeTab === 'ACTIVITIES' && (

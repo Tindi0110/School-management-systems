@@ -2,18 +2,19 @@ import type { GradeSystem } from '../types/academic.types';
 
 // Hardcoded KNEC fallback — mirrors backend get_grade_from_score
 const gradeFromScore = (score: number): string => {
-    if (score >= 80) return 'A';
-    if (score >= 75) return 'A-';
-    if (score >= 70) return 'B+';
-    if (score >= 65) return 'B';
-    if (score >= 60) return 'B-';
-    if (score >= 55) return 'C+';
-    if (score >= 50) return 'C';
-    if (score >= 45) return 'C-';
-    if (score >= 40) return 'D+';
-    if (score >= 35) return 'D';
-    if (score >= 30) return 'D-';
-    return 'E';
+    if (score >= 78) return 'A';
+    if (score >= 71) return 'A-';
+    if (score >= 64) return 'B+';
+    if (score >= 57) return 'B';
+    if (score >= 50) return 'B-';
+    if (score >= 43) return 'C+';
+    if (score >= 36) return 'C';
+    if (score >= 29) return 'C-';
+    if (score >= 22) return 'D+';
+    if (score >= 15) return 'D';
+    if (score >= 8) return 'D-';
+    if (score >= 1) return 'E';
+    return 'Y';
 };
 
 export const calculateGrade = (score: number, gradeSystems: GradeSystem[], specificSystemId?: number | string | null) => {
@@ -34,9 +35,10 @@ export const calculateGrade = (score: number, gradeSystems: GradeSystem[], speci
 
     const systemWithBoundaries = system as any;
     if (systemWithBoundaries && systemWithBoundaries.boundaries && systemWithBoundaries.boundaries.length > 0) {
+        // Sort descending by min_score
         const sortedBoundaries = [...systemWithBoundaries.boundaries].sort((a, b) => b.min_score - a.min_score);
         for (const b of sortedBoundaries) {
-            if (score >= b.min_score && score <= b.max_score) {
+            if (score >= b.min_score) {
                 return b.grade;
             }
         }

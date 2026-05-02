@@ -1,6 +1,6 @@
 import React from 'react';
 import { Plus, Users as UsersIcon, Printer, Edit, Trash2 } from 'lucide-react';
-import { exportToCSV } from '../../utils/export';
+import { downloadCSV, printHTML, buildPrintTable } from '../../utils/exportUtils';
 
 interface AllocationManagerProps {
     allocations: any[];
@@ -40,19 +40,48 @@ const AllocationManager: React.FC<AllocationManagerProps> = ({
             <div className="flex justify-between items-center mb-4 flex-wrap gap-4">
                 <h3 className="text-lg font-bold mb-0">Student Allocations</h3>
                 <div className="flex gap-2 items-center">
-                    <button className="btn btn-outline btn-sm" onClick={() => exportToCSV(allocations.map(a => {
-                        const room = rooms.find(r => String(r.id) === String(a.room));
-                        return {
-                            Student: a.student_name || students.find(s => String(s.id) === String(a.student))?.full_name,
-                            Hostel: a.hostel_name || (room ? hostels.find(h => String(h.id) === String(room.hostel))?.name : 'N/A'),
-                            Room: a.room_number || 'N/A',
-                            Bed: a.bed_number || 'N/A',
-                            Status: a.status
-                        };
-                    }), 'allocations_report')}>
+                    <button className="btn btn-outline btn-sm" onClick={() => {
+                        const mappedAllocations = allocations.map(a => {
+                            const room = rooms.find(r => String(r.id) === String(a.room));
+                            return {
+                                student: a.student_name || students.find(s => String(s.id) === String(a.student))?.full_name,
+                                hostel: a.hostel_name || (room ? hostels.find(h => String(h.id) === String(room.hostel))?.name : 'N/A'),
+                                room: a.room_number || 'N/A',
+                                bed: a.bed_number || 'N/A',
+                                status: a.status
+                            };
+                        });
+                        const cols = [
+                            { label: 'Student', key: 'student' },
+                            { label: 'Hostel', key: 'hostel' },
+                            { label: 'Room', key: 'room' },
+                            { label: 'Bed', key: 'bed' },
+                            { label: 'Status', key: 'status' }
+                        ];
+                        downloadCSV('allocations_report', cols, mappedAllocations);
+                    }}>
                         <UsersIcon size={14} className="mr-1" /> CSV
                     </button>
-                    <button className="btn btn-outline btn-sm" onClick={() => window.print()}><Printer size={14} className="mr-1" /> Print</button>
+                    <button className="btn btn-outline btn-sm" onClick={() => {
+                        const mappedAllocations = allocations.map(a => {
+                            const room = rooms.find(r => String(r.id) === String(a.room));
+                            return {
+                                student: a.student_name || students.find(s => String(s.id) === String(a.student))?.full_name,
+                                hostel: a.hostel_name || (room ? hostels.find(h => String(h.id) === String(room.hostel))?.name : 'N/A'),
+                                room: a.room_number || 'N/A',
+                                bed: a.bed_number || 'N/A',
+                                status: a.status
+                            };
+                        });
+                        const cols = [
+                            { label: 'Student', key: 'student' },
+                            { label: 'Hostel', key: 'hostel' },
+                            { label: 'Room', key: 'room' },
+                            { label: 'Bed', key: 'bed' },
+                            { label: 'Status', key: 'status' }
+                        ];
+                        printHTML('Hostel Allocations', buildPrintTable(cols, mappedAllocations));
+                    }}><Printer size={14} className="mr-1" /> Print</button>
                     <button className="btn btn-primary btn-sm ml-2" onClick={() => { setAllocationId(null); setIsTransferMode(false); setIsAllocationModalOpen(true); }}>
                         <Plus size={14} className="mr-1" /> Assign Student
                     </button>

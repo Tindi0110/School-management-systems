@@ -1,11 +1,12 @@
 import React from 'react';
-import { Trash2, Plus } from 'lucide-react';
+import { Trash2, Plus, Edit2 } from 'lucide-react';
 import Button from '../../components/common/Button';
 
 interface FuelManagerProps {
     records: any[];
     vehicles: any[];
     onDelete: (id: number) => void;
+    onEdit: (record: any) => void;
     page: number;
     total: number;
     pageSize: number;
@@ -17,6 +18,7 @@ const FuelManager: React.FC<FuelManagerProps> = ({
     records,
     vehicles,
     onDelete,
+    onEdit,
     page,
     total,
     pageSize,
@@ -44,7 +46,7 @@ const FuelManager: React.FC<FuelManagerProps> = ({
                             <th className="py-4 px-6">Litres</th>
                             <th className="py-4 px-6">Amount (KES)</th>
                             <th className="py-4 px-6">Mileage</th>
-                            <th className="py-4 px-6">Receipt No</th>
+                            <th className="py-4 px-6">Status</th>
                             <th className="py-4 px-6 text-right">Actions</th>
                         </tr>
                     </thead>
@@ -59,10 +61,15 @@ const FuelManager: React.FC<FuelManagerProps> = ({
                                     <td className="py-4 px-6 text-center font-black text-xs text-slate-800">{parseFloat(r.amount).toLocaleString()}</td>
                                     <td className="py-4 px-6 text-center text-[11px] font-bold text-slate-500">{r.mileage} KM</td>
                                     <td className="py-4 px-6 text-center">
-                                        <code className="bg-slate-100 px-2 py-1 rounded text-[10px] font-black">{r.receipt_no || '---'}</code>
+                                        <span className={`badge ${r.status === 'APPROVED' ? 'badge-success' : 'badge-warning'} text-[9px] px-2 py-0.5`}>
+                                            {r.status || 'PENDING'}
+                                        </span>
                                     </td>
                                     <td className="py-4 px-6 text-right">
-                                        <Button variant="ghost" size="sm" className="text-error hover:bg-error/10" onClick={() => onDelete(r.id)} icon={<Trash2 size={12} />} />
+                                        <div className="flex justify-end gap-1">
+                                            <Button variant="ghost" size="sm" onClick={() => onEdit(r)} icon={<Edit2 size={12} />} />
+                                            <Button variant="ghost" size="sm" className="text-error hover:bg-error/10" onClick={() => onDelete(r.id)} icon={<Trash2 size={12} />} />
+                                        </div>
                                     </td>
                                 </tr>
                             );

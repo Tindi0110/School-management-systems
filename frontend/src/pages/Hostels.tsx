@@ -217,7 +217,12 @@ const Hostels = () => {
             const p = { ...assetFormData, hostel: Number(assetFormData.hostel), room: assetFormData.room ? Number(assetFormData.room) : null, quantity: Number(assetFormData.quantity || 1) };
             if (assetId) await hostelAPI.assets.update(assetId, p); else await hostelAPI.assets.create(p);
             success('Asset saved'); setIsAssetModalOpen(false); loadData();
-        } catch (err: any) { toastError('Error saving asset'); }
+        } catch (err: any) {
+            const msg = err.response?.data?.detail || 
+                       (err.response?.data && typeof err.response.data === 'object' ? Object.values(err.response.data).flat()[0] : null) ||
+                       'Error saving asset';
+            toastError(String(msg));
+        }
         finally { setIsSubmitting(false); }
     };
 

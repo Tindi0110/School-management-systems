@@ -155,7 +155,7 @@ class StudentResultViewSet(viewsets.ModelViewSet):
 
         def get_grade(score):
             for b in boundaries:
-                if b.min_score <= float(score) <= b.max_score:
+                if float(score) >= b.min_score:
                     return b.grade
             return 'E'  # Default if out of range
 

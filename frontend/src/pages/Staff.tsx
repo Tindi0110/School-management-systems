@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Plus, Search, Edit, Trash2, Briefcase, Printer, Download, LayoutGrid, RefreshCcw, Check, X, UserCheck } from 'lucide-react';
 import { staffAPI, authAPI } from '../api/api';
-import { exportToCSV } from '../utils/export';
+import { downloadCSV, printHTML, buildPrintTable } from '../utils/exportUtils';
 import Modal from '../components/Modal';
 import SearchableSelect from '../components/SearchableSelect';
 import { useToast } from '../context/ToastContext';
@@ -213,12 +213,21 @@ const Staff = () => {
         }
     };
 
+    const staffCols = [
+        { label: 'Employee ID', key: 'employee_id' },
+        { label: 'Full Name', key: 'full_name' },
+        { label: 'Department', key: 'department_name' },
+        { label: 'Role', key: 'role' },
+        { label: 'Email', key: 'email' },
+        { label: 'Date Joined', key: 'date_joined' },
+    ];
+
     const handlePrint = () => {
-        window.print();
+        printHTML('Staff Directory', buildPrintTable(staffCols, staffList));
     };
 
     const handleDownloadCSV = () => {
-        exportToCSV(staffList, 'Staff_Directory');
+        downloadCSV('staff_directory', staffCols, staffList);
     };
 
     const openModal = (member?: any) => {
@@ -335,6 +344,26 @@ const Staff = () => {
                             <Button variant="primary" className="text-[10px] font-black uppercase shadow-lg shadow-primary/25" onClick={() => openModal()} icon={<Plus size={16} />}>Add StaffMember</Button>
                         </>
                     )}
+                </div>
+            </div>
+            
+            {/* Dashboard Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8 no-print">
+                <div className="card p-4 border-l-4 border-primary">
+                    <p className="text-[10px] font-black uppercase text-secondary">Total Staff</p>
+                    <h2 className="text-2xl font-black">{totalItems}</h2>
+                </div>
+                <div className="card p-4 border-l-4 border-green-500">
+                    <p className="text-[10px] font-black uppercase text-secondary">Teaching Faculty</p>
+                    <h2 className="text-2xl font-black">{staff.filter(s => s.role === 'TEACHER').length}</h2>
+                </div>
+                <div className="card p-4 border-l-4 border-blue-500">
+                    <p className="text-[10px] font-black uppercase text-secondary">Departments</p>
+                    <h2 className="text-2xl font-black">{departments.length}</h2>
+                </div>
+                <div className="card p-4 border-l-4 border-orange-500">
+                    <p className="text-[10px] font-black uppercase text-secondary">Pending Approval</p>
+                    <h2 className="text-2xl font-black">{pendingStaff.length}</h2>
                 </div>
             </div>
 

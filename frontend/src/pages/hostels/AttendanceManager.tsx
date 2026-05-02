@@ -1,5 +1,6 @@
 import React from 'react';
 import { Plus, Printer, Edit, Trash2 } from 'lucide-react';
+import { downloadCSV, printHTML, buildPrintTable } from '../../utils/exportUtils';
 
 
 interface AttendanceManagerProps {
@@ -32,7 +33,40 @@ const AttendanceManager: React.FC<AttendanceManagerProps> = ({
             <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
                 <h3 className="text-lg font-bold mb-0">Hostel Attendance</h3>
                 <div className="flex gap-2 items-center">
-                    <button className="btn btn-outline btn-sm" onClick={() => window.print()}><Printer size={14} className="mr-1" /> Print Report</button>
+                    <button className="btn btn-outline btn-sm" onClick={() => {
+                        const mappedAttn = attendance.map(a => ({
+                            date: a.date,
+                            student: a.student_name || students.find(s => String(s.id) === String(a.student))?.full_name,
+                            session: a.session,
+                            status: a.status,
+                            room: a.room_number || 'N/A'
+                        }));
+                        const cols = [
+                            { label: 'Date', key: 'date' },
+                            { label: 'Student', key: 'student' },
+                            { label: 'Session', key: 'session' },
+                            { label: 'Status', key: 'status' },
+                            { label: 'Room', key: 'room' }
+                        ];
+                        downloadCSV('hostel_attendance', cols, mappedAttn);
+                    }}>CSV</button>
+                    <button className="btn btn-outline btn-sm" onClick={() => {
+                        const mappedAttn = attendance.map(a => ({
+                            date: a.date,
+                            student: a.student_name || students.find(s => String(s.id) === String(a.student))?.full_name,
+                            session: a.session,
+                            status: a.status,
+                            room: a.room_number || 'N/A'
+                        }));
+                        const cols = [
+                            { label: 'Date', key: 'date' },
+                            { label: 'Student', key: 'student' },
+                            { label: 'Session', key: 'session' },
+                            { label: 'Status', key: 'status' },
+                            { label: 'Room', key: 'room' }
+                        ];
+                        printHTML('Hostel Attendance', buildPrintTable(cols, mappedAttn));
+                    }}><Printer size={14} className="mr-1" /> Print Report</button>
                     <button className="btn btn-secondary btn-sm" onClick={() => { setAttendanceMode('BULK'); setIsAttendanceModalOpen(true); }}>
                         <Plus size={14} className="mr-1" /> Room Roll Call
                     </button>

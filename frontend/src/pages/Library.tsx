@@ -3,7 +3,7 @@ import {
     Book, Bookmark, Receipt, Layers, Search, Download, Printer
 } from 'lucide-react';
 import { libraryAPI, studentsAPI } from '../api/api';
-import { exportToCSV } from '../utils/export';
+import { downloadCSV, printHTML, buildPrintTable } from '../utils/exportUtils';
 import Modal from '../components/Modal';
 import SearchableSelect from '../components/SearchableSelect';
 import { StatCard } from '../components/Card';
@@ -509,8 +509,27 @@ const Library = () => {
                     </div>
 
                     <div className="flex gap-2">
-                        <Button variant="outline" size="sm" onClick={() => exportToCSV(books, 'Library_Catalog')} icon={<Download size={14} />}>Export</Button>
-                        <Button variant="outline" size="sm" onClick={() => window.print()} icon={<Printer size={14} />}>Reports</Button>
+                        <Button variant="outline" size="sm" onClick={() => {
+                            const cols = [
+                                { label: 'Title', key: 'title' },
+                                { label: 'Author', key: 'author' },
+                                { label: 'ISBN', key: 'isbn' },
+                                { label: 'Category', key: 'category' },
+                                { label: 'Available', key: 'available_copies' },
+                                { label: 'Total Copies', key: 'total_copies' }
+                            ];
+                            downloadCSV('Library_Catalog', cols, books);
+                        }} icon={<Download size={14} />}>Export</Button>
+                        <Button variant="outline" size="sm" onClick={() => {
+                            const cols = [
+                                { label: 'Title', key: 'title' },
+                                { label: 'Author', key: 'author' },
+                                { label: 'Category', key: 'category' },
+                                { label: 'Available', key: 'available_copies' },
+                                { label: 'Total Copies', key: 'total_copies' }
+                            ];
+                            printHTML('Library Catalog', buildPrintTable(cols, books));
+                        }} icon={<Printer size={14} />}>Reports</Button>
                     </div>
                 </div>
             </div>

@@ -90,7 +90,6 @@ export const ResultEntryModal: React.FC<ResultEntryModalProps> = ({
                                     <span className="text-[10px] font-black uppercase text-slate-800">Student Name</span>
                                 </th>
                                 {subjects.filter(sub => {
-                                    if (resultContext.classId === 'all') return true;
                                     return activeClassSubjects.some(cs => cs.subject === sub.id);
                                 }).map(sub => (
                                     <th key={sub.id} className="text-center min-w-[110px] p-2 bg-white" title={`${sub.name} (${sub.code})`}>

@@ -4,7 +4,7 @@ import Modal from '../../components/Modal';
 import Button from '../../components/common/Button';
 import SearchableSelect from '../../components/SearchableSelect';
 import PremiumDateInput from '../../components/common/DatePicker';
-
+import { printSection } from '../../utils/exportUtils';
 interface Student {
     id: number;
     admission_number: string;
@@ -447,7 +447,7 @@ const FinanceModals: React.FC<FinanceModalsProps> = ({
             {/* Invoice Detail Modal */}
             <Modal isOpen={!!selectedInvoice} onClose={() => setSelectedInvoice(null)} title={`Invoice Details - #INV - ${selectedInvoice?.id} `}>
                 {selectedInvoice && (
-                    <div className="space-y-6">
+                    <div id="invoice-detail-print-area" className="space-y-6">
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pb-4 border-b">
                             <div><p className="text-xs text-secondary uppercase font-black">Student</p><p className="font-bold">{selectedInvoice.student_name}</p></div>
                             <div><p className="text-xs text-secondary uppercase font-black">Admission</p><p className="font-bold">{selectedInvoice.admission_number}</p></div>
@@ -541,7 +541,7 @@ const FinanceModals: React.FC<FinanceModalsProps> = ({
                                     setShowAdjustmentModal(true);
                                 }
                             }}>Apply Waiver/Fine</Button>
-                            <Button variant="outline" icon={<Printer size={16} />} onClick={() => window.print()}>Print / Save PDF</Button>
+                            <Button variant="outline" icon={<Printer size={16} />} onClick={() => printSection('invoice-detail-print-area')}>Print / Save PDF</Button>
                         </div>
                     </div>
                 )}

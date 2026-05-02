@@ -6,7 +6,7 @@ import { timetableAPI, classesAPI, subjectsAPI, staffAPI } from '../api/api';
 import Modal from '../components/Modal';
 import SearchableSelect from '../components/SearchableSelect';
 import Button from '../components/common/Button';
-import { exportToCSV } from '../utils/export';
+import { downloadCSV, printSection } from '../utils/exportUtils';
 import { useSelector } from 'react-redux';
 import Skeleton from '../components/common/Skeleton';
 
@@ -193,9 +193,16 @@ const Timetable = () => {
                                     Subject: s.subject_name,
                                     Teacher: s.teacher_name || 'None'
                                 }));
-                                exportToCSV(exportData, `Timetable_Class_${selectedClass}`);
+                                const cols = [
+                                    { label: 'Day', key: 'Day' },
+                                    { label: 'Start Time', key: 'Start Time' },
+                                    { label: 'End Time', key: 'End Time' },
+                                    { label: 'Subject', key: 'Subject' },
+                                    { label: 'Teacher', key: 'Teacher' }
+                                ];
+                                downloadCSV(`Timetable_Class_${selectedClass}`, cols, exportData);
                             }} icon={<Download size={16} />}>Export</Button>
-                            <Button variant="ghost" className="text-[10px] font-black uppercase" onClick={() => window.print()} icon={<Printer size={16} />}>Print</Button>
+                            <Button variant="ghost" className="text-[10px] font-black uppercase" onClick={() => printSection('timetable-print-area')} icon={<Printer size={16} />}>Print</Button>
                         </div>
                     )}
                     {canAdd && (
@@ -208,7 +215,7 @@ const Timetable = () => {
 
             {loading ? renderSkeletonTimetable() : (
                 selectedClass ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 print:grid-cols-6 print:gap-1">
+                    <div id="timetable-print-area" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 print:grid-cols-6 print:gap-1">
                         {days.map(day => {
                             const daySlots = slots.filter(s => s.day === day.id).sort((a, b) => a.start_time.localeCompare(b.start_time));
                             return (

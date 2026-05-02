@@ -2,7 +2,7 @@ import React from 'react';
 import Modal from '../Modal';
 import Button from '../common/Button';
 import { Download, Printer, FileText, BarChart3 } from 'lucide-react';
-import { exportToCSV } from '../../utils/export';
+import { printSection, downloadCSV } from '../../utils/exportUtils';
 
 interface ViewClassModalProps {
     isOpen: boolean;
@@ -21,11 +21,16 @@ export const ViewClassModal: React.FC<ViewClassModalProps> = ({
                 size="sm"
                 onClick={() => {
                     const exportData = viewClassStudents.map(s => ({
-                        'Student Name': s.full_name,
-                        'Admission Number': s.admission_number,
-                        'Gender': s.gender || 'N/A'
+                        student_name: s.full_name,
+                        admission_number: s.admission_number,
+                        gender: s.gender || 'N/A'
                     }));
-                    exportToCSV(exportData, `Class_List_${selectedClass?.name}_${selectedClass?.stream}`);
+                    const cols = [
+                        { label: 'Student Name', key: 'student_name' },
+                        { label: 'Admission Number', key: 'admission_number' },
+                        { label: 'Gender', key: 'gender' }
+                    ];
+                    downloadCSV(`Class_List_${selectedClass?.name}_${selectedClass?.stream}`, cols, exportData);
                 }}
                 icon={<Download size={16} />}
             >
@@ -34,19 +39,14 @@ export const ViewClassModal: React.FC<ViewClassModalProps> = ({
             <Button
                 variant="outline"
                 size="sm"
-                onClick={() => {
-                    const modalContent = document.querySelector('.modal-content');
-                    if (modalContent) modalContent.classList.add('print-modal');
-                    window.print();
-                    if (modalContent) setTimeout(() => modalContent.classList.remove('print-modal'), 1000);
-                }}
+                onClick={() => printSection('class-list-print-area')}
                 className="border-primary text-primary hover:bg-primary hover:text-white"
                 icon={<Printer size={16} />}
             >
                 Print List
             </Button>
         </div>
-        <div className="table-wrapper">
+        <div id="class-list-print-area" className="table-wrapper">
             <table className="table">
                 <thead><tr><th>Student Name</th><th>ADM No</th></tr></thead>
                 <tbody>

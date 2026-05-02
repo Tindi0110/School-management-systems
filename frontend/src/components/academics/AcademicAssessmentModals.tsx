@@ -6,6 +6,7 @@ import SearchableSelect from '../SearchableSelect';
 import PremiumDateInput from '../common/DatePicker';
 import type { Exam, Term, GradeSystem, Subject } from '../../types/academic.types';
 import { calculateGrade } from '../../utils/academicHelpers';
+import { printSection, downloadCSV } from '../../utils/exportUtils';
 
 interface ExamModalProps {
     isOpen: boolean;
@@ -282,13 +283,46 @@ export const RankingModal: React.FC<RankingModalProps> = ({
                                 onChange={(val) => setRankingFilter({ ...rankingFilter, classId: val.toString() })}
                             />
                         </div>
-                        <Button variant="outline" size="sm" className="no-print font-black uppercase text-[10px] h-8 mt-4 bg-white" onClick={() => window.print()} title="Print Ranking Report" icon={<Printer size={14} />}>
+                        <Button variant="outline" size="sm" className="no-print font-black uppercase text-[10px] h-8 mt-4 bg-white" onClick={() => {
+                            const exportData: any[] = [];
+                            const cols = [
+                                { label: 'Group', key: 'group' },
+                                { label: 'Rank', key: 'rank' },
+                                { label: 'Student', key: 'student_name' },
+                                { label: 'ADM', key: 'admission_number' },
+                                ...subjects.map(sub => ({ label: getSubjectAbbr(sub), key: `sub_${sub.id}` })),
+                                { label: 'Total', key: 'totalScore' },
+                                { label: 'Mean', key: 'meanScore' },
+                                { label: 'Grade', key: 'meanGrade' }
+                            ];
+                            Object.keys(groupedResults).sort().forEach(groupKey => {
+                                groupedResults[groupKey].sort((a: any, b: any) => b.totalScore - a.totalScore).forEach((res: any, index: number) => {
+                                    const row: any = {
+                                        group: groupKey,
+                                        rank: index + 1,
+                                        student_name: res.student_name,
+                                        admission_number: res.admission_number,
+                                        totalScore: res.totalScore,
+                                        meanScore: res.meanScore,
+                                        meanGrade: res.meanGrade
+                                    };
+                                    subjects.forEach(sub => {
+                                        row[`sub_${sub.id}`] = res.scores[sub.id] !== undefined ? res.scores[sub.id] : '-';
+                                    });
+                                    exportData.push(row);
+                                });
+                            });
+                            downloadCSV('Ranking_Report', cols, exportData);
+                        }} title="Export Ranking Report" icon={<Printer size={14} />}>
+                            CSV
+                        </Button>
+                        <Button variant="outline" size="sm" className="no-print font-black uppercase text-[10px] h-8 mt-4 bg-white" onClick={() => printSection('ranking-print-area')} title="Print Ranking Report" icon={<Printer size={14} />}>
                             PRINT
                         </Button>
                     </div>
                 </div>
 
-                <div className="max-h-60vh overflow-y-auto">
+                <div id="ranking-print-area" className="max-h-60vh overflow-y-auto">
                     {Object.keys(groupedResults).sort().map(groupKey => (
                         <div key={groupKey} className="mb-8 card p-0 overflow-hidden border-slate-100 shadow-sm">
                             <div className="card-header bg-slate-50/50">

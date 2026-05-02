@@ -10,7 +10,8 @@ import Modal from '../components/Modal';
 import { StatCard } from '../components/Card';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
-import { exportToCSV } from '../utils/export';
+
+import { downloadCSV, printHTML, buildPrintTable } from '../utils/exportUtils';
 import Button from '../components/common/Button';
 import CountryCodeSelect from '../components/CountryCodeSelect';
 import SearchableSelect from '../components/SearchableSelect';
@@ -413,19 +414,39 @@ const Students = () => {
                     <p className="text-secondary font-bold uppercase text-[10px] tracking-widest opacity-70">SIS Management | Enrollment: {institutionalTotal}</p>
                 </div>
                 <div className="flex flex-wrap gap-2 w-full lg:w-auto justify-start lg:justify-end">
-                    <Button variant="outline" className="flex-1 sm:flex-none" onClick={() => exportToCSV(students, 'student_registry')} icon={<Download size={16} />}>
-                        Export
-                    </Button>
+                    <Button variant="outline" className="flex-1 sm:flex-none" onClick={() => {
+                        downloadCSV('students', [
+                            { label: 'Admission No.', key: 'admission_number' },
+                            { label: 'Full Name', key: 'full_name' },
+                            { label: 'Gender', key: 'gender' },
+                            { label: 'Class', key: 'class_name' },
+                            { label: 'Stream', key: 'class_stream' },
+                            { label: 'Status', key: 'status' },
+                            { label: 'Category', key: 'category' },
+                            { label: 'Fee Balance (KES)', key: 'fee_balance' },
+                            { label: 'Date of Birth', key: 'date_of_birth' },
+                            { label: 'Mean Grade', key: 'average_grade' },
+                        ], students);
+                    }} icon={<Download size={16} />}>Export CSV</Button>
                     <Button
                         variant="outline"
                         className="flex-1 sm:flex-none"
                         onClick={() => {
-                            document.title = "Student_Registry_Report";
-                            window.print();
+                            const cols = [
+                                { label: 'Admission No.', key: 'admission_number' },
+                                { label: 'Full Name', key: 'full_name' },
+                                { label: 'Gender', key: 'gender' },
+                                { label: 'Class', key: 'class_name' },
+                                { label: 'Stream', key: 'class_stream' },
+                                { label: 'Status', key: 'status' },
+                                { label: 'Fee Balance (KES)', key: 'fee_balance' },
+                                { label: 'Mean Grade', key: 'average_grade' },
+                            ];
+                            printHTML('Student Registry', buildPrintTable(cols, students));
                         }}
                         icon={<Printer size={16} />}
                     >
-                        Report
+                        Print
                     </Button>
                     {(user?.role === 'ADMIN' || user?.role === 'REGISTRAR') && (
                         <Button className="flex-1 sm:flex-none" onClick={() => openModal()} icon={<Plus size={16} />}>

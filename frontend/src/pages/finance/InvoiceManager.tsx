@@ -2,6 +2,7 @@ import React from 'react';
 import { Printer } from 'lucide-react';
 import SearchableSelect from '../../components/SearchableSelect';
 import Button from '../../components/common/Button';
+import { printSection, downloadCSV } from '../../utils/exportUtils';
 
 interface InvoiceManagerProps {
     invoices: any[];
@@ -103,13 +104,34 @@ const InvoiceManager: React.FC<InvoiceManagerProps> = ({
                     </div>
 
                     <button className="btn btn-sm btn-primary no-print" onClick={() => { setPage(1); loadData(); }}>Apply</button>
-                    <button className="btn btn-sm btn-outline no-print ml-4" onClick={() => window.print()} title="Print Filtered Invoices">
+                    <button className="btn btn-sm btn-outline no-print ml-2" onClick={() => {
+                        const cols = [
+                            { label: 'Reference', key: 'reference' },
+                            { label: 'Student', key: 'student_name' },
+                            { label: 'Total (KES)', key: 'total_amount' },
+                            { label: 'Balance (KES)', key: 'balance' },
+                            { label: 'Status', key: 'status' },
+                            { label: 'Date', key: 'date' }
+                        ];
+                        const csvData = filteredInvoices.map((inv: any) => ({
+                            reference: `INV-${inv.id}`,
+                            student_name: inv.student_name,
+                            total_amount: inv.total_amount,
+                            balance: inv.balance,
+                            status: inv.status,
+                            date: formatDate(inv.date_generated || inv.created_at)
+                        }));
+                        downloadCSV('Invoices_Report', cols, csvData);
+                    }} title="Export Filtered Invoices">
+                        CSV
+                    </button>
+                    <button className="btn btn-sm btn-outline no-print ml-2" onClick={() => printSection('invoices-print-area')} title="Print Filtered Invoices">
                         <Printer size={14} className="mr-1" /> Print All
                     </button>
                 </div>
             </div>
 
-            <div className="table-wrapper">
+            <div id="invoices-print-area" className="table-wrapper">
                 <table className="table min-w-[800px]">
                     <thead>
                         <tr>

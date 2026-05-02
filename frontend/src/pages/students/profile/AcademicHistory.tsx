@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { BookOpen, TrendingUp, ShieldCheck, Printer } from 'lucide-react';
 import { StatCard } from '../../../components/Card';
 import Button from '../../../components/common/Button';
+import { calculateGrade } from '../../../utils/academicHelpers';
 import type { Student } from '../../../types/student.types';
 
 interface AcademicHistoryProps {
@@ -11,20 +12,7 @@ interface AcademicHistoryProps {
 }
 
 // Mirror of backend get_grade_from_score
-const getGradeFromScore = (score: number): string => {
-    if (score >= 80) return 'A';
-    if (score >= 75) return 'A-';
-    if (score >= 70) return 'B+';
-    if (score >= 65) return 'B';
-    if (score >= 60) return 'B-';
-    if (score >= 55) return 'C+';
-    if (score >= 50) return 'C';
-    if (score >= 45) return 'C-';
-    if (score >= 40) return 'D+';
-    if (score >= 35) return 'D';
-    if (score >= 30) return 'D-';
-    return 'E';
-};
+
 
 const AcademicHistory: React.FC<AcademicHistoryProps> = ({ student, results, onGenerateTranscript }) => {
     const meanScore = useMemo(() => {
@@ -34,7 +22,7 @@ const AcademicHistory: React.FC<AcademicHistoryProps> = ({ student, results, onG
 
     const meanGrade = useMemo(() => {
         if (meanScore === null) return student.average_grade || '—';
-        return `${getGradeFromScore(meanScore)} (${meanScore.toFixed(1)}%)`;
+        return `${calculateGrade(meanScore, [])} (${meanScore.toFixed(1)}%)`;
     }, [meanScore, student.average_grade]);
 
     return (
@@ -85,7 +73,7 @@ const AcademicHistory: React.FC<AcademicHistoryProps> = ({ student, results, onG
                         </div>
                     </div>
 
-                    <div className="table-wrapper">
+                    <div id="academic-history-print-area" className="table-wrapper">
                         <table className="table table-sm w-full min-w-[700px]">
                             <thead>
                                 <tr className="bg-slate-50">

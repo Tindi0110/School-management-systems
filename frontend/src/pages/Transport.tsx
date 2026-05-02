@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Plus, Search, Bus, Download } from 'lucide-react';
 import { transportAPI, studentsAPI } from '../api/api';
-import { exportToCSV } from '../utils/export';
+import { downloadCSV } from '../utils/exportUtils';
 import Button from '../components/common/Button';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
@@ -23,12 +23,12 @@ const TODAY = new Date().toISOString().split('T')[0];
 
 const INITIAL_ENROLLMENT_FORM = { student: '', route: '', pickup_point: '', start_date: TODAY };
 const INITIAL_VEHICLE_FORM = { registration_number: '', make_model: '', vehicle_type: 'BUS', seating_capacity: 14, status: 'ACTIVE', insurance_expiry: '' };
-const INITIAL_ROUTE_FORM = { name: '', route_code: '', distance_km: 0, base_cost: 0 };
-const INITIAL_POINT_FORM = { route_id: 0, point_name: '', pickup_time: '', dropoff_time: '', distance_from_school: 0, additional_cost: 0 };
+const INITIAL_ROUTE_FORM = { name: '', route_code: '', distance_km: '', base_cost: '' };
+const INITIAL_POINT_FORM = { route_id: 0, point_name: '', pickup_time: '', dropoff_time: '', distance_from_school: '', additional_cost: '' };
 const INITIAL_TRIP_FORM = { route: '', vehicle: '', date: TODAY, start_time: '', end_time: '', driver_name: '' };
-const INITIAL_MAINTENANCE_FORM = { vehicle: '', description: '', cost: 0, date: TODAY, status: 'PENDING' };
+const INITIAL_MAINTENANCE_FORM = { vehicle: '', description: '', cost: '', date: TODAY, status: 'PENDING' };
 const INITIAL_SAFETY_FORM = { vehicle: '', date: TODAY, type: 'ACCIDENT', description: '', severity: 'MINOR' };
-const INITIAL_FUEL_FORM = { date: TODAY, vehicle: '', liters: 0, amount: 0, mileage: 0, receipt_no: '' };
+const INITIAL_FUEL_FORM = { date: TODAY, vehicle: '', liters: '', amount: '', mileage: '', receipt_no: '', status: 'PENDING' };
 
 // ─── Component ─────────────────────────────────────────────────────────────────
 const Transport = () => {
@@ -81,6 +81,7 @@ const Transport = () => {
     const [tripId, setTripId] = useState<number | null>(null);
     const [maintenanceId, setMaintenanceId] = useState<number | null>(null);
     const [incidentId, setIncidentId] = useState<number | null>(null);
+    const [fuelId, setFuelId] = useState<number | null>(null);
 
     // ── State: Forms ──────────────────────────────────────────────────────────
     const [enrollmentForm, setEnrollmentForm] = useState(INITIAL_ENROLLMENT_FORM);
@@ -192,7 +193,14 @@ const Transport = () => {
             toast.error(`No ${activeTab} data to export.`);
             return;
         }
-        exportToCSV(exportData, `transport_${activeTab}_report`);
+
+        // Generate dynamic columns based on the first item's keys
+        const cols = Object.keys(exportData[0]).map(key => ({
+            label: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+            key: key
+        }));
+
+        downloadCSV(`transport_${activeTab}_report`, cols, exportData);
         toast.success(`${activeTab} data exported successfully.`);
     };
 
@@ -552,7 +560,22 @@ const Transport = () => {
 
     // ── Handlers: Fuel ────────────────────────────────────────────────────────
     const handleLogFuel = (v: any) => {
+        setFuelId(null);
         setFuelForm({ ...INITIAL_FUEL_FORM, vehicle: String(v.id) });
+        setIsFuelModalOpen(true);
+    };
+
+    const handleEditFuel = (f: any) => {
+        setFuelId(f.id);
+        setFuelForm({
+            date: f.date,
+            vehicle: String(f.vehicle),
+            liters: f.liters,
+            amount: f.amount,
+            mileage: f.mileage,
+            receipt_no: f.receipt_no || '',
+            status: f.status || 'PENDING'
+        });
         setIsFuelModalOpen(true);
     };
 
@@ -560,9 +583,16 @@ const Transport = () => {
         e.preventDefault();
         setIsSaving(true);
         try {
-            await transportAPI.fuel.create({ ...fuelForm, vehicle: Number(fuelForm.vehicle) });
-            toast.success('Fuel record saved & synced to Finance');
+            const payload = { ...fuelForm, vehicle: Number(fuelForm.vehicle) };
+            if (fuelId) {
+                await transportAPI.fuel.update(fuelId, payload);
+                toast.success('Fuel record updated');
+            } else {
+                await transportAPI.fuel.create(payload);
+                toast.success('Fuel record saved & synced to Finance');
+            }
             setIsFuelModalOpen(false);
+            setFuelId(null);
             setFuelForm(INITIAL_FUEL_FORM);
             refreshData();
         } catch (error: any) {
@@ -727,7 +757,8 @@ const Transport = () => {
                         <FuelManager
                             records={fuelRecords}
                             vehicles={vehicles}
-                            onAdd={() => { setFuelForm(INITIAL_FUEL_FORM); setIsFuelModalOpen(true); }}
+                            onAdd={() => { setFuelId(null); setFuelForm(INITIAL_FUEL_FORM); setIsFuelModalOpen(true); }}
+                            onEdit={handleEditFuel}
                             onDelete={handleDeleteFuel}
                             page={pagination.fuel.page}
                             total={pagination.fuel.total}

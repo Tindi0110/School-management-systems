@@ -4,7 +4,7 @@ import {
     MapPin, Briefcase, Download, Printer, Trash2
 } from 'lucide-react';
 import { studentsAPI } from '../api/api';
-import { exportToCSV } from '../utils/export';
+import { downloadCSV, printHTML, buildPrintTable } from '../utils/exportUtils';
 import Modal from '../components/Modal';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
@@ -95,13 +95,24 @@ const Parents = () => {
         }
     };
 
+    const [sortField, setSortField] = useState<string>('full_name');
+    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+
     const filteredParents = React.useMemo(() => {
         const lowerSearch = searchTerm.toLowerCase();
-        return parents.filter(p =>
-            (p.full_name || '').toLowerCase().includes(lowerSearch) ||
-            (p.phone || '').includes(searchTerm)
+        let result = parents.filter(p =>
+            p.full_name?.toLowerCase().includes(lowerSearch) ||
+            p.phone?.toLowerCase().includes(lowerSearch) ||
+            p.email?.toLowerCase().includes(lowerSearch)
         );
-    }, [parents, searchTerm]);
+
+        return result.sort((a, b) => {
+            const valA = a[sortField] || '';
+            const valB = b[sortField] || '';
+            if (sortDirection === 'asc') return valA.toString().localeCompare(valB.toString());
+            return valB.toString().localeCompare(valA.toString());
+        });
+    }, [parents, searchTerm, sortField, sortDirection]);
 
     if (loading) return <div className="spinner-container flex items-center justify-center p-20"><div className="spinner"></div></div>;
 
@@ -113,15 +124,54 @@ const Parents = () => {
                     <p className="text-secondary font-bold uppercase text-[10px] tracking-widest">Institutional Parent & Guardian Database</p>
                 </div>
                 <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => window.print()} icon={<Printer size={16} />}>
+                    <Button variant="outline" size="sm" onClick={() => {
+                        const cols = [
+                            { label: 'Guardian Name', key: 'full_name' },
+                            { label: 'Relationship', key: 'relationship' },
+                            { label: 'Phone', key: 'phone' },
+                            { label: 'Email', key: 'email' },
+                            { label: 'Occupation', key: 'occupation' },
+                            { label: 'Address', key: 'address' }
+                        ];
+                        printHTML('Guardians Registry Report', buildPrintTable(cols, parents));
+                    }} icon={<Printer size={16} />}>
                         Reports
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => exportToCSV(parents, 'guardians_registry')} icon={<Download size={16} />}>
+                    <Button variant="outline" size="sm" onClick={() => {
+                        downloadCSV('guardians_registry', [
+                            { label: 'Guardian Name', key: 'full_name' },
+                            { label: 'Relationship', key: 'relationship' },
+                            { label: 'Phone', key: 'phone' },
+                            { label: 'Email', key: 'email' },
+                            { label: 'Occupation', key: 'occupation' },
+                            { label: 'Address', key: 'address' }
+                        ], parents);
+                    }} icon={<Download size={16} />}>
                         Export CSV
                     </Button>
                     <Button variant="primary" size="sm" onClick={() => { setEditingParent(null); setIsModalOpen(true); }} icon={<Plus size={16} />}>
                         New Guardian
                     </Button>
+                </div>
+            </div>
+            
+            {/* Dashboard Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div className="card p-4 border-l-4 border-primary">
+                    <p className="text-[10px] font-black uppercase text-secondary">Total Guardians</p>
+                    <h2 className="text-2xl font-black">{parents.length}</h2>
+                </div>
+                <div className="card p-4 border-l-4 border-green-500">
+                    <p className="text-[10px] font-black uppercase text-secondary">Primary Guardians</p>
+                    <h2 className="text-2xl font-black">{parents.filter(p => p.is_primary).length}</h2>
+                </div>
+                <div className="card p-4 border-l-4 border-blue-500">
+                    <p className="text-[10px] font-black uppercase text-secondary">Unique Households</p>
+                    <h2 className="text-2xl font-black">{new Set(parents.map(p => p.address)).size}</h2>
+                </div>
+                <div className="card p-4 border-l-4 border-orange-500">
+                    <p className="text-[10px] font-black uppercase text-secondary">Active Connections</p>
+                    <h2 className="text-2xl font-black">{parents.reduce((acc, p) => acc + (p.students?.length || 0), 0)}</h2>
                 </div>
             </div>
 

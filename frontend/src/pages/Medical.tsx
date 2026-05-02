@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Plus, Search, Edit, Trash2, Calendar, User as UserIcon, Activity, Printer, Download } from 'lucide-react';
 import { medicalAPI, studentsAPI } from '../api/api';
-import { exportToCSV } from '../utils/export';
+import { downloadCSV, printHTML, buildPrintTable } from '../utils/exportUtils';
 import Modal from '../components/Modal';
 import SearchableSelect from '../components/SearchableSelect';
 import { useToast } from '../context/ToastContext';
@@ -151,8 +151,25 @@ const Medical = () => {
                     <p className="text-secondary text-[10px] font-black uppercase tracking-[0.2em] opacity-60">School health and infirmary records</p>
                 </div>
                 <div className="flex flex-wrap gap-2 w-full lg:w-auto mt-2 lg:mt-0 no-print">
-                    <Button variant="ghost" className="text-[10px] font-black uppercase" onClick={() => window.print()} icon={<Printer size={16} />}>Reports</Button>
-                    <Button variant="ghost" className="text-[10px] font-black uppercase" onClick={() => exportToCSV(records, 'Medical_Records')} icon={<Download size={16} />}>Export</Button>
+                    <Button variant="ghost" className="text-[10px] font-black uppercase" onClick={() => {
+                        const cols = [
+                            { label: 'Visit Date', key: 'date_visited', format: (val) => new Date(val).toLocaleDateString() },
+                            { label: 'Student', key: 'student_name' },
+                            { label: 'Diagnosis', key: 'diagnosis' },
+                            { label: 'Treatment', key: 'treatment_given' },
+                            { label: 'Personnel', key: 'nurse_name' }
+                        ];
+                        printHTML('Medical Center Report', buildPrintTable(cols, records));
+                    }} icon={<Printer size={16} />}>Reports</Button>
+                    <Button variant="ghost" className="text-[10px] font-black uppercase" onClick={() => {
+                        downloadCSV('Medical_Records', [
+                            { label: 'Visit Date', key: 'date_visited', format: (val) => new Date(val).toLocaleDateString() },
+                            { label: 'Student', key: 'student_name' },
+                            { label: 'Diagnosis', key: 'diagnosis' },
+                            { label: 'Treatment', key: 'treatment_given' },
+                            { label: 'Personnel', key: 'nurse_name' }
+                        ], records);
+                    }} icon={<Download size={16} />}>Export</Button>
                     <Button variant="primary" className="text-[10px] font-black uppercase shadow-lg shadow-primary/25" onClick={() => openModal()} icon={<Plus size={16} />}>New Record</Button>
                 </div>
             </div>

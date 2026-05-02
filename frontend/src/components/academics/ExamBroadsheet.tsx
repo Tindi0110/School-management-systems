@@ -5,6 +5,7 @@ import Button from '../common/Button';
 import type { ClassUnit, Subject, Exam, GradeSystem, StudentResult } from '../../types/academic.types';
 import type { Student } from '../../types/student.types';
 import { calculateMeanGrade } from '../../utils/academicHelpers';
+import { printSection, downloadCSV } from '../../utils/exportUtils';
 
 interface ExamBroadsheetProps {
     isOpen: boolean;
@@ -79,10 +80,35 @@ const ExamBroadsheet: React.FC<ExamBroadsheetProps> = ({
                         {uniqueClassNames.map(name => <option key={name} value={name}>{name}</option>)}
                     </select>
                 </div>
-                <Button variant="outline" size="sm" onClick={() => window.print()} icon={<Printer size={14} />}>Print Broadsheet</Button>
+                <Button variant="outline" size="sm" onClick={() => {
+                    const cols = [
+                        { label: 'Student', key: 'student_name' },
+                        { label: 'ADM', key: 'adm' },
+                        ...subjects.map(s => ({ label: s.code, key: `sub_${s.id}` })),
+                        { label: 'Total', key: 'total' },
+                        { label: 'Mean', key: 'mean' },
+                        { label: 'Grade', key: 'grade' }
+                    ];
+                    const csvData = studentRows.map(row => {
+                        const base: any = {
+                            student_name: row.student.full_name,
+                            adm: row.student.admission_number,
+                            total: row.total.toFixed(0),
+                            mean: row.avg.toFixed(1),
+                            grade: row.meanGrade
+                        };
+                        subjects.forEach(sub => {
+                            const res = row.results.find(r => r.subject === sub.id);
+                            base[`sub_${sub.id}`] = res ? res.score : '-';
+                        });
+                        return base;
+                    });
+                    downloadCSV('Exam_Broadsheet', cols, csvData);
+                }} icon={<Printer size={14} />}>Export CSV</Button>
+                <Button variant="outline" size="sm" onClick={() => printSection('broadsheet-print-area')} icon={<Printer size={14} />}>Print Broadsheet</Button>
             </div>
 
-            <div className="table-wrapper max-h-70vh overflow-auto border rounded bg-white relative min-w-0">
+            <div id="broadsheet-print-area" className="table-wrapper max-h-70vh overflow-auto border rounded bg-white relative min-w-0">
                 <table className="table table-xs w-full border-collapse">
                     <thead className="sticky top-0 bg-primary text-white z-20">
                         <tr>

@@ -125,6 +125,7 @@ class FuelRecord(models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     mileage = models.IntegerField()
     receipt_no = models.CharField(max_length=50, blank=True)
+    status = models.CharField(max_length=15, default='PENDING', choices=(('PENDING', 'Pending'), ('APPROVED', 'Approved')))
 
 class TransportIncident(models.Model):
     SEVERITY = (('MINOR', 'Minor'), ('MAJOR', 'Major'), ('CRITICAL', 'Critical'))

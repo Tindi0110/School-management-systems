@@ -136,12 +136,13 @@ class StudentResult(models.Model):
             
         try:
             if sys:
-                # Find boundary within the SPECIFIC system
-                boundaries = GradeBoundary.objects.filter(system=sys, min_score__lte=self.score, max_score__gte=self.score)
-                if boundaries.exists():
-                    self.grade = boundaries.first().grade
-                else:
-                    self.grade = 'N/A'
+                boundaries = GradeBoundary.objects.filter(system=sys).order_by('-min_score')
+                matched_grade = 'N/A'
+                for b in boundaries:
+                    if self.score >= b.min_score:
+                        matched_grade = b.grade
+                        break
+                self.grade = matched_grade
             else:
                 self.grade = 'N/A'
         except Exception:

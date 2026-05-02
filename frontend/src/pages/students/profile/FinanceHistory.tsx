@@ -72,7 +72,7 @@ const FinanceHistory: React.FC<FinanceHistoryProps> = ({
                                 </div>
                             </div>
 
-                            <div className="table-wrapper">
+                            <div id="accounting-ledger-print-area" className="table-wrapper">
                                 <table className="table table-sm w-full min-w-[800px]">
                                     <thead>
                                         <tr className="bg-slate-50">

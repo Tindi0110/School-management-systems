@@ -14,6 +14,8 @@ interface HealthWelfareProps {
 const HealthWelfare: React.FC<HealthWelfareProps> = ({
     student, parents, healthId, onUpdateMedical, onDeleteHealth
 }) => {
+    if (!student) return null;
+
     // Priority chain: saved health record → primary guardian → first guardian
     const primaryGuardian = parents.find((p: any) => p.is_primary) || parents[0] || null;
 

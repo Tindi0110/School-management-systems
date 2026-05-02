@@ -177,7 +177,26 @@ const Academics = () => {
                 const classSubData = classSubRes.data?.results ?? classSubRes.data ?? [];
                 setActiveClassSubjects(Array.isArray(classSubData) ? classSubData : []);
             } else {
-                setActiveClassSubjects([]);
+                // For "ALL STREAMS", we find all classes in this level and combine their synced subjects
+                const levelClasses = classes.filter(c => c.name === resultContext.level);
+                const allSyncedSubs: any[] = [];
+                const seenSubs = new Set();
+
+                for (const cls of levelClasses) {
+                    try {
+                        const csRes = await academicsAPI.classSubjects.list({ class_id: cls.id });
+                        const csData = csRes.data?.results ?? csRes.data ?? [];
+                        if (Array.isArray(csData)) {
+                            csData.forEach(cs => {
+                                if (!seenSubs.has(cs.subject)) {
+                                    seenSubs.add(cs.subject);
+                                    allSyncedSubs.push(cs);
+                                }
+                            });
+                        }
+                    } catch (e) { /* skip individual class failures */ }
+                }
+                setActiveClassSubjects(allSyncedSubs);
             }
         } catch (err: any) {
             console.error(err);

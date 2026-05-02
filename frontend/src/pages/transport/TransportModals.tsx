@@ -117,7 +117,7 @@ const TransportModals: React.FC<TransportModalsProps> = ({ modals, forms, data, 
                                 onChange={(val) => handlers.setVehicleForm({ ...forms.vehicleForm, vehicle_type: val.toString() })}
                             />
                         </div>
-                        <div className="form-group"><label className="label">Capacity</label><input type="number" className="input" value={forms.vehicleForm.seating_capacity} onChange={e => handlers.setVehicleForm({ ...forms.vehicleForm, seating_capacity: parseInt(e.target.value) })} required /></div>
+                        <div className="form-group"><label className="label">Capacity</label><input type="number" className="input" placeholder="0" value={forms.vehicleForm.seating_capacity || ''} onChange={e => handlers.setVehicleForm({ ...forms.vehicleForm, seating_capacity: e.target.value })} required /></div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group">
@@ -148,10 +148,10 @@ const TransportModals: React.FC<TransportModalsProps> = ({ modals, forms, data, 
                 <form onSubmit={handlers.handleRouteSubmit} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group"><label className="label">Route Code</label><input type="text" className="input uppercase" placeholder="e.g. RT-001" value={forms.routeForm.route_code} onChange={e => handlers.setRouteForm({ ...forms.routeForm, route_code: e.target.value })} required /></div>
-                        <div className="form-group"><label className="label">Distance (KM)</label><input type="number" step="0.1" className="input" value={forms.routeForm.distance_km} onChange={e => handlers.setRouteForm({ ...forms.routeForm, distance_km: parseFloat(e.target.value) })} required /></div>
+                        <div className="form-group"><label className="label">Distance (KM)</label><input type="number" step="0.1" className="input" placeholder="0" value={forms.routeForm.distance_km || ''} onChange={e => handlers.setRouteForm({ ...forms.routeForm, distance_km: e.target.value })} required /></div>
                     </div>
                     <div className="form-group"><label className="label">Route Name / Destination</label><input type="text" className="input" placeholder="e.g. Westlands via Waiyaki Way" value={forms.routeForm.name} onChange={e => handlers.setRouteForm({ ...forms.routeForm, name: e.target.value })} required /></div>
-                    <div className="form-group"><label className="label">Base Fee (KES)</label><input type="number" className="input" value={forms.routeForm.base_cost} onChange={e => handlers.setRouteForm({ ...forms.routeForm, base_cost: parseFloat(e.target.value) })} required /></div>
+                    <div className="form-group"><label className="label">Base Fee (KES)</label><input type="number" className="input" placeholder="0" value={forms.routeForm.base_cost || ''} onChange={e => handlers.setRouteForm({ ...forms.routeForm, base_cost: e.target.value })} required /></div>
                     <div className="modal-footer pt-4"><Button type="submit" variant="primary" className="w-full uppercase font-black" loading={status.isSaving} loadingText={status.routeId ? "Updating..." : "Mapping..."}>{status.routeId ? "Update Route" : "Map Route"}</Button></div>
                 </form>
             </Modal>
@@ -164,8 +164,8 @@ const TransportModals: React.FC<TransportModalsProps> = ({ modals, forms, data, 
                         <div className="form-group"><label className="label">Drop-off Time</label><input type="time" className="input" value={forms.pointForm.dropoff_time} onChange={e => handlers.setPointForm({ ...forms.pointForm, dropoff_time: e.target.value })} required /></div>
                     </div>
                     <div className="grid grid-cols-2 gap-4 bg-secondary-light p-4 rounded-lg">
-                        <div className="form-group"><label className="label">Dist. from School (KM)</label><input type="number" step="0.01" className="input" value={forms.pointForm.distance_from_school} onChange={e => handlers.setPointForm({ ...forms.pointForm, distance_from_school: parseFloat(e.target.value) })} required /></div>
-                        <div className="form-group"><label className="label">Fee (Auto-Calc)</label><input type="number" step="0.01" className="input" placeholder="0 = Auto" value={forms.pointForm.additional_cost} onChange={e => handlers.setPointForm({ ...forms.pointForm, additional_cost: parseFloat(e.target.value) })} /></div>
+                        <div className="form-group"><label className="label">Dist. from School (KM)</label><input type="number" step="0.01" className="input" placeholder="0" value={forms.pointForm.distance_from_school || ''} onChange={e => handlers.setPointForm({ ...forms.pointForm, distance_from_school: e.target.value })} required /></div>
+                        <div className="form-group"><label className="label">Fee (Auto-Calc)</label><input type="number" step="0.01" className="input" placeholder="0" value={forms.pointForm.additional_cost || ''} onChange={e => handlers.setPointForm({ ...forms.pointForm, additional_cost: e.target.value })} /></div>
                     </div>
                     <p className="text-xs text-secondary mt-2">* Fee is automatically calculated based on distance if left as 0.</p>
                     <div className="modal-footer pt-4">
@@ -219,7 +219,7 @@ const TransportModals: React.FC<TransportModalsProps> = ({ modals, forms, data, 
                                 required
                             />
                         </div>
-                        <div className="form-group"><label className="label">Cost (KES)</label><input type="number" className="input" value={forms.maintenanceForm.cost} onChange={e => handlers.setMaintenanceForm({ ...forms.maintenanceForm, cost: parseFloat(e.target.value) })} required /></div>
+                        <div className="form-group"><label className="label">Cost (KES)</label><input type="number" className="input" placeholder="0" value={forms.maintenanceForm.cost || ''} onChange={e => handlers.setMaintenanceForm({ ...forms.maintenanceForm, cost: e.target.value })} required /></div>
                     </div>
                     <SearchableSelect
                         label="Affected Vehicle"
@@ -319,12 +319,23 @@ const TransportModals: React.FC<TransportModalsProps> = ({ modals, forms, data, 
                         />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group"><label className="label">Liters</label><input type="number" step="0.01" className="input" value={forms.fuelForm.liters} onChange={e => handlers.setFuelForm({ ...forms.fuelForm, liters: parseFloat(e.target.value) })} required /></div>
-                        <div className="form-group"><label className="label">Total Cost (KES)</label><input type="number" className="input" value={forms.fuelForm.amount} onChange={e => handlers.setFuelForm({ ...forms.fuelForm, amount: parseFloat(e.target.value) })} required /></div>
+                        <div className="form-group"><label className="label">Liters</label><input type="number" step="0.01" className="input" placeholder="0" value={forms.fuelForm.liters || ''} onChange={e => handlers.setFuelForm({ ...forms.fuelForm, liters: e.target.value })} required /></div>
+                        <div className="form-group"><label className="label">Total Cost (KES)</label><input type="number" className="input" placeholder="0" value={forms.fuelForm.amount || ''} onChange={e => handlers.setFuelForm({ ...forms.fuelForm, amount: e.target.value })} required /></div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group"><label className="label">Mileage (Odometer)</label><input type="number" className="input" value={forms.fuelForm.mileage} onChange={e => handlers.setFuelForm({ ...forms.fuelForm, mileage: parseInt(e.target.value) })} required /></div>
+                        <div className="form-group"><label className="label">Mileage (Odometer)</label><input type="number" className="input" placeholder="0" value={forms.fuelForm.mileage || ''} onChange={e => handlers.setFuelForm({ ...forms.fuelForm, mileage: e.target.value })} required /></div>
                         <div className="form-group"><label className="label">Receipt No.</label><input type="text" className="input" value={forms.fuelForm.receipt_no} onChange={e => handlers.setFuelForm({ ...forms.fuelForm, receipt_no: e.target.value })} /></div>
+                    </div>
+                    <div className="form-group">
+                        <label className="label">Approval Status</label>
+                        <SearchableSelect
+                            options={[
+                                { id: 'PENDING', label: 'Pending Approval' },
+                                { id: 'APPROVED', label: 'Approved' }
+                            ]}
+                            value={forms.fuelForm.status}
+                            onChange={(val) => handlers.setFuelForm({ ...forms.fuelForm, status: val.toString() })}
+                        />
                     </div>
                     <div className="modal-footer pt-4"><Button type="submit" variant="primary" className="w-full" loading={status.isSaving} loadingText="Saving...">Save & Sync to Finance</Button></div>
                 </form>
