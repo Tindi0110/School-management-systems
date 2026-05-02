@@ -399,11 +399,11 @@ const StudentProfile = () => {
         setIsSearchingParent(true);
         try {
             const res = await studentsAPI.linkParent(Number(id), { phone: searchPhone });
-            toast.success(`Linked ${res.data.parent.full_name} successfully`);
+            toast.success(res.data.message || `Linked ${res.data.parent.full_name} successfully`);
             setSearchPhone('');
             loadCoreStudentData();
         } catch (err: any) {
-            toast.error(err.message || 'Parent not found or already linked');
+            toast.error(err.response?.data?.error || err.message || 'Parent not found or already linked');
         } finally {
             setIsSearchingParent(false);
         }

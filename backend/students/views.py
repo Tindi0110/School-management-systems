@@ -318,9 +318,11 @@ class StudentViewSet(viewsets.ModelViewSet):
                 parent = Parent.objects.get(phone=phone)
             else:
                 return Response({'error': 'Provide phone or parent_id'}, status=400)
+            if student.parents.filter(id=parent.id).exists():
+                return Response({'error': f'Parent {parent.full_name} is already linked to this student.'}, status=400)
             
             student.parents.add(parent)
-            return Response({'status': 'success', 'parent': ParentSerializer(parent).data})
+            return Response({'status': 'success', 'parent': ParentSerializer(parent).data, 'message': f'Linked {parent.full_name} successfully.'})
         except Parent.DoesNotExist:
             return Response({'error': 'Parent not found'}, status=404)
 
