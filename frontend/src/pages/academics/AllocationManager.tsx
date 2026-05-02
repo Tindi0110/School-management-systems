@@ -65,6 +65,7 @@ const AllocationManager: React.FC<AllocationManagerProps> = ({
                             ⚠️ Only subjects allocated here will appear in the results entry sheet. Subjects not assigned = no marks column for students in this class. Mean grade is calculated from entered subjects only.
                         </div>
 
+                        <div className="p-0 table-wrapper overflow-x-auto overflow-y-auto w-full block flex-1 m-0 mt-3">
                             <table className="table min-w-[600px] border-collapse">
                                 <thead className="sticky top-0 bg-slate-50 z-10 shadow-sm text-[10px] uppercase">
                                     <tr>
