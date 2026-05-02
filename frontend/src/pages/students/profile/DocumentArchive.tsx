@@ -1,5 +1,5 @@
 import React from 'react';
-import { FilePlus, FileText, Trash2, ExternalLink, Calendar, Download } from 'lucide-react';
+import { FilePlus, FileText, Trash2, ExternalLink, Calendar } from 'lucide-react';
 import Button from '../../../components/common/Button';
 import type { StudentDocument } from '../../../types/student.types';
 
