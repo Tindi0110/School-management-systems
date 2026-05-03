@@ -19,6 +19,7 @@ from .serializers import (
 from accounts.permissions import IsAdminOrRegistrar, IsAdminUser
 
 class StudentViewSet(viewsets.ModelViewSet):
+    from academics.models import Attendance, StudentResult
     queryset = Student.objects.select_related(
         'current_class', 'user',
         'hostel_allocation__room__hostel',
@@ -29,9 +30,24 @@ class StudentViewSet(viewsets.ModelViewSet):
         'parents',
         'documents',
     ).annotate(
-        avg_score=Avg('results__score'),
-        attendance_total=Count('attendance', distinct=True),
-        attendance_present=Count('attendance', filter=Q(attendance__status='PRESENT'), distinct=True),
+        avg_score=Subquery(
+            StudentResult.objects.filter(student=OuterRef('pk'))
+            .values('student')
+            .annotate(avg=Avg('score'))
+            .values('avg')
+        ),
+        attendance_total=Subquery(
+            Attendance.objects.filter(student=OuterRef('pk'))
+            .values('student')
+            .annotate(cnt=Count('id'))
+            .values('cnt')
+        ),
+        attendance_present=Subquery(
+            Attendance.objects.filter(student=OuterRef('pk'), status='PRESENT')
+            .values('student')
+            .annotate(cnt=Count('id'))
+            .values('cnt')
+        ),
     ).order_by('admission_number')
 
     def get_serializer_class(self):
