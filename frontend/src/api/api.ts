@@ -94,8 +94,8 @@ api.interceptors.request.use(
       }
     }
 
-    // If it's a GET request, check the cache
-    if (method === 'get') {
+    // If it's a GET request, check the cache (Temporarily disabled for debugging)
+    if (method === 'get' && !config.url?.includes('classes') && !config.url?.includes('academic-years')) {
       const key = `${config.url}?${new URLSearchParams(config.params as any || {}).toString()}`;
       const cachedResponse = apiCache.get(key);
 
