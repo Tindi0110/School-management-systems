@@ -63,7 +63,6 @@ class SubjectViewSet(viewsets.ModelViewSet):
     queryset = Subject.objects.select_related('group').all()
     serializer_class = SubjectSerializer
 
-    @method_decorator(cache_page(60 * 15))
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
@@ -73,7 +72,6 @@ class ClassViewSet(viewsets.ModelViewSet):
     ).all()
     serializer_class = ClassSerializer
 
-    @method_decorator(cache_page(60 * 15))
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
