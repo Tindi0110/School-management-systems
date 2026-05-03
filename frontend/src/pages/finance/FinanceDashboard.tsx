@@ -12,9 +12,6 @@ interface FinanceDashboardProps {
     setIsAllTime: (val: boolean) => void;
     formatDate: (date: string) => string;
     setSelectedInvoice: (inv: any) => void;
-    selectedInvoices: Set<number>;
-    toggleInvoiceSelection: (id: number) => void;
-    setSelectedInvoices: React.Dispatch<React.SetStateAction<Set<number>>>;
 }
 
 const FinanceDashboard: React.FC<FinanceDashboardProps> = ({
@@ -25,10 +22,7 @@ const FinanceDashboard: React.FC<FinanceDashboardProps> = ({
     isAllTime,
     setIsAllTime,
     formatDate,
-    setSelectedInvoice,
-    selectedInvoices,
-    toggleInvoiceSelection,
-    setSelectedInvoices
+    setSelectedInvoice
 }) => {
     return (
         <div className="space-y-20">

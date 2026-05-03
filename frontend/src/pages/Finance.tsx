@@ -425,8 +425,6 @@ const Finance = () => {
                             statsContext={statsContext}
                             isAllTime={isAllTime} setIsAllTime={setIsAllTime}
                             formatDate={formatDate} setSelectedInvoice={setSelectedInvoice}
-                            selectedInvoices={selectedInvoices} toggleInvoiceSelection={toggleInvoiceSelection}
-                            setSelectedInvoices={setSelectedInvoices}
                         />
                     )}
                     {activeTab === 'invoices' && (

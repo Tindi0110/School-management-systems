@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, Search, Edit, Trash2, Briefcase, Printer, Download, LayoutGrid, RefreshCcw, Check, X, UserCheck } from 'lucide-react';
+import { Plus, Edit, Trash2, Briefcase, Printer, Download, LayoutGrid, RefreshCcw, Check, X, UserCheck } from 'lucide-react';
 import { staffAPI, authAPI } from '../api/api';
 import { exportToCSV } from '../utils/export';
 import Modal from '../components/Modal';

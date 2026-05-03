@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
-    Plus, Search, Edit, Phone, Mail, User as UserIcon,
+    Plus, Edit, Phone, Mail, User as UserIcon,
     MapPin, Briefcase, Download, Printer, Trash2
 } from 'lucide-react';
 import { studentsAPI } from '../api/api';
