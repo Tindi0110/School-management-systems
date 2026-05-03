@@ -34,19 +34,19 @@ class StudentViewSet(viewsets.ModelViewSet):
             StudentResult.objects.filter(student=OuterRef('pk'))
             .values('student')
             .annotate(avg=Avg('score'))
-            .values('avg')
+            .values('avg')[:1]
         ), Value(0, output_field=DecimalField())),
         attendance_total=Coalesce(Subquery(
             Attendance.objects.filter(student=OuterRef('pk'))
             .values('student')
             .annotate(cnt=Count('id'))
-            .values('cnt')
+            .values('cnt')[:1]
         ), Value(0)),
         attendance_present=Coalesce(Subquery(
             Attendance.objects.filter(student=OuterRef('pk'), status='PRESENT')
             .values('student')
             .annotate(cnt=Count('id'))
-            .values('cnt')
+            .values('cnt')[:1]
         ), Value(0)),
     ).order_by('admission_number')
 
