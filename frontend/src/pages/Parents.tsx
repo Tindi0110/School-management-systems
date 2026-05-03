@@ -3,7 +3,10 @@ import {
     Plus, Edit, Phone, Mail, User as UserIcon,
     MapPin, Briefcase, Download, Printer, Trash2
 } from 'lucide-react';
-import { studentsAPI } from '../api/api';
+import { studentsAPI, statsAPI } from '../api/api';
+import { StatCard } from '../components/Card';
+import Skeleton from '../components/common/Skeleton';
+import { Users } from 'lucide-react';
 import { exportToCSV } from '../utils/export';
 import Modal from '../components/Modal';
 import { useToast } from '../context/ToastContext';
@@ -24,6 +27,7 @@ const Parents = () => {
     const [totalItems, setTotalItems] = useState(0);
     const pageSize = 50;
     const [editingParent, setEditingParent] = useState<any>(null);
+    const [stats, setStats] = useState<any>(null);
     const toast = useToast();
     const { confirm } = useConfirm();
     const [formData, setFormData] = useState({
@@ -44,12 +48,17 @@ const Parents = () => {
     const loadParents = async () => {
         setLoading(true);
         try {
-            const res = await studentsAPI.parents.getAll({ page, page_size: pageSize });
-            const data = res.data?.results ?? res.data ?? [];
+            const [parentsRes, dashboardRes] = await Promise.all([
+                studentsAPI.parents.getAll({ page, page_size: pageSize }),
+                statsAPI.getDashboard()
+            ]);
+            
+            const data = parentsRes.data?.results ?? parentsRes.data ?? [];
             setParents(Array.isArray(data) ? data : []);
-            setTotalItems(res.data?.count ?? (res.data?.results ? res.data.results.length : 0));
+            setTotalItems(parentsRes.data?.count ?? (parentsRes.data?.results ? parentsRes.data.results.length : 0));
+            setStats(dashboardRes.data?.counts || {});
         } catch (err) {
-            console.error(err);
+            console.error('Error loading parents:', err);
         } finally {
             setLoading(false);
         }
@@ -131,6 +140,39 @@ const Parents = () => {
                     </Button>
                 </div>
             </div>
+
+            {/* Dashboard Stats */}
+            {loading ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-md mb-8 no-print">
+                    {[1, 2, 3].map(i => (
+                        <div key={i} className="card p-6 bg-white border border-gray-100 rounded-2xl">
+                            <Skeleton variant="text" width="60%" className="mb-2" />
+                            <Skeleton variant="rect" height="32px" width="40%" />
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-md mb-8 no-print">
+                    <StatCard 
+                        title="Registered Guardians" 
+                        value={(stats?.total_parents || 0).toString()} 
+                        icon={<Users size={18} />} 
+                        gradient="linear-gradient(135deg, #4f46e5, #6366f1)" 
+                    />
+                    <StatCard 
+                        title="Family Network" 
+                        value={(stats?.total_students || 0).toString()} 
+                        icon={<UserIcon size={18} />} 
+                        gradient="linear-gradient(135deg, #059669, #10b981)" 
+                    />
+                    <StatCard 
+                        title="Avg. Wards/Parent" 
+                        value={stats?.total_parents > 0 ? (stats?.total_students / stats?.total_parents).toFixed(1) : '0.0'} 
+                        icon={<Users size={18} />} 
+                        gradient="linear-gradient(135deg, #ea580c, #f97316)" 
+                    />
+                </div>
+            )}
 
             <div className="card mb-8 p-4 bg-white border-slate-200 shadow-sm">
                 <div className="flex flex-col md:flex-row gap-6 justify-between items-center">

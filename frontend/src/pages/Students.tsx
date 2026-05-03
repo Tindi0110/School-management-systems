@@ -89,24 +89,31 @@ const Students = () => {
                 params.current_class = selectedClassId;
             }
 
-            const [studentsRes, classesRes, globalStatsRes] = await Promise.all([
+            // We use Promise.allSettled or separate try-catch for stats to ensure page loads even if stats fail
+            const [studentsRes, classesRes] = await Promise.all([
                 studentsAPI.getAll(params),
                 academicsAPI.classes.getAll({ page_size: 100 }),
-                statsAPI.getDashboard(),
             ]);
 
             setStudents(studentsRes.data?.results ?? studentsRes.data ?? []);
             setTotalItems(studentsRes.data?.count ?? (studentsRes.data?.results ? studentsRes.data.results.length : 0));
-
-            const counts = globalStatsRes.data?.counts || {};
-            setInstitutionalTotal(counts.total_students || 0);
-            setActiveCount(counts.active_students || 0);
-            setBoarderCount(counts.boarder_count || 0);
-            setDayScholarCount(counts.day_scholar_count || 0);
-
             setClasses(classesRes.data?.results ?? classesRes.data ?? []);
+
+            // Load stats separately to avoid blocking
+            try {
+                const globalStatsRes = await statsAPI.getDashboard();
+                const counts = globalStatsRes.data?.counts || {};
+                setInstitutionalTotal(counts.total_students || 0);
+                setActiveCount(counts.active_students || 0);
+                setBoarderCount(counts.boarder_count || 0);
+                setDayScholarCount(counts.day_scholar_count || 0);
+            } catch (statsErr) {
+                console.error("Dashboard stats failed to load:", statsErr);
+            }
+
         } catch (error) {
-            errorToast("Failed to load students.");
+            console.error("Critical error loading student registry:", error);
+            errorToast("Failed to load students. Please check your connection or contact admin.");
         } finally {
             setLoading(false);
         }

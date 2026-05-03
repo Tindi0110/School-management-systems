@@ -11,6 +11,9 @@ import PremiumDateInput from '../components/common/DatePicker';
 import { useSelector } from 'react-redux';
 import { StaffTableSkeleton } from './staff/StaffSkeletons';
 import SearchInput from '../components/common/SearchInput';
+import { statsAPI } from '../api/api';
+import { StatCard } from '../components/Card';
+import Skeleton from '../components/common/Skeleton';
 
 const Staff = () => {
     const [staff, setStaff] = useState<any[]>([]);
@@ -29,6 +32,7 @@ const Staff = () => {
     const [newDeptName, setNewDeptName] = useState('');
     const [pendingStaff, setPendingStaff] = useState<any[]>([]);
     const [isProcessingApproval, setIsProcessingApproval] = useState<number | null>(null);
+    const [stats, setStats] = useState<any>(null);
     const pageSize = 50;
 
     const { user } = useSelector((state: any) => state.auth);
@@ -76,13 +80,17 @@ const Staff = () => {
     const loadData = async () => {
         setLoading(true);
         try {
-            const res = await staffAPI.getAll({
-                page,
-                page_size: pageSize,
-                search: searchTerm
-            });
-            setStaff(res.data?.results ?? res.data ?? []);
-            setTotalItems(res.data?.count ?? (res.data?.results ? res.data.results.length : 0));
+            const [staffRes, dashboardRes] = await Promise.all([
+                staffAPI.getAll({
+                    page,
+                    page_size: pageSize,
+                    search: searchTerm
+                }),
+                statsAPI.getDashboard()
+            ]);
+            setStaff(staffRes.data?.results ?? staffRes.data ?? []);
+            setTotalItems(staffRes.data?.count ?? (staffRes.data?.results ? staffRes.data.results.length : 0));
+            setStats(dashboardRes.data?.counts || {});
         } catch (error) {
             console.error('Error loading staff:', error);
         } finally {
@@ -338,6 +346,45 @@ const Staff = () => {
                     )}
                 </div>
             </div>
+
+            {/* Dashboard Stats */}
+            {loading ? (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-md mb-8 no-print">
+                    {[1, 2, 3, 4].map(i => (
+                        <div key={i} className="card p-6 bg-white border border-gray-100 rounded-2xl" key={i}>
+                            <Skeleton variant="text" width="60%" className="mb-2" />
+                            <Skeleton variant="rect" height="32px" width="40%" />
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-md mb-8 no-print">
+                    <StatCard 
+                        title="Total Faculty" 
+                        value={(stats?.total_staff || 0).toString()} 
+                        icon={<Briefcase size={18} />} 
+                        gradient="linear-gradient(135deg, #6366f1, #818cf8)" 
+                    />
+                    <StatCard 
+                        title="Teachers" 
+                        value={(stats?.teacher_count || 0).toString()} 
+                        icon={<UserCheck size={18} />} 
+                        gradient="linear-gradient(135deg, #10b981, #34d399)" 
+                    />
+                    <StatCard 
+                        title="Support Staff" 
+                        value={(stats?.support_staff_count || 0).toString()} 
+                        icon={<LayoutGrid size={18} />} 
+                        gradient="linear-gradient(135deg, #f59e0b, #fbbf24)" 
+                    />
+                    <StatCard 
+                        title="Departments" 
+                        value={(stats?.total_departments || 0).toString()} 
+                        icon={<LayoutGrid size={18} />} 
+                        gradient="linear-gradient(135deg, #0f172a, #334155)" 
+                    />
+                </div>
+            )}
 
             {/* Premium Search & Tabs Bar */}
             <div className="card mb-8 no-print p-4 bg-white border-slate-200 shadow-sm">

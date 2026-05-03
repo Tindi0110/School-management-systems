@@ -51,6 +51,8 @@ def dashboard_stats(request):
     
     # 1. Basic Counts (Aggregated in one query)
     from django.db.models import Count, Q
+    from staff.models import Department
+    from students.models import Parent
     counts_agg = Student.objects.aggregate(
         total_students=Count('id'),
         active_students=Count('id', filter=Q(status='ACTIVE')),
@@ -61,6 +63,10 @@ def dashboard_stats(request):
     counts = {
         **counts_agg,
         'total_staff': Staff.objects.count(),
+        'teacher_count': Staff.objects.filter(role='TEACHER').count(),
+        'support_staff_count': Staff.objects.exclude(role__in=['TEACHER', 'ADMIN', 'PRINCIPAL']).count(),
+        'total_parents': Parent.objects.count(),
+        'total_departments': Department.objects.count(),
         'total_classes': Class.objects.count(),
         'pending_invoices': Invoice.objects.filter(balance__gt=0).count(),
     }
