@@ -22,8 +22,81 @@ axiosRetry(api, {
   }
 });
 
-// --- Fine-Grained In-Memory Cache Setup ---
-const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
+// --- Dynamic Fine-Grained Caching Strategy ---
+/**
+ * Returns cache duration in milliseconds based on URL sensitivity.
+ * All times are reduced by half from standard recommendations.
+ */
+const getCacheTime = (url?: string): number => {
+  if (!url) return 0;
+  const path = url.toLowerCase();
+
+  // NO CACHE: Money, Live Status, Security, Medical
+  if (
+    path.includes('payment') || 
+    path.includes('invoice') || 
+    path.includes('balance') || 
+    path.includes('statement') ||
+    path.includes('receipt') ||
+    path.includes('attendance') || // Live marking
+    path.includes('auth/roles') ||
+    path.includes('live') ||
+    path.includes('medical')
+  ) {
+    return 0;
+  }
+
+  // VERY SHORT (15s): Real-time counts, Availability, Notifications
+  if (
+    path.includes('available') || 
+    path.includes('count') || 
+    path.includes('notifications') ||
+    path.includes('active')
+  ) {
+    return 15 * 1000;
+  }
+
+  // SHORT (1m): Dashboards, Summary Stats, Alerts
+  if (
+    path.includes('stats') || 
+    path.includes('dashboard') || 
+    path.includes('alerts') ||
+    path.includes('summary')
+  ) {
+    return 60 * 1000;
+  }
+
+  // MEDIUM (5m): Registry lists, Profiles, Search results, Schedules
+  if (
+    path.includes('students') || 
+    path.includes('staff') || 
+    path.includes('parents') || 
+    path.includes('classes') || 
+    path.includes('search') ||
+    path.includes('reports') ||
+    path.includes('exam') ||
+    path.includes('timetable')
+  ) {
+    return 5 * 60 * 1000;
+  }
+
+  // LONG (15m): Infrastructure/Settings that rarely change
+  if (
+    path.includes('subject') || 
+    path.includes('fee-structure') || 
+    path.includes('academic-year') || 
+    path.includes('book') || 
+    path.includes('config') ||
+    path.includes('terms') ||
+    path.includes('dropdown') ||
+    path.includes('catalog')
+  ) {
+    return 15 * 60 * 1000;
+  }
+
+  return 2.5 * 60 * 1000; // Global Default: 2.5 minutes
+};
+
 interface CacheEntry { data: any; timestamp: number; tag?: string }
 let apiCache = new Map<string, CacheEntry>();
 
@@ -35,7 +108,6 @@ export const clearApiCache = (tag?: string) => {
   if (!tag) {
     apiCache.clear();
   } else {
-    // Collect keys to delete to avoid iteration issues
     const keysToDelete: string[] = [];
     apiCache.forEach((value, key) => {
       if (value.tag === tag || (value.tag && value.tag.startsWith(`${tag}/`))) {
@@ -52,7 +124,7 @@ export const clearApiCache = (tag?: string) => {
 const getUrlTag = (url?: string): string | undefined => {
   if (!url) return undefined;
   const parts = url.split('/').filter(Boolean);
-  return parts[0]; // e.g. 'students', 'staff', 'finance'
+  return parts[0]; 
 };
 // ------------------------------------------
 
@@ -67,10 +139,11 @@ api.interceptors.request.use(
 
     // 2. Cache Strategy
     const method = config.method?.toLowerCase();
+    const url = config.url || '';
+    const cacheTime = getCacheTime(url);
 
-    // Clear specific tag on mutation
+    // Clear specific tag on mutation (POST/PUT/PATCH/DELETE)
     if (method && ['post', 'put', 'patch', 'delete'].includes(method)) {
-      const url = config.url || '';
       const tag = getUrlTag(url);
       
       // Clear the primary tag
@@ -85,22 +158,23 @@ api.interceptors.request.use(
       }
 
       // Crucial: Clear stats/dashboard if anything sensitive changes
-      if (tag === 'finance' || tag === 'students' || tag === 'staff' || tag?.startsWith('hostel') || tag === 'hostels') {
+      if (['finance', 'students', 'staff', 'parents', 'hostels', 'payment', 'invoice', 'adjustment'].some(t => url.toLowerCase().includes(t))) {
         clearApiCache('stats');
+        clearApiCache('finance'); // Clear finance explicitly on money changes
       }
 
-      if (tag === 'academics' || url.includes('classes') || url.includes('subjects') || url.includes('exams')) {
-        clearApiCache('students'); // Classes/Subjects change affects students
+      if (['academics', 'classes', 'subjects', 'exams', 'term'].some(t => url.toLowerCase().includes(t))) {
+        clearApiCache('students'); 
+        clearApiCache('academics');
       }
     }
 
-    // If it's a GET request, check the cache (Temporarily disabled for debugging)
-    if (method === 'get' && !config.url?.includes('classes') && !config.url?.includes('academic-years')) {
-      const key = `${config.url}?${new URLSearchParams(config.params as any || {}).toString()}`;
+    // If it's a GET request and cacheable, check the cache
+    if (method === 'get' && cacheTime > 0) {
+      const key = `${url}?${new URLSearchParams(config.params as any || {}).toString()}`;
       const cachedResponse = apiCache.get(key);
 
-      // If cache exists and isn't expired, override the adapter to return it instantly
-      if (cachedResponse && Date.now() - cachedResponse.timestamp < CACHE_EXPIRY) {
+      if (cachedResponse && Date.now() - cachedResponse.timestamp < cacheTime) {
         config.adapter = () => Promise.resolve({
           data: cachedResponse.data,
           status: 200,
@@ -120,14 +194,17 @@ api.interceptors.request.use(
 // Response interceptor for error handling and cache saving
 api.interceptors.response.use(
   (response) => {
-    // Save successful GET requests to cache
+    // Save successful GET requests to cache if cacheable
     const method = response.config?.method?.toLowerCase();
-    if (method === 'get' && response.status === 200) {
-      const key = `${response.config.url}?${new URLSearchParams(response.config.params as any || {}).toString()}`;
+    const url = response.config.url || '';
+    const cacheTime = getCacheTime(url);
+
+    if (method === 'get' && response.status === 200 && cacheTime > 0) {
+      const key = `${url}?${new URLSearchParams(response.config.params as any || {}).toString()}`;
       apiCache.set(key, {
         data: response.data,
         timestamp: Date.now(),
-        tag: getUrlTag(response.config.url)
+        tag: getUrlTag(url)
       });
     }
     return response;
@@ -138,6 +215,9 @@ api.interceptors.response.use(
       localStorage.removeItem('user');
       window.location.href = '/login';
     }
+    return Promise.reject(error);
+  }
+);
 
     const serverError = error.response?.data?.detail || 
                         error.response?.data?.error || 
