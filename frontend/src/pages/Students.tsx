@@ -1,19 +1,148 @@
-import React, { useEffect, useState } from 'react';
-import { Search, Plus, Download, Printer, Filter, UserCheck, MapPin, User as UserIcon, TrendingUp, ShieldAlert } from 'lucide-react';
-import { studentsAPI, academicsAPI } from '../api/api';
+import { Search, Plus, Download, Printer, Filter, UserCheck, MapPin, User as UserIcon, TrendingUp, ShieldAlert, Users, MoreVertical, Eye, Edit, Trash } from 'lucide-react';
+import { studentsAPI, academicsAPI, statsAPI } from '../api/api';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
-import { useAuth } from '../context/AuthContext';
 import Button from '../components/common/Button';
 import Modal from '../components/Modal';
 import SearchableSelect from '../components/SearchableSelect';
 import CountryCodeSelect from '../components/CountryCodeSelect';
-import { exportToCSV } from '../utils/exportUtils';
+import { exportToCSV } from '../utils/export';
 
-// Modular Components
-import StudentTable from '../components/students/StudentTable';
-import StudentDetails from '../components/students/StudentDetails';
-import { StudentStatsSkeleton, StudentTableSkeleton } from '../components/students/StudentSkeletons';
+// --- Sub-components (Table, Details, Skeletons) ---
+
+const StudentTable = ({ students, onEdit, onDelete, onView, page, setPage, total, pageSize }: any) => {
+    return (
+        <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+                <thead>
+                    <tr className="bg-slate-50/50 border-b border-slate-100">
+                        <th className="px-6 py-4 text-[10px] font-black uppercase text-slate-400 tracking-widest">Student</th>
+                        <th className="px-6 py-4 text-[10px] font-black uppercase text-slate-400 tracking-widest">Admission</th>
+                        <th className="px-6 py-4 text-[10px] font-black uppercase text-slate-400 tracking-widest">Class</th>
+                        <th className="px-6 py-4 text-[10px] font-black uppercase text-slate-400 tracking-widest">Status</th>
+                        <th className="px-6 py-4 text-[10px] font-black uppercase text-slate-400 tracking-widest text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                    {students.map((s: any) => (
+                        <tr key={s.id} className="group hover:bg-slate-50/50 transition-colors">
+                            <td className="px-6 py-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 font-bold group-hover:bg-primary group-hover:text-white transition-all">
+                                        {s.first_name?.[0]}{s.last_name?.[0]}
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-black text-slate-800">{s.full_name}</p>
+                                        <p className="text-[10px] font-medium text-slate-400 uppercase tracking-widest">{s.category}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td className="px-6 py-4 text-xs font-black text-slate-600 uppercase tracking-tighter">{s.admission_number}</td>
+                            <td className="px-6 py-4 text-xs font-black text-slate-600 uppercase tracking-tight">
+                                {s.current_class?.name} {s.current_class?.stream}
+                            </td>
+                            <td className="px-6 py-4">
+                                <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                                    s.status === 'ACTIVE' ? 'bg-green-100 text-green-600' :
+                                    s.status === 'ALUMNI' ? 'bg-blue-100 text-blue-600' : 'bg-red-100 text-red-600'
+                                }`}>
+                                    {s.status}
+                                </span>
+                            </td>
+                            <td className="px-6 py-4 text-right">
+                                <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button onClick={() => onView(s)} className="p-2 hover:bg-white rounded-lg text-slate-400 hover:text-primary border border-transparent hover:border-slate-100"><Eye size={14} /></button>
+                                    <button onClick={() => onEdit(s)} className="p-2 hover:bg-white rounded-lg text-slate-400 hover:text-orange-500 border border-transparent hover:border-slate-100"><Edit size={14} /></button>
+                                    <button onClick={() => onDelete(s.id)} className="p-2 hover:bg-white rounded-lg text-slate-400 hover:text-red-500 border border-transparent hover:border-slate-100"><Trash size={14} /></button>
+                                </div>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+            
+            {/* Pagination */}
+            <div className="px-6 py-4 bg-slate-50/30 border-t border-slate-100 flex justify-between items-center">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                    Showing {students.length} of {total} records
+                </p>
+                <div className="flex gap-2">
+                    <button 
+                        disabled={page === 1} 
+                        onClick={() => setPage(page - 1)}
+                        className="p-2 bg-white border border-slate-200 rounded-lg text-slate-400 disabled:opacity-30 hover:border-primary/30"
+                    >
+                        Prev
+                    </button>
+                    <button 
+                        disabled={page * pageSize >= total} 
+                        onClick={() => setPage(page + 1)}
+                        className="p-2 bg-white border border-slate-200 rounded-lg text-slate-400 disabled:opacity-30 hover:border-primary/30"
+                    >
+                        Next
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const StudentDetails = ({ student, isOpen, onClose }: any) => {
+    if (!student) return null;
+    return (
+        <Modal isOpen={isOpen} onClose={onClose} title="Student Profile Overview" size="lg">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="col-span-1 text-center">
+                    <div className="w-32 h-32 bg-slate-100 rounded-3xl mx-auto flex items-center justify-center text-4xl font-black text-slate-300 border-4 border-white shadow-xl">
+                        {student.first_name?.[0]}{student.last_name?.[0]}
+                    </div>
+                    <h3 className="mt-6 text-xl font-black text-slate-800">{student.full_name}</h3>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{student.admission_number}</p>
+                </div>
+                <div className="col-span-2 grid grid-cols-2 gap-6">
+                    <div>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Academic Status</p>
+                        <p className="text-sm font-bold text-slate-700">{student.current_class?.name} - {student.current_class?.stream}</p>
+                    </div>
+                    <div>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Category</p>
+                        <p className="text-sm font-bold text-slate-700">{student.category}</p>
+                    </div>
+                    <div>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Guardian</p>
+                        <p className="text-sm font-bold text-slate-700">{student.guardian_name}</p>
+                    </div>
+                    <div>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Contact</p>
+                        <p className="text-sm font-bold text-slate-700">{student.guardian_phone}</p>
+                    </div>
+                </div>
+            </div>
+        </Modal>
+    );
+};
+
+const StudentStatsSkeleton = () => (
+    <div className="bg-white p-6 rounded-2xl animate-pulse border border-slate-100">
+        <div className="w-12 h-12 bg-slate-100 rounded-xl mb-4"></div>
+        <div className="h-4 w-24 bg-slate-100 rounded-full mb-2"></div>
+        <div className="h-8 w-16 bg-slate-100 rounded-full"></div>
+    </div>
+);
+
+const StudentTableSkeleton = () => (
+    <div className="p-8 space-y-4 animate-pulse">
+        {[1, 2, 3, 4, 5].map(i => (
+            <div key={i} className="flex items-center gap-4">
+                <div className="w-10 h-10 bg-slate-100 rounded-xl"></div>
+                <div className="flex-grow h-4 bg-slate-50 rounded-full"></div>
+                <div className="w-24 h-4 bg-slate-50 rounded-full"></div>
+            </div>
+        ))}
+    </div>
+);
+
+// --- Main Page Component ---
 
 const StatCard = ({ title, value, icon, gradient }: { title: string, value: string, icon: React.ReactNode, gradient: string }) => (
     <div className="card p-6 border-0 shadow-lg relative overflow-hidden group hover-scale" style={{ background: 'white' }}>
@@ -31,7 +160,7 @@ const StatCard = ({ title, value, icon, gradient }: { title: string, value: stri
 );
 
 const Students = () => {
-    const { user } = useAuth();
+    const { user } = useSelector((state: any) => state.auth);
     const [students, setStudents] = useState<any[]>([]);
     const [classes, setClasses] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -90,18 +219,18 @@ const Students = () => {
             const [res, classRes, statsRes] = await Promise.all([
                 studentsAPI.getAll(params),
                 academicsAPI.classes.getAll({ nopage: 'true' }),
-                studentsAPI.getStats()
+                statsAPI.getDashboard()
             ]);
 
             setStudents(res.data.results || []);
             setTotal(res.data.count || 0);
             setClasses(classRes.data || []);
             
-            const stats = statsRes.data;
-            setActiveCount(stats.active_count || 0);
+            const stats = statsRes.data.counts;
+            setActiveCount(stats.active_students || 0);
             setBoarderCount(stats.boarder_count || 0);
             setDayScholarCount(stats.day_scholar_count || 0);
-            setInstitutionalTotal(stats.total_count || 0);
+            setInstitutionalTotal(stats.total_students || 0);
         } catch (err) {
             toastError("Failed to load student data. Check connection.");
         } finally {

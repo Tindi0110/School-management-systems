@@ -1,6 +1,5 @@
 import React from 'react';
 import Modal from '../Modal';
-import Button from '../common/Button';
 import SearchableSelect from '../SearchableSelect';
 
 type Staff = { id: number; user?: number; full_name: string; employee_id: string; role: string };

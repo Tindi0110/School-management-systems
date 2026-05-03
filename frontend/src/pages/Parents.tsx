@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
     Plus, Edit, Phone, Mail, User as UserIcon,
-    MapPin, Briefcase, Download, Printer, Trash2
+    Download, Printer, Trash2
 } from 'lucide-react';
 import { studentsAPI, statsAPI } from '../api/api';
 import { StatCard } from '../components/Card';

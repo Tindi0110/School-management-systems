@@ -918,6 +918,9 @@ export const auditAPI = {
   health: {
     get: () => api.get("audit/status/"),
   },
+  stats: {
+    get: () => api.get("stats/"),
+  },
 };
 
 export const mpesaAPI = {

@@ -1,120 +1,93 @@
 import React from 'react';
 import Modal from '../Modal';
-import Button from '../common/Button';
-import { Download, Printer, FileText, BarChart3 } from 'lucide-react';
+import { Download, Printer, FileText, BarChart3, Trash2, Eye } from 'lucide-react';
 import { exportToCSV } from '../../utils/export';
 
 interface ViewClassModalProps {
     isOpen: boolean;
     onClose: () => void;
     selectedClass: any;
-    viewClassStudents: any[];
 }
 
-export const ViewClassModal: React.FC<ViewClassModalProps> = ({
-    isOpen, onClose, selectedClass, viewClassStudents
-}) => (
-    <Modal 
-        isOpen={isOpen} 
-        onClose={onClose} 
-        title={`Class Details: ${selectedClass?.name || ''} ${selectedClass?.stream || ''}`}
-        footer={
-            <>
-                <button type="button" className="modern-btn modern-btn-secondary" onClick={onClose}>Close</button>
-                <div className="flex gap-2">
-                    <button
-                        className="modern-btn modern-btn-outline"
-                        onClick={() => {
-                            const exportData = viewClassStudents.map(s => ({
-                                'Student Name': s.full_name,
-                                'Admission Number': s.admission_number,
-                                'Gender': s.gender || 'N/A'
-                            }));
-                            exportToCSV(exportData, `Class_List_${selectedClass?.name}_${selectedClass?.stream}`);
-                        }}
-                    >
-                        <Download size={14} className="mr-2" /> EXPORT CSV
-                    </button>
-                    <button
-                        className="modern-btn modern-btn-primary"
-                        onClick={() => {
-                            const modalContent = document.querySelector('.modal-content');
-                            if (modalContent) modalContent.classList.add('print-modal');
-                            window.print();
-                            if (modalContent) setTimeout(() => modalContent.classList.remove('print-modal'), 1000);
-                        }}
-                    >
-                        <Printer size={14} className="mr-2" /> PRINT LIST
-                    </button>
+export const ViewClassModal: React.FC<ViewClassModalProps> = ({ isOpen, onClose, selectedClass }) => {
+    if (!selectedClass) return null;
+
+    return (
+        <Modal isOpen={isOpen} onClose={onClose} title={`Academic Overview: ${selectedClass.name} ${selectedClass.stream}`} size="xl">
+            <div className="space-y-8">
+                {/* Stats Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                        <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1">Enrolled</p>
+                        <p className="text-xl font-black text-slate-800">{selectedClass.student_count || 0}</p>
+                    </div>
+                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                        <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1">Mean Score</p>
+                        <p className="text-xl font-black text-primary">{selectedClass.mean_score || '0.0'}</p>
+                    </div>
+                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                        <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1">Attendance</p>
+                        <p className="text-xl font-black text-green-600">{selectedClass.attendance_rate || '0%'}%</p>
+                    </div>
+                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                        <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1">Teacher</p>
+                        <p className="text-xs font-black text-slate-800 uppercase truncate">{selectedClass.class_teacher_name || 'Not Assigned'}</p>
+                    </div>
                 </div>
-            </>
-        }
-    >
-        <div className="rounded-xl border border-slate-200 overflow-hidden shadow-sm bg-white">
-            <div className="max-h-[50vh] overflow-auto">
-                <table className="w-full text-left border-collapse">
-                    <thead className="sticky top-0 bg-slate-50 border-b border-slate-200">
-                        <tr>
-                            <th className="px-6 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Student Candidate</th>
-                            <th className="px-6 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">ADM No</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                        {viewClassStudents.length > 0 ? viewClassStudents.map(s => (
-                            <tr key={s.id} className="hover:bg-slate-50/50 transition-colors">
-                                <td className="px-6 py-4 text-xs font-bold text-slate-700">{s.full_name}</td>
-                                <td className="px-6 py-4 text-xs font-mono text-slate-400 uppercase tracking-tight">{s.admission_number}</td>
-                            </tr>
-                        )) : <tr><td colSpan={2} className="text-center p-12 text-slate-400 italic text-xs">No students registered in this class.</td></tr>}
-                    </tbody>
-                </table>
+
+                {/* Actions Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="card p-6 border-slate-100 hover:border-primary/20 transition-all group cursor-pointer">
+                        <div className="flex items-start gap-4">
+                            <div className="w-12 h-12 rounded-2xl bg-primary/5 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
+                                <BarChart3 size={20} />
+                            </div>
+                            <div>
+                                <h4 className="text-sm font-black text-slate-800 uppercase tracking-tight">Generate BroadSheet</h4>
+                                <p className="text-[10px] font-medium text-slate-400 leading-relaxed mt-1">Export full class performance breakdown including all subjects and grading.</p>
+                                <div className="mt-4 flex gap-2">
+                                    <button className="text-[9px] font-black uppercase tracking-widest px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg hover:bg-primary hover:text-white transition-all flex items-center gap-2">
+                                        <Download size={12} /> Excel
+                                    </button>
+                                    <button className="text-[9px] font-black uppercase tracking-widest px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg hover:bg-primary hover:text-white transition-all flex items-center gap-2">
+                                        <Printer size={12} /> PDF
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="card p-6 border-slate-100 hover:border-primary/20 transition-all group cursor-pointer">
+                        <div className="flex items-start gap-4">
+                            <div className="w-12 h-12 rounded-2xl bg-orange-50 text-orange-500 flex items-center justify-center group-hover:bg-orange-500 group-hover:text-white transition-all">
+                                <FileText size={20} />
+                            </div>
+                            <div>
+                                <h4 className="text-sm font-black text-slate-800 uppercase tracking-tight">Attendance Logs</h4>
+                                <p className="text-[10px] font-medium text-slate-400 leading-relaxed mt-1">Review historical attendance data for this unit for the current term.</p>
+                                <div className="mt-4">
+                                    <button className="text-[9px] font-black uppercase tracking-widest px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg hover:bg-orange-500 hover:text-white transition-all flex items-center gap-2">
+                                        <Eye size={12} /> View Registry
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-    </Modal>
-);
+        </Modal>
+    );
+};
 
-interface ReportModalProps {
+interface DeleteConfirmModalProps {
     isOpen: boolean;
     onClose: () => void;
-}
-
-export const ReportModal: React.FC<ReportModalProps> = ({ isOpen, onClose }) => (
-    <Modal 
-        isOpen={isOpen} 
-        onClose={onClose} 
-        title="Generate Academic Reports"
-        footer={<button type="button" className="modern-btn modern-btn-secondary" onClick={onClose}>Close</button>}
-    >
-        <div className="grid grid-cols-2 gap-4">
-            <button
-                className="group flex flex-col items-center justify-center p-8 bg-slate-50 border-2 border-transparent hover:border-primary hover:bg-white transition-all rounded-2xl gap-3"
-                onClick={() => { window.print(); onClose(); }}
-            >
-                <div className="p-4 rounded-full bg-white text-primary shadow-sm group-hover:scale-110 transition-transform"><FileText size={28} /></div>
-                <span className="font-black text-xs uppercase tracking-widest text-slate-700">Print View</span>
-                <span className="text-[10px] text-center text-slate-400 font-bold uppercase italic leading-tight">Export current dashboard layout to PDF</span>
-            </button>
-            <button
-                className="group flex flex-col items-center justify-center p-8 bg-slate-50 border-2 border-transparent hover:border-emerald-500 hover:bg-white transition-all rounded-2xl gap-3"
-                onClick={() => alert('Feature coming soon: Export to CSV')}
-            >
-                <div className="p-4 rounded-full bg-white text-emerald-500 shadow-sm group-hover:scale-110 transition-transform"><BarChart3 size={28} /></div>
-                <span className="font-black text-xs uppercase tracking-widest text-slate-700">Export Raw</span>
-                <span className="text-[10px] text-center text-slate-400 font-bold uppercase italic leading-tight">Download dataset in spreadsheet format</span>
-            </button>
-        </div>
-    </Modal>
-);
-
-interface ConfirmDeleteModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    executeDelete: () => void;
+    onConfirm: () => void;
     isSubmitting: boolean;
 }
 
-export const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
-    isOpen, onClose, executeDelete, isSubmitting
+export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({ 
+    isOpen, onClose, onConfirm, isSubmitting 
 }) => (
     <Modal 
         isOpen={isOpen} 
@@ -127,7 +100,7 @@ export const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
                 <button 
                     type="button" 
                     className="modern-btn modern-btn-danger" 
-                    onClick={executeDelete}
+                    onClick={onConfirm}
                     disabled={isSubmitting}
                 >
                     {isSubmitting ? "DELETING..." : "CONFIRM DELETE"}

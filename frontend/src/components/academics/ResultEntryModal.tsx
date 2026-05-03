@@ -1,6 +1,5 @@
 import React from 'react';
 import Modal from '../Modal';
-import Button from '../common/Button';
 import SearchableSelect from '../SearchableSelect';
 import StudentResultRow from './StudentResultRow';
 import type { Student } from '../../types/student.types';
