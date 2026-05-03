@@ -65,11 +65,11 @@ class StudentViewSet(viewsets.ModelViewSet):
         if search and search != '*':
             qs = qs.filter(Q(full_name__icontains=search) | Q(admission_number__icontains=search))
         
-        # Optimize query by only fetching needed fields
-        # Increased limit to 500 to ensure all relevant matches appear in dropdowns
-        qs = qs.select_related('current_class').values(
-            'id', 'full_name', 'admission_number', 'current_class', 'current_class__name', 'current_class__stream', 'fee_balance', 'user'
-        )[:1000]
+        # Optimized query by only fetching needed fields
+        # Increased limit to 5000 to ensure all students appear in registers and dropdowns
+        qs = qs.select_related('current_class').order_by('full_name').values(
+            'id', 'full_name', 'admission_number', 'current_class', 'current_class__name', 'current_class__stream', 'fee_balance', 'user', 'category', 'status'
+        )[:5000]
         
         data = [
             {
