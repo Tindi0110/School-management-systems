@@ -145,8 +145,8 @@ class InvoiceViewSet(viewsets.ModelViewSet):
             'recentPayments': recent_pay_data,
             'context': active_context
         }
-        # Cache for 2 minutes (short to ensure data freshness)
-        cache.set(cache_key, result, 120)
+        # Cache for 30 seconds (Sensitive finance data requires high freshness)
+        cache.set(cache_key, result, 30)
         return Response(result)
 
     @action(detail=False, methods=['post'])

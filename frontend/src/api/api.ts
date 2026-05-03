@@ -214,10 +214,8 @@ api.interceptors.response.use(
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/login';
+      return Promise.reject(error);
     }
-    return Promise.reject(error);
-  }
-);
 
     const serverError = error.response?.data?.detail || 
                         error.response?.data?.error || 
