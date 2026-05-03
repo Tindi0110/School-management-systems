@@ -48,17 +48,21 @@ const Parents = () => {
     const loadParents = async () => {
         setLoading(true);
         try {
-            const [parentsRes, dashboardRes] = await Promise.all([
-                studentsAPI.parents.getAll({ page, page_size: pageSize }),
-                statsAPI.getDashboard()
-            ]);
-            
+            const parentsRes = await studentsAPI.parents.getAll({ page, page_size: pageSize });
             const data = parentsRes.data?.results ?? parentsRes.data ?? [];
             setParents(Array.isArray(data) ? data : []);
             setTotalItems(parentsRes.data?.count ?? (parentsRes.data?.results ? parentsRes.data.results.length : 0));
-            setStats(dashboardRes.data?.counts || {});
+            
+            // Load stats separately
+            try {
+                const dashboardRes = await statsAPI.getDashboard();
+                setStats(dashboardRes.data?.counts || {});
+            } catch (statsErr) {
+                console.error("Guardian stats failed:", statsErr);
+            }
         } catch (err) {
             console.error('Error loading parents:', err);
+            toast.error("Failed to load guardianship registry.");
         } finally {
             setLoading(false);
         }

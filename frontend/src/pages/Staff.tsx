@@ -80,19 +80,24 @@ const Staff = () => {
     const loadData = async () => {
         setLoading(true);
         try {
-            const [staffRes, dashboardRes] = await Promise.all([
-                staffAPI.getAll({
-                    page,
-                    page_size: pageSize,
-                    search: searchTerm
-                }),
-                statsAPI.getDashboard()
-            ]);
-            setStaff(staffRes.data?.results ?? staffRes.data ?? []);
-            setTotalItems(staffRes.data?.count ?? (staffRes.data?.results ? staffRes.data.results.length : 0));
-            setStats(dashboardRes.data?.counts || {});
+            const res = await staffAPI.getAll({
+                page,
+                page_size: pageSize,
+                search: searchTerm
+            });
+            setStaff(res.data?.results ?? res.data ?? []);
+            setTotalItems(res.data?.count ?? (res.data?.results ? res.data.results.length : 0));
+            
+            // Load stats separately
+            try {
+                const dashboardRes = await statsAPI.getDashboard();
+                setStats(dashboardRes.data?.counts || {});
+            } catch (statsErr) {
+                console.error("Staff stats failed:", statsErr);
+            }
         } catch (error) {
             console.error('Error loading staff:', error);
+            toast.error("Failed to load staff directory.");
         } finally {
             setLoading(false);
         }

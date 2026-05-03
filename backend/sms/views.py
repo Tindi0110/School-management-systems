@@ -63,8 +63,8 @@ def dashboard_stats(request):
     counts = {
         **counts_agg,
         'total_staff': Staff.objects.count(),
-        'teacher_count': Staff.objects.filter(role='TEACHER').count(),
-        'support_staff_count': Staff.objects.exclude(role__in=['TEACHER', 'ADMIN', 'PRINCIPAL']).count(),
+        'teacher_count': Staff.objects.filter(user__role='TEACHER').count(),
+        'support_staff_count': Staff.objects.exclude(user__role__in=['TEACHER', 'ADMIN', 'PRINCIPAL']).count(),
         'total_parents': Parent.objects.count(),
         'total_departments': Department.objects.count(),
         'total_classes': Class.objects.count(),
