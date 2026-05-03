@@ -20,6 +20,9 @@ const Parents = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [page, setPage] = useState(1);
+    const [totalItems, setTotalItems] = useState(0);
+    const pageSize = 50;
     const [editingParent, setEditingParent] = useState<any>(null);
     const toast = useToast();
     const { confirm } = useConfirm();
@@ -36,13 +39,15 @@ const Parents = () => {
 
     useEffect(() => {
         loadParents();
-    }, []);
+    }, [page]);
 
     const loadParents = async () => {
+        setLoading(true);
         try {
-            const res = await studentsAPI.parents.getAll();
+            const res = await studentsAPI.parents.getAll({ page, page_size: pageSize });
             const data = res.data?.results ?? res.data ?? [];
             setParents(Array.isArray(data) ? data : []);
+            setTotalItems(res.data?.count ?? (res.data?.results ? res.data.results.length : 0));
         } catch (err) {
             console.error(err);
         } finally {
@@ -241,6 +246,19 @@ const Parents = () => {
                         )}
                     </tbody>
                 </table>
+                </div>
+                {/* Pagination Controls */}
+                {totalItems > pageSize && (
+                    <div className="flex justify-between items-center bg-slate-50 p-4 border-t no-print">
+                        <div className="text-[10px] font-black text-secondary uppercase tracking-widest">
+                            Showing {Math.min((page - 1) * pageSize + 1, totalItems)} - {Math.min(page * pageSize, totalItems)} of {totalItems} Guardians
+                        </div>
+                        <div className="flex gap-2">
+                            <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(page - 1)} className="font-black text-[10px] uppercase">Previous</Button>
+                            <Button variant="primary" size="sm" disabled={page * pageSize >= totalItems} onClick={() => setPage(page + 1)} className="font-black text-[10px] uppercase">Next Page</Button>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
 

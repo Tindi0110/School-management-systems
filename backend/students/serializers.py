@@ -20,7 +20,14 @@ class SimpleStudentSerializer(serializers.ModelSerializer):
     def get_stream(self, obj):
         return obj.current_class.stream if obj.current_class else ""
 
+class ParentSimpleSerializer(serializers.ModelSerializer):
+    """Lighter serializer for nesting inside Student records"""
+    class Meta:
+        model = Parent
+        fields = ['id', 'full_name', 'relationship', 'phone', 'email', 'occupation', 'address', 'is_primary']
+
 class ParentSerializer(serializers.ModelSerializer):
+    """Full serializer for Parent registry"""
     students = SimpleStudentSerializer(many=True, read_only=True)
     
     class Meta:
@@ -73,8 +80,8 @@ class StudentListSerializer(serializers.ModelSerializer):
     attendance_percentage = serializers.SerializerMethodField()
     average_grade = serializers.SerializerMethodField()
     
-    # Needed for basic edit modal in list view
-    parents_detail = ParentSerializer(source='parents', many=True, read_only=True)
+    # Needed for basic edit modal in list view - using Simple version to avoid N+1 recursion
+    parents_detail = ParentSimpleSerializer(source='parents', many=True, read_only=True)
 
     class Meta:
         model = Student
@@ -106,7 +113,7 @@ class StudentSerializer(serializers.ModelSerializer):
     room_number = serializers.SerializerMethodField()
 
     # Nested Data for SIS Profile
-    parents_detail = ParentSerializer(source='parents', many=True, read_only=True)
+    parents_detail = ParentSimpleSerializer(source='parents', many=True, read_only=True)
     admission_details = StudentAdmissionSerializer(read_only=True)
     health_record = HealthRecordSerializer(read_only=True)
 

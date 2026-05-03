@@ -229,7 +229,7 @@ const Academics = () => {
                 academicsAPI.subjectGroups.getAll({ page_size: 100 }),
                 academicsAPI.gradeSystems.getAll({ page_size: 20 }),
                 staffAPI.getAll({ page_size: 200 }),
-                studentsAPI.getAll({ nopage: true }),
+                    studentsAPI.minimalSearch()
                 academicsAPI.results.getAll({ page_size: 500 }),
                 academicsAPI.exams.getAll(),
                 academicsAPI.syllabus.getAll(),
@@ -293,7 +293,7 @@ const Academics = () => {
             if (activeTab === 'SUMMARY') {
                 // Fetch grade systems fresh to avoid stale state race condition
                 const [studentRes, resultsRes, examsRes, syllabusRes, gradesRes] = await Promise.all([
-                    studentsAPI.getAll({ nopage: true }),
+                        studentsAPI.minimalSearch()
                     academicsAPI.results.getAll({ page_size: 500 }),
                     academicsAPI.exams.getAll(),
                     academicsAPI.syllabus.getAll(),
@@ -312,14 +312,14 @@ const Academics = () => {
             } else if (activeTab === 'ATTENDANCE') {
                 const [attRes, studentRes] = await Promise.all([
                     academicsAPI.attendance.getAll({ page_size: 500, ordering: '-date' }),
-                    studentsAPI.getAll({ nopage: true })
+                    studentsAPI.minimalSearch()
                 ]);
                 setAttendanceRecords(d(attRes));
                 setStudents(d(studentRes));
             } else if (activeTab === 'CURRICULUM') {
                 const [syllabusRes, studentRes] = await Promise.all([
                     academicsAPI.syllabus.getAll(),
-                    studentsAPI.getAll({ nopage: true })
+                    studentsAPI.minimalSearch()
                 ]);
                 setSyllabusData(d(syllabusRes));
                 setStudents(d(studentRes));

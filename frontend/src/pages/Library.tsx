@@ -173,7 +173,7 @@ const Library = () => {
     };
 
     const loadStudents = async () => {
-        const res = await studentsAPI.getAll({ nopage: true });
+        const res = await studentsAPI.minimalSearch();
         setStudents(res.data?.results ?? res.data ?? []);
     };
 

@@ -115,7 +115,7 @@ const Transport = () => {
                 transportAPI.vehicles.getAll({ page_size: 100 }),
                 transportAPI.routes.getAll({ page_size: 200 }),
                 transportAPI.pickupPoints.getAll({ page_size: 500 }),
-                studentsAPI.getAll({ nopage: true }),
+                studentsAPI.minimalSearch(),
             ]);
             if (vRes.status === 'fulfilled') setVehicles(vRes.value.data?.results ?? vRes.value.data ?? []);
             if (rRes.status === 'fulfilled') setRoutes(rRes.value.data?.results ?? rRes.value.data ?? []);

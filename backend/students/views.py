@@ -68,8 +68,8 @@ class StudentViewSet(viewsets.ModelViewSet):
         # Optimize query by only fetching needed fields
         # Increased limit to 500 to ensure all relevant matches appear in dropdowns
         qs = qs.select_related('current_class').values(
-            'id', 'full_name', 'admission_number', 'current_class__name', 'current_class__stream', 'fee_balance', 'user'
-        )[:500]
+            'id', 'full_name', 'admission_number', 'current_class', 'current_class__name', 'current_class__stream', 'fee_balance', 'user'
+        )[:1000]
         
         data = [
             {

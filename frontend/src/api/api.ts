@@ -181,12 +181,15 @@ api.interceptors.response.use(
 );
 
 // Helper configs for different data needs
-export const RECENT = { params: { page_size: 10 } };
-export const SUMMARY = { params: { page_size: 50 } };
 export const ALL = { params: { nopage: 'true' } };
 export const allWith = (extra?: Record<string, any>) => {
-  const hasPage = extra && extra.page !== undefined;
-  return { params: { ...(hasPage ? {} : { nopage: 'true' }), ...extra } };
+  const params: any = { ...extra };
+  // If neither page nor nopage is specified, default to nopage=true for small datasets/dropdowns
+  // but we should be careful with Students and Staff.
+  if (params.page === undefined && params.nopage === undefined) {
+    params.nopage = 'true';
+  }
+  return { params };
 };
 export const recentWith = (extra?: Record<string, any>) => ({ params: { page_size: 10, ...extra } });
 export const summaryWith = (extra?: Record<string, any>) => ({ params: { page_size: 50, ...extra } });

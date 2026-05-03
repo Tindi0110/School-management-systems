@@ -473,17 +473,17 @@ const Students = () => {
                     </div>
                     {/* Status Filter Tabs */}
                     <div className="flex items-center gap-1 bg-slate-100 rounded-xl p-1 shrink-0">
-                        {(['ACTIVE', 'ALL', 'GRADUATED', 'SUSPENDED'] as const).map(s => (
+                        {(['ACTIVE', 'ALL', 'ALUMNI', 'SUSPENDED'] as const).map(s => (
                             <button
                                 key={s}
                                 onClick={() => { setStatusFilter(s); setPage(1); }}
                                 className={`px-3 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-wider transition-all ${
                                     statusFilter === s
-                                        ? s === 'ACTIVE' ? 'bg-green-600 text-white shadow-sm'
-                                        : s === 'GRADUATED' ? 'bg-blue-600 text-white shadow-sm'
-                                        : s === 'SUSPENDED' ? 'bg-red-600 text-white shadow-sm'
-                                        : 'bg-slate-800 text-white shadow-sm'
-                                        : 'text-slate-500 hover:text-slate-800'
+                                    ? s === 'ACTIVE' ? 'bg-green-600 text-white shadow-sm'
+                                    : s === 'ALUMNI' ? 'bg-blue-600 text-white shadow-sm'
+                                    : s === 'SUSPENDED' ? 'bg-red-600 text-white shadow-sm'
+                                    : 'bg-slate-800 text-white shadow-sm'
+                                    : 'text-slate-500 hover:text-slate-800'
                                 }`}
                             >
                                 {s === 'ALL' ? '🌐 All' : s}
@@ -494,7 +494,7 @@ const Students = () => {
                 {statusFilter !== 'ACTIVE' && (
                     <div className="mt-2 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest">
                         <span className={`px-2 py-0.5 rounded text-white ${
-                            statusFilter === 'GRADUATED' ? 'bg-blue-600' :
+                            statusFilter === 'ALUMNI' ? 'bg-blue-600' :
                             statusFilter === 'SUSPENDED' ? 'bg-red-600' : 'bg-slate-700'
                         }`}>⚠ Viewing: {statusFilter} Students</span>
                         <button onClick={() => { setStatusFilter('ACTIVE'); setPage(1); }} className="text-slate-400 hover:text-slate-700 underline">Switch to Active</button>
