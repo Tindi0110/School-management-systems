@@ -1,7 +1,6 @@
 import React from 'react';
 import { Plus, Edit, Trash2, Users } from 'lucide-react';
 import Modal from '../../components/Modal';
-import Button from '../../components/common/Button';
 import SearchableSelect from '../../components/SearchableSelect';
 import PremiumDateInput from '../../components/common/DatePicker';
 
