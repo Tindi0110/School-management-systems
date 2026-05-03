@@ -9,6 +9,7 @@ from .models import (
 from django.db import transaction
 from django.db.models import Sum, Value, DecimalField, Count, Q, Avg, OuterRef, Subquery
 from django.db.models.functions import Coalesce
+from academics.models import Attendance, StudentResult, Class
 from finance.models import Invoice
 from .serializers import (
     StudentSerializer, StudentListSerializer, ParentSerializer, StudentAdmissionSerializer,
@@ -19,11 +20,40 @@ from .serializers import (
 from accounts.permissions import IsAdminOrRegistrar, IsAdminUser
 
 class StudentViewSet(viewsets.ModelViewSet):
-    queryset = Student.objects.all()
-    serializer_class = StudentSerializer # Using full serializer for a moment
-    
-    def get_queryset(self):
-        return Student.objects.select_related('current_class', 'user').all()
+    queryset = Student.objects.select_related(
+        'current_class', 'user',
+        'hostel_allocation__room__hostel',
+        'hostel_allocation__bed',
+        'admission_details',
+        'health_record',
+    ).prefetch_related(
+        'parents',
+        'documents',
+    ).annotate(
+        avg_score=Subquery(
+            StudentResult.objects.filter(student=OuterRef('pk'))
+            .values('student')
+            .annotate(avg=Avg('score'))
+            .values('avg')
+        ),
+        attendance_total=Subquery(
+            Attendance.objects.filter(student=OuterRef('pk'))
+            .values('student')
+            .annotate(cnt=Count('id'))
+            .values('cnt')
+        ),
+        attendance_present=Subquery(
+            Attendance.objects.filter(student=OuterRef('pk'), status='PRESENT')
+            .values('student')
+            .annotate(cnt=Count('id'))
+            .values('cnt')
+        ),
+    ).order_by('admission_number')
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return StudentListSerializer
+        return StudentSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['current_class', 'status', 'category', 'gender']
     search_fields = ['full_name', 'admission_number', 'current_class__name']
