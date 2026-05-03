@@ -1,10 +1,10 @@
 import React from 'react';
 import { YearModal, TermModal } from '../../components/academics/AcademicPeriodModals';
 import { ClassModal, GroupModal, SubjectModal } from '../../components/academics/AcademicStructureModals';
-import { AttendanceModal } from '../../components/academics/AcademicAttendanceModals';
+import AcademicAttendanceModals from '../../components/academics/AcademicAttendanceModals';
 import { ExamModal, SyllabusModal, RankingModal } from '../../components/academics/AcademicAssessmentModals';
 import { ResultEntryModal } from '../../components/academics/ResultEntryModal';
-import { ViewClassModal, ReportModal } from '../../components/academics/AcademicReviewModals';
+import { ViewClassModal } from '../../components/academics/AcademicReviewModals';
 import { GradeSystemModal, BoundaryModal } from '../../components/academics/AcademicGradingModals';
 import ExamBroadsheet from '../../components/academics/ExamBroadsheet';
 
@@ -172,7 +172,7 @@ const AcademicModals: React.FC<AcademicModalsProps> = ({ modals, forms, data, ha
                 isSubmitting={status.isSubmitting}
             />
 
-            <AttendanceModal
+            <AcademicAttendanceModals
                 isOpen={modals.isAttendanceModalOpen}
                 onClose={() => handlers.setIsAttendanceModalOpen(false)}
                 attendanceForm={forms.attendanceForm}
@@ -263,14 +263,6 @@ const AcademicModals: React.FC<AcademicModalsProps> = ({ modals, forms, data, ha
                 isOpen={modals.isViewClassModalOpen}
                 onClose={() => handlers.setIsViewClassModalOpen(false)}
                 selectedClass={data.selectedClass}
-                viewClassStudents={data.viewClassStudents}
-            />
-
-
-
-            <ReportModal
-                isOpen={modals.isReportModalOpen}
-                onClose={() => handlers.setIsReportModalOpen(false)}
             />
 
             <GradeSystemModal

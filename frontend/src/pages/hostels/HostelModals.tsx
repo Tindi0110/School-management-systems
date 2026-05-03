@@ -118,9 +118,9 @@ const HostelModals: React.FC<HostelModalsProps> = ({
     return (
         <>
             {/* Hostel Modal */}
-            <Modal 
-                isOpen={isHostelModalOpen} 
-                onClose={() => setIsHostelModalOpen(false)} 
+            <Modal
+                isOpen={isHostelModalOpen}
+                onClose={() => setIsHostelModalOpen(false)}
                 title={hostelId ? "Edit Hostel" : "Add New Hostel"}
                 footer={
                     <>
@@ -160,9 +160,9 @@ const HostelModals: React.FC<HostelModalsProps> = ({
             </Modal>
 
             {/* View Rooms Modal */}
-            <Modal 
-                isOpen={isViewRoomsModalOpen} 
-                onClose={() => setIsViewRoomsModalOpen(false)} 
+            <Modal
+                isOpen={isViewRoomsModalOpen}
+                onClose={() => setIsViewRoomsModalOpen(false)}
                 title={`Inventory: ${selectedHostel?.name}`}
                 footer={<button type="button" className="modern-btn modern-btn-secondary" onClick={() => setIsViewRoomsModalOpen(false)}>Close</button>}
             >
@@ -230,9 +230,9 @@ const HostelModals: React.FC<HostelModalsProps> = ({
             </Modal>
 
             {/* Room Modal */}
-            <Modal 
-                isOpen={isRoomModalOpen} 
-                onClose={() => setIsRoomModalOpen(false)} 
+            <Modal
+                isOpen={isRoomModalOpen}
+                onClose={() => setIsRoomModalOpen(false)}
                 title={roomId ? "Edit Room" : "Add New Room"}
                 footer={
                     <>
@@ -272,9 +272,9 @@ const HostelModals: React.FC<HostelModalsProps> = ({
             </Modal>
 
             {/* Allocation Modal */}
-            <Modal 
-                isOpen={isAllocationModalOpen} 
-                onClose={() => { setIsAllocationModalOpen(false); }} 
+            <Modal
+                isOpen={isAllocationModalOpen}
+                onClose={() => { setIsAllocationModalOpen(false); }}
                 title={isTransferMode ? "Transfer Student" : allocationId ? "Edit Allocation" : "Student Admission to Hostel"}
                 footer={
                     <>
@@ -288,13 +288,13 @@ const HostelModals: React.FC<HostelModalsProps> = ({
                 <form id="allocation-form" onSubmit={handleAllocationSubmit} className="space-y-6">
                     <div className="form-group">
                         <label>Target Student Candidate</label>
-                        <SearchableSelect 
-                            placeholder="Search by name or admission number..." 
-                            options={students.filter(s => s.category?.toUpperCase() === 'BOARDING').map(s => ({ id: s.id.toString(), label: `${s.admission_number} - ${s.full_name}` }))} 
-                            value={allocationFormData.student} 
-                            onChange={(v) => setAllocationFormData({ ...allocationFormData, student: v.toString() })} 
-                            disabled={isTransferMode || allocationId !== null} 
-                            required 
+                        <SearchableSelect
+                            placeholder="Search by name or admission number..."
+                            options={students.filter(s => s.category?.toUpperCase() === 'BOARDING').map(s => ({ id: s.id.toString(), label: `${s.admission_number} - ${s.full_name}` }))}
+                            value={allocationFormData.student}
+                            onChange={(v) => setAllocationFormData({ ...allocationFormData, student: v.toString() })}
+                            disabled={isTransferMode || allocationId !== null}
+                            required
                         />
                     </div>
                     <div className="form-grid">
@@ -309,28 +309,28 @@ const HostelModals: React.FC<HostelModalsProps> = ({
                     </div>
                     <div className="form-group">
                         <label>Available Bed Assignment</label>
-                        <SearchableSelect 
+                        <SearchableSelect
                             placeholder="Select an unoccupied bed"
                             options={beds
-                                .filter(b => 
-                                    String(b.room) === String(allocationFormData.room) && 
+                                .filter(b =>
+                                    String(b.room) === String(allocationFormData.room) &&
                                     (b.is_available || b.status?.toUpperCase() === 'AVAILABLE' || String(b.id) === String(allocationFormData.bed))
                                 )
                                 .map(b => ({ id: b.id.toString(), label: `Bed ${b.bed_number}` || 'Unknown Bed' }))
-                            } 
-                            value={allocationFormData.bed} 
-                            onChange={(v) => setAllocationFormData({ ...allocationFormData, bed: v.toString() })} 
-                            disabled={!allocationFormData.room} 
-                            required 
+                            }
+                            value={allocationFormData.bed}
+                            onChange={(v) => setAllocationFormData({ ...allocationFormData, bed: v.toString() })}
+                            disabled={!allocationFormData.room}
+                            required
                         />
                     </div>
                 </form>
             </Modal>
 
             {/* Attendance Modal */}
-            <Modal 
-                isOpen={isAttendanceModalOpen} 
-                onClose={() => setIsAttendanceModalOpen(false)} 
+            <Modal
+                isOpen={isAttendanceModalOpen}
+                onClose={() => setIsAttendanceModalOpen(false)}
                 title={attendanceMode === 'BULK' ? "Room Roll Call" : (attendanceId ? "Edit Attendance" : "Log Attendance")}
                 footer={
                     <>
@@ -388,10 +388,10 @@ const HostelModals: React.FC<HostelModalsProps> = ({
                                                                 { id: 'PERMISSION', label: 'L', color: 'amber' },
                                                                 { id: 'SICK', label: 'S', color: 'sky' }
                                                             ].map(st => (
-                                                                <button 
-                                                                    key={st.id} 
-                                                                    type="button" 
-                                                                    onClick={() => setBulkAttendanceData({ ...bulkAttendanceData, [s.id]: { ...bulkAttendanceData[s.id], status: st.id } })} 
+                                                                <button
+                                                                    key={st.id}
+                                                                    type="button"
+                                                                    onClick={() => setBulkAttendanceData({ ...bulkAttendanceData, [s.id]: { ...bulkAttendanceData[s.id], status: st.id } })}
                                                                     className={`w-8 h-8 rounded-xl text-[10px] font-black transition-all ${bulkAttendanceData[s.id]?.status === st.id ? `bg-${st.color}-500 text-white shadow-lg shadow-${st.color}-200` : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}
                                                                     title={st.id}
                                                                 >
@@ -400,12 +400,12 @@ const HostelModals: React.FC<HostelModalsProps> = ({
                                                             ))}
                                                         </div>
                                                     </div>
-                                                    <input 
-                                                        type="text" 
-                                                        placeholder="Add observation or remarks..." 
-                                                        className="h-8 text-[10px] bg-slate-50 border-none rounded-lg px-3 focus:bg-white transition-colors" 
-                                                        value={bulkAttendanceData[s.id]?.remarks || ''} 
-                                                        onChange={(e) => setBulkAttendanceData({ ...bulkAttendanceData, [s.id]: { ...bulkAttendanceData[s.id], remarks: e.target.value } })} 
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Add observation or remarks..."
+                                                        className="h-8 text-[10px] bg-slate-50 border-none rounded-lg px-3 focus:bg-white transition-colors"
+                                                        value={bulkAttendanceData[s.id]?.remarks || ''}
+                                                        onChange={(e) => setBulkAttendanceData({ ...bulkAttendanceData, [s.id]: { ...bulkAttendanceData[s.id], remarks: e.target.value } })}
                                                     />
                                                 </div>
                                             ))}
@@ -434,9 +434,9 @@ const HostelModals: React.FC<HostelModalsProps> = ({
             </Modal>
 
             {/* Asset Modal */}
-            <Modal 
-                isOpen={isAssetModalOpen} 
-                onClose={() => setIsAssetModalOpen(false)} 
+            <Modal
+                isOpen={isAssetModalOpen}
+                onClose={() => setIsAssetModalOpen(false)}
                 title={assetId ? "Edit Asset" : "Record New Asset"}
                 footer={
                     <>
@@ -482,9 +482,9 @@ const HostelModals: React.FC<HostelModalsProps> = ({
             </Modal>
 
             {/* Discipline Modal */}
-            <Modal 
-                isOpen={isDisciplineModalOpen} 
-                onClose={() => setIsDisciplineModalOpen(false)} 
+            <Modal
+                isOpen={isDisciplineModalOpen}
+                onClose={() => setIsDisciplineModalOpen(false)}
                 title={disciplineId ? "Edit Record" : "Log Disciplinary Incident"}
                 footer={
                     <>
@@ -526,9 +526,9 @@ const HostelModals: React.FC<HostelModalsProps> = ({
             </Modal>
 
             {/* Maintenance Modal */}
-            <Modal 
-                isOpen={isMaintenanceModalOpen} 
-                onClose={() => setIsMaintenanceModalOpen(false)} 
+            <Modal
+                isOpen={isMaintenanceModalOpen}
+                onClose={() => setIsMaintenanceModalOpen(false)}
                 title={maintenanceId ? "Edit Request" : "Log Maintenance Request"}
                 footer={
                     <>
@@ -568,9 +568,9 @@ const HostelModals: React.FC<HostelModalsProps> = ({
             </Modal>
 
             {/* View Residents Modal */}
-            <Modal 
-                isOpen={isViewResidentsModalOpen} 
-                onClose={() => setIsViewResidentsModalOpen(false)} 
+            <Modal
+                isOpen={isViewResidentsModalOpen}
+                onClose={() => setIsViewResidentsModalOpen(false)}
                 title={`Resident Directory: ${selectedHostel?.name || 'Hostel'}`}
                 footer={<button type="button" className="modern-btn modern-btn-secondary" onClick={() => setIsViewResidentsModalOpen(false)}>Close</button>}
             >

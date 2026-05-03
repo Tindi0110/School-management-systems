@@ -1,7 +1,6 @@
 import React from 'react';
 import Modal from '../Modal';
 import { Download, Printer, FileText, BarChart3, Trash2, Eye } from 'lucide-react';
-import { exportToCSV } from '../../utils/export';
 
 interface ViewClassModalProps {
     isOpen: boolean;

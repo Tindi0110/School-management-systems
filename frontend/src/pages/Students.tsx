@@ -1,4 +1,6 @@
-import { Search, Plus, Download, Printer, Filter, UserCheck, MapPin, User as UserIcon, TrendingUp, ShieldAlert, Users, MoreVertical, Eye, Edit, Trash } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { Search, Plus, Download, Printer, Filter, UserCheck, MapPin, User as UserIcon, TrendingUp, ShieldAlert, Users, Eye, Edit, Trash } from 'lucide-react';
 import { studentsAPI, academicsAPI, statsAPI } from '../api/api';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
@@ -364,7 +366,7 @@ const Students = () => {
                     <StatCard title="Active Enrollment" value={activeCount.toString()} icon={<UserCheck size={18} />} gradient="linear-gradient(135deg, #0ba360, #3cba92)" />
                     <StatCard title="Boarders" value={boarderCount.toString()} icon={<MapPin size={18} />} gradient="var(--info)" />
                     <StatCard title="Day Scholars" value={dayScholarCount.toString()} icon={<UserIcon size={18} />} gradient="var(--secondary)" />
-                    <StatCard title="Enrolled Capacity" value={`${classes.length > 0 ? Math.round((activeCount / classes.reduce((sum, c) => sum + (c.capacity || 40), 0)) * 100) : 0}%`} icon={<TrendingUp size={18} />} gradient="linear-gradient(135deg, #0f172a, #1e293b)" />
+                    <StatCard title="Enrolled Capacity" value={`${classes.length > 0 ? Math.round((activeCount / classes.reduce((sum: number, c: any) => sum + (c.capacity || 40), 0)) * 100) : 0}%`} icon={<TrendingUp size={18} />} gradient="linear-gradient(135deg, #0f172a, #1e293b)" />
                 </div>
             )}
 
@@ -456,7 +458,7 @@ const Students = () => {
                             </div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                            {classes.sort((a, b) => `${a.name}${a.stream}`.localeCompare(`${b.name}${b.stream}`)).map(c => (
+                            {classes.sort((a: any, b: any) => `${a.name}${a.stream}`.localeCompare(`${b.name}${b.stream}`)).map((c: any) => (
                                 <div
                                     key={c.id}
                                     className="group relative bg-white/60 hover:bg-white transition-all cursor-pointer p-6 rounded-2xl border border-slate-100 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5"
@@ -492,7 +494,7 @@ const Students = () => {
                                 </button>
                                 <div>
                                     <h3 className="text-sm font-black text-slate-800 uppercase tracking-tight">
-                                        {classes.find(c => c.id === selectedClassId)?.name} {classes.find(c => c.id === selectedClassId)?.stream}
+                                        {classes.find((c: any) => c.id === selectedClassId)?.name} {classes.find((c: any) => c.id === selectedClassId)?.stream}
                                     </h3>
                                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Showing {students.length} of {total} records</p>
                                 </div>
@@ -558,7 +560,7 @@ const Students = () => {
                         <div className="form-group">
                             <label>Class/Form</label>
                             <SearchableSelect
-                                options={classes.map(c => ({ id: c.id.toString(), label: `${c.name} - ${c.stream}` }))}
+                                options={classes.map((c: any) => ({ id: c.id.toString(), label: `${c.name} - ${c.stream}` }))}
                                 value={formData.current_class}
                                 onChange={(val) => setFormData({ ...formData, current_class: val.toString() })}
                                 required
