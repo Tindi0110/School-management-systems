@@ -223,4 +223,5 @@ export const AttendanceModal: React.FC<AttendanceModalProps> = ({
         </Modal>
     );
 };
-};
+
+export default AcademicAttendanceModals;
