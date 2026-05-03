@@ -237,7 +237,7 @@ export const studentsAPI = {
   unlinkParent: (studentId: number, data: { parent_id: number }) => api.post(`students/${studentId}/unlink_parent/`, data),
 
   parents: {
-    getAll: () => api.get('parents/', ALL),
+    getAll: (params?: Record<string, any>) => api.get('parents/', allWith(params)),
     create: (data: any) => api.post('parents/', data),
     update: (id: number, data: any) => api.put(`parents/${id}/`, data),
     patch: (id: number, data: any) => api.patch(`parents/${id}/`, data),
