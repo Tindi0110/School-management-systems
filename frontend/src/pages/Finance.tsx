@@ -174,7 +174,7 @@ const Finance = () => {
         } finally {
             setActiveTabLoading(false);
         }
-    }, [activeTab, isAllTime, page, debouncedSearch, invFilters, statsContext, toastError]);
+    }, [activeTab, isAllTime, page, debouncedSearch, invFilters, toastError]);
 
     useEffect(() => {
         const handler = setTimeout(() => setDebouncedSearch(searchTerm), 500);
