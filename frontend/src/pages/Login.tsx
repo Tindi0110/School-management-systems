@@ -1,0 +1,168 @@
+import React, { useState } from 'react'
+import { useDispatch } from 'react-redux'
+import { Link, useNavigate } from 'react-router-dom'
+import { setCredentials } from '../store/authSlice'
+import { authAPI } from '../api/api'
+import { useToast } from '../context/ToastContext'
+import { Lock, ArrowRight, School, Eye, EyeOff } from 'lucide-react'
+
+const Login = () => {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+  const { success, error: errorToast } = useToast()
+  const [resending, setResending] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+    try {
+      const response = await authAPI.login({ username: email, password })
+      const token = response.data.token
+      const user = response.data.user || { email, role: 'GUEST' }
+
+      localStorage.setItem('token', token)
+      dispatch(setCredentials({ user, token }))
+      success(`Welcome back, ${user.first_name || email}!`)
+      navigate('/')
+    } catch (err: any) {
+      console.error(err);
+      const msg = err.response?.data?.error || 'Invalid credentials. Please check your login details.';
+      setError(msg)
+      
+      // If error indicates unverified email, redirect to OTP verification
+      if (err.response?.status === 403 && msg.toLowerCase().includes('verify')) {
+        navigate(`/verify-otp?email=${encodeURIComponent(email)}`)
+      }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleResendVerification = async () => {
+    if (!email) {
+      errorToast("Please enter your email address above to resend the verification link.");
+      return;
+    }
+    setResending(true);
+    try {
+      const response = await authAPI.resendVerificationPublic(email);
+      success(response.data.message || "Verification code sent!");
+      navigate(`/verify-otp?email=${encodeURIComponent(email)}`);
+    } catch (err: any) {
+      console.error(err);
+      errorToast(err.response?.data?.error || 'Failed to resend email.');
+    } finally {
+      setResending(false);
+    }
+  };
+
+  return (
+    <div className="auth-page">
+      <div className="auth-gradient-bg auth-gradient-1"></div>
+      <div className="auth-gradient-bg auth-gradient-2"></div>
+
+      <div className="auth-card form-container-sm">
+        <div className="auth-header">
+          <div className="flex justify-center mb-6">
+            <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center text-primary border border-primary/20">
+              <School size={32} />
+            </div>
+          </div>
+          <h2>Welcome Back</h2>
+          <p>Sign in to your account</p>
+        </div>
+
+        <div className="auth-content">
+          {error && (
+            <div className="badge badge-error w-full py-3 mb-6 flex items-center justify-center gap-2 rounded-lg font-black uppercase text-[10px]">
+              <Lock size={14} /> {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="auth-input-group">
+              <label className="label uppercase text-[10px] font-black mb-1">Email Address</label>
+              <div className="auth-input-wrapper">
+                <Lock size={18} className="auth-input-icon" />
+                <input
+                  type="email"
+                  className="input auth-input-field"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="auth-input-group">
+              <div className="flex justify-between items-center mb-1">
+                <label className="label uppercase text-[10px] font-black">Password</label>
+                <Link to="/forgot-password" title="Recover Password" className="text-[10px] font-black text-primary uppercase hover:underline">Forgot?</Link>
+              </div>
+              <div className="auth-input-wrapper" style={{ position: 'relative' }}>
+                <Lock size={18} className="auth-input-icon" />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  className="input auth-input-field"
+                  style={{ paddingRight: '45px' }}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute text-secondary hover:text-primary transition-colors bg-transparent border-none p-0 flex items-center justify-center outline-none z-10"
+                  style={{ 
+                    position: 'absolute', 
+                    right: '12px', 
+                    top: '50%', 
+                    transform: 'translateY(-50%)',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            </div>
+
+            <button type="submit" disabled={loading} className="btn btn-primary w-full py-3 h-auto font-black uppercase tracking-widest shadow-lg flex items-center justify-center gap-2">
+              {loading ? 'Authenticating...' : <><span className="mr-2">Access Dashboard</span> <ArrowRight size={18} /></>}
+            </button>
+          </form>
+        </div>
+
+        <div className="auth-footer text-xs font-bold text-secondary">
+          New Staff? <Link to="/register" className="text-primary hover:underline ml-1">Request Account</Link>
+        </div>
+        <div className="auth-footer text-[10px] font-bold text-secondary mt-2">
+          Need to verify your email? 
+          <button 
+            type="button" 
+            onClick={handleResendVerification}
+            disabled={resending}
+            className="text-primary hover:underline ml-1 bg-transparent border-none p-0 cursor-pointer disabled:opacity-50"
+            title={!email ? "Enter your email above first" : "Resend verification email"}
+          >
+            {resending ? 'Sending...' : 'Resend Link'}
+          </button>
+        </div>
+      </div>
+
+      <div className="absolute bottom-8 text-center w-full z-10 pointer-events-none">
+        <p className="text-[10px] text-secondary font-bold uppercase tracking-[0.2em] opacity-40">Secure Institutional Portal v2.0</p>
+      </div>
+    </div>
+  )
+}
+
+
+export default Login

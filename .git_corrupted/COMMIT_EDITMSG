@@ -1,0 +1,11 @@
+perf: optimize queries, add status filter, fix finance dashboard cache & recent payments
+
+- Backend: Aggregate student counts in single DB query in dashboard_stats
+- Backend: Annotate attendance_total/present on StudentViewSet queryset (eliminates N+1)
+- Backend: Reduce finance dashboard cache 5m->2m; bust cache on payment/invoice write
+- Backend: Order payments by -date_received by default
+- Backend: Include recentPayments in finance dashboard_stats response
+- Frontend: Add ACTIVE/ALL/GRADUATED/SUSPENDED status filter tabs to Student registry
+- Frontend: Fix FinanceDashboard to show Recent Invoices + Recent Payments side-by-side
+- Frontend: Finance.tsx passes recentPayments state to FinanceDashboard
+- Fix: Student stats now prioritize DB-annotated values, avoiding redundant queries

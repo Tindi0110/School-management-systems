@@ -1,0 +1,78 @@
+import React, { useEffect } from 'react';
+import { X } from 'lucide-react';
+
+interface ModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    title: string;
+    children: React.ReactNode;
+    size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
+}
+
+const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, size = 'md' }) => {
+    // Close on Escape key — matching Budget Wear UX behaviour
+    useEffect(() => {
+        if (!isOpen) return;
+        const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+        document.addEventListener('keydown', handleKey);
+        return () => document.removeEventListener('keydown', handleKey);
+    }, [isOpen, onClose]);
+
+    if (!isOpen) return null;
+
+    const sizeClasses = {
+        sm: 'max-w-md',
+        md: 'max-w-2xl',
+        lg: 'max-w-4xl',
+        xl: 'max-w-7xl',
+        full: 'w-98vw h-95vh m-2'
+    };
+
+    return (
+        <div className="modal-overlay" onClick={onClose}>
+            <div
+                className={`modal-container w-full ${sizeClasses[size]} ${size === 'full' ? 'h-95vh m-2' : 'max-h-90vh'}`}
+                onClick={(e) => e.stopPropagation()}
+            >
+                {/* Header — uppercase title + X close, matching Budget Wear */}
+                <div className="modal-header">
+                    <h3 className="modal-title">{title}</h3>
+                    <button
+                        onClick={onClose}
+                        style={{
+                            background: 'transparent',
+                            border: 'none',
+                            cursor: 'pointer',
+                            padding: '6px',
+                            borderRadius: '50%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#64748b',
+                            transition: 'background 0.15s, color 0.15s',
+                        }}
+                        onMouseEnter={e => {
+                            (e.currentTarget as HTMLButtonElement).style.background = '#fee2e2';
+                            (e.currentTarget as HTMLButtonElement).style.color = '#ef4444';
+                        }}
+                        onMouseLeave={e => {
+                            (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
+                            (e.currentTarget as HTMLButtonElement).style.color = '#64748b';
+                        }}
+                        type="button"
+                        aria-label="Close"
+                    >
+                        <X size={20} />
+                    </button>
+                </div>
+
+                {/* Body */}
+                <div className="modal-body">
+                    {children}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default Modal;
