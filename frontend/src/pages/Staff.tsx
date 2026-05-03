@@ -351,7 +351,7 @@ const Staff = () => {
             {loading ? (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-md mb-8 no-print">
                     {[1, 2, 3, 4].map(i => (
-                        <div key={i} className="card p-6 bg-white border border-gray-100 rounded-2xl" key={i}>
+                        <div key={i} className="card p-6 bg-white border border-gray-100 rounded-2xl">
                             <Skeleton variant="text" width="60%" className="mb-2" />
                             <Skeleton variant="rect" height="32px" width="40%" />
                         </div>
