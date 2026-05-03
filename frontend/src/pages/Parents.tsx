@@ -260,7 +260,6 @@ const Parents = () => {
                     </div>
                 )}
             </div>
-        </div>
 
             <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Guardian Enrollment" size="md">
                 <form onSubmit={handleSubmit} className="space-y-4 form-container-md mx-auto">

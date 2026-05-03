@@ -229,7 +229,7 @@ const Academics = () => {
                 academicsAPI.subjectGroups.getAll({ page_size: 100 }),
                 academicsAPI.gradeSystems.getAll({ page_size: 20 }),
                 staffAPI.getAll({ page_size: 200 }),
-                    studentsAPI.minimalSearch()
+                    studentsAPI.minimalSearch(),
                 academicsAPI.results.getAll({ page_size: 500 }),
                 academicsAPI.exams.getAll(),
                 academicsAPI.syllabus.getAll(),
@@ -293,7 +293,7 @@ const Academics = () => {
             if (activeTab === 'SUMMARY') {
                 // Fetch grade systems fresh to avoid stale state race condition
                 const [studentRes, resultsRes, examsRes, syllabusRes, gradesRes] = await Promise.all([
-                        studentsAPI.minimalSearch()
+                        studentsAPI.minimalSearch(),
                     academicsAPI.results.getAll({ page_size: 500 }),
                     academicsAPI.exams.getAll(),
                     academicsAPI.syllabus.getAll(),
