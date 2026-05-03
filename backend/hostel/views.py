@@ -35,7 +35,6 @@ class HostelViewSet(viewsets.ModelViewSet):
             return HostelListSerializer
         return HostelSerializer
 
-    @method_decorator(cache_page(60 * 15))
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 

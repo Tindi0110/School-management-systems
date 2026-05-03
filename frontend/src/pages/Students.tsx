@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Plus, Search, Edit, Trash2, User as UserIcon,
-    UserCheck, MapPin, Printer, TrendingUp, Download, ArrowRight
+    UserCheck, MapPin, Printer, TrendingUp, Download, ArrowRight,
+    Users, ShieldAlert
 } from 'lucide-react';
 import { studentsAPI, academicsAPI, statsAPI } from '../api/api';
 import { useSelector } from 'react-redux';
@@ -457,6 +458,34 @@ const Students = () => {
                 </div>
             )}
 
+            {/* Registry Status Tabs */}
+            <div className="nav-tab-container no-print mb-8">
+                <button 
+                    className={`nav-tab ${statusFilter === 'ACTIVE' ? 'active' : ''}`} 
+                    onClick={() => { setStatusFilter('ACTIVE'); setPage(1); }}
+                >
+                    <UserCheck size={16} /> Active Students
+                </button>
+                <button 
+                    className={`nav-tab ${statusFilter === 'ALL' ? 'active' : ''}`} 
+                    onClick={() => { setStatusFilter('ALL'); setPage(1); }}
+                >
+                    <Users size={16} /> All Records
+                </button>
+                <button 
+                    className={`nav-tab ${statusFilter === 'ALUMNI' ? 'active' : ''}`} 
+                    onClick={() => { setStatusFilter('ALUMNI'); setPage(1); }}
+                >
+                    <TrendingUp size={16} /> Alumni/Graduated
+                </button>
+                <button 
+                    className={`nav-tab ${statusFilter === 'SUSPENDED' ? 'active' : ''}`} 
+                    onClick={() => { setStatusFilter('SUSPENDED'); setPage(1); }}
+                >
+                    <ShieldAlert size={16} /> Suspended
+                </button>
+            </div>
+
             {/* Premium Search & Actions Bar */}
             <div className="card mb-8 no-print p-4 bg-white border-slate-200 shadow-sm">
                 <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
@@ -468,9 +497,9 @@ const Students = () => {
                             placeholder="Find by name or admission number..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && loadData()}
+                            onKeyDown={(e) => e.key === "Enter" && loadData()}
                         />
-                        <button 
+                        <button
                             className="absolute right-2 top-1/2 -translate-y-1/2 btn btn-primary flex items-center gap-2 h-10 min-h-0 px-4"
                             onClick={() => loadData()}
                         >
@@ -478,26 +507,24 @@ const Students = () => {
                             Search
                         </button>
                     </div>
-                    {/* Status Filter Tabs */}
-                    <div className="flex items-center gap-1 bg-slate-100 rounded-xl p-1 shrink-0">
-                        {(['ACTIVE', 'ALL', 'ALUMNI', 'SUSPENDED'] as const).map(s => (
-                            <button
-                                key={s}
-                                onClick={() => { setStatusFilter(s); setPage(1); }}
-                                className={`px-3 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-wider transition-all ${
-                                    statusFilter === s
-                                    ? s === 'ACTIVE' ? 'bg-green-600 text-white shadow-sm'
-                                    : s === 'ALUMNI' ? 'bg-blue-600 text-white shadow-sm'
-                                    : s === 'SUSPENDED' ? 'bg-red-600 text-white shadow-sm'
-                                    : 'bg-slate-800 text-white shadow-sm'
-                                    : 'text-slate-500 hover:text-slate-800'
-                                }`}
-                            >
-                                {s === 'ALL' ? '🌐 All' : s}
-                            </button>
-                        ))}
+                    <div className="flex gap-2">
+                        <Button 
+                            variant="primary" 
+                            onClick={() => { setEditingStudent(null); setIsModalOpen(true); }}
+                            icon={<Plus size={18} />}
+                        >
+                            ADMIT STUDENT
+                        </Button>
+                        <Button 
+                            variant="outline" 
+                            onClick={() => exportToCSV(students, 'Student_Registry')}
+                            icon={<Download size={18} />}
+                        >
+                            EXPORT
+                        </Button>
                     </div>
                 </div>
+            </div>
                 {statusFilter !== 'ACTIVE' && (
                     <div className="mt-2 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest">
                         <span className={`px-2 py-0.5 rounded text-white ${

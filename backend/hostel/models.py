@@ -36,6 +36,15 @@ class Room(models.Model):
         
     def __str__(self):
         return f"{self.hostel.name} - Rm {self.room_number}"
+
+    def save(self, *args, **kwargs):
+        # Automatically update status based on occupancy and capacity
+        if self.status != 'CLOSED':
+            if self.current_occupancy >= self.capacity:
+                self.status = 'FULL'
+            else:
+                self.status = 'AVAILABLE'
+        super().save(*args, **kwargs)
         
     @property
     def available_beds(self):

@@ -101,7 +101,7 @@ class StudentListSerializer(serializers.ModelSerializer):
     def get_attendance_percentage(self, obj):
         total = getattr(obj, 'attendance_total', None)
         present = getattr(obj, 'attendance_present', None)
-        if total is not None:
+        if total is not None and present is not None:
             return round((present / total) * 100, 1) if total > 0 else 0
         return obj.get_attendance_stats()
 
