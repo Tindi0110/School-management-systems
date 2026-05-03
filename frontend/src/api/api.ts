@@ -54,7 +54,10 @@ const getCacheTime = (url?: string): number => {
     path.includes("available") ||
     path.includes("count") ||
     path.includes("notifications") ||
-    path.includes("active")
+    path.includes("active") ||
+    path.includes("hostel") ||
+    path.includes("room") ||
+    path.includes("bed")
   ) {
     return 15 * 1000;
   }
@@ -205,12 +208,16 @@ api.interceptors.request.use(
           "hostel-attendance",
           "hostel-discipline",
           "hostel-assets",
-        ].some((t) => url.includes(t))
+          "hostel",
+          "room",
+          "bed",
+        ].some((t) => url.toLowerCase().includes(t))
       ) {
         clearApiCache("hostels");
         clearApiCache("rooms");
         clearApiCache("beds");
         clearApiCache("hostel-allocations");
+        clearApiCache("academics"); // Some stats might depend on it
       }
 
       // Crucial: Clear stats/dashboard if anything sensitive changes
@@ -246,15 +253,17 @@ api.interceptors.request.use(
       const cachedResponse = apiCache.get(key);
 
       if (cachedResponse && Date.now() - cachedResponse.timestamp < cacheTime) {
-        config.adapter = () =>
-          Promise.resolve({
+        // Return a mock response from the adapter to bypass the network
+        config.adapter = (cfg) => {
+          return Promise.resolve({
             data: cachedResponse.data,
             status: 200,
             statusText: "OK",
             headers: {} as any,
-            config,
+            config: cfg,
             request: {},
           });
+        };
       }
     }
 
@@ -282,6 +291,7 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
+    // Session expired
     if (error.response?.status === 401) {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
@@ -289,61 +299,48 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    const serverError =
-      error.response?.data?.detail ||
-      error.response?.data?.error ||
-      (typeof error.response?.data === "string" &&
-      error.response.data.length < 100
-        ? error.response.data
-        : null);
-
-    if (serverError) {
-      return Promise.reject({ ...error, message: serverError });
-    }
-
     let message = "An unexpected error occurred";
 
-    if (
-      error.response?.status === 400 &&
-      typeof error.response.data === "object"
-    ) {
+    // Extract detailed error messages from backend
+    if (error.response?.data) {
       const data = error.response.data;
-      const stringified = JSON.stringify(data).toLowerCase();
 
-      // Check for common unique constraint keywords
-      if (
-        stringified.includes("unique") ||
-        stringified.includes("already exists") ||
-        stringified.includes("duplicate")
-      ) {
-        message = "This record may exist already.";
-      } else {
-        // Fallback to grabbing the first error array if possible
-        const firstKey = Object.keys(data)[0];
-        if (firstKey && Array.isArray(data[firstKey])) {
-          message = `${firstKey}: ${data[firstKey][0]}`;
+      if (typeof data === "string") {
+        if (data.length < 150) message = data;
+      } else if (typeof data === "object") {
+        // Check for common error fields
+        if (data.detail) {
+          message = data.detail;
+        } else if (data.error) {
+          message = data.error;
+        } else if (data.non_field_errors && data.non_field_errors[0]) {
+          message = data.non_field_errors[0];
         } else {
-          message =
-            data.detail ||
-            data.error ||
-            data.non_field_errors?.[0] ||
-            "Bad Request: Please check your inputs.";
+          // Unique constraint detection
+          const stringified = JSON.stringify(data).toLowerCase();
+          if (
+            stringified.includes("unique") ||
+            stringified.includes("already exists") ||
+            stringified.includes("duplicate")
+          ) {
+            message = "This record may exist already.";
+          } else {
+            // Grab the first field error
+            const firstKey = Object.keys(data)[0];
+            if (firstKey && Array.isArray(data[firstKey])) {
+              message = `${firstKey}: ${data[firstKey][0]}`;
+            } else if (firstKey) {
+              message = `${firstKey}: ${data[firstKey]}`;
+            }
+          }
         }
       }
     } else if (error.response?.status === 404) {
-      message =
-        "The requested resource could not be found or may have been deleted.";
+      message = "The requested resource could not be found.";
     } else if (error.response?.status >= 500) {
       message = "A server error occurred. Please try again later.";
-    } else {
-      message =
-        error.response?.data?.detail ||
-        error.response?.data?.error ||
-        (typeof error.response?.data === "string"
-          ? error.response?.data
-          : null) ||
-        error.message ||
-        "An unexpected error occurred.";
+    } else if (error.message) {
+      message = error.message;
     }
 
     return Promise.reject({ ...error, message });

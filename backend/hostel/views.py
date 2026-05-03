@@ -81,14 +81,7 @@ class RoomViewSet(viewsets.ModelViewSet):
         ).all()
 
     def perform_create(self, serializer):
-        room = serializer.save()
-        # Auto-generate beds
-        for i in range(1, room.capacity + 1):
-            Bed.objects.create(
-                room=room,
-                bed_number=f"{i}",
-                status='AVAILABLE'
-            )
+        serializer.save()
 
 class BedViewSet(viewsets.ModelViewSet):
     queryset = Bed.objects.select_related('room__hostel').all()

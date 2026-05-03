@@ -38,13 +38,37 @@ class Room(models.Model):
         return f"{self.hostel.name} - Rm {self.room_number}"
 
     def save(self, *args, **kwargs):
-        # Automatically update status based on occupancy and capacity
+        # 1. Recalculate occupancy from active allocations if it seems out of sync
+        # (This is a safety measure for the discrepancy reported by user)
+        if self.pk:
+            actual_occupancy = self.allocations.filter(status='ACTIVE').count()
+            if self.current_occupancy != actual_occupancy:
+                self.current_occupancy = actual_occupancy
+
+        # 2. Automatically update status based on occupancy and capacity
         if self.status != 'CLOSED':
             if self.current_occupancy >= self.capacity:
                 self.status = 'FULL'
             else:
                 self.status = 'AVAILABLE'
+        
         super().save(*args, **kwargs)
+        
+        # 3. Ensure beds exist for capacity (Create missing beds)
+        # This fixes the "5/50" issue when capacity is increased
+        current_beds = list(self.beds.values_list('bed_number', flat=True))
+        current_count = len(current_beds)
+        if current_count < self.capacity:
+            # We use a simple range-based creation for missing numbers
+            # or just add more until count matches
+            for i in range(current_count + 1, self.capacity + 1):
+                # Try to find a bed number that doesn't exist
+                num = str(i)
+                while num in current_beds:
+                    i += 1
+                    num = str(i)
+                Bed.objects.create(room=self, bed_number=num, status='AVAILABLE')
+                current_beds.append(num)
         
     @property
     def available_beds(self):
