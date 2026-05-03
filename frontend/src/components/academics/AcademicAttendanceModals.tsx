@@ -35,51 +35,63 @@ export const AttendanceModal: React.FC<AttendanceModalProps> = ({
     }));
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title="Log Student Attendance" size="lg">
-            <form onSubmit={handleAttendanceSubmit} className="form-container-md mx-auto">
-                <div className="flex justify-between items-center mb-4 border-bottom pb-2">
-                    <span className="text-xs font-bold uppercase text-secondary">Recording Mode:</span>
-                    <div className="flex bg-secondary-light p-1 rounded-lg">
+        <Modal 
+            isOpen={isOpen} 
+            onClose={onClose} 
+            title="Log Student Attendance" 
+            size="lg"
+            footer={
+                <>
+                    <button type="button" className="modern-btn modern-btn-secondary" onClick={onClose}>Cancel</button>
+                    <button 
+                        type="submit" 
+                        form="attendance-form" 
+                        className="modern-btn modern-btn-primary" 
+                        disabled={isSubmitting}
+                    >
+                        {isSubmitting ? "POSTING..." : (attendanceFilter.isBulk ? `SUBMIT REGISTER (${bulkAttendanceList.length})` : 'POST RECORD')}
+                    </button>
+                </>
+            }
+        >
+            <form id="attendance-form" onSubmit={handleAttendanceSubmit} className="space-y-6">
+                <div className="flex bg-slate-50 p-4 rounded-xl border border-slate-100 justify-between items-center">
+                    <div>
+                        <h4 className="text-xs font-black text-slate-500 uppercase tracking-widest mb-1">Recording Mode</h4>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase italic">Select scope for entry</p>
+                    </div>
+                    <div className="flex bg-white p-1 rounded-lg border shadow-sm">
                         <button
                             type="button"
-                            className={`px-3 py-1 text-[10px] font-black rounded ${!attendanceFilter.isBulk ? 'bg-primary text-white' : 'text-secondary'}`}
+                            className={`px-4 py-2 rounded-md text-[10px] font-black transition-all ${!attendanceFilter.isBulk ? 'bg-primary text-white shadow-sm' : 'text-slate-400 hover:text-primary'}`}
                             onClick={() => setAttendanceFilter({ ...attendanceFilter, isBulk: false })}
                         >
-                            SINGLE STUDENT
+                            SINGLE
                         </button>
                         <button
                             type="button"
-                            className={`px-3 py-1 text-[10px] font-black rounded ${attendanceFilter.isBulk ? 'bg-primary text-white' : 'text-secondary'}`}
+                            className={`px-4 py-2 rounded-md text-[10px] font-black transition-all ${attendanceFilter.isBulk ? 'bg-primary text-white shadow-sm' : 'text-slate-400 hover:text-primary'}`}
                             onClick={() => setAttendanceFilter({ ...attendanceFilter, isBulk: true })}
                         >
-                            CLASS REGISTER (BULK)
+                            BULK
                         </button>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <PremiumDateInput
-                            value={attendanceForm.date}
-                            onChange={(val: string) => setAttendanceForm({ ...attendanceForm, date: val })}
-                            placeholder="Date"
-                            minDate={new Date().toISOString().split('T')[0]}
-                            required
-                        />
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-md mb-4 bg-secondary-light/20 p-2 rounded border">
-                    <div>
-                        <label className="text-[9px] font-bold uppercase text-secondary">Filter Class</label>
+                <div className="form-grid p-4 bg-slate-50/50 rounded-xl border border-slate-100">
+                    <div className="form-group col-span-2 md:col-span-1">
+                        <label>Target Level</label>
                         <SearchableSelect
-                            placeholder="Level..."
+                            placeholder="Select Level..."
                             options={uniqueClassNames.map(name => ({ id: name, label: name }))}
                             value={attendanceFilter.level}
                             onChange={(val) => setAttendanceFilter({ ...attendanceFilter, level: val.toString(), classId: '' })}
                         />
                     </div>
-                    <div>
-                        <label className="text-[9px] font-bold uppercase text-secondary">Stream</label>
+                    <div className="form-group col-span-2 md:col-span-1">
+                        <label>Stream</label>
                         <SearchableSelect
-                            placeholder="Stream..."
+                            placeholder="Select Stream..."
                             options={classes.filter(c => c.name === attendanceFilter.level).map(c => ({ id: c.id.toString(), label: c.stream }))}
                             value={attendanceFilter.classId}
                             onChange={(val) => {
@@ -97,26 +109,36 @@ export const AttendanceModal: React.FC<AttendanceModalProps> = ({
                             disabled={!attendanceFilter.level}
                         />
                     </div>
+                    <div className="form-group col-span-2">
+                        <PremiumDateInput
+                            label="Attendance Date"
+                            value={attendanceForm.date}
+                            onChange={(val: string) => setAttendanceForm({ ...attendanceForm, date: val })}
+                            required
+                        />
+                    </div>
                 </div>
 
                 {!attendanceFilter.isBulk ? (
-                    <>
-                        <SearchableSelect
-                            label="Student Name *"
-                            options={attendanceFilter.classId
-                                ? formattedStudentOptions.filter((opt: any) => {
-                                    const s = students.find(st => st.id.toString() === opt.id);
-                                    const sClassId = typeof s?.current_class === 'object' ? (s?.current_class as any)?.id : s?.current_class;
-                                    return s && Number(sClassId) === parseInt(attendanceFilter.classId);
-                                })
-                                : formattedStudentOptions
-                            }
-                            value={attendanceForm.student}
-                            onChange={(v) => setAttendanceForm({ ...attendanceForm, student: v.toString() })}
-                            required
-                        />
-                        <div className="form-group mt-4">
-                            <label className="label text-[10px] font-black uppercase">Status</label>
+                    <div className="form-grid">
+                        <div className="form-group col-span-2">
+                            <label>Student Name *</label>
+                            <SearchableSelect
+                                options={attendanceFilter.classId
+                                    ? formattedStudentOptions.filter((opt: any) => {
+                                        const s = students.find(st => st.id.toString() === opt.id);
+                                        const sClassId = typeof s?.current_class === 'object' ? (s?.current_class as any)?.id : s?.current_class;
+                                        return s && Number(sClassId) === parseInt(attendanceFilter.classId);
+                                    })
+                                    : formattedStudentOptions
+                                }
+                                value={attendanceForm.student}
+                                onChange={(v) => setAttendanceForm({ ...attendanceForm, student: v.toString() })}
+                                required
+                            />
+                        </div>
+                        <div className="form-group col-span-2 md:col-span-1">
+                            <label>Status</label>
                             <SearchableSelect
                                 options={[
                                     { id: 'PRESENT', label: 'Present' },
@@ -127,90 +149,78 @@ export const AttendanceModal: React.FC<AttendanceModalProps> = ({
                                 onChange={(v) => setAttendanceForm({ ...attendanceForm, status: v.toString() })}
                             />
                         </div>
-                        <div className="form-group">
-                            <label className="label text-[10px] font-black uppercase">Remarks</label>
+                        <div className="form-group col-span-2 md:col-span-1">
+                            <label>Remarks (Optional)</label>
                             <input
                                 type="text"
-                                className="input"
                                 value={attendanceForm.remark}
                                 onChange={(e) => setAttendanceForm({ ...attendanceForm, remark: e.target.value })}
                                 placeholder="Reason if absent..."
                             />
                         </div>
-                    </>
+                    </div>
                 ) : (
-                    <div className="max-h-[400px] overflow-y-auto border rounded">
-                        <table className="table table-xs w-full">
-                            <thead className="sticky top-0 bg-white z-10">
-                                <tr>
-                                    <th>Student</th>
-                                    <th>Status</th>
-                                    <th>Remark</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {bulkAttendanceList.length === 0 && (
+                    <div className="rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+                        <div className="max-h-[350px] overflow-y-auto">
+                            <table className="w-full text-left border-collapse">
+                                <thead className="sticky top-0 bg-slate-50 z-10 border-b border-slate-200">
                                     <tr>
-                                        <td colSpan={3} className="text-center p-4 text-xs italic text-secondary">
-                                            Select a class to load students
-                                        </td>
+                                        <th className="px-4 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Student</th>
+                                        <th className="px-4 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest w-32">Status</th>
+                                        <th className="px-4 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Remark</th>
                                     </tr>
-                                )}
-                                {bulkAttendanceList.map((item, idx) => {
-                                    const student = students.find(s => s.id === item.student_id);
-                                    return (
-                                        <tr key={item.student_id}>
-                                            <td className="text-xs font-bold">{student?.full_name}</td>
-                                            <td>
-                                                <SearchableSelect
-                                                    options={[
-                                                        { id: 'PRESENT', label: 'Present' },
-                                                        { id: 'ABSENT', label: 'Absent' },
-                                                        { id: 'LATE', label: 'Late' }
-                                                    ]}
-                                                    value={item.status}
-                                                    onChange={(v) => {
-                                                        const newList = [...bulkAttendanceList];
-                                                        newList[idx].status = v.toString();
-                                                        setBulkAttendanceList(newList);
-                                                    }}
-                                                />
-                                            </td>
-                                            <td>
-                                                <input
-                                                    type="text"
-                                                    className="input input-xs w-full"
-                                                    placeholder="..."
-                                                    value={item.remark}
-                                                    onChange={(e) => {
-                                                        const newList = [...bulkAttendanceList];
-                                                        newList[idx].remark = e.target.value;
-                                                        setBulkAttendanceList(newList);
-                                                    }}
-                                                />
+                                </thead>
+                                <tbody>
+                                    {bulkAttendanceList.length === 0 && (
+                                        <tr>
+                                            <td colSpan={3} className="text-center p-12 text-slate-400 italic text-xs">
+                                                Select a class level and stream to load students
                                             </td>
                                         </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
+                                    )}
+                                    {bulkAttendanceList.map((item, idx) => {
+                                        const student = students.find(s => s.id === item.student_id);
+                                        return (
+                                            <tr key={item.student_id} className="border-b border-slate-100 hover:bg-slate-50/50 transition-colors">
+                                                <td className="px-4 py-3 text-xs font-bold text-slate-700">{student?.full_name}</td>
+                                                <td className="px-2 py-2">
+                                                    <select 
+                                                        className="w-full h-8 text-[10px] font-bold rounded-lg border-slate-200 bg-white"
+                                                        value={item.status}
+                                                        onChange={(e) => {
+                                                            const newList = [...bulkAttendanceList];
+                                                            newList[idx].status = e.target.value;
+                                                            setBulkAttendanceList(newList);
+                                                        }}
+                                                    >
+                                                        <option value="PRESENT">Present</option>
+                                                        <option value="ABSENT">Absent</option>
+                                                        <option value="LATE">Late</option>
+                                                    </select>
+                                                </td>
+                                                <td className="px-2 py-2">
+                                                    <input
+                                                        type="text"
+                                                        className="w-full h-8 text-[10px] font-medium rounded-lg border-slate-200"
+                                                        placeholder="Remark..."
+                                                        value={item.remark}
+                                                        onChange={(e) => {
+                                                            const newList = [...bulkAttendanceList];
+                                                            newList[idx].remark = e.target.value;
+                                                            setBulkAttendanceList(newList);
+                                                        }}
+                                                    />
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 )}
-
-                <div className="mt-6 pt-4 border-t flex justify-end gap-2 sticky bottom-0 bg-white pb-2">
-                    <Button type="button" variant="ghost" size="sm" onClick={onClose}>Cancel</Button>
-                    <Button
-                        type="submit"
-                        variant="primary"
-                        size="sm"
-                        className="bg-success border-success font-black uppercase text-white shadow-md px-8"
-                        loading={isSubmitting}
-                        loadingText="Posting..."
-                    >
-                        {attendanceFilter.isBulk ? `Submit Register (${bulkAttendanceList.length})` : 'Post Attendance Record'}
-                    </Button>
-                </div>
             </form>
         </Modal>
     );
+};
 };

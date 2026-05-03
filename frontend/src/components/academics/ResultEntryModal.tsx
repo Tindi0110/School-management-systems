@@ -30,14 +30,37 @@ export const ResultEntryModal: React.FC<ResultEntryModalProps> = ({
     classes, subjects, filteredResultStudents, studentScores, handleScoreChange,
     handleDeleteSingleResult, activeClassSubjects, gradeSystems, handleBulkResultSubmit, isSubmitting
 }) => (
-    <Modal isOpen={isOpen} onClose={onClose} title={`Enter Results: ${selectedExam?.name || ''}`} size="lg">
-        <form onSubmit={handleBulkResultSubmit} className="max-w-7xl mx-auto">
-            {/* Cascading Class Selector */}
-            <div className="form-group p-3 mb-4 bg-gray-50">
-                <label className="label text-[10px] font-black uppercase mb-2">Select Class to Enter Marks</label>
-                <div className="grid grid-cols-2 gap-md">
-                    <div>
-                        <label className="text-[9px] font-bold uppercase text-secondary">Class Level</label>
+    <Modal 
+        isOpen={isOpen} 
+        onClose={onClose} 
+        title={`Enter Results: ${selectedExam?.name || ''}`} 
+        size="lg"
+        footer={
+            <div className="flex justify-between items-center w-full">
+                <p className="text-[10px] text-slate-500 font-medium italic">
+                    <span className="font-black text-primary uppercase mr-2 tracking-widest">Tip:</span> 
+                    Existing marks are <span className="text-primary font-black">Highlighted</span>. Enter new marks and click Save.
+                </p>
+                <div className="flex gap-3">
+                    <button type="button" className="modern-btn modern-btn-secondary" onClick={onClose}>Cancel</button>
+                    <button 
+                        type="submit" 
+                        form="result-form" 
+                        className="modern-btn modern-btn-primary" 
+                        disabled={isSubmitting}
+                    >
+                        {isSubmitting ? "SAVING MATRIX..." : "SAVE MATRIX PAYLOAD"}
+                    </button>
+                </div>
+            </div>
+        }
+    >
+        <form id="result-form" onSubmit={handleBulkResultSubmit} className="space-y-6">
+            <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Scope Configuration</h4>
+                <div className="form-grid">
+                    <div className="form-group">
+                        <label>Target Level</label>
                         <SearchableSelect
                             placeholder="Select Level..."
                             options={uniqueClassNames.map(name => ({ id: name, label: name }))}
@@ -47,8 +70,8 @@ export const ResultEntryModal: React.FC<ResultEntryModalProps> = ({
                             }}
                         />
                     </div>
-                    <div>
-                        <label className="text-[9px] font-bold uppercase text-secondary">Stream</label>
+                    <div className="form-group">
+                        <label>Stream / Combined</label>
                         <SearchableSelect
                             placeholder="Select Stream..."
                             options={[
@@ -66,60 +89,54 @@ export const ResultEntryModal: React.FC<ResultEntryModalProps> = ({
             </div>
 
             {resultContext.classId && (
-                <div className="table-wrapper max-h-[75vh] w-full block bg-white relative m-0 mt-4 border rounded-xl overflow-auto shadow-sm">
-                    <table className="results-entry-table table w-full border-collapse text-xs">
-                        <thead className="sticky top-0 z-20 bg-white">
-                            <tr className="border-none">
-                                <th className="sticky left-0 z-30 bg-white min-w-[160px] p-3 text-left">
-                                    <span className="text-[10px] font-black uppercase text-slate-800">Student Name</span>
-                                </th>
-                                {subjects.filter(sub => {
-                                    if (resultContext.classId === 'all') return true;
-                                    return activeClassSubjects.some(cs => cs.subject === sub.id);
-                                }).map(sub => (
-                                    <th key={sub.id} className="text-center min-w-[110px] p-2 bg-white" title={`${sub.name} (${sub.code})`}>
-                                        <div className="text-[11px] font-black uppercase text-slate-800">{sub.name.substring(0, 3)}</div>
+                <div className="rounded-xl border border-slate-200 overflow-hidden shadow-sm bg-white">
+                    <div className="max-h-[50vh] overflow-auto">
+                        <table className="w-full text-left border-collapse">
+                            <thead className="sticky top-0 z-20 bg-slate-50 border-b border-slate-200">
+                                <tr>
+                                    <th className="sticky left-0 z-30 bg-slate-50 px-4 py-3 min-w-[180px]">
+                                        <span className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Student Candidate</span>
                                     </th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredResultStudents.map((student) => {
-                                const sClass = classes.find(c => c.id === student.current_class);
-                                return (
-                                    <StudentResultRow
-                                        key={student.id}
-                                        student={student}
-                                        sClass={sClass}
-                                        subjects={subjects}
-                                        studentScores={studentScores[student.id]}
-                                        onScoreChange={handleScoreChange}
-                                        onDeleteResult={handleDeleteSingleResult}
-                                        activeClassSubjects={activeClassSubjects}
-                                        resultContext={resultContext.classId}
-                                        gradeSystems={gradeSystems}
-                                        examGradeSystemId={selectedExam?.grade_system}
-                                        isLocked={!selectedExam?.is_active}
-                                    />
-                                );
-                            })}
-                        </tbody>
-                    </table>
-                    {filteredResultStudents.length === 0 && (
-                        <div className="p-12 text-center text-gray-400 italic">No students found for {resultContext.level} {resultContext.classId === 'all' ? '(All Streams)' : ''}</div>
-                    )}
+                                    {subjects.filter(sub => {
+                                        if (resultContext.classId === 'all') return true;
+                                        return activeClassSubjects.some(cs => cs.subject === sub.id);
+                                    }).map(sub => (
+                                        <th key={sub.id} className="px-2 py-3 text-center min-w-[100px]" title={`${sub.name} (${sub.code})`}>
+                                            <div className="text-[10px] font-black uppercase text-slate-500 tracking-widest">{sub.name.substring(0, 3)}</div>
+                                        </th>
+                                    ))}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filteredResultStudents.map((student) => {
+                                    const sClass = classes.find(c => c.id === student.current_class);
+                                    return (
+                                        <StudentResultRow
+                                            key={student.id}
+                                            student={student}
+                                            sClass={sClass}
+                                            subjects={subjects}
+                                            studentScores={studentScores[student.id]}
+                                            onScoreChange={handleScoreChange}
+                                            onDeleteResult={handleDeleteSingleResult}
+                                            activeClassSubjects={activeClassSubjects}
+                                            resultContext={resultContext.classId}
+                                            gradeSystems={gradeSystems}
+                                            examGradeSystemId={selectedExam?.grade_system}
+                                            isLocked={!selectedExam?.is_active}
+                                        />
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                        {filteredResultStudents.length === 0 && (
+                            <div className="p-20 text-center text-slate-400 italic text-xs font-medium uppercase tracking-widest">
+                                No students found for the selected scope
+                            </div>
+                        )}
+                    </div>
                 </div>
             )}
-
-            <div className="mt-4 pt-4 border-t flex justify-between items-center">
-                <p className="text-[10px] text-secondary">
-                    <span className="font-bold text-primary">Tip:</span> Existing marks are shown in <span className="font-bold text-primary">blue</span>. Enter new marks and click Save.
-                </p>
-                <div className="flex gap-2">
-                    <Button variant="ghost" size="sm" onClick={onClose}>Cancel</Button>
-                    <Button type="submit" variant="primary" size="sm" className="font-black uppercase shadow-md px-6" loading={isSubmitting} loadingText="Saving Matrix...">Save Matrix Payload</Button>
-                </div>
-            </div>
         </form>
     </Modal>
 );

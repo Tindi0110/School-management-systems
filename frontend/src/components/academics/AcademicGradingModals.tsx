@@ -15,37 +15,39 @@ interface GradeSystemModalProps {
 export const GradeSystemModal: React.FC<GradeSystemModalProps> = ({
     isOpen, onClose, editingSystemId, gradeForm, setGradeForm, handleGradeSystemSubmit, isSubmitting
 }) => (
-    <Modal isOpen={isOpen} onClose={onClose} title={editingSystemId ? "Edit Grading System" : "New Grading System"}>
-        <form onSubmit={handleGradeSystemSubmit} className="form-container-md mx-auto">
-            <div className="form-group mb-4">
-                <label className="label text-[10px] font-black uppercase">System Name</label>
+    <Modal 
+        isOpen={isOpen} 
+        onClose={onClose} 
+        title={editingSystemId ? "Edit Grading System" : "New Grading System"}
+        footer={
+            <>
+                <button type="button" className="modern-btn modern-btn-secondary" onClick={onClose}>Cancel</button>
+                <button type="submit" form="grade-system-form" className="modern-btn modern-btn-primary" disabled={isSubmitting}>
+                    {isSubmitting ? "SAVING..." : "SAVE SYSTEM"}
+                </button>
+            </>
+        }
+    >
+        <form id="grade-system-form" onSubmit={handleGradeSystemSubmit} className="space-y-6">
+            <div className="form-group">
+                <label>System Name</label>
                 <input
                     type="text"
-                    className="input"
                     placeholder="e.g. KNEC Standard"
                     value={gradeForm.name}
                     onChange={(e) => setGradeForm({ ...gradeForm, name: e.target.value })}
                     required
                 />
             </div>
-            <div className="form-group mb-4 flex items-center gap-2">
+            <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
                 <input
                     type="checkbox"
-                    className="checkbox checkbox-sm checkbox-primary"
+                    className="checkbox"
                     checked={gradeForm.is_default}
                     onChange={(e) => setGradeForm({ ...gradeForm, is_default: e.target.checked })}
                 />
-                <label className="label text-[10px] font-black uppercase mb-0">Set as Default System</label>
+                <label className="text-xs font-bold text-slate-700">Set as Default System</label>
             </div>
-            <Button
-                type="submit"
-                variant="primary"
-                className="w-full font-black uppercase"
-                loading={isSubmitting}
-                loadingText="Saving..."
-            >
-                Save System
-            </Button>
         </form>
     </Modal>
 );
@@ -63,14 +65,25 @@ interface BoundaryModalProps {
 export const BoundaryModal: React.FC<BoundaryModalProps> = ({
     isOpen, onClose, editingBoundaryId, boundaryForm, setBoundaryForm, handleBoundarySubmit, isSubmitting
 }) => (
-    <Modal isOpen={isOpen} onClose={onClose} title={editingBoundaryId ? "Edit Grade Boundary" : "Add Grade Boundary"}>
-        <form onSubmit={handleBoundarySubmit} className="form-container-md mx-auto space-y-4 px-1">
-            <div className="grid grid-cols-2 gap-4">
+    <Modal 
+        isOpen={isOpen} 
+        onClose={onClose} 
+        title={editingBoundaryId ? "Edit Grade Boundary" : "Add Grade Boundary"}
+        footer={
+            <>
+                <button type="button" className="modern-btn modern-btn-secondary" onClick={onClose}>Cancel</button>
+                <button type="submit" form="boundary-form" className="modern-btn modern-btn-primary" disabled={isSubmitting}>
+                    {isSubmitting ? "SAVING..." : "SAVE BOUNDARY"}
+                </button>
+            </>
+        }
+    >
+        <form id="boundary-form" onSubmit={handleBoundarySubmit} className="space-y-6">
+            <div className="form-grid">
                 <div className="form-group">
-                    <label className="label text-[10px] font-black uppercase">Grade Symbol</label>
+                    <label>Grade Symbol</label>
                     <input
                         type="text"
-                        className="input"
                         placeholder="e.g. A"
                         value={boundaryForm.grade}
                         onChange={(e) => setBoundaryForm({ ...boundaryForm, grade: e.target.value })}
@@ -78,58 +91,43 @@ export const BoundaryModal: React.FC<BoundaryModalProps> = ({
                     />
                 </div>
                 <div className="form-group">
-                    <label className="label text-[10px] font-black uppercase">Points</label>
+                    <label>Points</label>
                     <input
                         type="number"
-                        className="input"
                         placeholder="12"
                         value={boundaryForm.points}
                         onChange={(e) => setBoundaryForm({ ...boundaryForm, points: parseInt(e.target.value) })}
                         required
                     />
                 </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
                 <div className="form-group">
-                    <label className="label text-[10px] font-black uppercase">Min Score</label>
+                    <label>Min Score</label>
                     <input
                         type="number"
-                        className="input"
                         value={boundaryForm.min_score}
                         onChange={(e) => setBoundaryForm({ ...boundaryForm, min_score: parseInt(e.target.value) })}
                         required
                     />
                 </div>
                 <div className="form-group">
-                    <label className="label text-[10px] font-black uppercase">Max Score</label>
+                    <label>Max Score</label>
                     <input
                         type="number"
-                        className="input"
                         value={boundaryForm.max_score}
                         onChange={(e) => setBoundaryForm({ ...boundaryForm, max_score: parseInt(e.target.value) })}
                         required
                     />
                 </div>
+                <div className="form-group col-span-2">
+                    <label>Remarks</label>
+                    <input
+                        type="text"
+                        placeholder="e.g. Excellent"
+                        value={boundaryForm.remarks}
+                        onChange={(e) => setBoundaryForm({ ...boundaryForm, remarks: e.target.value })}
+                    />
+                </div>
             </div>
-            <div className="form-group">
-                <label className="label text-[10px] font-black uppercase">Remarks</label>
-                <input
-                    type="text"
-                    className="input"
-                    placeholder="Excellent"
-                    value={boundaryForm.remarks}
-                    onChange={(e) => setBoundaryForm({ ...boundaryForm, remarks: e.target.value })}
-                />
-            </div>
-            <Button
-                type="submit"
-                variant="primary"
-                className="w-full font-black uppercase"
-                loading={isSubmitting}
-                loadingText="Saving..."
-            >
-                Save Boundary
-            </Button>
         </form>
     </Modal>
 );

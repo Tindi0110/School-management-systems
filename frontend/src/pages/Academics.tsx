@@ -667,22 +667,24 @@ const Academics = () => {
         try {
             const payload = {
                 ...classForm,
-                year: parseInt(classForm.year.toString()) || new Date().getFullYear(),
-                capacity: parseInt(classForm.capacity.toString()) || 40,
+                year: parseInt(classForm.year?.toString()) || new Date().getFullYear(),
+                capacity: parseInt(classForm.capacity?.toString()) || 40,
                 class_teacher: classForm.class_teacher ? parseInt(classForm.class_teacher) : null
             };
 
             if (editingClassId) {
-                await academicsAPI.classes.update(editingClassId, payload);
+                // Use PATCH instead of PUT to avoid clearing M2M fields like subjects
+                await academicsAPI.classes.patch(editingClassId, payload);
                 success('Class unit updated successfully!');
             } else {
                 await academicsAPI.classes.create(payload);
                 success('Class unit created successfully!');
             }
-            loadAllAcademicData();
+            await loadAllAcademicData(); // Await refresh to ensure UI reflects changes
             setIsClassModalOpen(false);
             setEditingClassId(null);
-            setClassForm({ name: '', stream: '', year: activeYear, class_teacher: '', capacity: 40 });
+            // Reset with activeYear from state to avoid undefined year
+            setClassForm({ name: '', stream: '', year: activeYearObj?.name || new Date().getFullYear().toString(), class_teacher: '', capacity: 40 });
         } catch (err: any) {
             toastError(err.message || 'Failed to save class.');
         } finally {

@@ -138,13 +138,12 @@ const Finance = () => {
                     const activeYearId = String(res.data.context.year_id);
                     const activeTerm = String(res.data.context.term_num || '1');
                     
-                    if (!invFilters.year_id) {
+                    // Only update if actually different to prevent re-fetch loops
+                    if (invFilters.year_id !== activeYearId || invFilters.term !== activeTerm) {
                         setInvFilters(prev => ({ ...prev, year_id: activeYearId, term: activeTerm }));
+                        setGenForm((prev: any) => ({ ...prev, year_id: activeYearId, term: activeTerm }));
+                        setFeeForm((prev: any) => ({ ...prev, year_id: activeYearId, term: activeTerm }));
                     }
-                    
-                    // Propagate to creation forms
-                    setGenForm((prev: any) => ({ ...prev, year_id: activeYearId, term: activeTerm }));
-                    setFeeForm((prev: any) => ({ ...prev, year_id: activeYearId, term: activeTerm }));
                 }
             } else if (activeTab === 'invoices') {
                 const params: any = { page, page_size: pageSize, search: debouncedSearch, ...invFilters };

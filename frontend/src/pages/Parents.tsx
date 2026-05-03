@@ -191,107 +191,123 @@ const Parents = () => {
                 </div>
             </div>
 
-            <div className="table-container shadow-md border-top-4 border-primary mt-4">
-                <div className="table-wrapper">
-                    <table className="table min-w-[1000px]">
-                        <thead>
-                            <tr className="bg-slate-50 border-bottom">
-                                <th className="p-4 text-[10px] font-black uppercase text-secondary tracking-[0.15em]">Guardian Identity</th>
-                                <th className="p-4 text-[10px] font-black uppercase text-secondary tracking-[0.15em]">Contact Info</th>
-                                <th className="p-4 text-[10px] font-black uppercase text-secondary tracking-[0.15em]">Occupation & Address</th>
-                                <th className="p-4 text-[10px] font-black uppercase text-secondary tracking-[0.15em]">Children / Wards</th>
-                                <th className="p-4 text-[10px] font-black uppercase text-secondary tracking-[0.15em] text-right no-print">Actions</th>
-                            </tr>
-                        </thead>
-                    <tbody className="divide-y divide-gray-100">
-                        {filteredParents.length === 0 ? (
-                            <tr>
-                                <td colSpan={5} className="p-8 text-center text-secondary text-xs font-bold uppercase italic">
-                                    No records found matching your search.
-                                </td>
-                            </tr>
-                        ) : (
-                            filteredParents.map((p) => (
-                                <tr key={p.id} className="hover:bg-gray-50 transition-colors">
-                                    <td className="p-4 whitespace-nowrap">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-black text-xs">
-                                                {p.full_name.charAt(0)}
-                                            </div>
-                                            <div>
-                                                <p className="font-bold text-gray-800 text-sm">{p.full_name}</p>
-                                                <span className="badge badge-sm badge-info uppercase text-[10px] font-black">{p.relationship}</span>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="p-4">
-                                        <div className="space-y-1">
-                                            <div className="flex items-center gap-2 text-xs font-medium text-gray-600">
-                                                <Phone size={12} className="text-secondary" /> {p.phone}
-                                            </div>
-                                            {p.email && (
-                                                <div className="flex items-center gap-2 text-xs text-gray-500">
-                                                    <Mail size={12} className="text-secondary" /> {p.email}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </td>
-                                    <td className="p-4">
-                                        <div className="space-y-1">
-                                            <p className="text-xs font-bold text-gray-700 flex items-center gap-2">
-                                                <Briefcase size={12} className="text-secondary" />
-                                                {p.occupation || 'Not Specified'}
-                                            </p>
-                                            <p className="text-[10px] text-gray-500 flex items-center gap-2">
-                                                <MapPin size={10} className="text-secondary" />
-                                                {p.address || 'Address not listed'}
-                                            </p>
-                                        </div>
-                                    </td>
-                                    <td className="p-4">
-                                        <div className="flex flex-col gap-1">
-                                            {p.students && p.students.length > 0 ? (
-                                                p.students.map((s: any) => (
-                                                    <span key={s.id} className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 px-2 py-1 rounded text-[10px] font-bold border border-blue-100 w-fit">
-                                                        <UserIcon size={10} />
-                                                        {s.full_name} ({s.class_name || 'N/A'})
-                                                    </span>
-                                                ))
-                                            ) : (
-                                                <span className="text-[10px] text-gray-400 italic">No wards linked</span>
-                                            )}
-                                        </div>
-                                    </td>
-                                    <td className="p-4 text-right">
-                                        <div className="flex gap-2 justify-end">
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => {
-                                                    setEditingParent(p);
-                                                    setFormData({
-                                                        ...p,
-                                                        country_code: (p.phone || '').startsWith('+') ? p.phone.slice(0, 4) : '+254'
-                                                    });
-                                                    setIsModalOpen(true);
-                                                }}
-                                                icon={<Edit size={16} />}
-                                                title="Edit Details"
-                                            />
-                                            <Button
-                                                variant="danger"
-                                                size="sm"
-                                                onClick={() => handleDelete(p.id)}
-                                                icon={<Trash2 size={16} />}
-                                                title="Delete Guardian"
-                                            />
-                                        </div>
-                                    </td>
+            <div className="bg-white/40 backdrop-blur-md rounded-3xl shadow-xl shadow-slate-200/50 border border-white/60 overflow-hidden">
+                <div className="p-8 border-b border-slate-100 flex justify-between items-center">
+                    <div>
+                        <h3 className="text-xl font-black uppercase text-slate-800 mb-1">Guardian Registry</h3>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Official contact directory for all enrolled families</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <span className="bg-primary/5 text-primary text-[10px] font-black uppercase px-4 py-2 rounded-xl border border-primary/10">
+                            {parents.length} Active Records
+                        </span>
+                    </div>
+                </div>
+
+                <div className="table-container border-none shadow-none p-0">
+                    <div className="table-wrapper">
+                        <table className="table min-w-[1000px]">
+                            <thead>
+                                <tr>
+                                    <th>Guardian Identity</th>
+                                    <th>Relationship</th>
+                                    <th>Contact Metrics</th>
+                                    <th>Linked Students</th>
+                                    <th>Location</th>
+                                    <th className="no-print text-right">Actions</th>
                                 </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
+                            </thead>
+                            <tbody>
+                                {filteredParents.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={6} className="p-16 text-center text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] italic">
+                                            No guardian records matching your search context.
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    filteredParents.map((p) => (
+                                        <tr key={p.id} className="hover:bg-slate-50/50 transition-colors">
+                                            <td className="p-4">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center text-primary font-black text-xs border border-primary/10 shadow-sm">
+                                                        {p.full_name.split(' ').map((n: any) => n[0]).join('').slice(0, 2)}
+                                                    </div>
+                                                    <div className="flex flex-col">
+                                                        <span className="font-bold text-slate-800 text-sm">{p.full_name}</span>
+                                                        <span className={`text-[10px] font-black uppercase tracking-wider ${p.is_primary ? 'text-amber-600' : 'text-slate-400'}`}>
+                                                            {p.is_primary ? 'Primary Contact' : 'Secondary Contact'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="p-4">
+                                                <span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border border-slate-200">
+                                                    {p.relationship}
+                                                </span>
+                                            </td>
+                                            <td className="p-4">
+                                                <div className="flex flex-col gap-1">
+                                                    <div className="flex items-center gap-2 text-slate-700">
+                                                        <Phone size={12} className="text-slate-400" />
+                                                        <span className="text-xs font-medium font-mono">{p.phone}</span>
+                                                    </div>
+                                                    {p.email && (
+                                                        <div className="flex items-center gap-2 text-slate-500">
+                                                            <Mail size={12} className="text-slate-400" />
+                                                            <span className="text-[10px] truncate max-w-[150px]">{p.email}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td className="p-4">
+                                                <div className="flex flex-wrap gap-1.5">
+                                                    {p.students && p.students.length > 0 ? (
+                                                        p.students.map((student: any) => (
+                                                            <div key={student.id} className="group relative flex items-center gap-1.5 bg-white border border-slate-200 px-2.5 py-1 rounded-lg shadow-sm hover:border-primary/30 transition-all cursor-help">
+                                                                <div className="w-1.5 h-1.5 rounded-full bg-primary/40 group-hover:bg-primary"></div>
+                                                                <span className="text-[10px] font-bold text-slate-600">{student.full_name}</span>
+                                                            </div>
+                                                        ))
+                                                    ) : (
+                                                        <span className="text-[10px] font-black text-slate-300 uppercase italic">Unlinked</span>
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td className="p-4">
+                                                <div className="flex flex-col">
+                                                    <span className="text-xs text-slate-600 font-medium truncate max-w-[150px]">{p.address || 'Not specified'}</span>
+                                                    <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">{p.occupation || 'Private'}</span>
+                                                </div>
+                                            </td>
+                                            <td className="p-4 text-right no-print">
+                                                <div className="flex gap-2 justify-end">
+                                                    <button 
+                                                        className="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-50 text-slate-600 border border-slate-100 hover:bg-white hover:text-primary transition-all shadow-sm"
+                                                        onClick={() => {
+                                                            setEditingParent(p);
+                                                            setFormData({
+                                                                ...p,
+                                                                country_code: (p.phone || '').startsWith('+') ? p.phone.slice(0, 4) : '+254'
+                                                            });
+                                                            setIsModalOpen(true);
+                                                        }}
+                                                    >
+                                                        <Edit size={16} />
+                                                    </button>
+                                                    <button 
+                                                        className="w-9 h-9 flex items-center justify-center rounded-xl bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-600 hover:text-white transition-all shadow-sm"
+                                                        onClick={() => handleDelete(p.id)}
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
                 {/* Pagination Controls */}
                 {totalItems > pageSize && (
@@ -307,33 +323,45 @@ const Parents = () => {
                 )}
             </div>
 
-            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Guardian Enrollment" size="md">
-                <form onSubmit={handleSubmit} className="space-y-4 form-container-md mx-auto">
+            <Modal 
+                isOpen={isModalOpen} 
+                onClose={() => setIsModalOpen(false)} 
+                title={editingParent ? "Update Guardian Record" : "Guardian Enrollment"}
+                footer={
+                    <>
+                        <button type="button" className="modern-btn modern-btn-secondary" onClick={() => setIsModalOpen(false)}>Cancel</button>
+                        <button type="submit" form="guardian-form" className="modern-btn modern-btn-primary" disabled={isSubmitting}>
+                            {isSubmitting ? (editingParent ? 'UPDATING...' : 'ENROLLING...') : (editingParent ? 'SAVE RECORD' : 'ENROLL GUARDIAN')}
+                        </button>
+                    </>
+                }
+            >
+                <form id="guardian-form" onSubmit={handleSubmit} className="space-y-6">
                     <div className="form-group">
-                        <label className="label text-[10px] font-black uppercase">Full Name *</label>
-                        <input type="text" className="input" value={formData.full_name} onChange={(e) => setFormData({ ...formData, full_name: e.target.value })} required />
+                        <label>Legal Full Name</label>
+                        <input type="text" placeholder="e.g. John Doe" value={formData.full_name} onChange={(e) => setFormData({ ...formData, full_name: e.target.value })} required />
                     </div>
-                    <div className="grid grid-cols-2 gap-md">
+                    <div className="form-grid">
                         <div className="form-group">
-                            <label className="label text-[10px] font-black uppercase">Relationship</label>
+                            <label>Family Relationship</label>
                             <SearchableSelect
                                 options={[
                                     { id: 'FATHER', label: 'Father' },
                                     { id: 'MOTHER', label: 'Mother' },
-                                    { id: 'GUARDIAN', label: 'Guardian' }
+                                    { id: 'GUARDIAN', label: 'Legal Guardian' }
                                 ]}
                                 value={formData.relationship}
                                 onChange={(val) => setFormData({ ...formData, relationship: val.toString() })}
                             />
                         </div>
                         <div className="form-group">
-                            <label className="label text-[10px] font-black uppercase">Occupation</label>
-                            <input type="text" className="input" value={formData.occupation} onChange={(e) => setFormData({ ...formData, occupation: e.target.value })} />
+                            <label>Occupation / Profession</label>
+                            <input type="text" placeholder="e.g. Civil Engineer" value={formData.occupation} onChange={(e) => setFormData({ ...formData, occupation: e.target.value })} />
                         </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-md">
+                    <div className="form-grid">
                         <div className="form-group">
-                            <label className="label text-[10px] font-black uppercase">Mobile No *</label>
+                            <label>Primary Contact (Mobile)</label>
                             <div className="flex gap-2">
                                 <CountryCodeSelect
                                     value={formData.country_code}
@@ -341,7 +369,7 @@ const Parents = () => {
                                 />
                                 <input
                                     type="tel"
-                                    className="input flex-grow"
+                                    className="flex-grow"
                                     value={formData.phone}
                                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                                     required
@@ -350,19 +378,13 @@ const Parents = () => {
                             </div>
                         </div>
                         <div className="form-group">
-                            <label className="label text-[10px] font-black uppercase">Email</label>
-                            <input type="email" className="input" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
+                            <label>Email Address</label>
+                            <input type="email" placeholder="guardian@example.com" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
                         </div>
                     </div>
                     <div className="form-group">
-                        <label className="label text-[10px] font-black uppercase">Residential Address</label>
-                        <textarea className="input" value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} rows={2}></textarea>
-                    </div>
-                    <div className="modal-footer pt-4">
-                        <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>CANCEL</Button>
-                        <Button type="submit" variant="primary" className="px-8 font-black" loading={isSubmitting} loadingText={editingParent ? 'UPDATING...' : 'ENROLLING...'}>
-                            {editingParent ? 'UPDATE GUARDIAN' : 'ENROLL GUARDIAN'}
-                        </Button>
+                        <label>Residential / Postal Address</label>
+                        <textarea className="h-24" placeholder="Enter physical home address or PO Box..." value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} />
                     </div>
                 </form>
             </Modal>

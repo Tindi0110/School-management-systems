@@ -99,9 +99,18 @@ class StudentListSerializer(serializers.ModelSerializer):
         return obj.current_class.stream if obj.current_class else ""
 
     def get_attendance_percentage(self, obj):
+        total = getattr(obj, 'attendance_total', None)
+        present = getattr(obj, 'attendance_present', None)
+        if total is not None:
+            return round((present / total) * 100, 1) if total > 0 else 0
         return obj.get_attendance_stats()
 
     def get_average_grade(self, obj):
+        avg_score = getattr(obj, 'avg_score', None)
+        if avg_score is not None:
+            score = float(avg_score)
+            grade = obj.get_grade_from_score(score)
+            return f"{grade} ({round(score)}%)"
         return obj.get_academic_stats()['display']
 
 class StudentSerializer(serializers.ModelSerializer):
@@ -152,9 +161,18 @@ class StudentSerializer(serializers.ModelSerializer):
             return "N/A"
 
     def get_attendance_percentage(self, obj):
+        total = getattr(obj, 'attendance_total', None)
+        present = getattr(obj, 'attendance_present', None)
+        if total is not None:
+            return round((present / total) * 100, 1) if total > 0 else 0
         return obj.get_attendance_stats()
 
     def get_average_grade(self, obj):
+        avg_score = getattr(obj, 'avg_score', None)
+        if avg_score is not None:
+            score = float(avg_score)
+            grade = obj.get_grade_from_score(score)
+            return f"{grade} ({round(score)}%)"
         return obj.get_academic_stats()['display']
 
     def validate_guardian_phone(self, value):

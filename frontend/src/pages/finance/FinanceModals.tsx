@@ -177,14 +177,28 @@ const FinanceModals: React.FC<FinanceModalsProps> = ({
     return (
         <>
             {/* Invoice Generation Modal */}
-            <Modal isOpen={showInvoiceModal} onClose={() => setShowInvoiceModal(false)} title="Bulk Invoice Generation">
-                <form onSubmit={handleGenerateInvoices} className="form-container-md mx-auto space-y-6">
-                    <p className="text-xs text-secondary-soft bg-blue-50/50 p-4 rounded-xl border border-blue-100 flex items-start gap-3">
+            <Modal 
+                isOpen={showInvoiceModal} 
+                onClose={() => setShowInvoiceModal(false)} 
+                title="Bulk Invoice Generation"
+                footer={
+                    <>
+                        <button type="button" className="modern-btn modern-btn-secondary" onClick={() => setShowInvoiceModal(false)}>Cancel</button>
+                        <button type="submit" form="invoice-gen-form" className="modern-btn modern-btn-primary" disabled={isSubmitting}>
+                            {isSubmitting ? "GENERATING..." : "GENERATE BATCH"}
+                        </button>
+                    </>
+                }
+            >
+                <form id="invoice-gen-form" onSubmit={handleGenerateInvoices} className="space-y-6">
+                    <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100 flex items-start gap-3">
                         <TrendingUp size={16} className="text-blue-500 mt-0.5 shrink-0" />
-                        <span>This will generate invoices for <strong>ALL students</strong> in the selected class who do not already have an invoice for this period.</span>
-                    </p>
+                        <span className="text-[11px] font-medium text-blue-700 leading-relaxed italic">
+                            This will generate invoices for <strong>ALL students</strong> in the selected class who do not already have an invoice for this period.
+                        </span>
+                    </div>
                     <div className="form-group">
-                        <label className="label">Academic Year *</label>
+                        <label>Academic Year</label>
                         <SearchableSelect
                             placeholder="Select Year"
                             options={years.map((y: AcademicYear) => ({ id: y.id.toString(), label: y.name }))}
@@ -193,9 +207,9 @@ const FinanceModals: React.FC<FinanceModalsProps> = ({
                             required
                         />
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="form-grid">
                         <div className="form-group">
-                            <label className="label">Class Level *</label>
+                            <label>Class Level</label>
                             <SearchableSelect
                                 placeholder="Select Level"
                                 options={[
@@ -208,7 +222,7 @@ const FinanceModals: React.FC<FinanceModalsProps> = ({
                             />
                         </div>
                         <div className="form-group">
-                            <label className="label">Stream *</label>
+                            <label>Specific Stream</label>
                             <SearchableSelect
                                 placeholder="Select Stream"
                                 options={[
@@ -223,7 +237,7 @@ const FinanceModals: React.FC<FinanceModalsProps> = ({
                         </div>
                     </div>
                     <div className="form-group">
-                        <label className="label">Term *</label>
+                        <label>Academic Term</label>
                         <SearchableSelect
                             options={[
                                 { id: '1', label: 'Term 1' },
@@ -234,130 +248,144 @@ const FinanceModals: React.FC<FinanceModalsProps> = ({
                             onChange={(val) => setGenForm({ ...genForm, term: val.toString() })}
                         />
                     </div>
-                    <div className="modal-footer pt-6 border-top mt-4 flex justify-end gap-3">
-                        <Button type="button" variant="outline" onClick={() => setShowInvoiceModal(false)}>Cancel</Button>
-                        <Button type="submit" variant="primary" className="px-8 font-black shadow-lg" loading={isSubmitting} disabled={isSubmitting} loadingText="GENERATING...">
-                            GENERATE BATCH
-                        </Button>
-                    </div>
                 </form>
             </Modal>
 
             {/* Payment Modal */}
-            <Modal isOpen={showPaymentModal} onClose={() => setShowPaymentModal(false)} title="Receive Fee Payment">
-                <form onSubmit={handlePaymentSubmit} className="form-container-md mx-auto space-y-6">
-                    <div className="bg-primary/5 p-4 rounded-xl border border-primary/10 flex items-center gap-4 mb-4">
-                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                            <CreditCard size={20} />
+            <Modal 
+                isOpen={showPaymentModal} 
+                onClose={() => setShowPaymentModal(false)} 
+                title="Receive Fee Payment"
+                footer={
+                    <>
+                        <button type="button" className="modern-btn modern-btn-secondary" onClick={() => setShowPaymentModal(false)}>Cancel</button>
+                        <button type="submit" form="payment-form" className="modern-btn modern-btn-primary" disabled={isSubmitting}>
+                            {isSubmitting ? "PROCESSING..." : "RECORD PAYMENT"}
+                        </button>
+                    </>
+                }
+            >
+                <form id="payment-form" onSubmit={handlePaymentSubmit} className="space-y-6">
+                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-2xl bg-white shadow-sm border border-slate-100 flex items-center justify-center text-primary">
+                            <CreditCard size={24} />
                         </div>
                         <div>
-                            <h4 className="text-xs font-black uppercase tracking-tight text-primary">Receive Fee Payment</h4>
-                            <p className="text-[10px] text-secondary font-bold uppercase opacity-60">Record manual bank or cash transactions</p>
+                            <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Manual Transaction</h4>
+                            <p className="text-xs font-bold text-slate-700">Record direct cash, bank, or cheque payments</p>
                         </div>
                     </div>
 
                     <div className="space-y-4">
-                        <div className="flex items-center justify-between px-1">
-                            <label className="label mb-0 cursor-pointer flex items-center gap-2">
+                        <div className="flex items-center justify-between bg-slate-50/50 p-2 rounded-lg border border-slate-100">
+                            <label className="flex items-center gap-2 cursor-pointer">
                                 <input 
                                     type="checkbox" 
-                                    className="checkbox checkbox-primary checkbox-xs" 
+                                    className="checkbox" 
                                     checked={showOnlyWithDebt}
                                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setShowOnlyWithDebt(e.target.checked)}
                                 />
-                                <span className="text-[10px] font-black uppercase tracking-widest text-secondary opacity-70">Only Show Students with Arrears</span>
+                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Only students with arrears</span>
                             </label>
                         </div>
 
-                        <SearchableSelect
-                            label="Search Student"
-                            placeholder="Type Name or Admission Number..."
-                            options={students.map((s: Student) => ({
-                                id: s.id,
-                                label: `${s.admission_number} - ${s.full_name} `,
-                                subLabel: (
-                                    <span className={Number(s.fee_balance) > 0 ? 'text-rose-600 font-bold' : 'text-emerald-600'}>
-                                        Balance: KES {Number(s.fee_balance).toLocaleString()}
-                                    </span>
-                                )
-                            }))}
-                            onSearch={async (term: string) => {
-                                if (term.length > 0 || term === '*') {
-                                    try {
-                                        const res = await studentsAPI.minimalSearch({ 
-                                            search: term, 
-                                            has_debt: showOnlyWithDebt 
-                                        });
-                                        const results = res.data?.results ?? res.data ?? [];
-                                        setStudents((prev: Student[]) => {
-                                            const map = new Map(prev.map((s: Student) => [s.id, s]));
-                                            results.forEach((r: Student) => map.set(r.id, r));
-                                            return Array.from(map.values());
-                                        });
-                                    } catch (e) {
-                                        console.error("Student search failed", e);
+                        <div className="form-group">
+                            <label>Search Student Candidate</label>
+                            <SearchableSelect
+                                placeholder="Type Name or Admission Number..."
+                                options={students.map((s: Student) => ({
+                                    id: s.id,
+                                    label: `${s.admission_number} - ${s.full_name} `,
+                                    subLabel: (
+                                        <span className={Number(s.fee_balance) > 0 ? 'text-rose-600 font-black uppercase text-[9px]' : 'text-emerald-600 font-black uppercase text-[9px]'}>
+                                            BALANCE: KES {Number(s.fee_balance).toLocaleString()}
+                                        </span>
+                                    )
+                                }))}
+                                onSearch={async (term: string) => {
+                                    if (term.length > 0 || term === '*') {
+                                        try {
+                                            const res = await studentsAPI.minimalSearch({ 
+                                                search: term, 
+                                                has_debt: showOnlyWithDebt 
+                                            });
+                                            const results = res.data?.results ?? res.data ?? [];
+                                            setStudents((prev: Student[]) => {
+                                                const map = new Map(prev.map((s: Student) => [s.id, s]));
+                                                results.forEach((r: Student) => map.set(r.id, r));
+                                                return Array.from(map.values());
+                                            });
+                                        } catch (e) {
+                                            console.error("Student search failed", e);
+                                        }
                                     }
-                                }
-                            }}
-                            value={payForm.student_id}
-                            onChange={async (val) => {
-                                const studentId = String(val);
-                                try {
-                                    const res = await financeAPI.invoices.getAll({ student: studentId, page_size: 100 });
-                                    const studentInvoices = res.data?.results ?? res.data ?? [];
-                                    setActiveStudentInvoices(studentInvoices);
-                                    const validInvoices = studentInvoices.filter((i: InvoiceDetail) => i.status !== 'PAID' && Number(i.balance) !== 0);
-                                    const latestInvoice = validInvoices.length > 0 ? validInvoices[0] : null;
-                                    setPayForm({
-                                        ...payForm,
-                                        student_id: studentId,
-                                        invoice_id: latestInvoice ? String(latestInvoice.id) : '',
-                                        amount: latestInvoice ? String(latestInvoice.balance) : ''
-                                    });
-                                } catch (err) {
-                                    console.error("Failed to load specific student invoices:", err);
-                                }
-                            }}
-                            required
-                        />
-
-                        {payForm.student_id && (
-                            <div className="bg-primary/5 p-4 rounded-xl border border-primary/10 mt-2">
-                                <label className="label">Select Invoice *</label>
-                                <SearchableSelect
-                                    placeholder="Select Active Invoice"
-                                    options={activeStudentInvoices
-                                        .filter((i: InvoiceDetail) => i.status !== 'PAID' && Number(i.balance) !== 0)
-                                        .map((i: InvoiceDetail) => ({
-                                            id: i.id.toString(),
-                                            label: `Invoice #${i.id} | ${i.academic_year_name} T${i.term} `,
-                                            subLabel: `Remaining: KES ${Number(i.balance).toLocaleString()} `
-                                        }))}
-                                    value={payForm.invoice_id}
-                                    onChange={(val) => {
-                                        const invId = val.toString();
-                                        const inv = activeStudentInvoices.find((i: InvoiceDetail) => String(i.id) === invId);
+                                }}
+                                value={payForm.student_id}
+                                onChange={async (val) => {
+                                    const studentId = String(val);
+                                    try {
+                                        const res = await financeAPI.invoices.getAll({ student: studentId, page_size: 100 });
+                                        const studentInvoices = res.data?.results ?? res.data ?? [];
+                                        setActiveStudentInvoices(studentInvoices);
+                                        const validInvoices = studentInvoices.filter((i: InvoiceDetail) => i.status !== 'PAID' && Number(i.balance) !== 0);
+                                        const latestInvoice = validInvoices.length > 0 ? validInvoices[0] : null;
                                         setPayForm({
                                             ...payForm,
-                                            invoice_id: invId,
-                                            amount: inv ? String(inv.balance) : payForm.amount
+                                            student_id: studentId,
+                                            invoice_id: latestInvoice ? String(latestInvoice.id) : '',
+                                            amount: latestInvoice ? String(latestInvoice.balance) : ''
                                         });
-                                    }}
-                                    required
-                                />
+                                    } catch (err) {
+                                        console.error("Failed to load specific student invoices:", err);
+                                    }
+                                }}
+                                required
+                            />
+                        </div>
+
+                        {payForm.student_id && (
+                            <div className="bg-primary/5 p-4 rounded-xl border border-primary/10">
+                                <div className="form-group">
+                                    <label>Select Target Invoice</label>
+                                    <SearchableSelect
+                                        placeholder="Select Active Invoice"
+                                        options={activeStudentInvoices
+                                            .filter((i: InvoiceDetail) => i.status !== 'PAID' && Number(i.balance) !== 0)
+                                            .map((i: InvoiceDetail) => ({
+                                                id: i.id.toString(),
+                                                label: `Invoice #${i.id} | ${i.academic_year_name} T${i.term} `,
+                                                subLabel: `REMAINING: KES ${Number(i.balance).toLocaleString()} `
+                                            }))}
+                                        value={payForm.invoice_id}
+                                        onChange={(val) => {
+                                            const invId = val.toString();
+                                            const inv = activeStudentInvoices.find((i: InvoiceDetail) => String(i.id) === invId);
+                                            setPayForm({
+                                                ...payForm,
+                                                invoice_id: invId,
+                                                amount: inv ? String(inv.balance) : payForm.amount
+                                            });
+                                        }}
+                                        required
+                                    />
+                                </div>
                             </div>
                         )}
                     </div>
 
                     <div className="form-group">
-                        <label className="label">Amount (KES) *</label>
-                        <input type="number" className="input" required
-                            value={payForm.amount} onChange={e => setPayForm({ ...payForm, amount: e.target.value })}
+                        <label>Payment Amount (KES)</label>
+                        <input 
+                            type="number" 
+                            className="text-lg font-black"
+                            required
+                            value={payForm.amount} 
+                            onChange={e => setPayForm({ ...payForm, amount: e.target.value })}
                         />
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="form-grid">
                         <div className="form-group">
-                            <label className="label">Payment Method *</label>
+                            <label>Payment Channel</label>
                             <SearchableSelect
                                 options={[
                                     { id: 'CASH', label: 'Cash' },
@@ -369,34 +397,46 @@ const FinanceModals: React.FC<FinanceModalsProps> = ({
                             />
                         </div>
                         <div className="form-group">
-                            <label className="label">Reference No.</label>
-                            <input type="text" className="input"
-                                placeholder="Ref..."
-                                value={payForm.reference} onChange={e => setPayForm({ ...payForm, reference: e.target.value })}
+                            <label>Transaction Reference</label>
+                            <input 
+                                type="text" 
+                                placeholder="Ref Number..."
+                                value={payForm.reference} 
+                                onChange={e => setPayForm({ ...payForm, reference: e.target.value })}
                             />
                         </div>
-                    </div>
-                    <div className="modal-footer pt-6 border-top mt-4 flex justify-end gap-3">
-                        <Button type="button" variant="outline" onClick={() => setShowPaymentModal(false)}>Cancel</Button>
-                        <Button type="submit" variant="primary" className="px-8 font-black shadow-lg" loading={isSubmitting} disabled={isSubmitting} loadingText="PROCESSING...">
-                            RECORD PAYMENT
-                        </Button>
                     </div>
                 </form>
             </Modal>
 
             {/* Fee Modal */}
-            <Modal isOpen={showFeeModal} onClose={() => setShowFeeModal(false)} title={editingFeeId ? "Edit Fee Structure" : "New Fee Structure"}>
-                <form onSubmit={handleFeeSubmit} className="form-container-md mx-auto space-y-6">
+            <Modal 
+                isOpen={showFeeModal} 
+                onClose={() => setShowFeeModal(false)} 
+                title={editingFeeId ? "Edit Fee Structure" : "New Fee Structure"}
+                footer={
+                    <>
+                        <button type="button" className="modern-btn modern-btn-secondary" onClick={() => setShowFeeModal(false)}>Cancel</button>
+                        <button type="submit" form="fee-form" className="modern-btn modern-btn-primary" disabled={isSubmitting}>
+                            {isSubmitting ? "SAVING..." : "SAVE STRUCTURE"}
+                        </button>
+                    </>
+                }
+            >
+                <form id="fee-form" onSubmit={handleFeeSubmit} className="space-y-6">
                     <div className="form-group">
-                        <label className="label">Structure Name *</label>
-                        <input type="text" className="input" placeholder="e.g. Tuition Fee" required
-                            value={feeForm.name} onChange={e => setFeeForm({ ...feeForm, name: e.target.value })}
+                        <label>Structure Name</label>
+                        <input 
+                            type="text" 
+                            placeholder="e.g. Tuition Fee" 
+                            required
+                            value={feeForm.name} 
+                            onChange={e => setFeeForm({ ...feeForm, name: e.target.value })}
                         />
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="form-grid">
                         <div className="form-group">
-                            <label className="label">Academic Year *</label>
+                            <label>Academic Year</label>
                             <SearchableSelect
                                 placeholder="Select Year"
                                 options={years.map((y: AcademicYear) => ({ id: y.id.toString(), label: y.name }))}
@@ -406,7 +446,7 @@ const FinanceModals: React.FC<FinanceModalsProps> = ({
                             />
                         </div>
                         <div className="form-group">
-                            <label className="label">Class Level</label>
+                            <label>Target Class Level</label>
                             <SearchableSelect
                                 placeholder="All Levels"
                                 options={classes.map((c: SchoolClass) => ({ id: c.id.toString(), label: c.name }))}
@@ -414,16 +454,17 @@ const FinanceModals: React.FC<FinanceModalsProps> = ({
                                 onChange={(val) => setFeeForm({ ...feeForm, class_id: val.toString() })}
                             />
                         </div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="form-group">
-                            <label className="label">Amount (KES) *</label>
-                            <input type="number" className="input" required
-                                value={feeForm.amount} onChange={e => setFeeForm({ ...feeForm, amount: e.target.value })}
+                            <label>Base Amount (KES)</label>
+                            <input 
+                                type="number" 
+                                required
+                                value={feeForm.amount} 
+                                onChange={e => setFeeForm({ ...feeForm, amount: e.target.value })}
                             />
                         </div>
                         <div className="form-group">
-                            <label className="label">Term *</label>
+                            <label>Academic Term</label>
                             <SearchableSelect
                                 options={[
                                     { id: '1', label: 'Term 1' },
@@ -435,101 +476,20 @@ const FinanceModals: React.FC<FinanceModalsProps> = ({
                             />
                         </div>
                     </div>
-                    <div className="modal-footer pt-6 border-top mt-4 flex justify-end gap-3">
-                        <Button type="button" variant="outline" onClick={() => setShowFeeModal(false)}>Cancel</Button>
-                        <Button type="submit" variant="primary" className="px-8 font-black shadow-lg" loading={isSubmitting} disabled={isSubmitting} loadingText="SAVING...">
-                            SAVE STRUCTURE
-                        </Button>
-                    </div>
                 </form>
             </Modal>
 
             {/* Invoice Detail Modal */}
-            <Modal isOpen={!!selectedInvoice} onClose={() => setSelectedInvoice(null)} title={`Invoice Details - #INV - ${selectedInvoice?.id} `}>
-                {selectedInvoice && (
-                    <div className="space-y-6">
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pb-4 border-b">
-                            <div><p className="text-xs text-secondary uppercase font-black">Student</p><p className="font-bold">{selectedInvoice.student_name}</p></div>
-                            <div><p className="text-xs text-secondary uppercase font-black">Admission</p><p className="font-bold">{selectedInvoice.admission_number}</p></div>
-                            <div><p className="text-xs text-secondary uppercase font-black">Class</p><p className="font-bold">{selectedInvoice.class_name} {selectedInvoice.stream_name}</p></div>
-                            <div><p className="text-xs text-secondary uppercase font-black">Term</p><p className="font-bold">Term {selectedInvoice.term} ({selectedInvoice.academic_year_name})</p></div>
-                        </div>
-
-                        <div>
-                            <h4 className="font-bold text-sm mb-2 text-gray-500 uppercase tracking-wider">Invoice Items</h4>
-                            <div className="overflow-x-auto border rounded-lg">
-                                <table className="table table-compact w-full">
-                                    <thead className="bg-gray-50">
-                                        <tr>
-                                            <th>Description</th>
-                                            <th className="text-right">Amount</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {selectedInvoice && selectedInvoice.items?.map((item: InvoiceItem) => (
-                                            <tr key={item.id}>
-                                                <td>
-                                                    {item.description}
-                                                    <span className="text-xs text-gray-400 block">{item.created_at ? formatDateTime(item.created_at) : formatDate(selectedInvoice.date_generated)}</span>
-                                                </td>
-                                                <td className="text-right font-mono">KES {Number(item.amount).toLocaleString()}</td>
-                                            </tr>
-                                        ))}
-                                        {selectedInvoice && selectedInvoice.adjustments && selectedInvoice.adjustments.length > 0 && (
-                                            <>
-                                                <tr className="bg-gray-50"><td colSpan={2} className="text-xs font-bold text-gray-400">ADJUSTMENTS (FINES/WAIVERS)</td></tr>
-                                                {selectedInvoice.adjustments.map((adj: Adjustment) => (
-                                                    <tr key={adj.id}>
-                                                        <td>
-                                                            {adj.reason} <span className="text-xs text-gray-400">({adj.adjustment_type})</span>
-                                                            <span className="text-xs text-gray-400 block">{adj.created_at ? formatDateTime(adj.created_at) : formatDate(adj.date || '')}</span>
-                                                        </td>
-                                                        <td className={`text-right font-mono ${adj.adjustment_type === 'DEBIT' ? 'text-error' : 'text-success'}`}>
-                                                            {adj.adjustment_type === 'DEBIT' ? '+' : '-'} KES {Number(adj.amount).toLocaleString()}
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </>
-                                        )}
-                                        {selectedInvoice && selectedInvoice.payments && selectedInvoice.payments.length > 0 && (
-                                            <>
-                                                <tr className="bg-gray-50"><td colSpan={2} className="text-xs font-bold text-gray-400">PAYMENTS</td></tr>
-                                                {selectedInvoice.payments.map((pay: Payment) => (
-                                                    <tr key={pay.id}>
-                                                        <td>
-                                                            Payment - {pay.method} {pay.reference_number && `(Ref: ${pay.reference_number})`}
-                                                            <span className="text-xs text-gray-400 block">{pay.created_at ? formatDateTime(pay.created_at) : formatDate(pay.date_received || '')}</span>
-                                                        </td>
-                                                        <td className="text-right font-mono text-success">
-                                                            - KES {Number(pay.amount).toLocaleString()}
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </>
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <div className="p-4 bg-gray-50 rounded-xl space-y-2">
-                            <div className="flex justify-between items-center text-sm">
-                                <span>Subtotal</span>
-                                <span className="font-bold">KES {Number(selectedInvoice.total_amount).toLocaleString()}</span>
-                            </div>
-                            <div className="flex justify-between items-center text-sm">
-                                <span>Total Paid</span>
-                                <span className="font-bold text-success">KES {Number(selectedInvoice.paid_amount).toLocaleString()}</span>
-                            </div>
-                            <div className="flex justify-between items-center border-t pt-2 text-lg">
-                                <span className="font-bold">Balance Due</span>
-                                <span className={`font-black ${Number(selectedInvoice.balance) === 0 ? 'text-success' : Number(selectedInvoice.balance) < 0 ? 'text-info' : 'text-error'} `}>KES {Number(selectedInvoice.balance).toLocaleString()}</span>
-                            </div>
-                        </div>
-
-                        <div className="modal-action">
-                            <Button variant="ghost" onClick={() => setSelectedInvoice(null)}>Close</Button>
-                            <Button variant="outline" className="text-purple-600 border-purple-200" onClick={() => {
+            <Modal 
+                isOpen={!!selectedInvoice} 
+                onClose={() => setSelectedInvoice(null)} 
+                title={`Invoice Details - #INV-${selectedInvoice?.id}`}
+                footer={
+                    <div className="flex justify-between items-center w-full">
+                        <button 
+                            type="button" 
+                            className="modern-btn modern-btn-outline" 
+                            onClick={() => {
                                 if (selectedInvoice) {
                                     setAdjForm({ 
                                         student_id: String((selectedInvoice as any).student), 
@@ -540,19 +500,149 @@ const FinanceModals: React.FC<FinanceModalsProps> = ({
                                     });
                                     setShowAdjustmentModal(true);
                                 }
-                            }}>Apply Waiver/Fine</Button>
-                            <Button variant="outline" icon={<Printer size={16} />} onClick={() => window.print()}>Print / Save PDF</Button>
+                            }}
+                        >
+                            <TrendingUp size={14} className="mr-2" /> APPLY WAIVER/FINE
+                        </button>
+                        <div className="flex gap-3">
+                            <button type="button" className="modern-btn modern-btn-secondary" onClick={() => setSelectedInvoice(null)}>Close</button>
+                            <button type="button" className="modern-btn modern-btn-primary" onClick={() => window.print()}>
+                                <Printer size={14} className="mr-2" /> PRINT / PDF
+                            </button>
+                        </div>
+                    </div>
+                }
+            >
+                {selectedInvoice && (
+                    <div className="space-y-8">
+                        <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 grid grid-cols-2 md:grid-cols-4 gap-6">
+                            <div>
+                                <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest mb-1">Student Candidate</p>
+                                <p className="font-black text-slate-800">{selectedInvoice.student_name}</p>
+                            </div>
+                            <div>
+                                <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest mb-1">Admission ID</p>
+                                <p className="font-mono text-xs font-bold text-slate-600 uppercase tracking-tight">{selectedInvoice.admission_number}</p>
+                            </div>
+                            <div>
+                                <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest mb-1">Class Scope</p>
+                                <p className="font-bold text-slate-700">{selectedInvoice.class_name} {selectedInvoice.stream_name}</p>
+                            </div>
+                            <div>
+                                <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest mb-1">Period</p>
+                                <p className="font-bold text-slate-700">Term {selectedInvoice.term} ({selectedInvoice.academic_year_name})</p>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div className="flex items-center justify-between mb-4">
+                                <h4 className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Transaction Items</h4>
+                                <span className="badge bg-slate-100 text-slate-500 text-[9px] font-black px-2 py-0.5 rounded-full">
+                                    {(selectedInvoice.items?.length || 0) + (selectedInvoice.adjustments?.length || 0) + (selectedInvoice.payments?.length || 0)} RECORDS
+                                </span>
+                            </div>
+                            <div className="rounded-xl border border-slate-200 overflow-hidden shadow-sm bg-white">
+                                <table className="w-full text-left border-collapse">
+                                    <thead className="bg-slate-50 border-b border-slate-200">
+                                        <tr>
+                                            <th className="px-6 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Description</th>
+                                            <th className="px-6 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest text-right">Amount (KES)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100">
+                                        {selectedInvoice.items?.map((item: InvoiceItem) => (
+                                            <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
+                                                <td className="px-6 py-4">
+                                                    <div className="text-xs font-bold text-slate-700">{item.description}</div>
+                                                    <div className="text-[10px] text-slate-400 font-medium uppercase tracking-tight">
+                                                        {item.created_at ? formatDateTime(item.created_at) : formatDate(selectedInvoice.date_generated)}
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4 text-right font-mono text-xs font-black text-slate-600">
+                                                    {Number(item.amount).toLocaleString()}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        {selectedInvoice.adjustments && selectedInvoice.adjustments.length > 0 && (
+                                            <>
+                                                <tr className="bg-slate-50/50"><td colSpan={2} className="px-6 py-2 text-[9px] font-black text-slate-400 uppercase tracking-widest">Financial Adjustments</td></tr>
+                                                {selectedInvoice.adjustments.map((adj: Adjustment) => (
+                                                    <tr key={adj.id} className="hover:bg-slate-50/50 transition-colors">
+                                                        <td className="px-6 py-4">
+                                                            <div className="text-xs font-bold text-slate-700">{adj.reason}</div>
+                                                            <div className="text-[10px] text-slate-400 font-medium uppercase tracking-tight">
+                                                                {adj.adjustment_type} &bull; {adj.created_at ? formatDateTime(adj.created_at) : formatDate(adj.date || '')}
+                                                            </div>
+                                                        </td>
+                                                        <td className={`px-6 py-4 text-right font-mono text-xs font-black ${adj.adjustment_type === 'DEBIT' ? 'text-rose-500' : 'text-emerald-500'}`}>
+                                                            {adj.adjustment_type === 'DEBIT' ? '+' : '-'} {Number(adj.amount).toLocaleString()}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </>
+                                        )}
+                                        {selectedInvoice.payments && selectedInvoice.payments.length > 0 && (
+                                            <>
+                                                <tr className="bg-slate-50/50"><td colSpan={2} className="px-6 py-2 text-[9px] font-black text-slate-400 uppercase tracking-widest">Payments Received</td></tr>
+                                                {selectedInvoice.payments.map((pay: Payment) => (
+                                                    <tr key={pay.id} className="hover:bg-slate-50/50 transition-colors">
+                                                        <td className="px-6 py-4">
+                                                            <div className="text-xs font-bold text-slate-700">Payment - {pay.method}</div>
+                                                            <div className="text-[10px] text-slate-400 font-medium uppercase tracking-tight">
+                                                                {pay.reference_number && `REF: ${pay.reference_number} • `} {pay.created_at ? formatDateTime(pay.created_at) : formatDate(pay.date_received || '')}
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-4 text-right font-mono text-xs font-black text-emerald-500">
+                                                            - {Number(pay.amount).toLocaleString()}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div className="bg-slate-900 p-8 rounded-2xl shadow-xl text-white space-y-4">
+                            <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest opacity-50">
+                                <span>Subtotal Revenue</span>
+                                <span>KES {Number(selectedInvoice.total_amount).toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-emerald-400">
+                                <span>Total Remitted</span>
+                                <span>- KES {Number(selectedInvoice.paid_amount).toLocaleString()}</span>
+                            </div>
+                            <div className="h-px bg-white/10 my-4"></div>
+                            <div className="flex justify-between items-center">
+                                <span className="text-[10px] font-black uppercase tracking-widest opacity-50">Current Balance Due</span>
+                                <span className={`text-2xl font-black ${Number(selectedInvoice.balance) === 0 ? 'text-emerald-400' : Number(selectedInvoice.balance) < 0 ? 'text-sky-400' : 'text-rose-400'} `}>
+                                    KES {Number(selectedInvoice.balance).toLocaleString()}
+                                </span>
+                            </div>
                         </div>
                     </div>
                 )}
             </Modal>
 
             {/* Expense Modal */}
-            <Modal isOpen={showExpenseModal} onClose={() => setShowExpenseModal(false)} title="Record New Expense">
-                <form onSubmit={handleExpenseSubmit} className="form-container-md mx-auto space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Modal 
+                isOpen={showExpenseModal} 
+                onClose={() => setShowExpenseModal(false)} 
+                title="Record New Expense"
+                footer={
+                    <>
+                        <button type="button" className="modern-btn modern-btn-secondary" onClick={() => setShowExpenseModal(false)}>Cancel</button>
+                        <button type="submit" form="expense-form" className="modern-btn modern-btn-primary" disabled={isSubmitting}>
+                            {isSubmitting ? "SAVING..." : "RECORD EXPENSE"}
+                        </button>
+                    </>
+                }
+            >
+                <form id="expense-form" onSubmit={handleExpenseSubmit} className="space-y-6">
+                    <div className="form-grid">
                         <div className="form-group">
-                            <label className="label">Category *</label>
+                            <label>Expense Category</label>
                             <SearchableSelect
                                 options={[
                                     { id: 'SUPPLIES', label: 'Supplies' },
@@ -567,210 +657,254 @@ const FinanceModals: React.FC<FinanceModalsProps> = ({
                             />
                         </div>
                         <div className="form-group">
-                            <label className="label">Amount (KES) *</label>
-                            <input type="number" className="input" value={expenseForm.amount} onChange={e => setExpenseForm({ ...expenseForm, amount: e.target.value })} required />
+                            <label>Amount (KES)</label>
+                            <input type="number" value={expenseForm.amount} onChange={e => setExpenseForm({ ...expenseForm, amount: e.target.value })} required />
                         </div>
-                        <div className="form-group pb-2">
+                        <div className="form-group">
+                            <label>Transaction Date</label>
                             <PremiumDateInput
-                                label="Date Occurred"
                                 value={expenseForm.date_occurred}
                                 onChange={(val) => setExpenseForm({ ...expenseForm, date_occurred: val })}
                                 required
                             />
                         </div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="form-group">
-                            <label className="label">Paid To / Recipient *</label>
-                            <input type="text" className="input" value={expenseForm.paid_to} onChange={e => setExpenseForm({ ...expenseForm, paid_to: e.target.value })} required />
+                            <label>Paid To / Vendor</label>
+                            <input type="text" value={expenseForm.paid_to} onChange={e => setExpenseForm({ ...expenseForm, paid_to: e.target.value })} required />
                         </div>
-                        <div className="form-group">
-                            <label className="label">Receipt Scan (Optional)</label>
-                            <input type="file" className="file-input file-input-bordered w-full" accept="image/*,.pdf" onChange={e => setExpenseForm({ ...expenseForm, receipt_scan: e.target.files?.[0] || null })} />
+                        <div className="form-group col-span-2">
+                            <label>Supporting Receipt (Optional)</label>
+                            <input 
+                                type="file" 
+                                className="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:font-black file:uppercase file:bg-primary/10 file:text-primary hover:file:bg-primary/20 transition-all" 
+                                accept="image/*,.pdf" 
+                                onChange={e => setExpenseForm({ ...expenseForm, receipt_scan: e.target.files?.[0] || null })} 
+                            />
                         </div>
-                    </div>
-                    <div className="form-group">
-                        <label className="label">Description *</label>
-                        <textarea className="textarea h-24" value={expenseForm.description} onChange={e => setExpenseForm({ ...expenseForm, description: e.target.value })} required />
-                    </div>
-                    <div className="modal-footer pt-6 border-top mt-4 flex justify-end gap-3">
-                        <Button type="button" variant="outline" onClick={() => setShowExpenseModal(false)}>Cancel</Button>
-                        <Button type="submit" variant="primary" className="px-8 font-black shadow-lg" loading={isSubmitting} loadingText="SAVING...">
-                            RECORD EXPENSE
-                        </Button>
+                        <div className="form-group col-span-2">
+                            <label>Detailed Description</label>
+                            <textarea className="h-24" value={expenseForm.description} onChange={e => setExpenseForm({ ...expenseForm, description: e.target.value })} required />
+                        </div>
                     </div>
                 </form>
             </Modal>
 
             {/* Mpesa Modal */}
-            <Modal isOpen={showMpesaModal} onClose={() => setShowMpesaModal(false)} title="M-Pesa STK Push Payment">
-                <form onSubmit={handleMpesaPush} className="form-container-md mx-auto space-y-6">
-                    <div className="bg-green-50/50 p-4 rounded-xl border border-green-100 flex items-start gap-3">
-                        <CheckCircle size={16} className="text-green-500 mt-0.5 shrink-0" />
-                        <span className="text-xs text-secondary-soft">
+            <Modal 
+                isOpen={showMpesaModal} 
+                onClose={() => setShowMpesaModal(false)} 
+                title="M-Pesa STK Push"
+                footer={
+                    <>
+                        <button type="button" className="modern-btn modern-btn-secondary" onClick={() => setShowMpesaModal(false)}>Cancel</button>
+                        <button type="submit" form="mpesa-form" className="modern-btn bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-200" disabled={isSubmitting}>
+                            {isSubmitting ? "SENDING PROMPT..." : "SEND STK PUSH"}
+                        </button>
+                    </>
+                }
+            >
+                <form id="mpesa-form" onSubmit={handleMpesaPush} className="space-y-6">
+                    <div className="bg-emerald-50/50 p-4 rounded-xl border border-emerald-100 flex items-start gap-3">
+                        <CheckCircle size={16} className="text-emerald-500 mt-0.5 shrink-0" />
+                        <span className="text-[11px] font-medium text-emerald-700 leading-relaxed italic">
                             This will send a secure payment prompt to the parent's phone. Fees will be <strong>automatically updated</strong> once paid.
                         </span>
                     </div>
-                    <SearchableSelect
-                        label="Search Student"
-                        placeholder="Type Name or Admission Number..."
-                        options={students.map((s: Student) => ({
-                            id: s.admission_number,
-                            label: `${s.admission_number} - ${s.full_name} `,
-                            subLabel: (
-                                <span className={Number(s.fee_balance) > 0 ? 'text-rose-600 font-bold' : 'text-emerald-600'}>
-                                    Arrears: KES {Number(s.fee_balance).toLocaleString()}
-                                </span>
-                            )
-                        }))}
-                        onSearch={async (term: string) => {
-                            if (term.length > 0 || term === '*') {
-                                try {
-                                    const res = await studentsAPI.minimalSearch({
-                                        search: term,
-                                        has_debt: showOnlyWithDebt
-                                    });
-                                    const results = res.data?.results ?? res.data ?? [];
-                                    setStudents((prev: Student[]) => {
-                                        const map = new Map(prev.map((s: Student) => [s.id, s]));
-                                        results.forEach((r: Student) => map.set(r.id, r));
-                                        return Array.from(map.values());
-                                    });
-                                } catch (e) {
-                                    console.error("Student search failed", e);
+                    <div className="form-group">
+                        <label>Candidate Search</label>
+                        <SearchableSelect
+                            placeholder="Type Name or Admission Number..."
+                            options={students.map((s: Student) => ({
+                                id: s.admission_number,
+                                label: `${s.admission_number} - ${s.full_name} `,
+                                subLabel: (
+                                    <span className={Number(s.fee_balance) > 0 ? 'text-rose-600 font-black uppercase text-[9px]' : 'text-emerald-600 font-black uppercase text-[9px]'}>
+                                        ARREARS: KES {Number(s.fee_balance).toLocaleString()}
+                                    </span>
+                                )
+                            }))}
+                            onSearch={async (term: string) => {
+                                if (term.length > 0 || term === '*') {
+                                    try {
+                                        const res = await studentsAPI.minimalSearch({
+                                            search: term,
+                                            has_debt: showOnlyWithDebt
+                                        });
+                                        const results = res.data?.results ?? res.data ?? [];
+                                        setStudents((prev: Student[]) => {
+                                            const map = new Map(prev.map((s: Student) => [s.id, s]));
+                                            results.forEach((r: Student) => map.set(r.id, r));
+                                            return Array.from(map.values());
+                                        });
+                                    } catch (e) {
+                                        console.error("Student search failed", e);
+                                    }
                                 }
-                            }
-                        }}
-                        value={mpesaForm.admission_number}
-                        onChange={async (val) => {
-                            const adminNum = String(val);
-                            const stud = students.find((s: Student) => String(s.admission_number) === adminNum);
-                            if (stud) {
-                                setMpesaForm({ ...mpesaForm, admission_number: adminNum, amount: String(stud.fee_balance || mpesaForm.amount) });
-                            } else {
-                                setMpesaForm({ ...mpesaForm, admission_number: adminNum });
-                            }
-                        }}
-                        required
-                    />
-                    <div className="form-group">
-                        <label className="label">Phone Number (Safaricom) *</label>
-                        <input type="text" className="input" placeholder="e.g. 0712345678" required
-                            value={mpesaForm.phone_number} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMpesaForm({ ...mpesaForm, phone_number: e.target.value })}
+                            }}
+                            value={mpesaForm.admission_number}
+                            onChange={async (val) => {
+                                const adminNum = String(val);
+                                const stud = students.find((s: Student) => String(s.admission_number) === adminNum);
+                                if (stud) {
+                                    setMpesaForm({ ...mpesaForm, admission_number: adminNum, amount: String(stud.fee_balance || mpesaForm.amount) });
+                                } else {
+                                    setMpesaForm({ ...mpesaForm, admission_number: adminNum });
+                                }
+                            }}
+                            required
                         />
                     </div>
-                    <div className="form-group">
-                        <label className="label">Amount (KES) *</label>
-                        <input type="number" className="input font-bold" required
-                            value={mpesaForm.amount} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMpesaForm({ ...mpesaForm, amount: e.target.value })}
-                        />
-                    </div>
-                    <div className="modal-footer pt-6 border-top mt-4 flex justify-end gap-3">
-                        <Button type="button" variant="outline" onClick={() => setShowMpesaModal(false)}>Cancel</Button>
-                        <Button type="submit" variant="primary" className="bg-green-600 hover:bg-green-700 border-none px-8 font-black shadow-lg" loading={isSubmitting} disabled={isSubmitting} loadingText="SENDING...">
-                            SEND STK PUSH
-                        </Button>
+                    <div className="form-grid">
+                        <div className="form-group">
+                            <label>Safaricom Phone Number</label>
+                            <input 
+                                type="text" 
+                                placeholder="e.g. 0712345678" 
+                                required
+                                value={mpesaForm.phone_number} 
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMpesaForm({ ...mpesaForm, phone_number: e.target.value })}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Payment Amount (KES)</label>
+                            <input 
+                                type="number" 
+                                className="font-black text-slate-800"
+                                required
+                                value={mpesaForm.amount} 
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMpesaForm({ ...mpesaForm, amount: e.target.value })}
+                            />
+                        </div>
                     </div>
                 </form>
             </Modal>
 
             {/* Bulk Reminder Modal */}
-            <Modal isOpen={showReminderModal} onClose={() => setShowReminderModal(false)} title="Send Automated Fee Reminders">
-                <form onSubmit={handleSendReminders} className="space-y-6 form-container-md">
-                    <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 flex items-start gap-3">
-                        <Bell className="text-blue-600 mt-1 shrink-0" size={20} />
+            <Modal 
+                isOpen={showReminderModal} 
+                onClose={() => setShowReminderModal(false)} 
+                title="Send Automated Fee Reminders"
+                footer={
+                    <>
+                        <button type="button" className="modern-btn modern-btn-secondary" onClick={() => setShowReminderModal(false)}>Cancel</button>
+                        <button type="submit" form="reminder-form" className="modern-btn modern-btn-primary" disabled={isSubmitting}>
+                            {isSubmitting ? "SENDING..." : "SEND REMINDERS"}
+                        </button>
+                    </>
+                }
+            >
+                <form id="reminder-form" onSubmit={handleSendReminders} className="space-y-6">
+                    <div className="bg-sky-50 p-6 rounded-2xl border border-sky-100 flex items-start gap-4">
+                        <div className="w-12 h-12 bg-white rounded-2xl shadow-sm border border-sky-100 flex items-center justify-center text-sky-500 shrink-0">
+                            <Bell size={24} />
+                        </div>
                         <div>
-                            <h4 className="font-bold text-blue-900 text-sm">Target: {selectedInvoicesSize} Parents</h4>
-                            <p className="text-xs text-blue-700 leading-relaxed">
-                                Reminders to {selectedInvoicesSize} selected parents. Correct student name and balance will be inserted.
+                            <h4 className="font-black text-sky-900 text-xs uppercase tracking-widest mb-1">Targeting {selectedInvoicesSize} Parents</h4>
+                            <p className="text-[11px] text-sky-700 leading-relaxed font-medium italic">
+                                Personalized reminders will be dispatched to {selectedInvoicesSize} selected recipients. Student names and outstanding balances will be automatically injected.
                             </p>
                         </div>
                     </div>
-                    <div className="form-control">
-                        <label className="label">
-                            <span className="label-text font-bold">Message Template</span>
-                            <span className="label-text-alt text-gray-400">Use {`{ student_name } `} and {`{ balance } `}</span>
+                    <div className="form-group">
+                        <label className="flex justify-between items-center">
+                            <span>Communication Template</span>
+                            <span className="text-[9px] font-black uppercase text-slate-400">Tokens: {'{student_name}'}, {'{balance}'}</span>
                         </label>
                         <textarea
-                            className="textarea textarea-bordered h-32 text-sm leading-relaxed"
+                            className="h-32 text-sm leading-relaxed"
                             required
+                            placeholder="Dear Parent, this is a reminder that {student_name} has an outstanding balance of KES {balance}..."
                             value={reminderForm.template}
                             onChange={e => setReminderForm({ ...reminderForm, template: e.target.value })}
                         />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <label className="flex items-center gap-3 p-4 border rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
-                            <input type="checkbox" className="checkbox checkbox-primary" checked={reminderForm.send_sms} onChange={e => setReminderForm({ ...reminderForm, send_sms: e.target.checked })} />
-                            <div className="flex items-center gap-2"><MessageSquare size={18} className="text-gray-400" /><span className="text-sm font-bold">SMS</span></div>
+                    <div className="form-grid">
+                        <label className="group flex items-center gap-4 p-4 bg-slate-50 border-2 border-transparent hover:border-primary hover:bg-white rounded-2xl cursor-pointer transition-all">
+                            <input type="checkbox" className="checkbox" checked={reminderForm.send_sms} onChange={e => setReminderForm({ ...reminderForm, send_sms: e.target.checked })} />
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-white rounded-lg shadow-sm text-slate-400 group-hover:text-primary transition-colors"><MessageSquare size={18} /></div>
+                                <span className="text-xs font-black uppercase tracking-widest text-slate-600">SMS Channel</span>
+                            </div>
                         </label>
-                        <label className="flex items-center gap-3 p-4 border rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
-                            <input type="checkbox" className="checkbox checkbox-primary" checked={reminderForm.send_email} onChange={e => setReminderForm({ ...reminderForm, send_email: e.target.checked })} />
-                            <div className="flex items-center gap-2"><Mail size={18} className="text-gray-400" /><span className="text-sm font-bold">Email</span></div>
+                        <label className="group flex items-center gap-4 p-4 bg-slate-50 border-2 border-transparent hover:border-primary hover:bg-white rounded-2xl cursor-pointer transition-all">
+                            <input type="checkbox" className="checkbox" checked={reminderForm.send_email} onChange={e => setReminderForm({ ...reminderForm, send_email: e.target.checked })} />
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-white rounded-lg shadow-sm text-slate-400 group-hover:text-primary transition-colors"><Mail size={18} /></div>
+                                <span className="text-xs font-black uppercase tracking-widest text-slate-600">Email Channel</span>
+                            </div>
                         </label>
-                    </div>
-                    <div className="modal-action">
-                        <Button type="button" variant="ghost" onClick={() => setShowReminderModal(false)}>Cancel</Button>
-                        <Button type="submit" variant="primary" className="bg-orange-600 hover:bg-orange-700 border-none px-8" loading={isSubmitting} icon={<Send size={16} />}>
-                            Send Reminders
-                        </Button>
                     </div>
                 </form>
             </Modal>
 
             {/* Adjustment Modal */}
-            <Modal isOpen={showAdjustmentModal} onClose={() => setShowAdjustmentModal(false)} title="Invoice Adjustment (Waiver / Fine)">
-                <form onSubmit={handleAdjustmentSubmit} className="form-container-md mx-auto space-y-6">
+            <Modal 
+                isOpen={showAdjustmentModal} 
+                onClose={() => setShowAdjustmentModal(false)} 
+                title="Invoice Adjustment"
+                footer={
+                    <>
+                        <button type="button" className="modern-btn modern-btn-secondary" onClick={() => setShowAdjustmentModal(false)}>Cancel</button>
+                        <button type="submit" form="adjustment-form" className="modern-btn modern-btn-primary" disabled={isSubmitting}>
+                            {isSubmitting ? "PROCESSING..." : "APPLY ADJUSTMENT"}
+                        </button>
+                    </>
+                }
+            >
+                <form id="adjustment-form" onSubmit={handleAdjustmentSubmit} className="space-y-6">
                     <div className="bg-purple-50/50 p-4 rounded-xl border border-purple-100 flex items-start gap-3">
                         <TrendingUp size={16} className="text-purple-500 mt-0.5 shrink-0" />
-                        <span className="text-xs text-secondary-soft">
-                            Use <strong>Credit Note</strong> for Waivers/Worships (reducts balance) and <strong>Debit Note</strong> for Fines/Corrections (increases balance).
+                        <span className="text-[11px] font-medium text-purple-700 leading-relaxed italic">
+                            Use <strong>Credit Note</strong> for Waivers (reduces balance) and <strong>Debit Note</strong> for Fines or Corrections (increases balance).
                         </span>
                     </div>
 
-                    <SearchableSelect
-                        label="Search Student"
-                        placeholder="Select Student..."
-                        options={students.map((s: Student) => ({
-                            id: s.id,
-                            label: `${s.admission_number} - ${s.full_name}`,
-                            subLabel: `Balance: KES ${Number(s.fee_balance).toLocaleString()}`
-                        }))}
-                        value={adjForm.student_id}
-                        onSearch={async (term: string) => {
-                            if (term.length > 0 || term === '*') {
+                    <div className="form-group">
+                        <label>Target Candidate</label>
+                        <SearchableSelect
+                            placeholder="Select Student..."
+                            options={students.map((s: Student) => ({
+                                id: s.id,
+                                label: `${s.admission_number} - ${s.full_name}`,
+                                subLabel: `BALANCE: KES ${Number(s.fee_balance).toLocaleString()}`
+                            }))}
+                            value={adjForm.student_id}
+                            onSearch={async (term: string) => {
+                                if (term.length > 0 || term === '*') {
+                                    try {
+                                        const res = await studentsAPI.minimalSearch({ search: term });
+                                        const results = res.data?.results ?? res.data ?? [];
+                                        setStudents((prevItem: Student[]) => {
+                                            const map = new Map(prevItem.map((s: Student) => [s.id, s]));
+                                            results.forEach((r: Student) => map.set(r.id, r));
+                                            return Array.from(map.values());
+                                        });
+                                    } catch (e) { console.error(e); }
+                                }
+                            }}
+                            onChange={async (val) => {
+                                const studentId = String(val);
                                 try {
-                                    const res = await studentsAPI.minimalSearch({ search: term });
-                                    const results = res.data?.results ?? res.data ?? [];
-                                    setStudents((prevItem: Student[]) => {
-                                        const map = new Map(prevItem.map((s: Student) => [s.id, s]));
-                                        results.forEach((r: Student) => map.set(r.id, r));
-                                        return Array.from(map.values());
-                                    });
-                                } catch (e) { console.error(e); }
-                            }
-                        }}
-                        onChange={async (val) => {
-                            const studentId = String(val);
-                            try {
-                                const res = await financeAPI.invoices.getAll({ student: studentId, status: 'UNPAID' });
-                                const studentInvoices = res.data?.results ?? res.data ?? [];
-                                setActiveStudentInvoices(studentInvoices);
-                                setAdjForm({ ...adjForm, student_id: studentId, invoice_id: studentInvoices[0]?.id.toString() || '' });
-                            } catch (err) { console.error(err); }
-                        }}
-                        required
-                        disabled={!!selectedInvoice}
-                    />
+                                    const res = await financeAPI.invoices.getAll({ student: studentId, status: 'UNPAID' });
+                                    const studentInvoices = res.data?.results ?? res.data ?? [];
+                                    setActiveStudentInvoices(studentInvoices);
+                                    setAdjForm({ ...adjForm, student_id: studentId, invoice_id: studentInvoices[0]?.id.toString() || '' });
+                                } catch (err) { console.error(err); }
+                            }}
+                            required
+                            disabled={!!selectedInvoice}
+                        />
+                    </div>
 
                     {adjForm.student_id && (
                         <div className="form-group">
-                            <label className="label">Target Invoice *</label>
+                            <label>Target Invoice Reference</label>
                             <SearchableSelect
                                 placeholder="Select Invoice"
                                 options={activeStudentInvoices.map((i: InvoiceDetail) => ({
                                     id: i.id.toString(),
                                     label: `Invoice #${i.id} | Term ${i.term} (${i.academic_year_name})`,
-                                    subLabel: `Balance: KES ${Number(i.balance).toLocaleString()}`
+                                    subLabel: `CURRENT BALANCE: KES ${Number(i.balance).toLocaleString()}`
                                 }))}
                                 value={adjForm.invoice_id}
                                 onChange={(val) => setAdjForm({ ...adjForm, invoice_id: val.toString() })}
@@ -779,9 +913,9 @@ const FinanceModals: React.FC<FinanceModalsProps> = ({
                         </div>
                     )}
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="form-grid">
                         <div className="form-group">
-                            <label className="label">Adjustment Type *</label>
+                            <label>Adjustment Classification</label>
                             <SearchableSelect
                                 options={[
                                     { id: 'CREDIT', label: 'Waiver / Credit Note (-)' },
@@ -793,21 +927,13 @@ const FinanceModals: React.FC<FinanceModalsProps> = ({
                             />
                         </div>
                         <div className="form-group">
-                            <label className="label">Amount (KES) *</label>
-                            <input type="number" className="input" value={adjForm.amount} onChange={e => setAdjForm({ ...adjForm, amount: e.target.value })} required />
+                            <label>Adjustment Amount (KES)</label>
+                            <input type="number" value={adjForm.amount} onChange={e => setAdjForm({ ...adjForm, amount: e.target.value })} required />
                         </div>
                     </div>
-
                     <div className="form-group">
-                        <label className="label">Reason / Justification *</label>
-                        <textarea className="textarea h-20" placeholder="e.g. Sports Scholarship Waiver or Late Payment Fine" value={adjForm.reason} onChange={e => setAdjForm({ ...adjForm, reason: e.target.value })} required />
-                    </div>
-
-                    <div className="modal-footer pt-6 border-top mt-4 flex justify-end gap-3">
-                        <Button type="button" variant="outline" onClick={() => setShowAdjustmentModal(false)}>Cancel</Button>
-                        <Button type="submit" variant="primary" className="px-8 font-black shadow-lg bg-purple-600 border-none" loading={isSubmitting} disabled={isSubmitting}>
-                            APPLY ADJUSTMENT
-                        </Button>
+                        <label>Justification / Reason</label>
+                        <textarea className="h-24" value={adjForm.reason} onChange={e => setAdjForm({ ...adjForm, reason: e.target.value })} required />
                     </div>
                 </form>
             </Modal>

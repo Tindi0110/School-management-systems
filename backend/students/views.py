@@ -32,16 +32,19 @@ class StudentViewSet(viewsets.ModelViewSet):
     ).annotate(
         avg_score=Subquery(
             StudentResult.objects.filter(student=OuterRef('pk'))
+            .values('student')
             .annotate(avg=Avg('score'))
             .values('avg')[:1]
         ),
         attendance_total=Subquery(
             Attendance.objects.filter(student=OuterRef('pk'))
+            .values('student')
             .annotate(cnt=Count('id'))
             .values('cnt')[:1]
         ),
         attendance_present=Subquery(
             Attendance.objects.filter(student=OuterRef('pk'), status='PRESENT')
+            .values('student')
             .annotate(cnt=Count('id'))
             .values('cnt')[:1]
         ),

@@ -569,25 +569,49 @@ const Staff = () => {
                 </div>
             )}
 
-            <Modal isOpen={isModalOpen} onClose={closeModal} title={editingStaff ? 'Edit Staff Member' : 'Register New Staff Member'} size="md">
-                <form onSubmit={handleSubmit} className="form-container-md mx-auto space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+            <Modal 
+                isOpen={isModalOpen} 
+                onClose={closeModal} 
+                title={editingStaff ? 'Edit Staff Member' : 'Register New Staff Member'}
+                footer={
+                    <>
+                        <button type="button" className="modern-btn modern-btn-secondary" onClick={closeModal}>Cancel</button>
+                        <button type="submit" form="staff-form" className="modern-btn modern-btn-primary" disabled={isSubmitting}>
+                            {isSubmitting ? (editingStaff ? 'UPDATING...' : 'REGISTERING...') : (editingStaff ? 'SAVE CHANGES' : 'REGISTER STAFF')}
+                        </button>
+                    </>
+                }
+            >
+                <form id="staff-form" onSubmit={handleSubmit} className="space-y-6">
+                    <div className="form-grid">
                         <div className="form-group">
-                            <label className="label text-[10px] font-black uppercase">Employee ID *</label>
-                            <input type="text" className="input" value={formData.employee_id} onChange={(e) => setFormData({ ...formData, employee_id: e.target.value })} required />
+                            <label>Internal Employee ID</label>
+                            <input type="text" placeholder="e.g. EMP-001" value={formData.employee_id} onChange={(e) => setFormData({ ...formData, employee_id: e.target.value })} required />
                         </div>
                         <div className="form-group">
-                            <label className="label text-[10px] font-black uppercase">Full Name *</label>
-                            <input type="text" className="input" value={formData.full_name} onChange={(e) => setFormData({ ...formData, full_name: e.target.value })} required />
+                            <label>Legal Full Name</label>
+                            <input type="text" placeholder="e.g. Dr. Jane Smith" value={formData.full_name} onChange={(e) => setFormData({ ...formData, full_name: e.target.value })} required />
                         </div>
+                    </div>
+                    <div className="form-grid">
                         <div className="form-group">
-                            <label className="label text-[10px] font-black uppercase">Email Address *</label>
-                            <input type="email" className="input" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} required />
+                            <label>Professional Email Address</label>
+                            <input type="email" placeholder="jane.smith@school.com" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} required />
                         </div>
+                        <div className="form-group pb-2">
+                            <label>Employment Date</label>
+                            <PremiumDateInput
+                                value={formData.date_joined}
+                                onChange={(val) => setFormData({ ...formData, date_joined: val })}
+                                required
+                            />
+                        </div>
+                    </div>
+                    <div className="form-grid">
                         <div className="form-group">
-                            <label className="label flex justify-between">
-                                <span>Department *</span>
-                                <button type="button" onClick={() => setShowDeptModal(true)} className="text-[10px] font-bold text-primary hover:underline">+ New Dept</button>
+                            <label className="flex justify-between items-center">
+                                <span>Department</span>
+                                <button type="button" onClick={() => setShowDeptModal(true)} className="text-[10px] font-black uppercase text-primary hover:underline">+ Create New</button>
                             </label>
                             <SearchableSelect
                                 placeholder="Select Department"
@@ -598,7 +622,7 @@ const Staff = () => {
                             />
                         </div>
                         <div className="form-group">
-                            <label className="label text-[10px] font-black uppercase">Role *</label>
+                            <label>Assigned Role</label>
                             <SearchableSelect
                                 options={[
                                     { id: 'TEACHER', label: 'Teacher' },
@@ -619,37 +643,39 @@ const Staff = () => {
                                 required
                             />
                         </div>
-                        <div className="form-group pb-2">
-                            <PremiumDateInput
-                                label="Date Joined"
-                                value={formData.date_joined}
-                                onChange={(val) => setFormData({ ...formData, date_joined: val })}
-                                required
-                            />
-                        </div>
                     </div>
                     <div className="form-group">
-                        <label className="label text-[10px] font-black uppercase">Qualifications</label>
-                        <textarea className="textarea" placeholder="List degrees, certifications, etc." value={formData.qualifications} onChange={(e) => setFormData({ ...formData, qualifications: e.target.value })} rows={3} />
-                    </div>
-                    <div className="modal-footer pt-6 border-top mt-4 flex justify-end gap-3">
-                        <Button type="button" variant="outline" onClick={closeModal}>Cancel</Button>
-                        <Button type="submit" variant="primary" className="px-8 font-black shadow-lg" loading={isSubmitting} loadingText={editingStaff ? 'UPDATING...' : 'REGISTERING...'}>
-                            {editingStaff ? 'SAVE CHANGES' : 'REGISTER STAFF'}
-                        </Button>
+                        <label>Academic & Professional Qualifications</label>
+                        <textarea className="h-24" placeholder="List degrees, certifications, and specializations..." value={formData.qualifications} onChange={(e) => setFormData({ ...formData, qualifications: e.target.value })} />
                     </div>
                 </form>
             </Modal>
 
             {/* Quick Add Department Modal */}
-            <Modal isOpen={showDeptModal} onClose={() => setShowDeptModal(false)} title="Add New Department" size="sm">
-                <div className="p-4 space-y-4">
+            <Modal 
+                isOpen={showDeptModal} 
+                onClose={() => setShowDeptModal(false)} 
+                title="Create Department"
+                footer={
+                    <>
+                        <button type="button" className="modern-btn modern-btn-secondary" onClick={() => setShowDeptModal(false)}>Cancel</button>
+                        <button 
+                            type="button" 
+                            className="modern-btn modern-btn-primary" 
+                            disabled={!newDeptName.trim() || isSubmitting}
+                            onClick={handleCreateDept}
+                        >
+                            {isSubmitting ? 'SAVING...' : 'SAVE DEPARTMENT'}
+                        </button>
+                    </>
+                }
+            >
+                <div className="space-y-6">
                     <div className="form-group">
-                        <label className="label text-[10px] font-black uppercase">Department Name</label>
+                        <label>Department Identification Name</label>
                         <input 
                             type="text" 
-                            className="input" 
-                            placeholder="Enter name..." 
+                            placeholder="e.g. Humanities & Social Sciences" 
                             value={newDeptName} 
                             onChange={(e) => setNewDeptName(e.target.value)}
                             onKeyDown={(e) => {
@@ -659,18 +685,7 @@ const Staff = () => {
                                 }
                             }}
                         />
-                    </div>
-                    <div className="flex justify-end gap-2 text-sm pt-2">
-                        <Button variant="outline" size="sm" onClick={() => setShowDeptModal(false)}>Cancel</Button>
-                        <Button 
-                            variant="primary" 
-                            size="sm" 
-                            disabled={!newDeptName.trim()} 
-                            loading={isSubmitting}
-                            onClick={handleCreateDept}
-                        >
-                            Save Dept
-                        </Button>
+                        <p className="text-[10px] text-slate-400 mt-2 italic font-medium">Departments are used to group staff for reporting and administrative clarity.</p>
                     </div>
                 </div>
             </Modal>

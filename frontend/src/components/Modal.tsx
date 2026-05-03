@@ -6,10 +6,11 @@ interface ModalProps {
     onClose: () => void;
     title: string;
     children: React.ReactNode;
+    footer?: React.ReactNode;
     size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
 }
 
-const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, size = 'md' }) => {
+const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, footer, size = 'md' }) => {
     // Close on Escape key — matching Budget Wear UX behaviour
     useEffect(() => {
         if (!isOpen) return;
@@ -31,38 +32,19 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, size = 
     return (
         <div className="modal-overlay" onClick={onClose}>
             <div
-                className={`modal-container w-full ${sizeClasses[size]} ${size === 'full' ? 'h-95vh m-2' : 'max-h-90vh'}`}
+                className={`modal ${sizeClasses[size]}`}
                 onClick={(e) => e.stopPropagation()}
             >
-                {/* Header — uppercase title + X close, matching Budget Wear */}
+                {/* Header */}
                 <div className="modal-header">
-                    <h3 className="modal-title">{title}</h3>
+                    <h2>{title}</h2>
                     <button
                         onClick={onClose}
-                        style={{
-                            background: 'transparent',
-                            border: 'none',
-                            cursor: 'pointer',
-                            padding: '6px',
-                            borderRadius: '50%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: '#64748b',
-                            transition: 'background 0.15s, color 0.15s',
-                        }}
-                        onMouseEnter={e => {
-                            (e.currentTarget as HTMLButtonElement).style.background = '#fee2e2';
-                            (e.currentTarget as HTMLButtonElement).style.color = '#ef4444';
-                        }}
-                        onMouseLeave={e => {
-                            (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
-                            (e.currentTarget as HTMLButtonElement).style.color = '#64748b';
-                        }}
+                        className="modal-close-btn"
                         type="button"
                         aria-label="Close"
                     >
-                        <X size={20} />
+                        <X size={24} />
                     </button>
                 </div>
 
@@ -70,6 +52,13 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, size = 
                 <div className="modal-body">
                     {children}
                 </div>
+
+                {/* Footer */}
+                {footer && (
+                    <div className="modal-footer">
+                        {footer}
+                    </div>
+                )}
             </div>
         </div>
     );

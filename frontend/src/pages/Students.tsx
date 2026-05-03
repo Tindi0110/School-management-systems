@@ -509,246 +509,307 @@ const Students = () => {
                 )}
             </div>
 
-            {/* Render Data */}
-            <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
+            {/* Registry Navigator / Table */}
+            <div className="bg-white/40 backdrop-blur-md rounded-3xl shadow-xl shadow-slate-200/50 border border-white/60 overflow-hidden">
                 {!selectedClassId ? (
                     <div className="p-10">
-                        <div className="flex justify-between items-center mb-10 pb-6 border-b">
+                        <div className="flex justify-between items-center mb-10 pb-6 border-b border-slate-100">
                             <div>
-                                <h3 className="text-lg font-black uppercase text-slate-800 mb-1">Student Registry Navigator</h3>
-                                <p className="text-xs font-bold text-slate-400 uppercase tracking-tight">Select a class unit to access student records</p>
+                                <h3 className="text-xl font-black uppercase text-slate-800 mb-1">Registry Navigator</h3>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Select an academic unit to manage records</p>
                             </div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                             {classes.sort((a, b) => `${a.name}${a.stream}`.localeCompare(`${b.name}${b.stream}`)).map(c => (
                                 <div
                                     key={c.id}
-                                    className="group card hover:border-primary transition-all cursor-pointer p-0 overflow-hidden relative rounded-2xl border-2"
+                                    className="group relative bg-white/60 hover:bg-white transition-all cursor-pointer p-6 rounded-2xl border border-slate-100 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5"
                                     onClick={() => setSelectedClassId(c.id)}
                                 >
-                                    <div className="absolute top-0 left-0 w-1.5 h-full bg-primary opacity-20 group-hover:opacity-100 transition-opacity"></div>
-                                    <div className="p-7">
-                                        <div className="flex justify-between items-start mb-4">
-                                            <div className="flex flex-col gap-1">
-                                                <span className="text-[11px] font-black uppercase text-slate-400 tracking-widest">{c.name}</span>
-                                                <span className="text-base font-black text-slate-800">{c.stream}</span>
-                                            </div>
-                                            <span className="badge badge-info text-[10px] font-black uppercase py-3 px-3 rounded-lg shadow-sm">{c.student_count || 0} Students</span>
+                                    <div className="absolute top-0 left-0 w-1 h-full bg-primary rounded-l-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                    <div className="flex justify-between items-start mb-6">
+                                        <div className="flex flex-col gap-1">
+                                            <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">{c.name}</span>
+                                            <span className="text-lg font-black text-slate-800">{c.stream}</span>
                                         </div>
-                                        <div className="flex items-center justify-between mt-6">
-                                            <span className="text-[10px] font-black text-primary group-hover:translate-x-1 transition-transform flex items-center gap-1.5 uppercase">
-                                                Access Registry <ArrowRight size={14} />
-                                            </span>
-                                            <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-primary/10 group-hover:text-primary transition-colors border border-slate-100">
-                                                <UserIcon size={16} />
-                                            </div>
+                                        <span className="bg-primary/5 text-primary text-[10px] font-black uppercase px-3 py-1.5 rounded-lg border border-primary/10">
+                                            {c.student_count || 0} Records
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-[10px] font-black text-primary group-hover:translate-x-1 transition-transform flex items-center gap-2 uppercase">
+                                            Enter Registry <ArrowRight size={14} />
+                                        </span>
+                                        <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-primary/10 group-hover:text-primary transition-colors border border-slate-100">
+                                            <UserIcon size={18} />
                                         </div>
                                     </div>
                                 </div>
                             ))}
-                            {classes.length === 0 && <div className="col-span-full py-20 text-center italic text-slate-400">No active classes found in system metadata.</div>}
+                            {classes.length === 0 && <div className="col-span-full py-20 text-center italic text-slate-400 font-bold uppercase text-[10px]">No active classes found in registry metadata.</div>}
                         </div>
                     </div>
                 ) : (
                     <div className="fade-in">
-                        {selectedClassId && (
-                            <div className="p-4 bg-slate-50 border-b flex justify-between items-center px-6">
-                                <div className="flex items-center gap-4">
-                                    <Button variant="ghost" size="sm" onClick={() => setSelectedClassId(null)} className="text-[10px] font-black uppercase tracking-tighter">
-                                        ← Back to Navigator
-                                    </Button>
-                                    <div className="text-[10px] font-black uppercase text-slate-800 flex items-center gap-2">
-                                        <span className="text-slate-400">Current Unit:</span>
-                                        <span className="bg-primary text-white px-2 py-0.5 rounded">
-                                            {classes.find(c => c.id === selectedClassId)?.name} {classes.find(c => c.id === selectedClassId)?.stream}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div className="badge badge-outline text-[10px] font-black uppercase tracking-widest">
-                                    {filteredStudents.length} Records Loaded
+                        <div className="p-4 bg-slate-50/50 backdrop-blur-sm border-b border-slate-100 flex justify-between items-center px-8">
+                            <div className="flex items-center gap-6">
+                                <button onClick={() => setSelectedClassId(null)} className="flex items-center gap-2 text-[10px] font-black text-slate-400 hover:text-primary transition-colors uppercase tracking-widest">
+                                    <ArrowRight size={14} className="rotate-180" /> Back to Navigator
+                                </button>
+                                <div className="h-4 w-[1px] bg-slate-200"></div>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Unit:</span>
+                                    <span className="bg-slate-800 text-white px-3 py-1 rounded-lg text-[10px] font-black uppercase">
+                                        {classes.find(c => c.id === selectedClassId)?.name} {classes.find(c => c.id === selectedClassId)?.stream}
+                                    </span>
                                 </div>
                             </div>
-                        )}
-                        <div className="table-container border-none shadow-none">
-                            {loading ? renderSkeletonTable() : renderTable(filteredStudents)}
+                            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                {totalItems} Students Enrolled
+                            </div>
+                        </div>
 
-                            {/* Pagination Controls */}
-                            <div className="flex justify-between items-center mt-6 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                                <div className="text-xs font-black text-secondary uppercase tracking-widest">
-                                    Showing {Math.min((page - 1) * pageSize + 1, totalItems)} - {Math.min(page * pageSize, totalItems)} of {totalItems} Students
+                        <div className="table-container border-none shadow-none p-0">
+                            {loading ? renderSkeletonTable() : (
+                                <div className="table-wrapper">
+                                    <table className="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Identity</th>
+                                                <th>Academic Unit</th>
+                                                <th>Financial Status</th>
+                                                <th>Conduct</th>
+                                                <th>Attendance</th>
+                                                <th className="no-print text-right">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {filteredStudents.map((s) => (
+                                                <tr key={s.id} className="hover:bg-slate-50/50 transition-colors">
+                                                    <td className="p-4">
+                                                        <div className="flex items-center gap-4">
+                                                            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center text-primary font-black text-xs border border-primary/10 shadow-sm">
+                                                                {(s.full_name || '??').split(' ').map((n: any) => n[0]).join('').slice(0, 2)}
+                                                            </div>
+                                                            <div className="flex flex-col">
+                                                                <span className="font-bold text-slate-800 text-sm">{s.full_name}</span>
+                                                                <span className="text-[10px] text-slate-400 font-black uppercase tracking-wider">{s.admission_number}</span>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-4">
+                                                        <div className="flex flex-col">
+                                                            <span className="font-bold text-slate-700 text-sm">{s.class_name || 'Unassigned'}</span>
+                                                            <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">{s.category}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-4">
+                                                        <div className="flex flex-col">
+                                                            <span className={`font-black text-xs ${Number(s.fee_balance || 0) <= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                                                {Number(s.fee_balance || 0) <= 0 ? 'CLEARED' : `KES ${Number(s.fee_balance).toLocaleString()}`}
+                                                            </span>
+                                                            <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Balance</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-4">
+                                                        <span className={`inline-flex px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${
+                                                            s.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' :
+                                                            s.status === 'SUSPENDED' ? 'bg-rose-50 text-rose-600 border border-rose-100' :
+                                                            'bg-blue-50 text-blue-600 border border-blue-100'
+                                                        }`}>
+                                                            {s.status}
+                                                        </span>
+                                                    </td>
+                                                    <td className="p-4">
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="flex-grow bg-slate-100 h-1.5 rounded-full overflow-hidden w-20">
+                                                                <div 
+                                                                    className={`h-full rounded-full ${s.attendance_percentage >= 90 ? 'bg-emerald-500' : s.attendance_percentage >= 75 ? 'bg-amber-500' : 'bg-rose-500'}`}
+                                                                    style={{ width: `${s.attendance_percentage || 0}%` }}
+                                                                ></div>
+                                                            </div>
+                                                            <span className="text-[10px] font-black text-slate-500">{s.attendance_percentage || 0}%</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-4 text-right no-print">
+                                                        <div className="flex gap-2 justify-end">
+                                                            <button 
+                                                                className={`w-9 h-9 flex items-center justify-center rounded-xl transition-all ${s.user ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-100' : 'bg-slate-50 text-slate-400 border border-slate-100 hover:bg-slate-100 hover:text-primary'}`}
+                                                                onClick={async () => {
+                                                                    if (s.user) info(`User Account ID: ${s.user}`);
+                                                                    else if (await confirm(`Link User Account for ${s.full_name}?`)) {
+                                                                        try { await studentsAPI.linkUser(s.id); success('Account linked'); loadData(); }
+                                                                        catch (e) { errorToast('Linking failed'); }
+                                                                    }
+                                                                }}
+                                                            >
+                                                                {s.user ? <UserCheck size={16} /> : <UserIcon size={16} />}
+                                                            </button>
+                                                            <button className="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-50 text-slate-600 border border-slate-100 hover:bg-white hover:text-primary transition-all" onClick={() => openModal(s)}><Edit size={16} /></button>
+                                                            <button className="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-50 text-slate-600 border border-slate-100 hover:bg-white hover:text-primary transition-all" onClick={() => navigate(`/students/${s.id}`)}><ArrowRight size={16} /></button>
+                                                            <button className="w-9 h-9 flex items-center justify-center rounded-xl bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-600 hover:text-white transition-all" onClick={() => deleteStudent(s.id)}><Trash2 size={16} /></button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
                                 </div>
-                                <div className="flex gap-2">
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        disabled={page === 1}
-                                        onClick={() => setPage(page - 1)}
-                                        className="font-black uppercase"
-                                    >
-                                        Previous
-                                    </Button>
-                                    <Button
-                                        variant="primary"
-                                        size="sm"
-                                        disabled={page * pageSize >= totalItems}
-                                        onClick={() => setPage(page + 1)}
-                                        className="font-black uppercase"
-                                    >
-                                        Next Page
-                                    </Button>
+                            )}
+
+                            {/* Pagination */}
+                            <div className="flex justify-between items-center mt-8 px-6 py-6 bg-slate-50/50 backdrop-blur-sm rounded-3xl border border-slate-100">
+                                <div className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                                    Showing {Math.min((page - 1) * pageSize + 1, totalItems)} - {Math.min(page * pageSize, totalItems)} of {totalItems} Records
+                                </div>
+                                <div className="flex gap-3">
+                                    <button disabled={page === 1} onClick={() => setPage(page - 1)} className="modern-btn modern-btn-secondary px-6">PREVIOUS</button>
+                                    <button disabled={page * pageSize >= totalItems} onClick={() => setPage(page + 1)} className="modern-btn modern-btn-primary px-6">NEXT PAGE</button>
                                 </div>
                             </div>
-                            {filteredStudents.length === 0 && <div className="text-center py-16 text-secondary font-bold uppercase text-xs">No records associated with this unit</div>}
                         </div>
                     </div>
                 )}
             </div>
 
-            {/* Edit/Create Modal - Professional Form */}
-            <Modal isOpen={isModalOpen} onClose={closeModal} title={editingStudent ? 'Update Student Record' : 'New Student Admission'} size="lg">
-                <form onSubmit={handleSubmit} className="space-y-6 form-container-lg mx-auto">
-                    <div className="bg-secondary-light p-4 rounded-lg border mb-6 flex justify-between items-center">
+            {/* Admission / Edit Modal */}
+            <Modal 
+                isOpen={isModalOpen} 
+                onClose={closeModal} 
+                title={editingStudent ? 'Update Student Profile' : 'Student Admission Form'} 
+                size="lg"
+                footer={
+                    <>
+                        <button type="button" className="modern-btn modern-btn-secondary" onClick={closeModal}>Discard Changes</button>
+                        <button
+                            type="submit"
+                            form="student-form"
+                            className="modern-btn modern-btn-primary px-10"
+                            disabled={isSubmitting}
+                        >
+                            {isSubmitting ? (editingStudent ? "UPDATING..." : "ADMITTING...") : (editingStudent ? 'SAVE CHANGES' : 'COMPLETE ADMISSION')}
+                        </button>
+                    </>
+                }
+            >
+                <form id="student-form" onSubmit={handleSubmit} className="space-y-8">
+                    {/* Enrollment Strategy Toggle */}
+                    <div className="flex bg-slate-50/80 p-5 rounded-2xl border border-slate-100 justify-between items-center">
                         <div>
-                            <h4 className="text-sm font-black text-primary uppercase mb-1">{editingStudent ? 'Editing Record' : 'New Enrollment'}</h4>
-                            <p className="text-xs text-secondary mb-0">Complete all required fields marked with (*)</p>
+                            <h4 className="text-xs font-black text-slate-800 uppercase tracking-widest mb-1">{editingStudent ? 'Current Status' : 'Enrollment Mode'}</h4>
+                            <p className="text-[10px] text-slate-400 font-bold uppercase italic">Affects financial structure and accommodation</p>
                         </div>
-                        {/* Boarding Toggle Switch */}
-                        <div className="flex bg-white p-1 rounded-lg border shadow-sm">
+                        <div className="flex bg-white p-1.5 rounded-xl border border-slate-100 shadow-inner">
                             <button type="button"
-                                className={`px-4 py-2 rounded-md text-[10px] font-black transition-all ${formData.category === 'DAY' ? 'bg-primary text-white shadow-sm' : 'text-secondary'}`}
+                                className={`px-6 py-2.5 rounded-lg text-[10px] font-black transition-all ${formData.category === 'DAY' ? 'bg-primary text-white shadow-md' : 'text-slate-400 hover:text-slate-600'}`}
                                 onClick={() => setFormData({ ...formData, category: 'DAY' })}>
                                 DAY SCHOLAR
                             </button>
                             <button type="button"
-                                className={`px-4 py-2 rounded-md text-[10px] font-black transition-all ${formData.category === 'BOARDING' ? 'bg-primary text-white shadow-sm' : 'text-secondary'}`}
+                                className={`px-6 py-2.5 rounded-lg text-[10px] font-black transition-all ${formData.category === 'BOARDING' ? 'bg-primary text-white shadow-md' : 'text-slate-400 hover:text-slate-600'}`}
                                 onClick={() => setFormData({ ...formData, category: 'BOARDING' })}>
-                                BOARDING
+                                BOARDER
                             </button>
                         </div>
                     </div>
-                    {/* Auto-Hostel Assignment Option */}
-                    {formData.category === 'BOARDING' && !editingStudent && (
-                        <div className="bg-info-light p-3 rounded-lg border border-info mb-6 flex items-center gap-3">
-                            <input
-                                type="checkbox"
-                                className="checkbox"
-                                checked={autoAssignHostel}
-                                onChange={(e) => setAutoAssignHostel(e.target.checked)}
+
+                    <div className="form-grid">
+                        <div className="col-span-2">
+                            <h3 className="text-[10px] font-black text-primary uppercase tracking-[0.2em] border-b border-primary/10 pb-2 mb-4">Core Identification</h3>
+                        </div>
+                        
+                        <div className="form-group col-span-2 md:col-span-1">
+                            <label>Legal Full Name *</label>
+                            <input type="text" value={formData.full_name} onChange={(e) => setFormData({ ...formData, full_name: e.target.value })} required placeholder="Surname, First Middle" />
+                        </div>
+                        
+                        <div className="form-group col-span-2 md:col-span-1">
+                            <label>Admission Number</label>
+                            <input type="text" className="font-mono" value={formData.admission_number} onChange={(e) => setFormData({ ...formData, admission_number: e.target.value })} placeholder="Auto-generated if blank" />
+                        </div>
+
+                        <div className="form-group">
+                            <label>Biological Gender *</label>
+                            <SearchableSelect
+                                options={[
+                                    { id: 'M', label: 'Male' },
+                                    { id: 'F', label: 'Female' }
+                                ]}
+                                value={formData.gender}
+                                onChange={(val) => setFormData({ ...formData, gender: val.toString() })}
+                                required
                             />
-                            <div>
-                                <p className="text-xs font-bold text-primary mb-0">Auto-Assign Hostel Bed</p>
-                                <p className="text-[10px] text-secondary mb-0">System will automatically find the first vacant bed and assign it.</p>
-                            </div>
                         </div>
-                    )}
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
-                        {/* Section 1: Identity */}
-                        <div className="space-y-4">
-                            <h5 className="text-[10px] font-black text-secondary uppercase border-bottom pb-2 tracking-widest">Identity Details</h5>
-                            <div className="form-group">
-                                <label className="label">Full Name *</label>
-                                <input type="text" className="input" value={formData.full_name} onChange={(e) => setFormData({ ...formData, full_name: e.target.value })} required placeholder="Surname, First Middle" />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="form-group">
-                                    <label className="label">ADM No.</label>
-                                    <input type="text" className="input font-mono" value={formData.admission_number} onChange={(e) => setFormData({ ...formData, admission_number: e.target.value })} placeholder="YY/XXXX (Auto-gen)" />
-                                </div>
-                                <div className="form-group">
-                                    <label className="label">Gender *</label>
-                                    <SearchableSelect
-                                        options={[
-                                            { id: 'M', label: 'Male' },
-                                            { id: 'F', label: 'Female' }
-                                        ]}
-                                        value={formData.gender}
-                                        onChange={(val) => setFormData({ ...formData, gender: val.toString() })}
-                                        required
-                                    />
-                                </div>
-                            </div>
-                            <div className="form-group pb-2">
-                                <PremiumDateInput
-                                    label="Date of Birth"
-                                    value={formData.date_of_birth}
-                                    onChange={(val) => setFormData({ ...formData, date_of_birth: val })}
+                        <div className="form-group">
+                            <PremiumDateInput
+                                label="Date of Birth *"
+                                value={formData.date_of_birth}
+                                onChange={(val) => setFormData({ ...formData, date_of_birth: val })}
+                                required
+                            />
+                        </div>
+
+                        <div className="col-span-2 pt-4">
+                            <h3 className="text-[10px] font-black text-primary uppercase tracking-[0.2em] border-b border-primary/10 pb-2 mb-4">Academic Placement & Standing</h3>
+                        </div>
+
+                        <div className="form-group">
+                            <label>Current Class/Grade *</label>
+                            <SearchableSelect
+                                placeholder="Select Class"
+                                options={classes.map(c => ({ id: c.id.toString(), label: `${c.name} ${c.stream}` }))}
+                                value={formData.current_class}
+                                onChange={(val) => setFormData({ ...formData, current_class: val.toString() })}
+                                required
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label>Registry Status</label>
+                            <SearchableSelect
+                                options={[
+                                    { id: 'ACTIVE', label: 'Active Enrollment' },
+                                    { id: 'SUSPENDED', label: 'Suspended / On Leave' },
+                                    { id: 'WITHDRAWN', label: 'Withdrawn' },
+                                    { id: 'ALUMNI', label: 'Alumni / Graduated' }
+                                ]}
+                                value={formData.status}
+                                onChange={(val) => setFormData({ ...formData, status: val.toString() })}
+                            />
+                        </div>
+
+                        <div className="col-span-2 pt-4">
+                            <h3 className="text-[10px] font-black text-primary uppercase tracking-[0.2em] border-b border-primary/10 pb-2 mb-4">Primary Guardian Contact</h3>
+                        </div>
+
+                        <div className="form-group col-span-2 md:col-span-1">
+                            <label>Full Name *</label>
+                            <input type="text" value={formData.guardian_name} onChange={(e) => setFormData({ ...formData, guardian_name: e.target.value })} required />
+                        </div>
+
+                        <div className="form-group col-span-2 md:col-span-1">
+                            <label>Mobile Number *</label>
+                            <div className="flex gap-2">
+                                <CountryCodeSelect
+                                    value={formData.country_code}
+                                    onChange={(val) => setFormData({ ...formData, country_code: val })}
+                                />
+                                <input
+                                    type="tel"
+                                    className="flex-grow"
+                                    value={formData.guardian_phone}
+                                    onChange={(e) => setFormData({ ...formData, guardian_phone: e.target.value })}
                                     required
+                                    placeholder="712345678"
                                 />
                             </div>
                         </div>
 
-                        {/* Section 2: Academic & Status */}
-                        <div className="space-y-4">
-                            <h5 className="text-[10px] font-black text-secondary uppercase border-bottom pb-2 tracking-widest">Academic Placement</h5>
-                            <div className="form-group">
-                                <label className="label">Class / Grade *</label>
-                                <SearchableSelect
-                                    placeholder="Select Class"
-                                    options={classes.map(c => ({ id: c.id.toString(), label: `${c.name} ${c.stream}` }))}
-                                    value={formData.current_class}
-                                    onChange={(val) => setFormData({ ...formData, current_class: val.toString() })}
-                                    required
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label className="label">Status</label>
-                                <SearchableSelect
-                                    options={[
-                                        { id: 'ACTIVE', label: 'Active Student' },
-                                        { id: 'SUSPENDED', label: 'Suspended' },
-                                        { id: 'WITHDRAWN', label: 'Withdrawn' }
-                                    ]}
-                                    value={formData.status}
-                                    onChange={(val) => setFormData({ ...formData, status: val.toString() })}
-                                />
-                            </div>
+                        <div className="form-group col-span-2">
+                            <label>Email Address</label>
+                            <input type="email" value={formData.guardian_email} onChange={(e) => setFormData({ ...formData, guardian_email: e.target.value })} placeholder="Optional for notifications" />
                         </div>
-
-                        {/* Section 3: Guardian */}
-                        <div className="space-y-4 col-span-1 md:col-span-2">
-                            <h5 className="text-[10px] font-black text-secondary uppercase border-bottom pb-2 tracking-widest">Guardian / Contact Info</h5>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div className="form-group">
-                                    <label className="label">Guardian Name *</label>
-                                    <input type="text" className="input" value={formData.guardian_name} onChange={(e) => setFormData({ ...formData, guardian_name: e.target.value })} required />
-                                </div>
-                                <div className="form-group">
-                                    <label className="label">Phone Contact *</label>
-                                    <div className="flex gap-2">
-                                        <CountryCodeSelect
-                                            value={formData.country_code}
-                                            onChange={(val) => setFormData({ ...formData, country_code: val })}
-                                        />
-                                        <input
-                                            type="tel"
-                                            className="input flex-grow"
-                                            value={formData.guardian_phone}
-                                            onChange={(e) => setFormData({ ...formData, guardian_phone: e.target.value })}
-                                            required
-                                            placeholder="712345678"
-                                        />
-                                    </div>
-                                    <p className="text-[9px] text-secondary mt-1">Select country code and enter mobile number without leading 0</p>
-                                </div>
-                                <div className="form-group">
-                                    <label className="label">Email Address</label>
-                                    <input type="email" className="input" value={formData.guardian_email} onChange={(e) => setFormData({ ...formData, guardian_email: e.target.value })} placeholder="Optional" />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="modal-footer mt-8 pt-6 border-top flex justify-end gap-md">
-                        <Button variant="outline" type="button" onClick={closeModal}>Cancel</Button>
-                        <Button
-                            type="submit"
-                            className="px-12 font-black shadow-lg"
-                            loading={isSubmitting}
-                            loadingText={editingStudent ? "UPDATING..." : "ADMITTING..."}
-                        >
-                            {editingStudent ? 'UPDATE RECORD' : 'COMPLETE ADMISSION'}
-                        </Button>
                     </div>
                 </form>
             </Modal>

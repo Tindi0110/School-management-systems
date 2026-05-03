@@ -20,70 +20,67 @@ interface ClassModalProps {
 export const ClassModal: React.FC<ClassModalProps> = ({
     isOpen, onClose, classForm, setClassForm, handleClassSubmit, staff, isSubmitting, editingClassId
 }) => (
-    <Modal isOpen={isOpen} onClose={onClose} title="Create New Class Unit">
-        <form onSubmit={handleClassSubmit} className="space-y-4 form-container-md mx-auto">
-            <div className="grid grid-cols-2 gap-md">
+    <Modal 
+        isOpen={isOpen} 
+        onClose={onClose} 
+        title={editingClassId ? "Update Class Unit" : "Create New Class Unit"}
+        footer={
+            <>
+                <button type="button" className="modern-btn modern-btn-secondary" onClick={onClose}>Cancel</button>
+                <button type="submit" form="class-form" className="modern-btn modern-btn-primary" disabled={isSubmitting}>
+                    {isSubmitting ? (editingClassId ? "UPDATING..." : "CREATING...") : (editingClassId ? "UPDATE UNIT" : "CONFIRM CREATION")}
+                </button>
+            </>
+        }
+    >
+        <form id="class-form" onSubmit={handleClassSubmit} className="space-y-6">
+            <div className="form-grid">
                 <div className="form-group">
-                    <label className="label text-[10px] font-black uppercase">Class Level *</label>
+                    <label>Class Level *</label>
                     <input
                         type="text"
-                        className="input"
                         value={classForm.name}
                         onChange={(e) => setClassForm({ ...classForm, name: e.target.value })}
-                        placeholder="Form 4"
+                        placeholder="e.g. Form 4"
                         required
                     />
                 </div>
                 <div className="form-group">
-                    <label className="label text-[10px] font-black uppercase">Stream *</label>
+                    <label>Stream *</label>
                     <input
                         type="text"
-                        className="input"
                         value={classForm.stream}
                         onChange={(e) => setClassForm({ ...classForm, stream: e.target.value })}
-                        placeholder="North"
+                        placeholder="e.g. North"
                         required
                     />
                 </div>
-            </div>
-            <div className="form-group mb-2">
-                <label className="label text-[10px] font-black uppercase">Class Teacher</label>
-                <SearchableSelect
-                    placeholder="Select Teacher..."
-                    options={staff.filter(s => s.role === 'TEACHER').map(s => ({
-                        id: (s.user || s.id).toString(),
-                        label: `${s.full_name} (${s.employee_id})`
-                    }))}
-                    value={classForm.class_teacher}
-                    onChange={(val) => setClassForm({ ...classForm, class_teacher: val.toString() })}
-                />
-            </div>
-            <div className="grid grid-cols-2 gap-md">
-                <div className="form-group">
-                    <label className="label text-[10px] font-black uppercase">Active Year</label>
-                    <input type="number" className="input" value={classForm.year} readOnly />
+                <div className="form-group col-span-2">
+                    <label>Class Teacher</label>
+                    <SearchableSelect
+                        placeholder="Select Teacher..."
+                        options={staff.filter(s => s.role === 'TEACHER').map(s => ({
+                            id: (s.user || s.id).toString(),
+                            label: `${s.full_name} (${s.employee_id})`
+                        }))}
+                        value={classForm.class_teacher}
+                        onChange={(val) => setClassForm({ ...classForm, class_teacher: val.toString() })}
+                    />
                 </div>
                 <div className="form-group">
-                    <label className="label text-[10px] font-black uppercase">Max Capacity</label>
+                    <label>Active Year</label>
+                    <input type="number" value={classForm.year} readOnly className="bg-slate-50 text-slate-500 font-mono" />
+                </div>
+                <div className="form-group">
+                    <label>Max Capacity</label>
                     <input
                         type="number"
-                        className="input"
                         value={classForm.capacity || ''}
                         onChange={(e) => setClassForm({ ...classForm, capacity: parseInt(e.target.value) || 0 })}
+                        placeholder="e.g. 45"
                     />
                 </div>
             </div>
-            <Button
-                type="button"
-                onClick={handleClassSubmit}
-                variant="primary"
-                size="sm"
-                className="w-full mt-2 font-black uppercase"
-                loading={isSubmitting}
-                loadingText={editingClassId ? "Updating..." : "Creating..."}
-            >
-                Confirm Unit Creation
-            </Button>
         </form>
     </Modal>
 );
@@ -101,29 +98,30 @@ interface GroupModalProps {
 export const GroupModal: React.FC<GroupModalProps> = ({
     isOpen, onClose, groupForm, setGroupForm, handleGroupSubmit, isSubmitting, editingGroupId
 }) => (
-    <Modal isOpen={isOpen} onClose={onClose} title="Create Department Group">
-        <form onSubmit={handleGroupSubmit} className="form-container-sm mx-auto space-y-4">
+    <Modal 
+        isOpen={isOpen} 
+        onClose={onClose} 
+        title={editingGroupId ? "Update Department" : "Create Department Group"}
+        footer={
+            <>
+                <button type="button" className="modern-btn modern-btn-secondary" onClick={onClose}>Cancel</button>
+                <button type="submit" form="group-form" className="modern-btn modern-btn-primary" disabled={isSubmitting}>
+                    {isSubmitting ? "SAVING..." : "SAVE DEPARTMENT"}
+                </button>
+            </>
+        }
+    >
+        <form id="group-form" onSubmit={handleGroupSubmit} className="space-y-6">
             <div className="form-group">
-                <label className="label text-[10px] font-black uppercase">Group Name *</label>
+                <label>Group Name *</label>
                 <input
                     type="text"
-                    className="input"
                     value={groupForm.name}
                     onChange={(e) => setGroupForm({ ...groupForm, name: e.target.value })}
                     placeholder="e.g. Sciences"
                     required
                 />
             </div>
-            <Button
-                type="submit"
-                variant="primary"
-                size="sm"
-                className="w-full mt-2 font-black uppercase"
-                loading={isSubmitting}
-                loadingText="Saving..."
-            >
-                {editingGroupId ? 'Update Group' : 'Save Group'}
-            </Button>
         </form>
     </Modal>
 );
@@ -141,59 +139,58 @@ interface SubjectModalProps {
 export const SubjectModal: React.FC<SubjectModalProps> = ({
     isOpen, onClose, subjectForm, setSubjectForm, handleSubjectSubmit, subjectGroups, isSubmitting
 }) => (
-    <Modal isOpen={isOpen} onClose={onClose} title="Add Curriculum Subject">
-        <form onSubmit={handleSubjectSubmit} className="space-y-4 form-container-md mx-auto">
-            <div className="grid grid-cols-2 gap-4">
-                <div className="form-group">
-                    <label className="label text-[10px] font-black uppercase">Subject Name *</label>
+    <Modal 
+        isOpen={isOpen} 
+        onClose={onClose} 
+        title="Add Curriculum Subject"
+        footer={
+            <>
+                <button type="button" className="modern-btn modern-btn-secondary" onClick={onClose}>Cancel</button>
+                <button type="submit" form="subject-form" className="modern-btn modern-btn-primary" disabled={isSubmitting}>
+                    {isSubmitting ? "REGISTERING..." : "REGISTER SUBJECT"}
+                </button>
+            </>
+        }
+    >
+        <form id="subject-form" onSubmit={handleSubjectSubmit} className="space-y-6">
+            <div className="form-grid">
+                <div className="form-group col-span-2 md:col-span-1">
+                    <label>Subject Name *</label>
                     <input
                         type="text"
-                        className="input"
                         value={subjectForm.name}
                         onChange={(e) => setSubjectForm({ ...subjectForm, name: e.target.value })}
                         required
                     />
                 </div>
-                <div className="form-group">
-                    <label className="label text-[10px] font-black uppercase">Subject Code *</label>
+                <div className="form-group col-span-2 md:col-span-1">
+                    <label>Subject Code *</label>
                     <input
                         type="text"
-                        className="input"
                         value={subjectForm.code}
                         onChange={(e) => setSubjectForm({ ...subjectForm, code: e.target.value })}
                         required
                     />
                 </div>
+                <div className="form-group col-span-2">
+                    <label>Abbreviated Name (Optional)</label>
+                    <input
+                        type="text"
+                        placeholder="e.g. MATH"
+                        value={subjectForm.short_name}
+                        onChange={(e) => setSubjectForm({ ...subjectForm, short_name: e.target.value })}
+                    />
+                </div>
+                <div className="form-group col-span-2">
+                    <label>Department Group</label>
+                    <SearchableSelect
+                        placeholder="General"
+                        options={subjectGroups.map(g => ({ id: g.id.toString(), label: g.name }))}
+                        value={subjectForm.group}
+                        onChange={(val) => setSubjectForm({ ...subjectForm, group: val.toString() })}
+                    />
+                </div>
             </div>
-            <div className="form-group">
-                <label className="label text-[10px] font-black uppercase">Abbreviated Name (Optional)</label>
-                <input
-                    type="text"
-                    className="input"
-                    placeholder="e.g. MATH"
-                    value={subjectForm.short_name}
-                    onChange={(e) => setSubjectForm({ ...subjectForm, short_name: e.target.value })}
-                />
-            </div>
-            <div className="form-group">
-                <label className="label text-[10px] font-black uppercase">Department Group</label>
-                <SearchableSelect
-                    placeholder="General"
-                    options={subjectGroups.map(g => ({ id: g.id.toString(), label: g.name }))}
-                    value={subjectForm.group}
-                    onChange={(val) => setSubjectForm({ ...subjectForm, group: val.toString() })}
-                />
-            </div>
-            <Button
-                type="submit"
-                variant="primary"
-                size="sm"
-                className="w-full mt-2 font-black uppercase"
-                loading={isSubmitting}
-                loadingText="Registering..."
-            >
-                Register Subject
-            </Button>
         </form>
     </Modal>
 );

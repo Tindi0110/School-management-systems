@@ -21,22 +21,33 @@ interface ExamModalProps {
 export const ExamModal: React.FC<ExamModalProps> = ({
     isOpen, onClose, examForm, setExamForm, handleExamSubmit, terms, gradeSystems, isSubmitting
 }) => (
-    <Modal isOpen={isOpen} onClose={onClose} title={examForm.name ? "Edit Exam Schedule" : "Schedule New Exam"}>
-        <form onSubmit={handleExamSubmit} className="form-container-md mx-auto space-y-4">
+    <Modal 
+        isOpen={isOpen} 
+        onClose={onClose} 
+        title={examForm.name ? "Edit Exam Schedule" : "Schedule New Exam"}
+        footer={
+            <>
+                <button type="button" className="modern-btn modern-btn-secondary" onClick={onClose}>Cancel</button>
+                <button type="submit" form="exam-form" className="modern-btn modern-btn-primary" disabled={isSubmitting}>
+                    {isSubmitting ? "SAVING..." : "SAVE SCHEDULE"}
+                </button>
+            </>
+        }
+    >
+        <form id="exam-form" onSubmit={handleExamSubmit} className="space-y-6">
             <div className="form-group">
-                <label className="label text-[10px] font-black uppercase tracking-widest">Exam Name</label>
+                <label>Exam Name</label>
                 <input
                     type="text"
-                    className="input font-bold"
                     placeholder="e.g. Mid-Term 1 2024"
                     value={examForm.name}
                     onChange={(e) => setExamForm({ ...examForm, name: e.target.value })}
                     required
                 />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="form-grid">
                 <div className="form-group">
-                    <label className="label text-[10px] font-black uppercase">Term</label>
+                    <label>Academic Term</label>
                     <SearchableSelect
                         placeholder="Select Term..."
                         options={terms.map(t => ({ id: t.id.toString(), label: t.name, subLabel: (t as any).year_name }))}
@@ -46,7 +57,7 @@ export const ExamModal: React.FC<ExamModalProps> = ({
                     />
                 </div>
                 <div className="form-group">
-                    <label className="label text-[10px] font-black uppercase">Grading System</label>
+                    <label>Grading System</label>
                     <SearchableSelect
                         placeholder="Select System..."
                         options={gradeSystems.map(gs => ({ id: gs.id.toString(), label: gs.name }))}
@@ -55,10 +66,8 @@ export const ExamModal: React.FC<ExamModalProps> = ({
                         required
                     />
                 </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
                 <div className="form-group">
-                    <label className="label text-[10px] font-black uppercase text-secondary">Date Started</label>
+                    <label>Date Started</label>
                     <PremiumDateInput
                         value={examForm.date_started}
                         onChange={(val) => setExamForm({ ...examForm, date_started: val })}
@@ -66,10 +75,9 @@ export const ExamModal: React.FC<ExamModalProps> = ({
                     />
                 </div>
                 <div className="form-group">
-                    <label className="label text-[10px] font-black uppercase">Weighting %</label>
+                    <label>Weighting %</label>
                     <input
                         type="number"
-                        className="input"
                         value={examForm.weighting}
                         onChange={(e) => setExamForm({ ...examForm, weighting: parseInt(e.target.value) })}
                         max="100"
@@ -78,24 +86,15 @@ export const ExamModal: React.FC<ExamModalProps> = ({
                     />
                 </div>
             </div>
-            <div className="form-group flex items-center gap-2 pt-2">
+            <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
                 <input
                     type="checkbox"
-                    className="checkbox checkbox-sm checkbox-primary"
+                    className="checkbox"
                     checked={examForm.is_active}
                     onChange={(e) => setExamForm({ ...examForm, is_active: e.target.checked })}
                 />
-                <label className="label text-[10px] font-black uppercase mb-0">Open for Marks Entry</label>
+                <label className="text-xs font-bold text-slate-700">Open for Marks Entry</label>
             </div>
-            <Button
-                type="submit"
-                variant="primary"
-                className="w-full font-black uppercase mt-4"
-                loading={isSubmitting}
-                loadingText="Saving..."
-            >
-                Save Schedule
-            </Button>
         </form>
     </Modal>
 );
@@ -115,63 +114,67 @@ interface SyllabusModalProps {
 export const SyllabusModal: React.FC<SyllabusModalProps> = ({
     isOpen, onClose, syllabusForm, setSyllabusForm, handleSyllabusSubmit, uniqueClassNames, classes, subjects, isSubmitting
 }) => (
-    <Modal isOpen={isOpen} onClose={onClose} title="Track Syllabus Coverage">
-        <form onSubmit={handleSyllabusSubmit} className="form-container-md mx-auto">
-            <div className="form-group">
-                <label className="label text-[10px] font-black uppercase">Class Level</label>
-                <SearchableSelect
-                    placeholder="Select Level..."
-                    options={uniqueClassNames.map(name => ({ id: name, label: name }))}
-                    value={syllabusForm.level}
-                    onChange={(val) => setSyllabusForm({ ...syllabusForm, level: val.toString(), class_grade: '' })}
-                    required
-                />
-            </div>
-            <div className="form-group">
-                <label className="label text-[10px] font-black uppercase">Specific Stream</label>
-                <SearchableSelect
-                    placeholder="Select Stream..."
-                    options={classes.filter(c => c.name === syllabusForm.level).map(c => ({ id: c.id.toString(), label: c.stream }))}
-                    value={syllabusForm.class_grade}
-                    onChange={(val) => setSyllabusForm({ ...syllabusForm, class_grade: val.toString() })}
-                    required
-                    disabled={!syllabusForm.level}
-                />
-            </div>
-            <div className="form-group">
-                <label className="label text-[10px] font-black uppercase">Subject</label>
-                <SearchableSelect
-                    placeholder="Select Subject..."
-                    options={subjects.map(s => ({ id: s.id.toString(), label: s.name, subLabel: `(${s.code})` }))}
-                    value={syllabusForm.subject}
-                    onChange={(val) => setSyllabusForm({ ...syllabusForm, subject: val.toString() })}
-                    required
-                />
-            </div>
-            <div className="form-group">
-                <label className="label text-[10px] font-black uppercase">Start Pct</label>
-                <div className="flex items-center gap-2">
-                    <input
-                        type="range"
-                        min="0"
-                        max="100"
-                        className="range range-xs range-primary"
-                        value={syllabusForm.coverage_percentage}
-                        onChange={(e) => setSyllabusForm({ ...syllabusForm, coverage_percentage: parseInt(e.target.value) })}
+    <Modal 
+        isOpen={isOpen} 
+        onClose={onClose} 
+        title="Track Syllabus Coverage"
+        footer={
+            <>
+                <button type="button" className="modern-btn modern-btn-secondary" onClick={onClose}>Cancel</button>
+                <button type="submit" form="syllabus-form" className="modern-btn modern-btn-primary" disabled={isSubmitting}>
+                    {isSubmitting ? "SAVING..." : "SAVE COVERAGE"}
+                </button>
+            </>
+        }
+    >
+        <form id="syllabus-form" onSubmit={handleSyllabusSubmit} className="space-y-6">
+            <div className="form-grid">
+                <div className="form-group">
+                    <label>Class Level</label>
+                    <SearchableSelect
+                        placeholder="Select Level..."
+                        options={uniqueClassNames.map(name => ({ id: name, label: name }))}
+                        value={syllabusForm.level}
+                        onChange={(val) => setSyllabusForm({ ...syllabusForm, level: val.toString(), class_grade: '' })}
+                        required
                     />
-                    <span className="font-bold text-xs w-12 text-right">{syllabusForm.coverage_percentage}%</span>
+                </div>
+                <div className="form-group">
+                    <label>Specific Stream</label>
+                    <SearchableSelect
+                        placeholder="Select Stream..."
+                        options={classes.filter(c => c.name === syllabusForm.level).map(c => ({ id: c.id.toString(), label: c.stream }))}
+                        value={syllabusForm.class_grade}
+                        onChange={(val) => setSyllabusForm({ ...syllabusForm, class_grade: val.toString() })}
+                        required
+                        disabled={!syllabusForm.level}
+                    />
+                </div>
+                <div className="form-group col-span-2">
+                    <label>Curriculum Subject</label>
+                    <SearchableSelect
+                        placeholder="Select Subject..."
+                        options={subjects.map(s => ({ id: s.id.toString(), label: s.name, subLabel: `(${s.code})` }))}
+                        value={syllabusForm.subject}
+                        onChange={(val) => setSyllabusForm({ ...syllabusForm, subject: val.toString() })}
+                        required
+                    />
+                </div>
+                <div className="form-group col-span-2">
+                    <label>Current Coverage Percentage</label>
+                    <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                        <input
+                            type="range"
+                            min="0"
+                            max="100"
+                            className="flex-grow accent-primary"
+                            value={syllabusForm.coverage_percentage}
+                            onChange={(e) => setSyllabusForm({ ...syllabusForm, coverage_percentage: parseInt(e.target.value) })}
+                        />
+                        <span className="font-black text-primary text-lg w-12 text-right">{syllabusForm.coverage_percentage}%</span>
+                    </div>
                 </div>
             </div>
-            <Button
-                type="submit"
-                variant="primary"
-                size="sm"
-                className="w-full mt-2 font-black uppercase"
-                loading={isSubmitting}
-                loadingText="Saving..."
-            >
-                Save Coverage
-            </Button>
         </form>
     </Modal>
 );
