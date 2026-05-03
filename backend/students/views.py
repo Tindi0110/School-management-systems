@@ -30,24 +30,24 @@ class StudentViewSet(viewsets.ModelViewSet):
         'parents',
         'documents',
     ).annotate(
-        avg_score=Subquery(
+        avg_score=Coalesce(Subquery(
             StudentResult.objects.filter(student=OuterRef('pk'))
             .values('student')
             .annotate(avg=Avg('score'))
             .values('avg')
-        ),
-        attendance_total=Subquery(
+        ), Value(0, output_field=DecimalField())),
+        attendance_total=Coalesce(Subquery(
             Attendance.objects.filter(student=OuterRef('pk'))
             .values('student')
             .annotate(cnt=Count('id'))
             .values('cnt')
-        ),
-        attendance_present=Subquery(
+        ), Value(0)),
+        attendance_present=Coalesce(Subquery(
             Attendance.objects.filter(student=OuterRef('pk'), status='PRESENT')
             .values('student')
             .annotate(cnt=Count('id'))
             .values('cnt')
-        ),
+        ), Value(0)),
     ).order_by('admission_number')
 
     def get_serializer_class(self):
