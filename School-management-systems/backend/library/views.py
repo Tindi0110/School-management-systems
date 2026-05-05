@@ -1,0 +1,348 @@
+import logging
+
+from django.utils import timezone
+from django.db import transaction
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, viewsets, status
+from rest_framework.response import Response
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
+from .models import Book, BookCopy, BookLending, LibraryFine, LibraryConfig, BookReservation
+from .serializers import (
+    BookSerializer, BookCopySerializer, BookLendingSerializer,
+    LibraryFineSerializer, LibraryConfigSerializer, BookReservationSerializer
+)
+from finance.models import Invoice, Adjustment
+
+logger = logging.getLogger(__name__)
+
+def sync_fine_to_finance(fine, approved_by):
+    """
+    Helper function to create a Finance Adjustment for a LibraryFine.
+    """
+    try:
+        # Resolve student from user profile
+        student = None
+        if hasattr(fine.user, 'student_profile'):
+            student = fine.user.student_profile
+        elif hasattr(fine.user, 'student'):
+            student = fine.user.student
+        
+        if not student:
+            return False, "Student link not found for this user."
+
+        # Find latest unpaid or partial invoice
+        invoice = Invoice.objects.filter(
+            student=student,
+            status__in=['UNPAID', 'PARTIAL']
+        ).order_by('-date_generated').first()
+
+        if not invoice:
+            # Fall back to any latest invoice
+            invoice = Invoice.objects.filter(student=student).order_by('-date_generated').first()
+
+        if not invoice:
+            # Fall back to creating a new invoice based on the active term using the finance util
+            from finance.utils import get_or_create_invoice
+            try:
+                invoice = get_or_create_invoice(student)
+            except Exception as e:
+                logger.error(f"Failed to generate invoice for student in Library Sync: {e}")
+                pass
+
+        if not invoice:
+            return False, "No active invoice found to sync the fine."
+
+        # Build reason string
+        date_str = fine.date_issued.strftime("%d %b %Y") if fine.date_issued else "Unknown Date"
+        
+        if fine.lending and fine.lending.copy:
+            book_title = fine.lending.copy.book.title
+            reason = f"Library Fine ({fine.get_fine_type_display()}): {book_title} (Incurred: {date_str})"
+        else:
+            reason = f"Library Fine ({fine.get_fine_type_display()}): {fine.reason or 'Manual fine'} (Incurred: {date_str})"
+
+        from django.db import transaction
+        with transaction.atomic():
+            # Use update_or_create with origin tracking
+            from finance.models import Adjustment
+            adjustment, _ = Adjustment.objects.update_or_create(
+                origin_model='library.LibraryFine',
+                origin_id=fine.id,
+                defaults={
+                    'invoice': invoice,
+                    'adjustment_type': 'DEBIT',
+                    'amount': fine.amount,
+                    'reason': reason,
+                    'date': fine.date_issued,
+                    'approved_by': approved_by,
+                }
+            )
+            fine.adjustment = adjustment
+            fine.save(update_fields=['adjustment'])
+            return True, "Synced successfully."
+    except Exception as e:
+        logger.error(f"Finance Sync Error: {e}")
+        return False, f"Finance Sync failed: {str(e)}"
+
+class LibraryConfigViewSet(viewsets.ModelViewSet):
+    queryset = LibraryConfig.objects.all()
+    serializer_class = LibraryConfigSerializer
+    permission_classes = [IsAuthenticated]
+
+class BookViewSet(viewsets.ModelViewSet):
+    serializer_class = BookSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['category', 'language']
+    search_fields = ['title', 'author', 'isbn', 'category', 'publisher']
+    ordering_fields = ['title', 'author', 'year']
+
+    def get_queryset(self):
+        # Annotate with available copies count to avoid N+1 in serializer
+        from django.db.models import Count, Q
+        return Book.objects.annotate(
+            available_copies_count_annotated=Count(
+                'copies', 
+                filter=Q(copies__status='AVAILABLE')
+            ),
+            total_copies_count_annotated=Count('copies')
+        ).all()
+
+    @action(detail=False, methods=['get'])
+    def dashboard_stats(self, request):
+        total_books = Book.objects.count()
+        total_copies = BookCopy.objects.count()
+        total_fines = sum(fine.amount for fine in LibraryFine.objects.filter(status='PENDING'))
+        active_lendings = BookLending.objects.filter(date_returned__isnull=True).count()
+        available_copies = BookCopy.objects.filter(status='AVAILABLE').count()
+        overdue_lendings = BookLending.objects.filter(date_returned__isnull=True, due_date__lt=timezone.now().date()).count()
+
+        return Response({
+            'totalBooks': total_books,
+            'totalCopies': total_copies,
+            'totalFines': total_fines,
+            'activeLendings': active_lendings,
+            'available': available_copies,
+            'overdue': overdue_lendings
+        })
+
+class BookCopyViewSet(viewsets.ModelViewSet):
+    queryset = BookCopy.objects.select_related('book').all()
+    serializer_class = BookCopySerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['book', 'status', 'condition']
+    search_fields = ['copy_number', 'barcode', 'book__title']
+    ordering_fields = ['copy_number', 'purchase_date', 'status']
+
+class BookLendingViewSet(viewsets.ModelViewSet):
+    queryset = BookLending.objects.select_related('copy__book', 'user').all()
+    serializer_class = BookLendingSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['copy', 'user', 'date_returned']
+    search_fields = ['user__first_name', 'user__last_name', 'copy__copy_number', 'copy__book__title']
+    ordering_fields = ['date_issued', 'due_date', 'date_returned']
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        student_id = self.request.query_params.get('student_id')
+        user_id = self.request.query_params.get('user')
+        if student_id:
+            qs = qs.filter(user__student_profile__id=student_id)
+        elif user_id:
+            qs = qs.filter(user_id=user_id)
+        return qs
+
+    def create(self, request, *args, **kwargs):
+        from rest_framework.exceptions import ValidationError
+        from django.db import transaction
+        
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user = serializer.validated_data['user']
+        copy_instance = serializer.validated_data['copy']
+        
+        with transaction.atomic():
+            # Lock the copy to prevent race conditions
+            copy = BookCopy.objects.select_for_update().get(pk=copy_instance.pk)
+            
+            # 1. Check Copy Status match
+            if copy.status != 'AVAILABLE':
+                raise ValidationError({"detail": f"This copy is currently {copy.status}"})
+
+            # 2. CORE PRINCIPLE: Block if Overdue Exists
+            overdue_exists = BookLending.objects.filter(
+                user=user, 
+                date_returned__isnull=True, 
+                due_date__lt=timezone.now().date()
+            ).exists()
+            
+            if overdue_exists:
+                 raise ValidationError({"detail": "User has overdue books. Cannot issue new resources."})
+
+            # 3. CORE PRINCIPLE: Max Limit (Default 2)
+            active_count = BookLending.objects.filter(user=user, date_returned__isnull=True).count()
+            if active_count >= 2:
+                raise ValidationError({"detail": "User has reached the maximum borrowing limit (2 books)."})
+
+            # Save Lending and Update Copy
+            lending = serializer.save()
+            copy.status = 'ISSUED'
+            copy.save()
+        
+        # Reload to ensure efficient serialization (avoid N+1)
+        # This fixes the "Success but Slow/Timeout" issue by making the response serialization instant
+        lending = BookLending.objects.select_related('copy__book', 'user').get(pk=lending.pk)
+        
+        # Serialize with reloaded instance
+        serializer = self.get_serializer(lending)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+
+    @action(detail=True, methods=['post'])
+    def return_book(self, request, pk=None):
+        lending = self.get_object()
+        if lending.date_returned:
+            return Response({'error': 'Book already returned'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        return_date = timezone.now().date()
+        lending.date_returned = return_date
+        lending.save()
+        
+        copy = lending.copy
+        copy.status = 'AVAILABLE'
+        copy.save()
+        
+        # 4. CORE PRINCIPLE: Auto-Fines (Logic: Configurable per day)
+        fine_msg = ""
+        if return_date > lending.due_date:
+            delta = return_date - lending.due_date
+            days_late = delta.days
+            if days_late > 0:
+                # Get Config
+                config = LibraryConfig.objects.filter(is_active=True).first()
+                daily_fine = config.fine_amount_per_day if config else 20.00
+                amount = days_late * float(daily_fine)
+                
+                # Create Fine Record
+                fine = LibraryFine.objects.create(
+                    lending=lending,
+                    user=lending.user,
+                    amount=amount,
+                    fine_type='LATE',
+                    status='PENDING',
+                    reason=f"Auto-Fine: Returned {days_late} days late."
+                )
+                
+                # SYNC TO FINANCE
+                success, msg = sync_fine_to_finance(fine, request.user)
+                if success:
+                    fine_msg = f" Book returned {days_late} days late. Fine of KES {amount} added to Fee Balance."
+                else:
+                    fine_msg = f" Book returned {days_late} days late. Fine of KES {amount} recorded ({msg})."
+
+        return Response({'status': f'Book returned successfully.{fine_msg}'})
+
+    @action(detail=False, methods=['post'])
+    def mark_overdue(self, request):
+        """
+        Flags books as OVERDUE if they are past their due date and not returned.
+        Can be called manually by admin or via a scheduled cron job.
+        """
+        today = timezone.now().date()
+        overdue_lendings = BookLending.objects.filter(
+            date_returned__isnull=True,
+            due_date__lt=today
+        ).select_related('copy')
+
+        count = 0
+        from django.db import transaction
+        with transaction.atomic():
+            for lending in overdue_lendings:
+                if lending.copy.status != 'OVERDUE':
+                    lending.copy.status = 'OVERDUE'
+                    lending.copy.save(update_fields=['status'])
+                    count += 1
+
+        return Response({'message': f'{count} book copies marked as OVERDUE.'})
+
+    @action(detail=True, methods=['post'])
+    def extend_due_date(self, request, pk=None):
+        """
+        Allows librarian to extend the due date of a lending and increments renewal_count.
+        """
+        lending = self.get_object()
+        if lending.date_returned:
+            return Response({'error': 'Cannot extend a returned book'}, status=status.HTTP_400_BAD_REQUEST)
+
+        days_to_add = int(request.data.get('days', 7))
+        from datetime import timedelta
+        
+        # If currently overdue, reset the copy status to ISSUED
+        if lending.copy.status == 'OVERDUE':
+            lending.copy.status = 'ISSUED'
+            lending.copy.save(update_fields=['status'])
+
+        lending.due_date = lending.due_date + timedelta(days=days_to_add)
+        lending.renewal_count += 1
+        lending.save()
+
+        return Response({'message': f'Due date extended to {lending.due_date}'})
+
+class LibraryFineViewSet(viewsets.ModelViewSet):
+    queryset = LibraryFine.objects.select_related('lending', 'lending__copy__book', 'user', 'adjustment').all()
+    serializer_class = LibraryFineSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['status', 'fine_type', 'user']
+    search_fields = ['user__first_name', 'user__last_name', 'reason']
+    ordering_fields = ['amount', 'date_issued']
+
+    def perform_create(self, serializer):
+        fine = serializer.save()
+        # Automatically sync manual fines to finance
+        sync_fine_to_finance(fine, self.request.user)
+
+    @action(detail=False, methods=['post'])
+    def sync_to_finance(self, request):
+        """
+        Bulk-syncs all PENDING library fines that have no finance adjustment yet.
+        Creates a DEBIT Adjustment on the student's latest UNPAID/PARTIAL invoice.
+        """
+        pending_fines = LibraryFine.objects.filter(
+            status='PENDING',
+            adjustment__isnull=True
+        ).select_related('lending__copy__book', 'user')
+
+        synced = 0
+        skipped_no_student = 0
+        skipped_no_invoice = 0
+
+        for fine in pending_fines:
+            success, msg = sync_fine_to_finance(fine, request.user)
+            if success:
+                synced += 1
+            else:
+                if "Student link not found" in msg:
+                    skipped_no_student += 1
+                else:
+                    skipped_no_invoice += 1
+
+        return Response({
+            'message': f'Sync complete. {synced} fine(s) synced to finance.',
+            'synced': synced,
+            'skipped_no_student': skipped_no_student,
+            'skipped_no_invoice': skipped_no_invoice
+        })
+
+class BookReservationViewSet(viewsets.ModelViewSet):
+    queryset = BookReservation.objects.select_related('book', 'user').all()
+    serializer_class = BookReservationSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_fields = ['status', 'user']
+    search_fields = ['book__title', 'user__first_name', 'user__last_name']

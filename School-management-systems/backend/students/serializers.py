@@ -1,0 +1,126 @@
+from rest_framework import serializers
+from .models import (
+    Student, Parent, StudentAdmission, StudentDocument,
+    DisciplineRecord, HealthRecord, ActivityRecord
+)
+from academics.models import Attendance, StudentResult
+
+from django.db.models import Avg
+
+class SimpleStudentSerializer(serializers.ModelSerializer):
+    class_name = serializers.CharField(source='current_class.name', read_only=True)
+    stream = serializers.CharField(source='current_class.stream', read_only=True)
+    class Meta:
+        model = Student
+        fields = ['id', 'full_name', 'admission_number', 'class_name', 'stream']
+
+class ParentSerializer(serializers.ModelSerializer):
+    students = SimpleStudentSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = Parent
+        fields = ['id', 'full_name', 'relationship', 'phone', 'email', 'occupation', 'address', 'is_primary', 'students']
+
+    def validate_phone(self, value):
+        if value and not value.startswith('+'):
+            raise serializers.ValidationError("Phone number must include a country code starting with '+' (e.g., +254XXXXXXXXX)")
+        return value
+
+class StudentAdmissionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StudentAdmission
+        fields = '__all__'
+
+class StudentDocumentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StudentDocument
+        fields = '__all__'
+
+class DisciplineRecordSerializer(serializers.ModelSerializer):
+    reported_by_name = serializers.SerializerMethodField()
+    class Meta:
+        model = DisciplineRecord
+        fields = '__all__'
+
+    def get_reported_by_name(self, obj):
+        return obj.reported_by.get_full_name() if obj.reported_by else "Unknown"
+
+class HealthRecordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HealthRecord
+        fields = '__all__'
+
+class ActivityRecordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ActivityRecord
+        fields = '__all__'
+
+class StudentListSerializer(serializers.ModelSerializer):
+    """
+    Optimized serializer for list views.
+    Includes only essential fields for the registry table and basic edit modal.
+    """
+    class_name = serializers.CharField(source='current_class.name', read_only=True)
+    class_stream = serializers.CharField(source='current_class.stream', read_only=True)
+    
+    # Pre-calculated/annotated fields for performance
+    attendance_percentage = serializers.SerializerMethodField()
+    average_grade = serializers.SerializerMethodField()
+    
+    # Needed for basic edit modal in list view
+    parents_detail = ParentSerializer(source='parents', many=True, read_only=True)
+
+    class Meta:
+        model = Student
+        fields = [
+            'id', 'full_name', 'admission_number', 'gender', 'date_of_birth',
+            'class_name', 'class_stream', 'status', 'category',
+            'fee_balance', 'is_active', 'attendance_percentage', 'average_grade',
+            'parents_detail'
+        ]
+
+    def get_attendance_percentage(self, obj):
+        return obj.get_attendance_stats()
+
+    def get_average_grade(self, obj):
+        return obj.get_academic_stats()['display']
+
+class StudentSerializer(serializers.ModelSerializer):
+    class_name = serializers.CharField(source='current_class.name', read_only=True)
+    class_stream = serializers.CharField(source='current_class.stream', read_only=True)
+    
+    # MethodFields for fields requiring logic
+    hostel_name = serializers.CharField(source='hostel_allocation.room.hostel.name', read_only=True)
+    room_number = serializers.CharField(source='hostel_allocation.room.room_number', read_only=True)
+
+    # Nested Data for SIS Profile
+    parents_detail = ParentSerializer(source='parents', many=True, read_only=True)
+    admission_details = StudentAdmissionSerializer(read_only=True)
+    health_record = HealthRecordSerializer(read_only=True)
+
+    # Calculated Fields
+    attendance_percentage = serializers.SerializerMethodField()
+    average_grade = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Student
+        fields = '__all__'
+
+    # Write-only fields for admission optimization
+    guardian_name = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    guardian_phone = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    guardian_email = serializers.EmailField(write_only=True, required=False, allow_blank=True)
+    guardian_relation = serializers.CharField(write_only=True, required=False, default='GUARDIAN')
+    guardian_address = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    is_primary_guardian = serializers.BooleanField(write_only=True, required=False, default=True)
+
+    def get_attendance_percentage(self, obj):
+        return obj.get_attendance_stats()
+
+    def get_average_grade(self, obj):
+        return obj.get_academic_stats()['display']
+
+    def validate_guardian_phone(self, value):
+        if value and not value.startswith('+'):
+            raise serializers.ValidationError("Guardian phone number must include a country code starting with '+' (e.g., +254XXXXXXXXX)")
+        return value
