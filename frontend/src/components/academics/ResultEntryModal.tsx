@@ -2,6 +2,7 @@ import React from 'react';
 import Modal from '../Modal';
 import SearchableSelect from '../SearchableSelect';
 import StudentResultRow from './StudentResultRow';
+import { Lock, AlertTriangle } from 'lucide-react';
 import type { Student } from '../../types/student.types';
 import type { ClassUnit, Subject, GradeSystem } from '../../types/academic.types';
 
@@ -37,24 +38,42 @@ export const ResultEntryModal: React.FC<ResultEntryModalProps> = ({
         footer={
             <div className="flex justify-between items-center w-full">
                 <p className="text-[10px] text-slate-500 font-medium italic">
-                    <span className="font-black text-primary uppercase mr-2 tracking-widest">Tip:</span> 
-                    Existing marks are <span className="text-primary font-black">Highlighted</span>. Enter new marks and click Save.
+                    {(!selectedExam?.is_active || selectedExam?.is_locked)
+                        ? <span className="flex items-center gap-1 text-amber-700 font-bold"><AlertTriangle size={12} /> Read-only mode — entry period has ended.</span>
+                        : <><span className="font-black text-primary uppercase mr-2 tracking-widest">Tip:</span> Existing marks are <span className="text-primary font-black">Highlighted</span>. Enter new marks and click Save.</>
+                    }
                 </p>
                 <div className="flex gap-3">
-                    <button type="button" className="modern-btn modern-btn-secondary" onClick={onClose}>Cancel</button>
-                    <button 
-                        type="submit" 
-                        form="result-form" 
-                        className="modern-btn modern-btn-primary" 
-                        disabled={isSubmitting}
-                    >
-                        {isSubmitting ? "SAVING MATRIX..." : "SAVE MATRIX PAYLOAD"}
-                    </button>
+                    <button type="button" className="modern-btn modern-btn-secondary" onClick={onClose}>Close</button>
+                    {!(!selectedExam?.is_active || selectedExam?.is_locked) && (
+                        <button 
+                            type="submit" 
+                            form="result-form" 
+                            className="modern-btn modern-btn-primary" 
+                            disabled={isSubmitting}
+                        >
+                            {isSubmitting ? "SAVING MATRIX..." : "SAVE MATRIX PAYLOAD"}
+                        </button>
+                    )}
                 </div>
             </div>
         }
     >
         <form id="result-form" onSubmit={handleBulkResultSubmit} className="space-y-6">
+            {(!selectedExam?.is_active || selectedExam?.is_locked) && (
+                <div className="mb-4 flex items-start gap-3 p-4 rounded-xl border border-amber-200 bg-amber-50">
+                    <div className="flex-shrink-0 mt-0.5 p-1.5 bg-amber-100 rounded-lg text-amber-700">
+                        <Lock size={16} />
+                    </div>
+                    <div>
+                        <p className="text-sm font-black uppercase text-amber-800 mb-0.5">Marks Entry Period Closed</p>
+                        <p className="text-xs text-amber-700 leading-relaxed">
+                            This exam (<strong>{selectedExam?.name}</strong>) is no longer open for marks entry. 
+                            Results are now locked and read-only. To re-open entry, an administrator must set the exam back to <strong>"Open for Marks Entry"</strong> in the exam settings.
+                        </p>
+                    </div>
+                </div>
+            )}
             <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
                 <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Scope Configuration</h4>
                 <div className="form-grid">
@@ -122,7 +141,7 @@ export const ResultEntryModal: React.FC<ResultEntryModalProps> = ({
                                             resultContext={resultContext.classId}
                                             gradeSystems={gradeSystems}
                                             examGradeSystemId={selectedExam?.grade_system}
-                                            isLocked={!selectedExam?.is_active}
+                                            isLocked={!selectedExam?.is_active || selectedExam?.is_locked}
                                         />
                                     );
                                 })}

@@ -55,20 +55,24 @@ class Room(models.Model):
         super().save(*args, **kwargs)
         
         # 3. Ensure beds exist for capacity (Create missing beds)
-        # This fixes the "5/50" issue when capacity is increased
-        current_beds = list(self.beds.values_list('bed_number', flat=True))
-        current_count = len(current_beds)
+        # This fixes the "capacity increase" issue
+        current_count = self.beds.count()
         if current_count < self.capacity:
-            # We use a simple range-based creation for missing numbers
-            # or just add more until count matches
-            for i in range(current_count + 1, self.capacity + 1):
-                # Try to find a bed number that doesn't exist
+            # Get existing numbers to avoid collisions
+            existing_numbers = set(self.beds.values_list('bed_number', flat=True))
+            
+            to_create = []
+            for i in range(1, self.capacity + 1):
+                if len(existing_numbers) >= self.capacity:
+                    break
+                
                 num = str(i)
-                while num in current_beds:
-                    i += 1
-                    num = str(i)
-                Bed.objects.create(room=self, bed_number=num, status='AVAILABLE')
-                current_beds.append(num)
+                if num not in existing_numbers:
+                    to_create.append(Bed(room=self, bed_number=num, status='AVAILABLE'))
+                    existing_numbers.add(num)
+            
+            if to_create:
+                Bed.objects.bulk_create(to_create)
         
     @property
     def available_beds(self):

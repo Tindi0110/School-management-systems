@@ -1,5 +1,5 @@
 import React from 'react';
-import { Trash2, Plus } from 'lucide-react';
+import { Trash2, Plus, Edit } from 'lucide-react';
 import Button from '../../components/common/Button';
 
 interface FuelManagerProps {
@@ -11,6 +11,7 @@ interface FuelManagerProps {
     pageSize: number;
     onPageChange: (page: number) => void;
     onAdd: () => void;
+    onEdit: (r: any) => void;
 }
 
 const FuelManager: React.FC<FuelManagerProps> = ({
@@ -21,7 +22,8 @@ const FuelManager: React.FC<FuelManagerProps> = ({
     total,
     pageSize,
     onPageChange,
-    onAdd
+    onAdd,
+    onEdit
 }) => {
     return (
         <div className="card card-mobile-flat p-0 overflow-hidden fade-in">
@@ -43,7 +45,7 @@ const FuelManager: React.FC<FuelManagerProps> = ({
                             <th className="py-4 px-6 text-left">Vehicle</th>
                             <th className="py-4 px-6">Litres</th>
                             <th className="py-4 px-6">Amount (KES)</th>
-                            <th className="py-4 px-6">Mileage</th>
+                            <th className="py-4 px-6 text-center">Status</th>
                             <th className="py-4 px-6">Receipt No</th>
                             <th className="py-4 px-6 text-right">Actions</th>
                         </tr>
@@ -57,12 +59,23 @@ const FuelManager: React.FC<FuelManagerProps> = ({
                                     <td className="py-4 px-6 font-bold text-xs text-slate-800">{vehicle?.registration_number || `Vehicle #${r.vehicle}`}</td>
                                     <td className="py-4 px-6 text-center text-[11px] font-bold text-slate-700">{r.liters} L</td>
                                     <td className="py-4 px-6 text-center font-black text-xs text-slate-800">{parseFloat(r.amount).toLocaleString()}</td>
-                                    <td className="py-4 px-6 text-center text-[11px] font-bold text-slate-500">{r.mileage} KM</td>
+                                    <td className="py-4 px-6 text-center">
+                                        <span className={`badge badge-xs font-black ${
+                                            r.status === 'APPROVED' ? 'badge-success' : 
+                                            r.status === 'REJECTED' ? 'badge-error' : 
+                                            'badge-warning'
+                                        }`}>
+                                            {r.status || 'PENDING'}
+                                        </span>
+                                    </td>
                                     <td className="py-4 px-6 text-center">
                                         <code className="bg-slate-100 px-2 py-1 rounded text-[10px] font-black">{r.receipt_no || '---'}</code>
                                     </td>
                                     <td className="py-4 px-6 text-right">
-                                        <Button variant="ghost" size="sm" className="text-error hover:bg-error/10" onClick={() => onDelete(r.id)} icon={<Trash2 size={12} />} />
+                                        <div className="flex gap-1 justify-end">
+                                            <Button variant="ghost" size="sm" className="text-primary hover:bg-primary/10" onClick={() => onEdit(r)} icon={<Edit size={12} />} />
+                                            <Button variant="ghost" size="sm" className="text-error hover:bg-error/10" onClick={() => onDelete(r.id)} icon={<Trash2 size={12} />} />
+                                        </div>
                                     </td>
                                 </tr>
                             );

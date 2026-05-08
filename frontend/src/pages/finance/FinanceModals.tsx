@@ -884,7 +884,7 @@ const FinanceModals: React.FC<FinanceModalsProps> = ({
                             onChange={async (val) => {
                                 const studentId = String(val);
                                 try {
-                                    const res = await financeAPI.invoices.getAll({ student: studentId, status: 'UNPAID' });
+                                    const res = await financeAPI.invoices.getAll({ student: studentId, page_size: 100 });
                                     const studentInvoices = res.data?.results ?? res.data ?? [];
                                     setActiveStudentInvoices(studentInvoices);
                                     setAdjForm({ ...adjForm, student_id: studentId, invoice_id: studentInvoices[0]?.id.toString() || '' });

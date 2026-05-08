@@ -236,7 +236,18 @@ const Medical = () => {
                             label="Student *"
                             options={studentOptions}
                             value={formData.student}
-                            onChange={(val) => setFormData({ ...formData, student: val.toString() })}
+                            onChange={(val) => {
+                                const selectedStudent = students.find((s: any) => s.id.toString() === val.toString());
+                                const hr = selectedStudent?.health_record;
+                                setFormData({ 
+                                    ...formData, 
+                                    student: val.toString(),
+                                    height: hr?.height ? hr.height.toString() : formData.height,
+                                    weight: hr?.weight ? hr.weight.toString() : formData.weight,
+                                    temperature: hr?.temperature ? hr.temperature.toString() : formData.temperature,
+                                    blood_pressure: hr?.blood_pressure ? hr.blood_pressure.toString() : formData.blood_pressure
+                                });
+                            }}
                             placeholder="Select student..."
                             required
                         />

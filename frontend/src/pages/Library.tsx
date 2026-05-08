@@ -80,7 +80,7 @@ const Library = () => {
         return `${year}-${month}-${day}`;
     };
 
-    const [bookForm, setBookForm] = useState({ title: '', author: '', isbn: '', category: '', year: new Date().getFullYear(), initial_copies: 0 });
+    const [bookForm, setBookForm] = useState({ title: '', author: '', isbn: '', category: '', year: new Date().getFullYear(), add_copies: 0, current_copies: 0 });
     const [copyForm, setCopyForm] = useState({ book: '', copy_number: '', condition: 'NEW', status: 'AVAILABLE', purchase_date: getToday() });
     const [lendingForm, setLendingForm] = useState({ copy: '', student: '', due_date: '' });
     const [fineForm, setFineForm] = useState({ student: '', amount: 0, reason: '', status: 'PENDING', date_issued: getToday(), fine_type: 'LATE' });
@@ -211,7 +211,7 @@ const Library = () => {
                 targetBookId = response.data.id;
             }
 
-            const count = (bookForm as any).initial_copies || 0;
+            const count = (bookForm as any).add_copies || 0;
             if (count > 0 && targetBookId) {
                 const copyPromises = [];
                 for (let i = 1; i <= count; i++) {
@@ -229,7 +229,7 @@ const Library = () => {
             await loadCatalog();
             setIsBookModalOpen(false);
             setBookId(null);
-            setBookForm({ title: '', author: '', isbn: '', category: '', year: new Date().getFullYear(), initial_copies: 0 });
+            setBookForm({ title: '', author: '', isbn: '', category: '', year: new Date().getFullYear(), add_copies: 0, current_copies: 0 });
             toast.success('Book saved successfully.');
         } catch (err: any) {
             console.error(err);
@@ -240,7 +240,12 @@ const Library = () => {
     };
     const handleEditBook = (b: any) => {
         setBookId(b.id);
-        setBookForm({ ...b, year: b.year || new Date().getFullYear(), initial_copies: 0 });
+        setBookForm({ 
+            ...b, 
+            year: b.year || new Date().getFullYear(), 
+            add_copies: 0, 
+            current_copies: b.total_copies_count || 0 
+        });
         setIsBookModalOpen(true);
     };
 
@@ -604,17 +609,24 @@ const Library = () => {
                     <div className="form-group"><label className="label">Year</label><input type="number" className="input" value={(bookForm as any).year} onChange={e => setBookForm({ ...bookForm, year: parseInt(e.target.value) } as any)} required /></div>
 
                     <div className="form-group border-t pt-2 mt-2">
-                        <label className="label text-primary font-bold">{bookId ? "Add More Copies" : "Auto-Generate Copies"}</label>
+                        {bookId ? (
+                            <div className="bg-slate-50 p-3 rounded-lg mb-3">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Current Cataloged Inventory</label>
+                                <div className="text-lg font-black text-slate-700">{bookForm.current_copies} Copies</div>
+                            </div>
+                        ) : null}
+                        
+                        <label className="label text-primary font-bold">{bookId ? "Register Additional Copies" : "Initial Stock Quantity"}</label>
                         <p className="text-[10px] text-secondary mb-1">
-                            {bookId ? "Enter number to generate NEW additional copies." : "Enter number to automatically generate copies."}
+                            {bookId ? "Enter the number of NEW physical copies to add to the system." : "Enter how many copies of this title you have in stock."}
                         </p>
                         <input
                             type="number"
                             className="input border-primary"
                             min="0"
                             placeholder="e.g. 5"
-                            value={(bookForm as any).initial_copies || ''}
-                            onChange={e => setBookForm({ ...bookForm, initial_copies: parseInt(e.target.value) } as any)}
+                            value={(bookForm as any).add_copies || ''}
+                            onChange={e => setBookForm({ ...bookForm, add_copies: parseInt(e.target.value) || 0 } as any)}
                         />
                     </div>
                     <div className="modal-footer">

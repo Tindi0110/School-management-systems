@@ -116,10 +116,11 @@ class AllocationListSerializer(serializers.ModelSerializer):
     """Lightweight serializer for transport allocations list."""
     student_name = serializers.CharField(source='student.full_name', read_only=True)
     route_name = serializers.CharField(source='route.name', read_only=True)
+    pickup_point_name = serializers.CharField(source='pickup_point.point_name', read_only=True)
 
     class Meta:
         model = TransportAllocation
-        fields = ['id', 'student', 'student_name', 'route_name', 'status', 'start_date', 'monthly_fee']
+        fields = ['id', 'student', 'student_name', 'route_name', 'pickup_point_name', 'status', 'start_date', 'monthly_fee']
 
 class TransportAllocationSerializer(serializers.ModelSerializer):
     student_name = serializers.CharField(source='student.full_name', read_only=True)

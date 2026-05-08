@@ -138,24 +138,23 @@ const InvoiceManager: React.FC<InvoiceManagerProps> = ({
                                     }}
                                 />
                             </th>
-                            <th>Reference</th>
-                            <th>Student</th>
-                            <th>Total</th>
-                            <th>Balance</th>
-                            <th>Status</th>
-                            <th>Date</th>
+                            <th className="text-[10px] font-black uppercase tracking-widest text-slate-400">Reference & Date</th>
+                            <th className="text-[10px] font-black uppercase tracking-widest text-slate-400">Student Candidate</th>
+                            <th className="text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Invoiced (KES)</th>
+                            <th className="text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Outstanding (KES)</th>
+                            <th className="text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">Lifecycle</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="divide-y divide-slate-100">
                         {filteredInvoices.length === 0 ? (
-                            <tr><td colSpan={7} className="text-center py-10 text-slate-400 italic">No invoices match your search criteria</td></tr>
+                            <tr><td colSpan={6} className="text-center py-10 text-slate-400 italic">No invoices match your search criteria</td></tr>
                         ) : (
                             filteredInvoices.map((inv: any) => (
-                                <tr key={inv.id} className="hover:bg-gray-50 cursor-pointer transition-colors" onClick={(e) => {
+                                <tr key={inv.id} className="hover:bg-slate-50/50 cursor-pointer transition-colors group" onClick={(e) => {
                                     if ((e.target as HTMLElement).tagName === 'INPUT') return;
                                     setSelectedInvoice(inv);
                                 }}>
-                                    <td>
+                                    <td className="px-4">
                                         <input
                                             type="checkbox"
                                             className="checkbox checkbox-xs"
@@ -167,16 +166,45 @@ const InvoiceManager: React.FC<InvoiceManagerProps> = ({
                                             disabled={Number(inv.balance) <= 0}
                                         />
                                     </td>
-                                    <td className="font-bold">#INV-{inv.id}</td>
-                                    <td>{inv.student_name}</td>
-                                    <td>KES {Number(inv.total_amount).toLocaleString()}</td>
-                                    <td className={`font-bold ${Number(inv.balance) === 0 ? 'text-success' : Number(inv.balance) < 0 ? 'text-info' : 'text-error'}`}>KES {Number(inv.balance).toLocaleString()}</td>
-                                    <td>
-                                        <span className={`badge ${inv.status === 'PAID' ? 'badge-success' : inv.status === 'OVERPAID' ? 'badge-info text-white' : inv.status === 'PARTIAL' ? 'badge-warning' : 'badge-error'}`}>
+                                    <td className="px-4 py-4">
+                                        <div className="text-xs font-black text-slate-800">#INV-{inv.id}</div>
+                                        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">
+                                            {formatDate(inv.date_generated || inv.created_at)}
+                                        </div>
+                                    </td>
+                                    <td className="px-4 py-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-400 group-hover:bg-primary/10 group-hover:text-primary transition-colors uppercase">
+                                                {inv.student_name?.charAt(0) || 'S'}
+                                            </div>
+                                            <div>
+                                                <div className="text-xs font-black text-slate-800 uppercase tracking-tight">{inv.student_name}</div>
+                                                <div className="text-[9px] font-bold text-slate-400 uppercase">
+                                                    {inv.admission_number || 'No ID'} &bull; {inv.class_name || 'N/A'} {inv.stream_name || ''}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-4 py-4 text-right">
+                                        <div className="text-xs font-black text-slate-600 font-mono">
+                                            {Number(inv.total_amount).toLocaleString()}
+                                        </div>
+                                    </td>
+                                    <td className="px-4 py-4 text-right">
+                                        <div className={`text-xs font-black font-mono ${Number(inv.balance) <= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                            {Number(inv.balance).toLocaleString()}
+                                        </div>
+                                    </td>
+                                    <td className="px-4 py-4 text-center">
+                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter ${
+                                            inv.status === 'PAID' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 
+                                            inv.status === 'OVERPAID' ? 'bg-sky-50 text-sky-600 border border-sky-100' : 
+                                            inv.status === 'PARTIAL' ? 'bg-amber-50 text-amber-600 border border-amber-100' : 
+                                            'bg-rose-50 text-rose-600 border border-rose-100'
+                                        }`}>
                                             {inv.status}
                                         </span>
                                     </td>
-                                    <td className="text-xs text-gray-500">{formatDate(inv.date_generated || inv.created_at)}</td>
                                 </tr>
                             ))
                         )}

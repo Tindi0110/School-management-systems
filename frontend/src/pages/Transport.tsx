@@ -28,7 +28,7 @@ const INITIAL_POINT_FORM = { route_id: 0, point_name: '', pickup_time: '', dropo
 const INITIAL_TRIP_FORM = { route: '', vehicle: '', date: TODAY, start_time: '', end_time: '', driver_name: '' };
 const INITIAL_MAINTENANCE_FORM = { vehicle: '', description: '', cost: 0, date: TODAY, status: 'PENDING' };
 const INITIAL_SAFETY_FORM = { vehicle: '', date: TODAY, type: 'ACCIDENT', description: '', severity: 'MINOR' };
-const INITIAL_FUEL_FORM = { date: TODAY, vehicle: '', liters: 0, amount: 0, mileage: 0, receipt_no: '' };
+const INITIAL_FUEL_FORM = { date: TODAY, vehicle: '', liters: 0, amount: 0, mileage: 0, receipt_no: '', status: 'PENDING' };
 
 // ─── Component ─────────────────────────────────────────────────────────────────
 const Transport = () => {
@@ -81,6 +81,7 @@ const Transport = () => {
     const [tripId, setTripId] = useState<number | null>(null);
     const [maintenanceId, setMaintenanceId] = useState<number | null>(null);
     const [incidentId, setIncidentId] = useState<number | null>(null);
+    const [fuelId, setFuelId] = useState<number | null>(null);
 
     // ── State: Forms ──────────────────────────────────────────────────────────
     const [enrollmentForm, setEnrollmentForm] = useState(INITIAL_ENROLLMENT_FORM);
@@ -560,9 +561,16 @@ const Transport = () => {
         e.preventDefault();
         setIsSaving(true);
         try {
-            await transportAPI.fuel.create({ ...fuelForm, vehicle: Number(fuelForm.vehicle) });
-            toast.success('Fuel record saved & synced to Finance');
+            const payload = { ...fuelForm, vehicle: Number(fuelForm.vehicle) };
+            if (fuelId) {
+                await transportAPI.fuel.update(fuelId, payload);
+                toast.success('Fuel record updated');
+            } else {
+                await transportAPI.fuel.create(payload);
+                toast.success('Fuel record saved & synced to Finance');
+            }
             setIsFuelModalOpen(false);
+            setFuelId(null);
             setFuelForm(INITIAL_FUEL_FORM);
             refreshData();
         } catch (error: any) {
@@ -570,6 +578,20 @@ const Transport = () => {
         } finally {
             setIsSaving(false);
         }
+    };
+
+    const handleEditFuel = (f: any) => {
+        setFuelId(f.id);
+        setFuelForm({
+            date: f.date,
+            vehicle: String(f.vehicle),
+            liters: f.liters,
+            amount: f.amount,
+            mileage: f.mileage,
+            receipt_no: f.receipt_no,
+            status: f.status || 'PENDING'
+        });
+        setIsFuelModalOpen(true);
     };
 
     const handleDeleteFuel = async (id: number) => {
@@ -727,7 +749,8 @@ const Transport = () => {
                         <FuelManager
                             records={fuelRecords}
                             vehicles={vehicles}
-                            onAdd={() => { setFuelForm(INITIAL_FUEL_FORM); setIsFuelModalOpen(true); }}
+                            onAdd={() => { setFuelId(null); setFuelForm(INITIAL_FUEL_FORM); setIsFuelModalOpen(true); }}
+                            onEdit={handleEditFuel}
                             onDelete={handleDeleteFuel}
                             page={pagination.fuel.page}
                             total={pagination.fuel.total}

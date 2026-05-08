@@ -119,12 +119,14 @@ class VehicleMaintenance(models.Model):
     status = models.CharField(max_length=20, default='PENDING', choices=(('PENDING', 'Pending'), ('IN_PROGRESS', 'In Progress'), ('COMPLETED', 'Completed')))
 
 class FuelRecord(models.Model):
+    STATUS = (('PENDING', 'Pending'), ('APPROVED', 'Approved'), ('REJECTED', 'Rejected'))
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, related_name='fuel_records')
     date = models.DateField(default=timezone.now)
     liters = models.DecimalField(max_digits=7, decimal_places=2)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     mileage = models.IntegerField()
     receipt_no = models.CharField(max_length=50, blank=True)
+    status = models.CharField(max_length=15, choices=STATUS, default='PENDING')
 
 class TransportIncident(models.Model):
     SEVERITY = (('MINOR', 'Minor'), ('MAJOR', 'Major'), ('CRITICAL', 'Critical'))

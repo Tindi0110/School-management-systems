@@ -67,6 +67,7 @@ interface TransportModalsProps {
         tripId: number | null;
         maintenanceId: number | null;
         incidentId: number | null;
+        fuelId: number | null;
     };
 }
 
@@ -298,7 +299,7 @@ const TransportModals: React.FC<TransportModalsProps> = ({ modals, forms, data, 
                 </form>
             </Modal>
 
-            <Modal isOpen={modals.isFuelModalOpen} onClose={() => handlers.setIsFuelModalOpen(false)} title="Log Fuel Consumption">
+            <Modal isOpen={modals.isFuelModalOpen} onClose={() => handlers.setIsFuelModalOpen(false)} title={status.fuelId ? "Edit Fuel Log" : "Log Fuel Consumption"}>
                 <form onSubmit={handlers.handleFuelSubmit} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group pb-2">
@@ -326,7 +327,19 @@ const TransportModals: React.FC<TransportModalsProps> = ({ modals, forms, data, 
                         <div className="form-group"><label className="label">Mileage (Odometer)</label><input type="number" className="input" value={forms.fuelForm.mileage} onChange={e => handlers.setFuelForm({ ...forms.fuelForm, mileage: parseInt(e.target.value) })} required /></div>
                         <div className="form-group"><label className="label">Receipt No.</label><input type="text" className="input" value={forms.fuelForm.receipt_no} onChange={e => handlers.setFuelForm({ ...forms.fuelForm, receipt_no: e.target.value })} /></div>
                     </div>
-                    <div className="modal-footer pt-4"><Button type="submit" variant="primary" className="w-full" loading={status.isSaving} loadingText="Saving...">Save & Sync to Finance</Button></div>
+                    <div className="form-group">
+                        <label className="label">Approval Status</label>
+                        <SearchableSelect
+                            options={[
+                                { id: 'PENDING', label: 'Pending Approval' },
+                                { id: 'APPROVED', label: 'Approved' },
+                                { id: 'REJECTED', label: 'Rejected' }
+                            ]}
+                            value={forms.fuelForm.status}
+                            onChange={(val) => handlers.setFuelForm({ ...forms.fuelForm, status: val.toString() })}
+                        />
+                    </div>
+                    <div className="modal-footer pt-4"><Button type="submit" variant="primary" className="w-full" loading={status.isSaving} loadingText={status.fuelId ? "Updating..." : "Saving..."}>{status.fuelId ? "Update Fuel Log" : "Save & Sync to Finance"}</Button></div>
                 </form>
             </Modal>
         </>
