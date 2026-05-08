@@ -310,7 +310,7 @@ const StudentProfile = () => {
             const { 
                 parents_detail, admission_details, health_record, 
                 attendance_percentage, average_grade, hostel_name, room_number,
-                admission_number, invoices,
+                invoices,
                 ...updateData 
             } = student as any;
 

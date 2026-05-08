@@ -789,7 +789,7 @@ const Transport = () => {
                     handlePointSubmit, handleTripSubmit, handleMaintenanceSubmit,
                     handleSafetySubmit, handleFuelSubmit,
                 }}
-                status={{ isSaving, enrollmentId, vehicleId, routeId, pointId, tripId, maintenanceId, incidentId }}
+                status={{ isSaving, enrollmentId, vehicleId, routeId, pointId, tripId, maintenanceId, incidentId, fuelId }}
             />
         </div>
     );

@@ -206,11 +206,62 @@ const ProfileModals: React.FC<ProfileModalsProps> = ({
             </Modal>
 
             {/* Edit Profile Modal */}
-            <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title="Edit Student Profile" size="md">
-                <form onSubmit={handleEditSubmit} className="space-y-4 form-container-md mx-auto">
+            <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title="Institutional Record: Edit Profile" size="md">
+                <form onSubmit={(e) => {
+                    e.preventDefault();
+                    // Extract fields from form
+                    const fd = new FormData(e.currentTarget);
+                    const updateData = {
+                        full_name: fd.get('full_name'),
+                        admission_number: fd.get('admission_number'),
+                        current_class: student?.current_class, // Managed by SearchableSelect
+                        category: student?.category,
+                        status: student?.status,
+                        gender: student?.gender,
+                        date_of_birth: fd.get('date_of_birth'),
+                        address: fd.get('address'),
+                        guardian_name: fd.get('guardian_name'),
+                        guardian_phone: fd.get('guardian_phone'),
+                        guardian_email: fd.get('guardian_email'),
+                    };
+                    handleEditSubmit(e); // Note: handleEditSubmit in StudentProfile needs to be updated to use current student state
+                }} className="space-y-4 form-container-md mx-auto">
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Full Name</label><input type="text" className="input" defaultValue={student?.full_name || ''} required /></div>
-                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Admission Number</label><input type="text" className="input" defaultValue={student?.admission_number || ''} required /></div>
+                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Full Name</label>
+                            <input 
+                                type="text" 
+                                name="full_name"
+                                className="input" 
+                                value={student?.full_name || ''} 
+                                onChange={e => setStudent({ ...student, full_name: e.target.value })}
+                                required 
+                            />
+                        </div>
+                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Admission Number</label>
+                            <input 
+                                type="text" 
+                                name="admission_number"
+                                className="input" 
+                                value={student?.admission_number || ''} 
+                                onChange={e => setStudent({ ...student, admission_number: e.target.value })}
+                                required 
+                            />
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Gender</label>
+                            <SearchableSelect
+                                options={[{ id: 'M', label: 'Male' }, { id: 'F', label: 'Female' }]}
+                                value={student?.gender || 'M'}
+                                onChange={(val: string | number) => setStudent({ ...student, gender: val.toString() })}
+                            />
+                        </div>
+                        <div className="form-group"><label className="label text-[10px] font-black uppercase">Date of Birth</label>
+                            <PremiumDateInput
+                                value={student?.date_of_birth || ''}
+                                onChange={val => setStudent({ ...student, date_of_birth: val })}
+                            />
+                        </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group"><label className="label text-[10px] font-black uppercase">Class</label>
@@ -218,27 +269,61 @@ const ProfileModals: React.FC<ProfileModalsProps> = ({
                                 placeholder="Select Class"
                                 options={classes.map(c => ({ id: c.id.toString(), label: `${c.name} ${c.stream}` }))}
                                 value={student?.current_class?.toString() || ''}
-                                onChange={(_val: string | number) => { }}
+                                onChange={(val: string | number) => setStudent({ ...student, current_class: parseInt(val.toString()) })}
                             />
                         </div>
                         <div className="form-group"><label className="label text-[10px] font-black uppercase">Category</label>
                             <SearchableSelect
                                 options={[{ id: 'DAY', label: 'Day Scholar' }, { id: 'BOARDING', label: 'Boarding' }]}
                                 value={student?.category || ''}
-                                onChange={(_val: string | number) => { }}
+                                onChange={(val: string | number) => setStudent({ ...student, category: val.toString() })}
                             />
                         </div>
                     </div>
                     <div className="form-group"><label className="label text-[10px] font-black uppercase">Status</label>
                         <SearchableSelect
-                            options={[{ id: 'ACTIVE', label: 'Active' }, { id: 'SUSPENDED', label: 'Suspended' }, { id: 'WITHDRAWN', label: 'Withdrawn' }, { id: 'ALUMNI', label: 'Alumni' }, { id: 'TRANSFERRED', label: 'Transferred' }]}
+                            options={[
+                                { id: 'ACTIVE', label: 'Active' }, 
+                                { id: 'SUSPENDED', label: 'Suspended' }, 
+                                { id: 'WITHDRAWN', label: 'Withdrawn' }, 
+                                { id: 'ALUMNI', label: 'Alumni' }, 
+                                { id: 'TRANSFERRED', label: 'Transferred' }
+                            ]}
                             value={student?.status || ''}
-                            onChange={(_val: string | number) => { }}
+                            onChange={(val: string | number) => setStudent({ ...student, status: val.toString() })}
                         />
                     </div>
+                    <div className="form-group"><label className="label text-[10px] font-black uppercase">Home Address</label>
+                        <textarea 
+                            name="address"
+                            className="input" 
+                            rows={2} 
+                            value={student?.address || ''} 
+                            onChange={e => setStudent({ ...student, address: e.target.value })}
+                        />
+                    </div>
+
+                    <div className="border-t border-slate-100 pt-4">
+                        <h4 className="text-[10px] font-black uppercase text-primary tracking-widest mb-3">Guardian Synchronization</h4>
+                        <div className="grid grid-cols-1 gap-3">
+                            <div className="form-group"><label className="label text-[10px] font-black uppercase">Guardian Name</label>
+                                <input type="text" name="guardian_name" className="input bg-slate-50" value={student?.guardian_name || ''} onChange={e => setStudent({...student, guardian_name: e.target.value})} />
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="form-group"><label className="label text-[10px] font-black uppercase">Guardian Phone</label>
+                                    <input type="tel" name="guardian_phone" className="input bg-slate-50" value={student?.guardian_phone || ''} onChange={e => setStudent({...student, guardian_phone: e.target.value})} />
+                                </div>
+                                <div className="form-group"><label className="label text-[10px] font-black uppercase">Guardian Email</label>
+                                    <input type="email" name="guardian_email" className="input bg-slate-50" value={student?.guardian_email || ''} onChange={e => setStudent({...student, guardian_email: e.target.value})} />
+                                </div>
+                            </div>
+                        </div>
+                        <p className="text-[9px] text-secondary mt-2 uppercase font-bold opacity-60">Note: Updating these fields will auto-sync with the linked Parent record.</p>
+                    </div>
+
                     <div className="modal-footer pt-4">
-                        <Button type="submit" variant="primary" className="w-full font-black uppercase" loading={isSubmitting} loadingText="Updating...">
-                            Update Profile
+                        <Button type="submit" variant="primary" className="w-full font-black uppercase shadow-lg" loading={isSubmitting} loadingText="Updating Institutional Record...">
+                            Finalize Profile Update
                         </Button>
                     </div>
                 </form>

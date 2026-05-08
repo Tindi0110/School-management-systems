@@ -289,12 +289,16 @@ const Students = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
+        const payload = {
+            ...formData,
+            guardian_phone: formData.guardian_phone ? `${formData.country_code}${formData.guardian_phone}` : ''
+        };
         try {
             if (editingStudent) {
-                await studentsAPI.update(editingStudent.id, formData);
+                await studentsAPI.update(editingStudent.id, payload);
                 success("Student records updated successfully.");
             } else {
-                await studentsAPI.create(formData);
+                await studentsAPI.create(payload);
                 success("New student admitted successfully.");
             }
             setIsModalOpen(false);
@@ -555,7 +559,7 @@ const Students = () => {
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group">
                             <label>Admission Number</label>
-                            <input type="text" value={formData.admission_number} onChange={(e) => setFormData({ ...formData, admission_number: e.target.value })} required placeholder="e.g. 2024/001" />
+                            <input type="text" value={formData.admission_number} onChange={(e) => setFormData({ ...formData, admission_number: e.target.value })} placeholder="Leave blank for auto-gen (YY/XXXX)" />
                         </div>
                         <div className="form-group">
                             <label>Class/Form</label>
@@ -606,6 +610,17 @@ const Students = () => {
                                 onChange={(val) => setFormData({ ...formData, status: val.toString() })}
                             />
                         </div>
+                    </div>
+
+                    <div className="form-group">
+                        <label>Home Address</label>
+                        <textarea 
+                            className="input" 
+                            rows={2} 
+                            value={formData.address} 
+                            onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                            placeholder="Current residential address"
+                        />
                     </div>
 
                     <div className="border-t border-slate-100 pt-6">
