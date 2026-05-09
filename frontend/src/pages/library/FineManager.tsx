@@ -71,6 +71,16 @@ const FineManager: React.FC<FineManagerProps> = ({
                                 <div className="flex gap-2">
                                     {!isReadOnly && (
                                         <>
+                                            {!f.adjustment && f.status === 'PENDING' && (
+                                                <Button 
+                                                    variant="ghost" 
+                                                    size="sm" 
+                                                    className="text-success" 
+                                                    onClick={() => onSync()} 
+                                                    title="Push to Invoice"
+                                                    icon={<RefreshCw size={14} />} 
+                                                />
+                                            )}
                                             <Button variant="ghost" size="sm" className="text-primary" onClick={() => onEdit(f)} icon={<Edit size={14} />} />
                                             <Button variant="ghost" size="sm" className="text-error" onClick={(e) => onDelete(e, f.id)} icon={<Trash2 size={14} />} />
                                         </>

@@ -488,7 +488,7 @@ const FinanceModals: React.FC<FinanceModalsProps> = ({
                         <button 
                             type="button" 
                             className="modern-btn modern-btn-outline" 
-                            onClick={() => {
+                            onClick={async () => {
                                 if (selectedInvoice) {
                                     setAdjForm({ 
                                         student_id: String((selectedInvoice as any).student), 
@@ -497,6 +497,16 @@ const FinanceModals: React.FC<FinanceModalsProps> = ({
                                         type: 'CREDIT', 
                                         reason: '' 
                                     });
+                                    // Pre-load the student's invoices for the dropdown
+                                    try {
+                                        const res = await financeAPI.invoices.getAll({ 
+                                            student_id: (selectedInvoice as any).student,
+                                            nopage: 'true' 
+                                        });
+                                        setActiveStudentInvoices(res.data?.results ?? res.data ?? []);
+                                    } catch (err) {
+                                        console.error("Failed to load invoices for adjustment selection:", err);
+                                    }
                                     setShowAdjustmentModal(true);
                                 }
                             }}

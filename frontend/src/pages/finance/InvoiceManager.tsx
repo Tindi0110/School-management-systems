@@ -138,11 +138,11 @@ const InvoiceManager: React.FC<InvoiceManagerProps> = ({
                                     }}
                                 />
                             </th>
-                            <th className="text-[10px] font-black uppercase tracking-widest text-slate-400">Reference & Date</th>
-                            <th className="text-[10px] font-black uppercase tracking-widest text-slate-400">Student Candidate</th>
-                            <th className="text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Invoiced (KES)</th>
-                            <th className="text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Outstanding (KES)</th>
-                            <th className="text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">Lifecycle</th>
+                            <th className="text-[10px] font-black uppercase tracking-widest text-slate-400">Invoice & Student</th>
+                            <th className="text-[10px] font-black uppercase tracking-widest text-slate-400">Registry Info</th>
+                            <th className="text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Invoiced</th>
+                            <th className="text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Outstanding</th>
+                            <th className="text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">Status</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
@@ -167,22 +167,24 @@ const InvoiceManager: React.FC<InvoiceManagerProps> = ({
                                         />
                                     </td>
                                     <td className="px-4 py-4">
-                                        <div className="text-xs font-black text-slate-800">#INV-{inv.id}</div>
-                                        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">
-                                            {formatDate(inv.date_generated || inv.created_at)}
-                                        </div>
-                                    </td>
-                                    <td className="px-4 py-4">
                                         <div className="flex items-center gap-3">
                                             <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-400 group-hover:bg-primary/10 group-hover:text-primary transition-colors uppercase">
                                                 {inv.student_name?.charAt(0) || 'S'}
                                             </div>
                                             <div>
                                                 <div className="text-xs font-black text-slate-800 uppercase tracking-tight">{inv.student_name}</div>
-                                                <div className="text-[9px] font-bold text-slate-400 uppercase">
-                                                    {inv.admission_number || 'No ID'} &bull; {inv.class_name || 'N/A'} {inv.stream_name || ''}
+                                                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">
+                                                    #INV-{inv.id} &bull; {formatDate(inv.date_generated || inv.created_at)}
                                                 </div>
                                             </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-4 py-4">
+                                        <div className="text-[10px] font-bold text-slate-500 uppercase">
+                                            {inv.admission_number || 'No ID'}
+                                        </div>
+                                        <div className="text-[9px] font-black text-slate-400 uppercase">
+                                            {inv.class_name || 'N/A'} {inv.stream_name || ''}
                                         </div>
                                     </td>
                                     <td className="px-4 py-4 text-right">

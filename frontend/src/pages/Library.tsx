@@ -608,23 +608,35 @@ const Library = () => {
                     </div>
                     <div className="form-group"><label className="label">Year</label><input type="number" className="input" value={(bookForm as any).year} onChange={e => setBookForm({ ...bookForm, year: parseInt(e.target.value) } as any)} required /></div>
 
-                    <div className="form-group border-t pt-2 mt-2">
+                    <div className="form-group border-t border-slate-100 pt-4 mt-2">
                         {bookId ? (
-                            <div className="bg-slate-50 p-3 rounded-lg mb-3">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Current Cataloged Inventory</label>
-                                <div className="text-lg font-black text-slate-700">{bookForm.current_copies} Copies</div>
+                            <div className="bg-slate-50 p-4 rounded-xl mb-4 border border-slate-100">
+                                <div className="flex justify-between items-center">
+                                    <div>
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Current Cataloged Inventory</p>
+                                        <div className="text-xl font-black text-primary">{bookForm.current_copies} Physical Copies</div>
+                                    </div>
+                                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                                        <Layers size={20} />
+                                    </div>
+                                </div>
                             </div>
                         ) : null}
                         
-                        <label className="label text-primary font-bold">{bookId ? "Register Additional Copies" : "Initial Stock Quantity"}</label>
-                        <p className="text-[10px] text-secondary mb-1">
-                            {bookId ? "Enter the number of NEW physical copies to add to the system." : "Enter how many copies of this title you have in stock."}
+                        <label className="label text-slate-700 font-bold flex items-center gap-2">
+                            <Plus size={14} className="text-primary" />
+                            {bookId ? "ADD ADDITIONAL COPIES" : "INITIAL STOCK QUANTITY"}
+                        </label>
+                        <p className="text-[10px] text-slate-400 mb-2 italic">
+                            {bookId 
+                                ? "Entering a number here will generate NEW individual copy records for this title." 
+                                : "How many physical copies are you registering now?"}
                         </p>
                         <input
                             type="number"
-                            className="input border-primary"
+                            className="input border-slate-200 focus:border-primary transition-all"
                             min="0"
-                            placeholder="e.g. 5"
+                            placeholder="0"
                             value={(bookForm as any).add_copies || ''}
                             onChange={e => setBookForm({ ...bookForm, add_copies: parseInt(e.target.value) || 0 } as any)}
                         />

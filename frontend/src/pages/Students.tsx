@@ -218,21 +218,28 @@ const Students = () => {
                 params.current_class = selectedClassId;
             }
 
-            const [res, classRes, statsRes] = await Promise.all([
+            const [res, classRes, statsRes] = await Promise.allSettled([
                 studentsAPI.getAll(params),
                 academicsAPI.classes.getAll({ nopage: 'true' }),
                 statsAPI.getDashboard()
             ]);
 
-            setStudents(res.data.results || []);
-            setTotal(res.data.count || 0);
-            setClasses(classRes.data || []);
+            if (res.status === 'fulfilled') {
+                setStudents(res.value.data.results || res.value.data || []);
+                setTotal(res.value.data.count || (Array.isArray(res.value.data) ? res.value.data.length : 0));
+            }
             
-            const stats = statsRes.data.counts;
-            setActiveCount(stats.active_students || 0);
-            setBoarderCount(stats.boarder_count || 0);
-            setDayScholarCount(stats.day_scholar_count || 0);
-            setInstitutionalTotal(stats.total_students || 0);
+            if (classRes.status === 'fulfilled') {
+                setClasses(classRes.value.data?.results ?? classRes.value.data ?? []);
+            }
+            
+            if (statsRes.status === 'fulfilled') {
+                const stats = statsRes.value.data.counts;
+                setActiveCount(stats.active_students || 0);
+                setBoarderCount(stats.boarder_count || 0);
+                setDayScholarCount(stats.day_scholar_count || 0);
+                setInstitutionalTotal(stats.total_students || 0);
+            }
         } catch (err) {
             toastError("Failed to load student data. Check connection.");
         } finally {
@@ -544,113 +551,136 @@ const Students = () => {
                     </>
                 }
             >
-                <form id="student-form" onSubmit={handleSubmit} className="space-y-6">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group">
-                            <label>First Name</label>
-                            <input type="text" value={formData.first_name} onChange={(e) => setFormData({ ...formData, first_name: e.target.value })} required />
+                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 mb-6 flex items-start gap-3">
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                            <Plus size={20} />
                         </div>
-                        <div className="form-group">
-                            <label>Last Name</label>
-                            <input type="text" value={formData.last_name} onChange={(e) => setFormData({ ...formData, last_name: e.target.value })} required />
+                        <div>
+                            <h4 className="text-[10px] font-black uppercase tracking-widest text-primary">Student Enrollment</h4>
+                            <p className="text-xs text-slate-500 font-medium italic">All fields marked with an asterisk are required for registry compliance.</p>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group">
-                            <label>Admission Number</label>
-                            <input type="text" value={formData.admission_number} onChange={(e) => setFormData({ ...formData, admission_number: e.target.value })} placeholder="Leave blank for auto-gen (YY/XXXX)" />
-                        </div>
-                        <div className="form-group">
-                            <label>Class/Form</label>
-                            <SearchableSelect
-                                options={classes.map((c: any) => ({ id: c.id.toString(), label: `${c.name} - ${c.stream}` }))}
-                                value={formData.current_class}
-                                onChange={(val) => setFormData({ ...formData, current_class: val.toString() })}
-                                required
-                                placeholder="Select Class"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group">
-                            <label>Date of Birth</label>
-                            <input type="date" value={formData.date_of_birth} onChange={(e) => setFormData({ ...formData, date_of_birth: e.target.value })} required />
-                        </div>
-                        <div className="form-group">
-                            <label>Gender</label>
-                            <SearchableSelect
-                                options={[{ id: 'M', label: 'Male' }, { id: 'F', label: 'Female' }]}
-                                value={formData.gender}
-                                onChange={(val) => setFormData({ ...formData, gender: val.toString() })}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="form-group">
-                            <label>Category</label>
-                            <SearchableSelect
-                                options={[{ id: 'DAY', label: 'Day Scholar' }, { id: 'BOARDING', label: 'Boarding' }]}
-                                value={formData.category}
-                                onChange={(val) => setFormData({ ...formData, category: val.toString() })}
-                            />
-                        </div>
-                        <div className="form-group">
-                            <label>Status</label>
-                            <SearchableSelect
-                                options={[
-                                    { id: 'ACTIVE', label: 'Active' },
-                                    { id: 'ALUMNI', label: 'Alumni/Graduated' },
-                                    { id: 'SUSPENDED', label: 'Suspended' },
-                                    { id: 'WITHDRAWN', label: 'Withdrawn' }
-                                ]}
-                                value={formData.status}
-                                onChange={(val) => setFormData({ ...formData, status: val.toString() })}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="form-group">
-                        <label>Home Address</label>
-                        <textarea 
-                            className="input" 
-                            rows={2} 
-                            value={formData.address} 
-                            onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                            placeholder="Current residential address"
-                        />
-                    </div>
-
-                    <div className="border-t border-slate-100 pt-6">
-                        <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-4">Guardian Information</h4>
-                        <div className="form-group mb-4">
-                            <label>Guardian Name</label>
-                            <input type="text" value={formData.guardian_name} onChange={(e) => setFormData({ ...formData, guardian_name: e.target.value })} required />
-                        </div>
-                        
-                        <div className="form-group mb-4">
-                            <label>Phone Number</label>
-                            <div className="flex gap-2">
-                                <CountryCodeSelect
-                                    value={formData.country_code}
-                                    onChange={(val) => setFormData({ ...formData, country_code: val })}
-                                />
-                                <input
-                                    type="tel"
-                                    className="flex-grow"
-                                    value={formData.guardian_phone}
-                                    onChange={(e) => setFormData({ ...formData, guardian_phone: e.target.value })}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                        <div className="space-y-6">
+                            <div className="form-group">
+                                <label className="label-modern">First Name *</label>
+                                <input type="text" className="input-modern" value={formData.first_name} onChange={(e) => setFormData({ ...formData, first_name: e.target.value })} required placeholder="Enter student's first name" />
+                            </div>
+                            <div className="form-group">
+                                <label className="label-modern">Last Name *</label>
+                                <input type="text" className="input-modern" value={formData.last_name} onChange={(e) => setFormData({ ...formData, last_name: e.target.value })} required placeholder="Enter student's surname" />
+                            </div>
+                            <div className="form-group">
+                                <label className="label-modern">Admission Number</label>
+                                <div className="relative">
+                                    <input 
+                                        type="text" 
+                                        className="input-modern pl-10" 
+                                        value={formData.admission_number} 
+                                        onChange={(e) => setFormData({ ...formData, admission_number: e.target.value })} 
+                                        placeholder="Auto-generated if left blank" 
+                                    />
+                                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300">
+                                        <Layers size={16} />
+                                    </div>
+                                </div>
+                                <p className="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-tighter italic">Recommended: Leave blank for standard format (YY/XXXX)</p>
+                            </div>
+                            <div className="form-group">
+                                <label className="label-modern">Target Class/Form *</label>
+                                <SearchableSelect
+                                    options={classes.map((c: any) => ({ id: c.id.toString(), label: `${c.name} - ${c.stream}` }))}
+                                    value={formData.current_class}
+                                    onChange={(val) => setFormData({ ...formData, current_class: val.toString() })}
                                     required
-                                    placeholder="712345678"
+                                    placeholder="Select Admission Class"
                                 />
                             </div>
                         </div>
 
-                        <div className="form-group col-span-2">
-                            <label>Email Address</label>
-                            <input type="email" value={formData.guardian_email} onChange={(e) => setFormData({ ...formData, guardian_email: e.target.value })} placeholder="Optional for notifications" />
+                        <div className="space-y-6">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="form-group">
+                                    <label className="label-modern">Date of Birth *</label>
+                                    <input type="date" className="input-modern" value={formData.date_of_birth} onChange={(e) => setFormData({ ...formData, date_of_birth: e.target.value })} required />
+                                </div>
+                                <div className="form-group">
+                                    <label className="label-modern">Gender *</label>
+                                    <SearchableSelect
+                                        options={[{ id: 'M', label: 'Male' }, { id: 'F', label: 'Female' }]}
+                                        value={formData.gender}
+                                        onChange={(val) => setFormData({ ...formData, gender: val.toString() })}
+                                    />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="form-group">
+                                    <label className="label-modern">Admission Category</label>
+                                    <SearchableSelect
+                                        options={[{ id: 'DAY', label: 'Day Scholar' }, { id: 'BOARDING', label: 'Boarder / Resident' }]}
+                                        value={formData.category}
+                                        onChange={(val) => setFormData({ ...formData, category: val.toString() })}
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label className="label-modern">Current Status</label>
+                                    <SearchableSelect
+                                        options={[
+                                            { id: 'ACTIVE', label: 'Active Student' },
+                                            { id: 'ALUMNI', label: 'Alumni' },
+                                            { id: 'SUSPENDED', label: 'Suspended' },
+                                            { id: 'WITHDRAWN', label: 'Withdrawn' }
+                                        ]}
+                                        value={formData.status}
+                                        onChange={(val) => setFormData({ ...formData, status: val.toString() })}
+                                    />
+                                </div>
+                            </div>
+                            <div className="form-group">
+                                <label className="label-modern">Home Address</label>
+                                <textarea 
+                                    className="input-modern" 
+                                    rows={2} 
+                                    value={formData.address} 
+                                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                                    placeholder="Current residential/postal address"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="border-t border-slate-100 pt-8 mt-8">
+                        <div className="flex items-center gap-2 mb-6">
+                            <div className="w-1 h-4 bg-primary/40 rounded-full" />
+                            <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Guardian / Next of Kin</h4>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                            <div className="form-group">
+                                <label className="label-modern">Guardian Full Name *</label>
+                                <input type="text" className="input-modern" value={formData.guardian_name} onChange={(e) => setFormData({ ...formData, guardian_name: e.target.value })} required placeholder="Name of primary contact" />
+                            </div>
+                            <div className="form-group">
+                                <label className="label-modern">Primary Phone Number *</label>
+                                <div className="flex gap-2">
+                                    <CountryCodeSelect
+                                        value={formData.country_code}
+                                        onChange={(val) => setFormData({ ...formData, country_code: val })}
+                                    />
+                                    <input
+                                        type="tel"
+                                        className="input-modern flex-grow"
+                                        value={formData.guardian_phone}
+                                        onChange={(e) => setFormData({ ...formData, guardian_phone: e.target.value })}
+                                        required
+                                        placeholder="712345678"
+                                    />
+                                </div>
+                            </div>
+                            <div className="form-group md:col-span-2">
+                                <label className="label-modern">Email Address</label>
+                                <input type="email" className="input-modern" value={formData.guardian_email} onChange={(e) => setFormData({ ...formData, guardian_email: e.target.value })} placeholder="For digital reports and billing (Optional)" />
+                            </div>
                         </div>
                     </div>
                 </form>

@@ -90,7 +90,7 @@ class StudentListSerializer(serializers.ModelSerializer):
             'id', 'full_name', 'admission_number', 'gender', 'date_of_birth',
             'current_class', 'class_name', 'class_stream', 'status', 'category',
             'fee_balance', 'is_active', 'attendance_percentage', 'average_grade',
-            'parents_detail', 'user', 'guardian_name', 'guardian_phone', 'guardian_email', 'health_record'
+            'parents_detail', 'user', 'guardian_name', 'guardian_phone', 'health_record'
         ]
 
     def get_class_name(self, obj):
