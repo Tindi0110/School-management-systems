@@ -2450,19 +2450,22 @@ table.table {
    MODERN UI DESIGN SYSTEM (REFINED MODALS & FORMS)
    ========================================================================== */
 
-/* Dark blurred background overlay */
+/* Transparent blurred background overlay */
 .modal-overlay {
   position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(15, 23, 42, 0.4); /* Darker transparent to look right without being gray */
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 9999;
   padding: 20px;
-  animation: fadeIn 0.2s ease-out;
+  animation: overlayFadeIn 0.2s ease-out;
 }
 
 /* Popup box */
@@ -2472,11 +2475,11 @@ table.table {
   max-height: 90vh;
   overflow-y: auto;
   background: #ffffff;
-  border-radius: 14px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  border-radius: 12px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   display: flex;
   flex-direction: column;
-  animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: modalSlideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Header */
@@ -2546,42 +2549,57 @@ table.table {
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 0;
+  margin-bottom: 0;
 }
 
 .form-group label {
-  font-size: 0.8125rem;
-  font-weight: 600;
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
   color: #374151;
+  margin-bottom: 6px;
 }
 
 .form-group input,
 .form-group select,
 .form-group textarea {
   width: 100%;
-  height: 44px;
-  background: #ffffff;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  padding: 0 14px;
-  font-size: 0.9375rem;
+  min-height: 42px;
+  padding: 0.5rem 0.875rem;
+  font-size: 0.875rem;
+  font-weight: 400;
+  border: 1px solid #d1d5db !important;
+  border-radius: 6px !important;
+  background: #ffffff !important;
   color: #111827;
-  transition: all 0.2s;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03) !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
 }
 
 .form-group textarea {
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
   height: auto;
-  padding: 12px 14px;
-  min-height: 100px;
+}
+
+.form-group input:hover:not(:disabled),
+.form-group select:hover:not(:disabled),
+.form-group textarea:hover:not(:disabled) {
+  border-color: #9ca3af !important;
+  background: #ffffff !important;
 }
 
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #2563eb;
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
-  background: #fff;
+  border-color: #3b82f6 !important;
+  background: #ffffff !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+  transform: none !important;
 }
 
 /* Footer */
