@@ -1229,7 +1229,6 @@ const Academics = () => {
                 <AttendanceManager
                     attendanceRecords={attendanceRecords}
                     students={students}
-                    classes={classes}
                     attendanceSort={attendanceSort}
                     setAttendanceSort={setAttendanceSort}
                     handleExportAcademics={handleExportAcademics}

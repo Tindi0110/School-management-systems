@@ -6,7 +6,6 @@ import SearchableSelect from '../../components/SearchableSelect';
 interface AttendanceManagerProps {
     attendanceRecords: any[];
     students: any[];
-    classes: any[];
     attendanceSort: { field: string, direction: 'asc' | 'desc' };
     setAttendanceSort: (sort: any) => void;
     handleExportAcademics: () => void;
@@ -21,7 +20,6 @@ interface AttendanceManagerProps {
 const AttendanceManager: React.FC<AttendanceManagerProps> = ({
     attendanceRecords,
     students,
-    classes,
     attendanceSort,
     setAttendanceSort,
     handleExportAcademics,
