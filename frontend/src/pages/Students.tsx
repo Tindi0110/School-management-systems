@@ -390,19 +390,12 @@ const Students = () => {
                         </button>
                     </div>
                     {/* Status Filter Tabs */}
-                    <div className="flex items-center gap-1 bg-slate-100 rounded-xl p-1 shrink-0">
+                    <div className="nav-tab-container no-print shrink-0">
                         {(['ACTIVE', 'ALL', 'ALUMNI', 'SUSPENDED'] as const).map(s => (
                             <button
                                 key={s}
                                 onClick={() => { setStatusFilter(s); setPage(1); }}
-                                className={`px-3 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-wider transition-all ${
-                                    statusFilter === s
-                                    ? s === 'ACTIVE' ? 'bg-green-600 text-white shadow-sm'
-                                    : s === 'ALUMNI' ? 'bg-blue-600 text-white shadow-sm'
-                                    : s === 'SUSPENDED' ? 'bg-red-600 text-white shadow-sm'
-                                    : 'bg-slate-800 text-white shadow-sm'
-                                    : 'text-slate-500 hover:text-slate-800'
-                                }`}
+                                className={`nav-tab ${statusFilter === s ? 'active' : ''}`}
                             >
                                 {s === 'ALL' ? '🌐 All' : s}
                             </button>
@@ -545,20 +538,28 @@ const Students = () => {
                                                     <td className="p-4 text-right no-print">
                                                         <div className="flex gap-2 justify-end">
                                                             <button 
-                                                                className={`w-9 h-9 flex items-center justify-center rounded-xl transition-all ${s.user ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-100' : 'bg-slate-50 text-slate-400 border border-slate-100 hover:bg-slate-100 hover:text-primary'}`}
+                                                                className={`btn btn-sm ${s.user ? 'bg-green-600 text-white hover:bg-green-700 shadow-sm border-none' : 'btn-ghost text-primary opacity-50'}`} 
                                                                 onClick={async () => {
-                                                                    if (s.user) info(`User Account ID: ${s.user}`);
-                                                                    else if (await confirm(`Link User Account for ${s.full_name}?`)) {
-                                                                        try { await studentsAPI.linkUser(s.id); success('Account linked'); loadData(); }
-                                                                        catch (e) { errorToast('Linking failed'); }
+                                                                    if (s.user) {
+                                                                        info(`User Account Linked: ID #${s.user}`);
+                                                                    } else {
+                                                                        if (await confirm(`Generate User Account for ${s.full_name}?`)) {
+                                                                            try { 
+                                                                                await studentsAPI.linkUser(s.id); 
+                                                                                success('User account generated and linked successfully'); 
+                                                                                loadData(); 
+                                                                            }
+                                                                            catch (e) { errorToast('Account linking failed. Ensure student has an admission number.'); }
+                                                                        }
                                                                     }
-                                                                }}
+                                                                }} 
+                                                                title={s.user ? "User Linked & Active" : "Generate User Account"}
                                                             >
-                                                                {s.user ? <UserCheck size={16} /> : <UserIcon size={16} />}
+                                                                {s.user ? <UserCheck size={14} className="font-bold" /> : <UserIcon size={14} />}
                                                             </button>
-                                                            <button className="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-50 text-slate-600 border border-slate-100 hover:bg-white hover:text-primary transition-all" onClick={() => openModal(s)}><Edit size={16} /></button>
-                                                            <button className="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-50 text-slate-600 border border-slate-100 hover:bg-white hover:text-primary transition-all" onClick={() => navigate(`/students/${s.id}`)}><ArrowRight size={16} /></button>
-                                                            <button className="w-9 h-9 flex items-center justify-center rounded-xl bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-600 hover:text-white transition-all" onClick={() => deleteStudent(s.id)}><Trash2 size={16} /></button>
+                                                            <button className="btn btn-sm btn-outline px-3" onClick={() => openModal(s)} title="Edit Student"><Edit size={14} /></button>
+                                                            <button className="btn btn-sm btn-primary px-3" onClick={() => navigate(`/students/${s.id}`)} title="View Profile"><UserIcon size={14} /></button>
+                                                            <button className="btn btn-sm btn-ghost text-error px-2" onClick={() => deleteStudent(s.id)} title="Archive Student"><Trash2 size={14} /></button>
                                                         </div>
                                                     </td>
                                                 </tr>
