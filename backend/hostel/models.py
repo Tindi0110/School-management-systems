@@ -73,6 +73,29 @@ class Room(models.Model):
             
             if to_create:
                 Bed.objects.bulk_create(to_create)
+        elif current_count > self.capacity:
+            # 4. Handle capacity reduction: Delete excess AVAILABLE beds
+            all_beds = list(self.beds.all())
+            # Sort by number to ensure we keep the lowest numbers
+            try:
+                all_beds.sort(key=lambda x: int(x.bed_number))
+            except (ValueError, TypeError):
+                pass
+            
+            to_delete_ids = []
+            current_beds_count = len(all_beds)
+            
+            # Start from the highest numbered beds
+            for bed in reversed(all_beds):
+                if current_beds_count <= self.capacity:
+                    break
+                
+                if bed.status == 'AVAILABLE':
+                    to_delete_ids.append(bed.id)
+                    current_beds_count -= 1
+            
+            if to_delete_ids:
+                Bed.objects.filter(id__in=to_delete_ids).delete()
         
     @property
     def available_beds(self):
