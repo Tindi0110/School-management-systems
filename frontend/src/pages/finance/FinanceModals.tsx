@@ -1,6 +1,7 @@
 import React, { useState, type FormEvent } from 'react';
-import { CreditCard, Printer, TrendingUp, CheckCircle, Bell, Mail, MessageSquare } from 'lucide-react';
+import { CreditCard, Printer, TrendingUp, CheckCircle, Bell, Send, Mail, MessageSquare } from 'lucide-react';
 import Modal from '../../components/Modal';
+import Button from '../../components/common/Button';
 import SearchableSelect from '../../components/SearchableSelect';
 import PremiumDateInput from '../../components/common/DatePicker';
 
@@ -488,7 +489,7 @@ const FinanceModals: React.FC<FinanceModalsProps> = ({
                         <button 
                             type="button" 
                             className="modern-btn modern-btn-outline" 
-                            onClick={async () => {
+                            onClick={() => {
                                 if (selectedInvoice) {
                                     setAdjForm({ 
                                         student_id: String((selectedInvoice as any).student), 
@@ -497,16 +498,6 @@ const FinanceModals: React.FC<FinanceModalsProps> = ({
                                         type: 'CREDIT', 
                                         reason: '' 
                                     });
-                                    // Pre-load the student's invoices for the dropdown
-                                    try {
-                                        const res = await financeAPI.invoices.getAll({ 
-                                            student_id: (selectedInvoice as any).student,
-                                            nopage: 'true' 
-                                        });
-                                        setActiveStudentInvoices(res.data?.results ?? res.data ?? []);
-                                    } catch (err) {
-                                        console.error("Failed to load invoices for adjustment selection:", err);
-                                    }
                                     setShowAdjustmentModal(true);
                                 }
                             }}
@@ -894,7 +885,7 @@ const FinanceModals: React.FC<FinanceModalsProps> = ({
                             onChange={async (val) => {
                                 const studentId = String(val);
                                 try {
-                                    const res = await financeAPI.invoices.getAll({ student: studentId, page_size: 100 });
+                                    const res = await financeAPI.invoices.getAll({ student: studentId, status: 'UNPAID' });
                                     const studentInvoices = res.data?.results ?? res.data ?? [];
                                     setActiveStudentInvoices(studentInvoices);
                                     setAdjForm({ ...adjForm, student_id: studentId, invoice_id: studentInvoices[0]?.id.toString() || '' });
