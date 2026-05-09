@@ -151,12 +151,14 @@ const AcademicAttendanceModals: React.FC<AttendanceModalProps> = ({
                                 </thead>
                                 <tbody className="divide-y divide-slate-50">
                                     {bulkAttendanceList.map((item, idx) => {
-                                        const student = students.find(s => s.id === item.student);
+                                        const student = students.find(s => s.id === item.student_id || s.id === item.student);
                                         return (
-                                            <tr key={item.student} className="hover:bg-slate-50/50">
+                                            <tr key={item.student ?? item.student_id} className="hover:bg-slate-50/50">
                                                 <td className="px-4 py-3">
-                                                    <p className="text-xs font-black text-slate-800">{student?.full_name}</p>
-                                                    <p className="text-[9px] font-bold text-slate-400">{student?.admission_number}</p>
+                                                    <p className="text-xs font-black text-slate-800">{student?.full_name ?? 'Unknown'}</p>
+                                                    <p className="text-[9px] font-bold text-slate-400">
+                                                        {student?.class_name ? `${student.class_name} ${student.class_stream || ''}`.trim() : student?.admission_number ?? '—'}
+                                                    </p>
                                                 </td>
                                                 <td className="px-4 py-3">
                                                     <div className="flex gap-1">

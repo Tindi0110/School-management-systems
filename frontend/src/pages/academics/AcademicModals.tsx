@@ -108,6 +108,8 @@ interface AcademicModalsProps {
         handleDeleteStudentResults: (studentId: number) => void;
         handleScoreChange: (studentId: any, subjectId: any, val: string) => void;
         handleBulkResultSubmit: (e: any) => void;
+        handleGenerateBroadsheet: (format: 'excel' | 'pdf') => void;
+        handleViewAttendanceRegistry: () => void;
 
     };
     status: {
@@ -263,6 +265,8 @@ const AcademicModals: React.FC<AcademicModalsProps> = ({ modals, forms, data, ha
                 isOpen={modals.isViewClassModalOpen}
                 onClose={() => handlers.setIsViewClassModalOpen(false)}
                 selectedClass={data.selectedClass}
+                onGenerateBroadsheet={handlers.handleGenerateBroadsheet}
+                onViewAttendance={handlers.handleViewAttendanceRegistry}
             />
 
             <GradeSystemModal

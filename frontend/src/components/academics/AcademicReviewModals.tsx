@@ -6,9 +6,13 @@ interface ViewClassModalProps {
     isOpen: boolean;
     onClose: () => void;
     selectedClass: any;
+    onGenerateBroadsheet?: (format: 'excel' | 'pdf') => void;
+    onViewAttendance?: () => void;
 }
 
-export const ViewClassModal: React.FC<ViewClassModalProps> = ({ isOpen, onClose, selectedClass }) => {
+export const ViewClassModal: React.FC<ViewClassModalProps> = ({ 
+    isOpen, onClose, selectedClass, onGenerateBroadsheet, onViewAttendance 
+}) => {
     if (!selectedClass) return null;
 
     return (
@@ -45,10 +49,16 @@ export const ViewClassModal: React.FC<ViewClassModalProps> = ({ isOpen, onClose,
                                 <h4 className="text-sm font-black text-slate-800 uppercase tracking-tight">Generate BroadSheet</h4>
                                 <p className="text-[10px] font-medium text-slate-400 leading-relaxed mt-1">Export full class performance breakdown including all subjects and grading.</p>
                                 <div className="mt-4 flex gap-2">
-                                    <button className="text-[9px] font-black uppercase tracking-widest px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg hover:bg-primary hover:text-white transition-all flex items-center gap-2">
+                                    <button 
+                                        onClick={() => onGenerateBroadsheet?.('excel')}
+                                        className="text-[9px] font-black uppercase tracking-widest px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg hover:bg-primary hover:text-white transition-all flex items-center gap-2"
+                                    >
                                         <Download size={12} /> Excel
                                     </button>
-                                    <button className="text-[9px] font-black uppercase tracking-widest px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg hover:bg-primary hover:text-white transition-all flex items-center gap-2">
+                                    <button 
+                                        onClick={() => onGenerateBroadsheet?.('pdf')}
+                                        className="text-[9px] font-black uppercase tracking-widest px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg hover:bg-primary hover:text-white transition-all flex items-center gap-2"
+                                    >
                                         <Printer size={12} /> PDF
                                     </button>
                                 </div>
@@ -56,7 +66,7 @@ export const ViewClassModal: React.FC<ViewClassModalProps> = ({ isOpen, onClose,
                         </div>
                     </div>
 
-                    <div className="card p-6 border-slate-100 hover:border-primary/20 transition-all group cursor-pointer">
+                    <div className="card p-6 border-slate-100 hover:border-primary/20 transition-all group cursor-pointer" onClick={onViewAttendance}>
                         <div className="flex items-start gap-4">
                             <div className="w-12 h-12 rounded-2xl bg-orange-50 text-orange-500 flex items-center justify-center group-hover:bg-orange-500 group-hover:text-white transition-all">
                                 <FileText size={20} />

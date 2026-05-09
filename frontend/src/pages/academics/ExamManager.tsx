@@ -41,12 +41,19 @@ const ExamManager: React.FC<ExamManagerProps> = ({
                         </p>
 
                         <div className="card-body p-0 mt-6 space-y-3">
-                            <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100 group cursor-pointer hover:bg-white hover:border-primary transition-all shadow-sm active:scale-95" onClick={() => openEnterResults(exam)}>
+                            <div 
+                                className={`flex items-center justify-between p-3 rounded-xl border group transition-all shadow-sm ${exam.is_active ? 'bg-slate-50 border-slate-100 cursor-pointer hover:bg-white hover:border-primary active:scale-95' : 'bg-slate-50/50 border-slate-50 cursor-not-allowed opacity-60'}`} 
+                                onClick={() => exam.is_active && openEnterResults(exam)}
+                            >
                                 <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors"><Plus size={14} /></div>
-                                    <span className="text-[10px] font-black uppercase text-slate-600">Enter Student Results</span>
+                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${exam.is_active ? 'bg-blue-50 text-blue-500 group-hover:bg-primary group-hover:text-white' : 'bg-slate-100 text-slate-400'}`}>
+                                        <Plus size={14} />
+                                    </div>
+                                    <span className="text-[10px] font-black uppercase text-slate-600">
+                                        {exam.is_active ? 'Enter Student Results' : 'Results Entry Locked'}
+                                    </span>
                                 </div>
-                                <ArrowRight size={14} className="text-slate-300 transform translate-x-0 group-hover:translate-x-1 transition-transform" />
+                                {exam.is_active && <ArrowRight size={14} className="text-slate-300 transform translate-x-0 group-hover:translate-x-1 transition-transform" />}
                             </div>
 
                             <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100 group cursor-pointer hover:bg-white hover:border-success transition-all shadow-sm active:scale-95" onClick={() => openViewResults(exam)}>

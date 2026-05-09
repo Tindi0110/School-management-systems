@@ -137,11 +137,22 @@ const Academics = () => {
         if (!resultContext.classId) return [];
         return students.filter(s => {
             if (resultContext.classId === 'all') {
-                const sClass = classes.find(c => c.id === s.current_class);
-                return sClass && sClass.name === resultContext.level;
+                // class_name comes from minimal_search
+                return s.class_name === resultContext.level || 
+                       (typeof s.current_class === 'object' ? (s.current_class as any)?.name : null) === resultContext.level;
             }
-            const sClassId = typeof s.current_class === 'object' ? (s.current_class as any)?.id : s.current_class;
-            return sClassId === parseInt(resultContext.classId);
+            // minimal_search returns class_name + class_stream strings, not current_class id
+            // Find the class object to get its name and stream for matching
+            const selectedClass = classes.find(c => c.id === parseInt(resultContext.classId));
+            if (!selectedClass) return false;
+            // Match by class_name + class_stream (from minimal_search) OR by current_class id (from full student objects)
+            const byName = s.class_name === selectedClass.name && 
+                           (s.class_stream === selectedClass.stream || !s.class_stream);
+            const byId = (() => {
+                const sClassId = typeof s.current_class === 'object' ? (s.current_class as any)?.id : s.current_class;
+                return sClassId === parseInt(resultContext.classId);
+            })();
+            return byName || byId;
         }).filter((student, index, self) =>
             index === self.findIndex((t) => t.id === student.id)
         ).sort((a, b) => a.full_name.localeCompare(b.full_name));
@@ -192,6 +203,32 @@ const Academics = () => {
             handleLoadMatrixResults(resultContext.classId);
         }
     }, [isResultModalOpen, resultContext.classId, selectedExam]);
+
+    // Auto-populate bulkAttendanceList when a class is selected for bulk attendance
+    useEffect(() => {
+        if (attendanceFilter.isBulk && attendanceFilter.classId) {
+            const selectedClass = classes.find(c => c.id.toString() === attendanceFilter.classId);
+            if (!selectedClass) return;
+            // Match students to this class using class_name+class_stream (minimal_search shape)
+            const classStudents = students.filter(s => {
+                const byName = s.class_name === selectedClass.name && 
+                               (s.class_stream === selectedClass.stream || !s.class_stream);
+                const byId = (() => {
+                    const sClassId = typeof s.current_class === 'object' ? (s.current_class as any)?.id : s.current_class;
+                    return sClassId === selectedClass.id;
+                })();
+                return byName || byId;
+            });
+            setBulkAttendanceList(classStudents.map(s => ({
+                student_id: s.id,
+                student: s.id,
+                status: 'PRESENT',
+                remark: ''
+            })));
+        } else if (!attendanceFilter.classId) {
+            setBulkAttendanceList([]);
+        }
+    }, [attendanceFilter.classId, attendanceFilter.isBulk, students, classes]);
 
 
 
@@ -307,8 +344,12 @@ const Academics = () => {
                 setGradeSystems(freshGradeSystems);
                 setMeanGrade(calculateMeanGrade(results, freshGradeSystems));
             } else if (activeTab === 'EXAMS') {
-                const res = await academicsAPI.exams.getAll();
-                setExams(d(res));
+                const [examsRes, studentRes] = await Promise.all([
+                    academicsAPI.exams.getAll(),
+                    studentsAPI.minimalSearch()
+                ]);
+                setExams(d(examsRes));
+                setStudents(d(studentRes));
             } else if (activeTab === 'ATTENDANCE') {
                 const [attRes, studentRes] = await Promise.all([
                     academicsAPI.attendance.getAll({ page_size: 500, ordering: '-date' }),
@@ -757,12 +798,30 @@ const Academics = () => {
 
     const openViewClass = (cls: any) => {
         setSelectedClass(cls);
-        // Filter students belonging to this class (assuming student.current_class is the ID)
+        // Filter students belonging to this class
         setViewClassStudents(students.filter(s => {
             const studentClassId = typeof s.current_class === 'object' ? (s.current_class as any)?.id : s.current_class;
             return studentClassId === cls.id;
         }));
         setIsViewClassModalOpen(true);
+    };
+
+    const handleGenerateBroadsheet = (_format: 'excel' | 'pdf') => {
+        if (exams.length > 0) {
+            // Find most recent exam or just use first
+            setSelectedExam(exams[0]);
+            setIsBroadsheetModalOpen(true);
+        } else {
+            toastError("No exams available to generate broadsheet.");
+        }
+    };
+
+    const handleViewAttendanceRegistry = () => {
+        if (selectedClass) {
+            setAttendanceFilter({ level: selectedClass.name, classId: selectedClass.id.toString(), isBulk: false });
+            setActiveTab('ATTENDANCE');
+            setIsViewClassModalOpen(false);
+        }
     };
 
 
@@ -920,6 +979,12 @@ const Academics = () => {
 
     const handleBulkResultSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        
+        if (!selectedExam?.is_active) {
+            toastError("Marks entry is restricted for closed exams.");
+            return;
+        }
+
         setIsSubmitting(true);
         try {
             const promises: any[] = [];
@@ -996,7 +1061,11 @@ const Academics = () => {
     const noActivePeriod = !activeYearObj || !activeTermObj;
 
     staff.map(s => ({ id: s.user || s.id, label: s.full_name || s.username, subLabel: `ID: ${s.employee_id}` }));
-    const studentOptions = students.map(s => ({ id: s.id, label: s.full_name, subLabel: `ADM: ${s.admission_number}` }));
+    const studentOptions = students.map(s => ({
+        id: s.id,
+        label: s.full_name,
+        subLabel: s.class_name ? `${s.class_name} ${s.class_stream || ''}`.trim() : (s.admission_number && s.admission_number !== 'N/A' ? `ADM: ${s.admission_number}` : 'No class assigned')
+    }));
 
     return (
         <div className="fade-in w-full max-w-full overflow-x-hidden min-w-0">
@@ -1230,6 +1299,7 @@ const Academics = () => {
                     setAttendanceFilter, setBulkAttendanceList, setIsViewResultsModalOpen,
                     setRankingFilter, setIsBroadsheetModalOpen, setIsResultModalOpen,
                     setResultContext, setIsViewClassModalOpen,
+                    handleGenerateBroadsheet, handleViewAttendanceRegistry,
                     setIsReportModalOpen, setIsGradeModalOpen, setGradeForm,
                     setIsBoundaryModalOpen, setBoundaryForm, handleYearSubmit,
                     handleTermSubmit, handleClassSubmit, handleGroupSubmit,
