@@ -161,7 +161,7 @@ const AcademicAttendanceModals: React.FC<AttendanceModalProps> = ({
                                                     </p>
                                                 </td>
                                                 <td className="px-4 py-3">
-                                                    <div className="flex gap-1">
+                                                    <div className="flex gap-2">
                                                         {['PRESENT', 'ABSENT', 'LATE'].map(s => (
                                                             <button 
                                                                 key={s}
@@ -171,7 +171,8 @@ const AcademicAttendanceModals: React.FC<AttendanceModalProps> = ({
                                                                     newList[idx].status = s;
                                                                     setBulkAttendanceList(newList);
                                                                 }}
-                                                                className={`px-2 py-1 rounded text-[9px] font-black transition-all ${item.status === s ? 'bg-primary text-white' : 'bg-white text-slate-300 border border-slate-100'}`}
+                                                                className={`w-7 h-7 rounded-xl text-xs font-black transition-all shadow-sm flex items-center justify-center ${item.status === s ? (s === 'PRESENT' ? 'bg-emerald-500 text-white shadow-emerald-500/30' : s === 'ABSENT' ? 'bg-rose-500 text-white shadow-rose-500/30' : 'bg-amber-500 text-white shadow-amber-500/30') : 'bg-white text-slate-400 border border-slate-200 hover:border-primary/30 hover:text-primary'}`}
+                                                                title={s}
                                                             >
                                                                 {s[0]}
                                                             </button>

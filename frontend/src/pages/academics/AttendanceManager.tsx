@@ -84,16 +84,85 @@ const AttendanceManager: React.FC<AttendanceManagerProps> = ({
                             <tr><td colSpan={6} className="text-center p-8 text-secondary italic">No attendance records found. Use "Log Status" to add entries.</td></tr>
                         ) : (
                             (() => {
-                                const groupedAtt = attendanceRecords.reduce((acc: any, att: any) => {
+                                let recordsToRender = [...attendanceRecords];
+                                
+                                // Enrich records with student and class data
+                                recordsToRender = recordsToRender.map(att => {
                                     const student = students.find(s => s.id === att.student);
-                                    const cls = classes.find(c => c.id === student?.current_class);
-                                    const groupKey = cls ? `${cls.name} ${cls.stream}` : 'Unassigned';
-                                    if (!acc[groupKey]) acc[groupKey] = [];
-                                    acc[groupKey].push({ ...att, student_name: student?.full_name, class_name: groupKey });
+                                    const groupKey = student?.class_name ? `${student.class_name} ${student.class_stream || ''}`.trim() : 'Unassigned';
+                                    return { 
+                                        ...att, 
+                                        student_name: student?.full_name, 
+                                        adm: student?.admission_number, 
+                                        class_name: groupKey,
+                                        raw_class: student?.class_name || '',
+                                        raw_stream: student?.class_stream || ''
+                                    };
+                                });
+
+                                // Apply Sorting
+                                if (attendanceSort.field === 'date') {
+                                    recordsToRender.sort((a, b) => attendanceSort.direction === 'asc' ? new Date(a.date).getTime() - new Date(b.date).getTime() : new Date(b.date).getTime() - new Date(a.date).getTime());
+                                } else if (attendanceSort.field === 'student') {
+                                    recordsToRender.sort((a, b) => {
+                                        const sA = a.student_name || '';
+                                        const sB = b.student_name || '';
+                                        return attendanceSort.direction === 'asc' ? sA.localeCompare(sB) : sB.localeCompare(sA);
+                                    });
+                                } else if (attendanceSort.field === 'class') {
+                                    recordsToRender.sort((a, b) => {
+                                        const cA = a.raw_class;
+                                        const cB = b.raw_class;
+                                        return attendanceSort.direction === 'asc' ? cA.localeCompare(cB) : cB.localeCompare(cA);
+                                    });
+                                } else if (attendanceSort.field === 'stream') {
+                                    recordsToRender.sort((a, b) => {
+                                        const sA = a.raw_stream;
+                                        const sB = b.raw_stream;
+                                        return attendanceSort.direction === 'asc' ? sA.localeCompare(sB) : sB.localeCompare(sA);
+                                    });
+                                }
+
+                                // If sorting by Date or Student, render a flat list
+                                if (attendanceSort.field === 'date' || attendanceSort.field === 'student') {
+                                    return recordsToRender.map((att: any) => (
+                                        <tr key={att.id} className="hover:bg-blue-50/50">
+                                            <td className="font-mono text-xs">{att.date}</td>
+                                            <td>
+                                                <div className="flex flex-col">
+                                                    <span className="font-bold text-xs">{att.student_name || 'Unknown'}</span>
+                                                    <span className="text-[9px] text-secondary font-black tracking-widest">{att.adm || '—'}</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div className="flex flex-col">
+                                                    <span className="font-bold text-xs text-primary">{att.class_name}</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span className={`badge badge-sm font-bold ${att.status === 'PRESENT' ? 'badge-success text-white' : att.status === 'ABSENT' ? 'badge-error text-white' : 'badge-warning'}`}>
+                                                    {att.status}
+                                                </span>
+                                            </td>
+                                            <td className="text-xs">{att.remark || '—'}</td>
+                                            <td className="text-right">
+                                                <div className="flex justify-end gap-1">
+                                                    <Button variant="ghost" size="sm" className="text-primary" onClick={() => openEditAttendance(att)} icon={<Edit size={12} />} />
+                                                    <Button variant="ghost" size="sm" className="text-error" onClick={() => handleDeleteAttendance(att.id)} icon={<Trash2 size={12} />} />
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ));
+                                }
+
+                                // If sorting by Class or Stream, render grouped
+                                const groupedAtt = recordsToRender.reduce((acc: any, att: any) => {
+                                    if (!acc[att.class_name]) acc[att.class_name] = [];
+                                    acc[att.class_name].push(att);
                                     return acc;
                                 }, {});
 
-                                return Object.keys(groupedAtt).sort().map(groupKey => (
+                                return Object.keys(groupedAtt).map(groupKey => (
                                     <React.Fragment key={groupKey}>
                                         <tr className="bg-slate-50">
                                             <td colSpan={6} className="py-2 px-6 text-[10px] font-black uppercase text-secondary tracking-widest">{groupKey}</td>
@@ -104,7 +173,7 @@ const AttendanceManager: React.FC<AttendanceManagerProps> = ({
                                                 <td>
                                                     <div className="flex flex-col">
                                                         <span className="font-bold text-xs">{att.student_name || 'Unknown'}</span>
-                                                        <span className="text-[9px] text-secondary">ADM_NOT_STORED</span>
+                                                        <span className="text-[9px] text-secondary font-black tracking-widest">{att.adm || '—'}</span>
                                                     </div>
                                                 </td>
                                                 <td>

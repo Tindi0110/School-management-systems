@@ -640,8 +640,8 @@ const Academics = () => {
 
             // Only refresh attendance data to prevent full page reload (which hides the tab)
             try {
-                await academicsAPI.attendance.getAll();
-                // Attendance is handled via modal / backend refresh
+                const res = await academicsAPI.attendance.getAll({ page_size: 500, ordering: '-date' });
+                setAttendanceRecords(res.data?.results ?? res.data ?? []);
             } catch (e) { console.error("Error refreshing attendance:", e); }
 
             setIsAttendanceModalOpen(false);
@@ -1064,7 +1064,7 @@ const Academics = () => {
     const studentOptions = students.map(s => ({
         id: s.id,
         label: s.full_name,
-        subLabel: s.class_name ? `${s.class_name} ${s.class_stream || ''}`.trim() : (s.admission_number && s.admission_number !== 'N/A' ? `ADM: ${s.admission_number}` : 'No class assigned')
+        subLabel: `${s.admission_number || 'N/A'} - ${s.class_name ? `${s.class_name} ${s.class_stream || ''}`.trim() : 'Unassigned'}`
     }));
 
     return (
