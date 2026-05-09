@@ -208,8 +208,6 @@ def update_invoice_totals(invoice):
 
 @receiver(post_save, sender=Invoice)
 @receiver(post_delete, sender=Invoice)
-@receiver(post_save, sender=Payment)
-@receiver(post_save, sender=Adjustment)
 def update_student_fee_balance(sender, instance, **kwargs):
     """
     Recalculates total fee_balance for a student whenever an invoice changes or is deleted.
@@ -223,14 +221,8 @@ def update_student_fee_balance(sender, instance, **kwargs):
     cache.delete('finance_dashboard_stats_active')
     cache.delete('finance_dashboard_stats_alltime')
 
-    # 2. Update Invoice Totals & Student Balance
-    # If the instance is Payment or Adjustment, we need to get the student from the linked invoice
-    invoice = instance if isinstance(instance, Invoice) else instance.invoice
-    
-    # CRITICAL: Recalculate the invoice itself first! 
-    # This updates invoice.balance and invoice.status based on new payments/adjustments.
-    invoice.recalculate_ledger()
-    
+    # 2. Update Student Balance
+    invoice = instance
     student = invoice.student
     
     # Sum up all invoice balances for this student
