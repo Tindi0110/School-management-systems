@@ -80,7 +80,7 @@ const ProfileModals: React.FC<ProfileModalsProps> = ({
     handleSuspend, isDeleteModalOpen, setIsDeleteModalOpen, handleForceDelete, isGuardianModalOpen,
     setIsGuardianModalOpen, isCreatingNewGuardian, setIsCreatingNewGuardian, searchPhone,
     setSearchPhone, isSearchingParent, handleLinkParent, newGuardianForm, setNewGuardianForm,
-    handleCreateGuardian, healthId, handleDeleteHealth, parents, handleMarkPrimary, handleUnlinkParent
+    handleCreateGuardian
 }) => {
     return (
         <>
