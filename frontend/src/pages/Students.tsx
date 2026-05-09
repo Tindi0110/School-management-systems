@@ -551,6 +551,7 @@ const Students = () => {
                     </>
                 }
             >
+                <form id="student-form" onSubmit={handleSubmit} className="space-y-6">
                     <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 mb-6 flex items-start gap-3">
                         <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
                             <Plus size={20} />
