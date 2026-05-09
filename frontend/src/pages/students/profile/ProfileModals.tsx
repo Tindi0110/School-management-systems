@@ -68,7 +68,7 @@ interface ProfileModalsProps {
 }
 
 const ProfileModals: React.FC<ProfileModalsProps> = ({
-    student, isDisciplineModalOpen, setIsDisciplineModalOpen, disciplineForm, setDisciplineForm,
+    student, setStudent, isDisciplineModalOpen, setIsDisciplineModalOpen, disciplineForm, setDisciplineForm,
     isSubmitting, handleDisciplineSubmit, isTransferModalOpen, setIsTransferModalOpen,
     transferClassId, setTransferClassId, classes, handleTransfer, isHealthModalOpen,
     setIsHealthModalOpen, healthForm, setHealthForm, handleHealthSubmit,
@@ -80,7 +80,7 @@ const ProfileModals: React.FC<ProfileModalsProps> = ({
     handleSuspend, isDeleteModalOpen, setIsDeleteModalOpen, handleForceDelete, isGuardianModalOpen,
     setIsGuardianModalOpen, isCreatingNewGuardian, setIsCreatingNewGuardian, searchPhone,
     setSearchPhone, isSearchingParent, handleLinkParent, newGuardianForm, setNewGuardianForm,
-    handleCreateGuardian,
+    handleCreateGuardian, healthId, handleDeleteHealth, parents, handleMarkPrimary, handleUnlinkParent
 }) => {
     return (
         <>
@@ -208,23 +208,7 @@ const ProfileModals: React.FC<ProfileModalsProps> = ({
             {/* Edit Profile Modal */}
             <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title="Institutional Record: Edit Profile" size="md">
                 <form onSubmit={(e) => {
-                    e.preventDefault();
-                    // Extract fields from form
-                    const fd = new FormData(e.currentTarget);
-                    const updateData = {
-                        full_name: fd.get('full_name'),
-                        admission_number: fd.get('admission_number'),
-                        current_class: student?.current_class, // Managed by SearchableSelect
-                        category: student?.category,
-                        status: student?.status,
-                        gender: student?.gender,
-                        date_of_birth: fd.get('date_of_birth'),
-                        address: fd.get('address'),
-                        guardian_name: fd.get('guardian_name'),
-                        guardian_phone: fd.get('guardian_phone'),
-                        guardian_email: fd.get('guardian_email'),
-                    };
-                    handleEditSubmit(e); // Note: handleEditSubmit in StudentProfile needs to be updated to use current student state
+                    handleEditSubmit(e); 
                 }} className="space-y-4 form-container-md mx-auto">
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-group"><label className="label text-[10px] font-black uppercase">Full Name</label>

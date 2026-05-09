@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import {
-    Book, Bookmark, Receipt, Layers, Search, Download, Printer
+    Book, Bookmark, Receipt, Layers, Search, Download, Printer, Plus
 } from 'lucide-react';
 import { libraryAPI, studentsAPI } from '../api/api';
 import { exportToCSV } from '../utils/export';
