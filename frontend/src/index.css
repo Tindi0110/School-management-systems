@@ -2072,13 +2072,13 @@ table.table {
   padding: 0 !important;
 }
 
-/* ===== MODAL SYSTEM (Modern Classic Professional) ===== */
+
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.4) !important;
-  backdrop-filter: none !important;      /* Explicitly kill any inline blur */
-  -webkit-backdrop-filter: none !important; /* Explicitly kill webkit blur */
+  background-color: transparent !important;
+  backdrop-filter: blur(8px) !important;      /* Restored blur */
+  -webkit-backdrop-filter: blur(8px) !important; /* Restored webkit blur */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2609,7 +2609,7 @@ table.table {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  background: #f9fafb;
+  background: #ffffff;
   flex-shrink: 0;
 }
 
@@ -2647,7 +2647,7 @@ table.table {
 }
 
 .modern-btn-secondary:hover {
-  background: #f9fafb;
+  background: #ffffff;
   border-color: #9ca3af;
 }
 
