@@ -138,11 +138,11 @@ const InvoiceManager: React.FC<InvoiceManagerProps> = ({
                                     }}
                                 />
                             </th>
-                            <th className="text-[10px] font-black uppercase tracking-widest text-slate-400">Invoice & Student</th>
-                            <th className="text-[10px] font-black uppercase tracking-widest text-slate-400">Registry Info</th>
-                            <th className="text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Invoiced</th>
-                            <th className="text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Outstanding</th>
-                            <th className="text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">Status</th>
+                             <th className="px-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Invoice & Student</th>
+                             <th className="px-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Registry Info</th>
+                             <th className="px-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Invoiced</th>
+                             <th className="px-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Outstanding</th>
+                             <th className="px-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">Status</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
@@ -198,11 +198,11 @@ const InvoiceManager: React.FC<InvoiceManagerProps> = ({
                                         </div>
                                     </td>
                                     <td className="px-4 py-4 text-center">
-                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter ${
-                                            inv.status === 'PAID' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 
-                                            inv.status === 'OVERPAID' ? 'bg-sky-50 text-sky-600 border border-sky-100' : 
-                                            inv.status === 'PARTIAL' ? 'bg-amber-50 text-amber-600 border border-amber-100' : 
-                                            'bg-rose-50 text-rose-600 border border-rose-100'
+                                         <span className={`inline-flex items-center px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter text-white shadow-sm ${
+                                            inv.status === 'PAID' ? 'bg-green-600 shadow-green-100' : 
+                                            inv.status === 'OVERPAID' ? 'bg-blue-600 shadow-blue-100' : 
+                                            inv.status === 'PARTIAL' ? 'bg-orange-500 shadow-orange-100' : 
+                                            'bg-red-600 shadow-red-100'
                                         }`}>
                                             {inv.status}
                                         </span>

@@ -494,13 +494,13 @@ const Students = () => {
                                 <div className="table-wrapper">
                                     <table className="table">
                                         <thead>
-                                            <tr>
-                                                <th>Identity</th>
-                                                <th>Academic Unit</th>
-                                                <th>Financial Status</th>
-                                                <th>Conduct</th>
-                                                <th>Attendance</th>
-                                                <th className="no-print text-right">Actions</th>
+                                            <tr className="border-b border-slate-100">
+                                                <th className="p-4 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Identity</th>
+                                                <th className="p-4 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Academic Unit</th>
+                                                <th className="p-4 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Financial Status</th>
+                                                <th className="p-4 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Conduct</th>
+                                                <th className="p-4 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Attendance</th>
+                                                <th className="p-4 no-print text-right text-[10px] font-black uppercase tracking-widest text-slate-400">Actions</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -613,14 +613,14 @@ const Students = () => {
                             <h4 className="text-xs font-black text-slate-800 uppercase tracking-widest mb-1">{editingStudent ? 'Current Status' : 'Enrollment Mode'}</h4>
                             <p className="text-[10px] text-slate-400 font-bold uppercase italic">Affects financial structure and accommodation</p>
                         </div>
-                        <div className="flex bg-white p-1.5 rounded-xl border border-slate-100 shadow-inner">
+                        <div className="nav-tab-container !bg-white !p-1 !border !border-slate-100 !shadow-inner !rounded-xl !mb-0 shrink-0">
                             <button type="button"
-                                className={`px-6 py-2.5 rounded-lg text-[10px] font-black transition-all ${formData.category === 'DAY' ? 'bg-primary text-white shadow-md' : 'text-slate-400 hover:text-slate-600'}`}
+                                className={`nav-tab !px-8 !py-2 !rounded-lg !text-[10px] !font-black !transition-all ${formData.category === 'DAY' ? 'active !bg-primary !text-white !shadow-md' : '!text-slate-400 hover:!text-slate-600'}`}
                                 onClick={() => setFormData({ ...formData, category: 'DAY' })}>
                                 DAY SCHOLAR
                             </button>
                             <button type="button"
-                                className={`px-6 py-2.5 rounded-lg text-[10px] font-black transition-all ${formData.category === 'BOARDING' ? 'bg-primary text-white shadow-md' : 'text-slate-400 hover:text-slate-600'}`}
+                                className={`nav-tab !px-8 !py-2 !rounded-lg !text-[10px] !font-black !transition-all ${formData.category === 'BOARDING' ? 'active !bg-primary !text-white !shadow-md' : '!text-slate-400 hover:!text-slate-600'}`}
                                 onClick={() => setFormData({ ...formData, category: 'BOARDING' })}>
                                 BOARDER
                             </button>
