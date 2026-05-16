@@ -194,8 +194,8 @@ class HealthRecord(models.Model):
     blood_group = models.CharField(max_length=5, blank=True)
     allergies = models.TextField(blank=True)
     chronic_conditions = models.TextField(blank=True)
-    emergency_contact_name = models.CharField(max_length=255)
-    emergency_contact_phone = models.CharField(max_length=20)
+    emergency_contact_name = models.CharField(max_length=255, blank=True)
+    emergency_contact_phone = models.CharField(max_length=20, blank=True)
     special_needs = models.TextField(blank=True)
     
     # Vital Signs baseline

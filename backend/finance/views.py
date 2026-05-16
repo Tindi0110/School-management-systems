@@ -221,7 +221,8 @@ class InvoiceViewSet(viewsets.ModelViewSet):
                     
                     items_to_create = []
                     for fee in student_fees:
-                        is_hostel_fee = 'board' in fee.name.lower() or 'hostel' in fee.name.lower()
+                        # Detection logic for boarding-related fees
+                        is_hostel_fee = any(kw in fee.name.lower() for kw in ['board', 'hostel', 'accommodation'])
                         if is_hostel_fee and student.category != 'BOARDING':
                             continue
                             
@@ -455,12 +456,17 @@ class ExpenseViewSet(viewsets.ModelViewSet):
         expense.save(update_fields=['status', 'approved_by'])
 
         # Explicit Origin Feedback
-        if expense.origin_model == 'transport.VehicleMaintenance' and expense.origin_id:
+        if expense.origin_id:
             try:
-                from transport.models import VehicleMaintenance
-                maintenance = VehicleMaintenance.objects.get(id=expense.origin_id)
-                maintenance.status = 'COMPLETED'
-                maintenance.save(update_fields=['status'])
+                if expense.origin_model == 'transport.VehicleMaintenance':
+                    from transport.models import VehicleMaintenance
+                    VehicleMaintenance.objects.filter(id=expense.origin_id).update(status='COMPLETED')
+                elif expense.origin_model == 'transport.FuelRecord':
+                    from transport.models import FuelRecord
+                    FuelRecord.objects.filter(id=expense.origin_id).update(status='APPROVED')
+                elif expense.origin_model == 'hostel.HostelMaintenance':
+                    from hostel.models import HostelMaintenance
+                    HostelMaintenance.objects.filter(id=expense.origin_id).update(status='COMPLETED')
             except Exception as e:
                 logger.error(f"Origin feedback error: {e}")
 
@@ -476,12 +482,17 @@ class ExpenseViewSet(viewsets.ModelViewSet):
         expense.approved_by = request.user
         expense.save(update_fields=['status', 'approved_by'])
 
-        if expense.origin_model == 'transport.VehicleMaintenance' and expense.origin_id:
+        if expense.origin_id:
             try:
-                from transport.models import VehicleMaintenance
-                maintenance = VehicleMaintenance.objects.get(id=expense.origin_id)
-                maintenance.status = 'IN_PROGRESS' # Revert to generic open state
-                maintenance.save(update_fields=['status'])
+                if expense.origin_model == 'transport.VehicleMaintenance':
+                    from transport.models import VehicleMaintenance
+                    VehicleMaintenance.objects.filter(id=expense.origin_id).update(status='IN_PROGRESS')
+                elif expense.origin_model == 'transport.FuelRecord':
+                    from transport.models import FuelRecord
+                    FuelRecord.objects.filter(id=expense.origin_id).update(status='REJECTED')
+                elif expense.origin_model == 'hostel.HostelMaintenance':
+                    from hostel.models import HostelMaintenance
+                    HostelMaintenance.objects.filter(id=expense.origin_id).update(status='PENDING')
             except Exception as e:
                 logger.error(f"Origin feedback error: {e}")
 

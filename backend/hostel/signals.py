@@ -64,30 +64,37 @@ def sync_discipline_to_student_profile(sender, instance, created, **kwargs):
 def sync_asset_to_finance(sender, instance, created, **kwargs):
     if kwargs.get('raw'):
         return
-    if created and instance.value > 0:
-        # Map to 'SUPPLIES' or 'OTHER'
-        Expense.objects.create(
-            category='SUPPLIES', 
-            amount=instance.value,
-            description=f"Auto-generated from Hostel Asset entry. Room: {instance.room}. Type: {instance.asset_type}",
-            paid_to="Vendor (Auto)", # Placeholder
-            date_occurred=timezone.now().date(),
-            approved_by=None # System generated
+    
+    if instance.value > 0:
+        Expense.objects.update_or_create(
+            origin_model='hostel.HostelAsset',
+            origin_id=instance.id,
+            defaults={
+                'category': 'SUPPLIES', 
+                'amount': instance.value,
+                'description': f"Hostel Asset: {instance.get_asset_type_display()} in {instance.room or instance.hostel}",
+                'paid_to': "Vendor (Auto)",
+                'date_occurred': timezone.now().date(),
+            }
         )
 
 @receiver(post_save, sender=HostelMaintenance)
 def sync_maintenance_to_finance(sender, instance, created, **kwargs):
     if kwargs.get('raw'):
         return
-    # Only create expense if cost > 0
+        
     if instance.repair_cost > 0:
-        Expense.objects.create(
-            category='MAINTENANCE',
-            amount=instance.repair_cost,
-            description=f"Hostel Maintenance: {instance.issue} ({instance.hostel.name} - {instance.room})",
-            paid_to="Repair Service", # Placeholder
-            date_occurred=instance.completion_date or timezone.now().date(),
-            approved_by=instance.reported_by
+        Expense.objects.update_or_create(
+            origin_model='hostel.HostelMaintenance',
+            origin_id=instance.id,
+            defaults={
+                'category': 'MAINTENANCE',
+                'amount': instance.repair_cost,
+                'description': f"Hostel Maintenance: {instance.issue} ({instance.hostel.name} - {instance.room or 'Common Area'})",
+                'paid_to': "Repair Service",
+                'date_occurred': instance.completion_date or timezone.now().date(),
+                'approved_by': instance.reported_by if created else None
+            }
         )
 
 @receiver(post_save, sender=HostelAllocation)
@@ -151,3 +158,10 @@ def release_bed_on_delete(sender, instance, **kwargs):
                 room.status = 'AVAILABLE'
             room.save()
 
+@receiver(post_delete, sender=HostelMaintenance)
+def cleanup_hostel_maintenance_expense(sender, instance, **kwargs):
+    Expense.objects.filter(origin_model='hostel.HostelMaintenance', origin_id=instance.id).delete()
+
+@receiver(post_delete, sender=HostelAsset)
+def cleanup_asset_expense(sender, instance, **kwargs):
+    Expense.objects.filter(origin_model='hostel.HostelAsset', origin_id=instance.id).delete()

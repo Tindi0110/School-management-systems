@@ -570,7 +570,7 @@ const FinanceModals: React.FC<FinanceModalsProps> = ({
                                                         <td className="px-6 py-4">
                                                             <div className="text-xs font-bold text-slate-700">{adj.reason}</div>
                                                             <div className="text-[10px] text-slate-400 font-medium uppercase tracking-tight">
-                                                                {adj.adjustment_type} &bull; {adj.created_at ? formatDateTime(adj.created_at) : formatDate(adj.date || '')}
+                                                                {adj.adjustment_type === 'DEBIT' ? 'FINE' : 'WAIVER'} &bull; {adj.created_at ? formatDateTime(adj.created_at) : formatDate(adj.date || '')}
                                                             </div>
                                                         </td>
                                                         <td className={`px-6 py-4 text-right font-mono text-xs font-black ${adj.adjustment_type === 'DEBIT' ? 'text-rose-500' : 'text-emerald-500'}`}>
