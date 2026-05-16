@@ -150,10 +150,18 @@ class BookLendingViewSet(viewsets.ModelViewSet):
         qs = super().get_queryset()
         student_id = self.request.query_params.get('student_id')
         user_id = self.request.query_params.get('user')
+        role = self.request.query_params.get('role')
+        
         if student_id:
             qs = qs.filter(user__student_profile__id=student_id)
         elif user_id:
             qs = qs.filter(user_id=user_id)
+            
+        if role == 'STAFF':
+            qs = qs.exclude(user__role='STUDENT')
+        elif role == 'STUDENT':
+            qs = qs.filter(user__role='STUDENT')
+            
         return qs
 
     def create(self, request, *args, **kwargs):
@@ -184,10 +192,12 @@ class BookLendingViewSet(viewsets.ModelViewSet):
             if overdue_exists:
                  raise ValidationError({"detail": "User has overdue books. Cannot issue new resources."})
 
-            # 3. CORE PRINCIPLE: Max Limit (Default 2)
-            active_count = BookLending.objects.filter(user=user, date_returned__isnull=True).count()
-            if active_count >= 2:
-                raise ValidationError({"detail": "User has reached the maximum borrowing limit (2 books)."})
+            # 3. CORE PRINCIPLE: Max Limit (Dynamic based on Role)
+            if user.role == 'STUDENT':
+                active_count = BookLending.objects.filter(user=user, date_returned__isnull=True).count()
+                max_limit = 5 # Learners can have up to 5 books
+                if active_count >= max_limit:
+                    raise ValidationError({"detail": f"Learner has reached the maximum borrowing limit ({max_limit} books)."})
 
             # Save Lending and Update Copy
             lending = serializer.save()

@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import {
     Book, Bookmark, Receipt, Layers, Search, Download, Printer, Plus
 } from 'lucide-react';
-import { libraryAPI, studentsAPI } from '../api/api';
+import { libraryAPI, studentsAPI, staffAPI } from '../api/api';
 import { exportToCSV } from '../utils/export';
 import Modal from '../components/Modal';
 import SearchableSelect from '../components/SearchableSelect';
@@ -26,6 +26,8 @@ const Library = () => {
     const [lendings, setLendings] = useState<any[]>([]);
     const [fines, setFines] = useState<any[]>([]);
     const [students, setStudents] = useState<any[]>([]);
+    const [staff, setStaff] = useState<any[]>([]);
+    const [activeCirculationRole, setActiveCirculationRole] = useState<'STUDENT' | 'STAFF'>('STUDENT');
     const [loading, setLoading] = useState(true);
     const toast = useToast();
     const { confirm } = useConfirm();
@@ -82,7 +84,7 @@ const Library = () => {
 
     const [bookForm, setBookForm] = useState({ title: '', author: '', isbn: '', category: '', year: new Date().getFullYear(), add_copies: 0, current_copies: 0 });
     const [copyForm, setCopyForm] = useState({ book: '', copy_number: '', condition: 'NEW', status: 'AVAILABLE', purchase_date: getToday() });
-    const [lendingForm, setLendingForm] = useState({ copy: '', student: '', due_date: '' });
+    const [lendingForm, setLendingForm] = useState({ copy: '', student: '', staff: '', borrowerType: 'STUDENT' as 'STUDENT' | 'STAFF', due_date: '' });
     const [fineForm, setFineForm] = useState({ student: '', amount: 0, reason: '', status: 'PENDING', date_issued: getToday(), fine_type: 'LATE' });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSyncing, setIsSyncing] = useState(false);
@@ -114,14 +116,14 @@ const Library = () => {
             lendings: { ...prev.lendings, page: 1 },
             fines: { ...prev.fines, page: 1 }
         }));
-    }, [searchTerm, activeTab]);
+    }, [searchTerm, activeTab, activeCirculationRole]);
 
     useEffect(() => {
         const initLibrary = async () => {
             try {
                 const statsRes = await libraryAPI.books.getDashboardStats();
                 setStats(statsRes.data);
-                await Promise.all([loadCatalog(), loadLendings(), loadFines(), loadStudents()]);
+                await Promise.all([loadCatalog(), loadLendings(), loadFines(), loadStudents(), loadStaff()]);
             } catch (error) { 
                 console.error('Error initializing library:', error); 
                 toast.error("Network synchronization lag. Retrying...");
@@ -130,7 +132,7 @@ const Library = () => {
             }
         };
         initLibrary();
-    }, []);
+    }, [activeCirculationRole]);
 
     const loadCatalog = async () => {
         const params: any = { page_size: PAGE_SIZE, page: pagination.books.page };
@@ -149,7 +151,11 @@ const Library = () => {
     };
 
     const loadLendings = async () => {
-        const params: any = { page: pagination.lendings.page, page_size: PAGE_SIZE };
+        const params: any = { 
+            page: pagination.lendings.page, 
+            page_size: PAGE_SIZE,
+            role: activeCirculationRole
+        };
         if (searchTerm) params.search = searchTerm;
         try {
             const res = await libraryAPI.lendings.getAll(params);
@@ -175,6 +181,13 @@ const Library = () => {
     const loadStudents = async () => {
         const res = await studentsAPI.minimalSearch();
         setStudents(res.data?.results ?? res.data ?? []);
+    };
+
+    const loadStaff = async () => {
+        try {
+            const res = await staffAPI.getAll({ page_size: 1000 });
+            setStaff(res.data?.results ?? res.data ?? []);
+        } catch (err) { console.error("Staff load failed", err); }
     };
 
     // --- Handlers ---
@@ -271,28 +284,47 @@ const Library = () => {
     // Lendings
     const handleLendSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!lendingForm.copy || !lendingForm.student) { toast.error('Select copy and student.'); return; }
+        const { copy, student, staff: staffId, borrowerType, due_date } = lendingForm;
+        
+        if (!copy || (borrowerType === 'STUDENT' && !student) || (borrowerType === 'STAFF' && !staffId)) { 
+            toast.error('Select copy and borrower.'); 
+            return; 
+        }
 
-        const selectedStudent = students.find(s => s.id === Number(lendingForm.student));
-        if (!selectedStudent) { toast.error('Invalid student selected.'); return; }
+        let userId: number | null = null;
+        let borrowerName = '';
 
-        let userId = selectedStudent.user || selectedStudent.student_user_id;
+        if (borrowerType === 'STUDENT') {
+            const selectedStudent = students.find(s => s.id === Number(student));
+            if (!selectedStudent) { toast.error('Invalid student selected.'); return; }
+            borrowerName = selectedStudent.full_name;
+            userId = selectedStudent.user || selectedStudent.student_user_id;
 
-        if (!userId) {
-            toast.info(`Linking user account for ${selectedStudent.full_name}...`);
-            try {
-                const res = await studentsAPI.linkUser(selectedStudent.id);
-                userId = res.data.user_id || res.data.user || res.data.id;
-                if (userId) {
-                    setStudents((prev) => prev.map(s => s.id === selectedStudent.id ? { ...s, user: userId } : s));
-                } else {
+            if (!userId) {
+                toast.info(`Linking user account for ${selectedStudent.full_name}...`);
+                try {
+                    const res = await studentsAPI.linkUser(selectedStudent.id);
+                    userId = res.data.user_id || res.data.user || res.data.id;
+                    if (userId) {
+                        setStudents((prev) => prev.map(s => s.id === selectedStudent.id ? { ...s, user: userId } : s));
+                    } else {
+                        toast.error(`Student ${selectedStudent.full_name} needs a linked User Account. Auto-linking failed.`);
+                        return;
+                    }
+                } catch (err) {
                     toast.error(`Student ${selectedStudent.full_name} needs a linked User Account. Auto-linking failed.`);
-                    setIsSubmitting(false);
                     return;
                 }
-            } catch (err) {
-                toast.error(`Student ${selectedStudent.full_name} needs a linked User Account. Auto-linking failed.`);
-                setIsSubmitting(false);
+            }
+        } else {
+            // STAFF
+            const selectedStaff = staff.find(s => s.id === Number(staffId));
+            if (!selectedStaff) { toast.error('Invalid staff selected.'); return; }
+            borrowerName = selectedStaff.full_name;
+            userId = selectedStaff.user;
+            
+            if (!userId) {
+                toast.error(`Staff ${selectedStaff.full_name} does not have a linked user account.`);
                 return;
             }
         }
@@ -300,24 +332,22 @@ const Library = () => {
         setIsSubmitting(true);
         try {
             const payload = {
-                copy: Number(lendingForm.copy),
+                copy: Number(copy),
                 user: userId,
-                due_date: lendingForm.due_date,
+                due_date: due_date,
             };
 
             if (lendingId) await libraryAPI.lendings.update(lendingId, payload);
             else await libraryAPI.lendings.create(payload);
 
-            // Optimistic Success: Alert & Close immediately
-            const copyId = Number(lendingForm.copy);
-            const copyObj = copies.find(c => c.id === copyId);
+            const copyObj = copies.find(c => c.id === Number(copy));
             const bookObj = copyObj ? books.find(b => b.id === Number(copyObj.book)) : null;
             const bookTitle = bookObj?.title || 'Book';
-            toast.success(`"${bookTitle}" issued to ${selectedStudent.full_name}. Due by ${lendingForm.due_date}`);
+            toast.success(`"${bookTitle}" issued to ${borrowerName}. Due by ${due_date}`);
 
             setIsLendModalOpen(false);
             setLendingId(null);
-            setLendingForm({ copy: '', student: '', due_date: '' });
+            setLendingForm({ copy: '', student: '', staff: '', borrowerType: 'STUDENT', due_date: '' });
 
             loadLendings();
             loadCatalog();
@@ -325,16 +355,23 @@ const Library = () => {
         } catch (err: any) {
             const errorDetail = err.response?.data?.detail;
             const errorMsg = errorDetail || err.message || 'Failed to issue book.';
-            if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
-                toast.warning('Request timed out, but book might be issued. Please check the list.');
-            } else {
-                toast.error(`Error: ${errorMsg}`);
-            }
+            toast.error(`Error: ${errorMsg}`);
         } finally {
             setIsSubmitting(false);
         }
     };
-    const handleEditLending = (l: any) => { setLendingId(l.id); setLendingForm({ ...l, copy: String(l.copy), student: String(l.student) }); setIsLendModalOpen(true); };
+    const handleEditLending = (l: any) => { 
+        setLendingId(l.id); 
+        const isStudent = l.user_role === 'STUDENT';
+        setLendingForm({ 
+            ...l, 
+            copy: String(l.copy), 
+            student: isStudent ? String(l.student || '') : '',
+            staff: !isStudent ? String(l.user || '') : '',
+            borrowerType: isStudent ? 'STUDENT' : 'STAFF'
+        }); 
+        setIsLendModalOpen(true); 
+    };
 
     const handleExtendDueDate = async (id: number) => {
         setExtendLendingId(id);
@@ -425,6 +462,10 @@ const Library = () => {
     const studentOptions = React.useMemo(() =>
         students.map(s => ({ id: String(s.id), label: `${s.admission_number || 'No ADM'} - ${s.full_name}`, value: String(s.id) })),
         [students]);
+
+    const staffOptions = React.useMemo(() =>
+        staff.map(s => ({ id: String(s.id), label: `${s.employee_id || 'No ID'} - ${s.full_name}`, value: String(s.id) })),
+        [staff]);
 
     const copyOptions = React.useMemo(() =>
         copies.filter(c => c.status?.toUpperCase() === 'AVAILABLE').map(c => {
@@ -565,6 +606,8 @@ const Library = () => {
                     <CirculationManager
                         lendings={lendings}
                         isReadOnly={isReadOnly}
+                        activeRole={activeCirculationRole}
+                        onRoleChange={setActiveCirculationRole}
                         onIssue={() => { setLendingId(null); setIsLendModalOpen(true); }}
                         onReturn={(id) => libraryAPI.lendings.returnBook(id).then(() => { loadLendings(); loadCatalog(); })}
                         onExtend={handleExtendDueDate}
@@ -706,7 +749,33 @@ const Library = () => {
             <Modal isOpen={isLendModalOpen} onClose={() => setIsLendModalOpen(false)} title={lendingId ? "Edit Lending Record" : "New Resource Circulation"}>
                 <form onSubmit={handleLendSubmit} className="space-y-4">
                     <SearchableSelect label="Select Copy *" options={copyOptions} value={String(lendingForm.copy)} onChange={(val) => setLendingForm({ ...lendingForm, copy: val.toString() })} required />
-                    <SearchableSelect label="Assign to Student *" options={studentOptions} value={String(lendingForm.student)} onChange={(val) => setLendingForm({ ...lendingForm, student: val.toString() })} required />
+                    
+                    <div className="flex flex-col gap-2">
+                        <label className="label">Borrower Type</label>
+                        <div className="flex bg-slate-100 p-1 rounded-lg">
+                            <button 
+                                type="button"
+                                className={`flex-1 py-1.5 rounded text-xs font-bold transition-all ${lendingForm.borrowerType === 'STUDENT' ? 'bg-white shadow-sm text-primary' : 'text-secondary'}`}
+                                onClick={() => setLendingForm({ ...lendingForm, borrowerType: 'STUDENT' })}
+                            >
+                                STUDENT
+                            </button>
+                            <button 
+                                type="button"
+                                className={`flex-1 py-1.5 rounded text-xs font-bold transition-all ${lendingForm.borrowerType === 'STAFF' ? 'bg-white shadow-sm text-primary' : 'text-secondary'}`}
+                                onClick={() => setLendingForm({ ...lendingForm, borrowerType: 'STAFF' })}
+                            >
+                                STAFF
+                            </button>
+                        </div>
+                    </div>
+
+                    {lendingForm.borrowerType === 'STUDENT' ? (
+                        <SearchableSelect label="Assign to Student *" options={studentOptions} value={String(lendingForm.student)} onChange={(val) => setLendingForm({ ...lendingForm, student: val.toString() })} required />
+                    ) : (
+                        <SearchableSelect label="Assign to Staff/Teacher *" options={staffOptions} value={String(lendingForm.staff)} onChange={(val) => setLendingForm({ ...lendingForm, staff: val.toString() })} required />
+                    )}
+
                     <div className="form-group pb-2">
                         <PremiumDateInput
                             label="Return Deadline"

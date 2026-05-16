@@ -14,6 +14,8 @@ interface CirculationManagerProps {
     total: number;
     pageSize: number;
     onPageChange: (p: number) => void;
+    activeRole: 'STUDENT' | 'STAFF';
+    onRoleChange: (role: 'STUDENT' | 'STAFF') => void;
 }
 
 const CirculationManager: React.FC<CirculationManagerProps> = ({
@@ -27,22 +29,38 @@ const CirculationManager: React.FC<CirculationManagerProps> = ({
     page,
     total,
     pageSize,
-    onPageChange
+    onPageChange,
+    activeRole,
+    onRoleChange
 }) => {
     return (
         <div className="table-container fade-in">
-            <div className="flex justify-between items-center mb-4">
-                <h3>Circulation Record</h3>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                <div className="flex bg-slate-100 p-1 rounded-xl w-full md:w-auto">
+                    <button 
+                        className={`px-6 py-2 rounded-lg text-sm font-black transition-all ${activeRole === 'STUDENT' ? 'bg-white shadow-sm text-primary' : 'text-secondary hover:text-primary'}`}
+                        onClick={() => onRoleChange('STUDENT')}
+                    >
+                        STUDENTS
+                    </button>
+                    <button 
+                        className={`px-6 py-2 rounded-lg text-sm font-black transition-all ${activeRole === 'STAFF' ? 'bg-white shadow-sm text-primary' : 'text-secondary hover:text-primary'}`}
+                        onClick={() => onRoleChange('STAFF')}
+                    >
+                        STAFF / TEACHERS
+                    </button>
+                </div>
                 {!isReadOnly && (
                     <Button variant="primary" size="sm" onClick={onIssue} icon={<Plus size={14} />}>Issue Book</Button>
                 )}
             </div>
+
             <table className="table">
                 <thead>
                     <tr>
                         <th>Book Title</th>
                         <th>Copy ID</th>
-                        <th>Student</th>
+                        <th>Borrower</th>
                         <th>Borrowed</th>
                         <th>Due Date</th>
                         <th>Status</th>
@@ -50,14 +68,22 @@ const CirculationManager: React.FC<CirculationManagerProps> = ({
                     </tr>
                 </thead>
                 <tbody>
-                    {lendings.map((l: any) => (
-                        <tr key={l.id}>
-                            <td className="font-bold">{l.book_title}</td>
-                            <td><span className="font-mono text-xs bg-secondary-light px-2 py-1 rounded">{l.copy_number}</span></td>
-                            <td>{l.user_name || l.student_name}</td>
-                            <td>{l.date_issued}</td>
-                            <td><span className={new Date(l.due_date) < new Date() && !l.date_returned ? 'text-error font-bold' : ''}>{l.due_date}</span></td>
-                            <td><span className={`badge ${l.date_returned ? 'badge-success' : (new Date(l.due_date) < new Date() ? 'badge-error' : 'badge-info')}`}>{l.date_returned ? 'RETURNED' : (new Date(l.due_date) < new Date() ? 'OVERDUE' : 'ISSUED')}</span></td>
+                    {lendings.length === 0 ? (
+                        <tr><td colSpan={7} className="text-center py-12 text-secondary italic">No active {activeRole.toLowerCase()} lendings found</td></tr>
+                    ) : (
+                        lendings.map((l: any) => (
+                            <tr key={l.id}>
+                                <td className="font-bold">{l.book_title}</td>
+                                <td><span className="font-mono text-xs bg-secondary-light px-2 py-1 rounded">{l.copy_number}</span></td>
+                                <td>
+                                    <div className="flex flex-col">
+                                        <span className="font-semibold">{l.user_name || l.student_name}</span>
+                                        <span className="text-[9px] font-black text-secondary uppercase tracking-widest">{l.user_role}</span>
+                                    </div>
+                                </td>
+                                <td>{l.date_issued}</td>
+                                <td><span className={new Date(l.due_date) < new Date() && !l.date_returned ? 'text-error font-bold' : ''}>{l.due_date}</span></td>
+                                <td><span className={`badge ${l.date_returned ? 'badge-success' : (new Date(l.due_date) < new Date() ? 'badge-error' : 'badge-info')}`}>{l.date_returned ? 'RETURNED' : (new Date(l.due_date) < new Date() ? 'OVERDUE' : 'ISSUED')}</span></td>
                             <td>
                                 <div className="flex gap-2">
                                     {!isReadOnly && !l.date_returned && (

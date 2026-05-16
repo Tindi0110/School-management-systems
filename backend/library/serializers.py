@@ -41,6 +41,7 @@ class BookLendingSerializer(serializers.ModelSerializer):
     book_title = serializers.CharField(source='copy.book.title', read_only=True)
     copy_number = serializers.CharField(source='copy.copy_number', read_only=True)
     user_name = serializers.CharField(source='user.get_full_name', read_only=True)
+    user_role = serializers.CharField(source='user.role', read_only=True)
     is_overdue = serializers.SerializerMethodField()
     
     class Meta:
