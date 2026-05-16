@@ -36,15 +36,15 @@ const CirculationManager: React.FC<CirculationManagerProps> = ({
     return (
         <div className="table-container fade-in">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-                <div className="flex bg-slate-100 p-1 rounded-xl w-full md:w-auto">
+                <div className="nav-tab-container !mb-0 !border-b-0">
                     <button 
-                        className={`px-6 py-2 rounded-lg text-sm font-black transition-all ${activeRole === 'STUDENT' ? 'bg-white shadow-sm text-primary' : 'text-secondary hover:text-primary'}`}
+                        className={`nav-tab ${activeRole === 'STUDENT' ? 'active' : ''}`}
                         onClick={() => onRoleChange('STUDENT')}
                     >
                         STUDENTS
                     </button>
                     <button 
-                        className={`px-6 py-2 rounded-lg text-sm font-black transition-all ${activeRole === 'STAFF' ? 'bg-white shadow-sm text-primary' : 'text-secondary hover:text-primary'}`}
+                        className={`nav-tab ${activeRole === 'STAFF' ? 'active' : ''}`}
                         onClick={() => onRoleChange('STAFF')}
                     >
                         STAFF / TEACHERS

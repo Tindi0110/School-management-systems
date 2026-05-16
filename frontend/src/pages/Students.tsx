@@ -420,35 +420,37 @@ const Students = () => {
             <div className="bg-white/40 backdrop-blur-md rounded-3xl shadow-xl shadow-slate-200/50 border border-white/60 overflow-hidden">
                 {!selectedClassId ? (
                     <div className="p-10">
-                        <div className="flex justify-between items-center mb-10 pb-6 border-b border-slate-100">
+                        <div className="flex justify-between items-center mb-10 p-6 bg-slate-50/50 rounded-2xl border border-slate-100/50">
                             <div>
-                                <h3 className="text-xl font-black uppercase text-slate-800 mb-1">Registry Navigator</h3>
+                                <h3 className="text-2xl font-black uppercase text-slate-800 mb-1 leading-none">Registry Navigator</h3>
                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Select an academic unit to manage records</p>
                             </div>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                             {classes.sort((a, b) => `${a.name}${a.stream}`.localeCompare(`${b.name}${b.stream}`)).map(c => (
                                 <div
                                     key={c.id}
-                                    className="group relative bg-white/60 hover:bg-white transition-all cursor-pointer p-6 rounded-2xl border border-slate-100 hover:border-primary/30 shadow-sm hover:shadow-xl hover:shadow-primary/10"
+                                    className="group relative bg-white transition-all duration-300 cursor-pointer p-8 rounded-[2rem] border border-slate-100 hover:border-primary/40 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] hover:shadow-[0_20px_50px_-12px_rgba(var(--primary-rgb),0.2)] transform hover:-translate-y-2"
                                     onClick={() => setSelectedClassId(c.id)}
                                 >
-                                    <div className="absolute top-0 left-0 w-1 h-full bg-primary rounded-l-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                    <div className="flex justify-between items-start mb-6">
-                                        <div className="flex flex-col gap-1">
-                                            <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">{c.name}</span>
-                                            <span className="text-lg font-black text-slate-800">{c.stream}</span>
+                                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 rounded-[2rem] transition-opacity"></div>
+                                    <div className="relative z-10">
+                                        <div className="flex justify-between items-start mb-8">
+                                            <div className="flex flex-col gap-1">
+                                                <span className="text-[11px] font-black uppercase text-slate-400 tracking-widest">{c.name}</span>
+                                                <span className="text-xl font-black text-slate-800 leading-none">{c.stream}</span>
+                                            </div>
+                                            <span className="bg-primary/10 text-primary text-[11px] font-black uppercase px-4 py-2 rounded-xl border border-primary/10 shadow-sm">
+                                                {c.student_count || 0} Students
+                                            </span>
                                         </div>
-                                        <span className="bg-primary/5 text-primary text-[10px] font-black uppercase px-3 py-1.5 rounded-lg border border-primary/10">
-                                            {c.student_count || 0} Records
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-[10px] font-black text-primary group-hover:translate-x-1 transition-transform flex items-center gap-2 uppercase">
-                                            Enter Registry <ArrowRight size={14} />
-                                        </span>
-                                        <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-primary/10 group-hover:text-primary transition-colors border border-slate-100">
-                                            <UserIcon size={18} />
+                                        <div className="flex items-center justify-between mt-auto">
+                                            <span className="text-[11px] font-black text-primary group-hover:translate-x-2 transition-transform flex items-center gap-2 uppercase tracking-tight">
+                                                Registry Management <ArrowRight size={14} />
+                                            </span>
+                                            <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-primary group-hover:text-white transition-all duration-300 shadow-inner border border-slate-100">
+                                                <UserIcon size={20} />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
