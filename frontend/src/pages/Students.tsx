@@ -43,7 +43,6 @@ const Students = () => {
         admission_number: '',
         full_name: '',
         gender: 'M',
-        date_of_birth: '',
         category: 'DAY',
         status: 'ACTIVE',
         current_class: '',
@@ -87,10 +86,9 @@ const Students = () => {
                 params.current_class = selectedClassId;
             }
 
-            const [studentsRes, classesRes, statsRes] = await Promise.allSettled([
+            const [studentsRes, classesRes] = await Promise.allSettled([
                 studentsAPI.getAll(params),
                 academicsAPI.classes.getAll({ page_size: 100 }),
-                statsAPI.getDashboard()
             ]);
 
             if (studentsRes.status === 'fulfilled') {
@@ -102,14 +100,8 @@ const Students = () => {
                 setClasses(classesRes.value.data?.results ?? classesRes.value.data ?? []);
             }
 
-            if (statsRes.status === 'fulfilled') {
-                const counts = statsRes.value.data?.counts || {};
-                setInstitutionalTotal(counts.total_students || 0);
-                setActiveCount(counts.active_students || 0);
-                setSuspendedCount(counts.suspended_students || 0);
-                setBoarderCount(counts.boarder_count || 0);
-                setDayScholarCount(counts.day_scholar_count || 0);
-            }
+            // Dashboard stats removed from registry view for performance. 
+            // They are already visible on the main Dashboard.
 
         } catch (error) {
             console.error("Critical error loading student registry:", error);
