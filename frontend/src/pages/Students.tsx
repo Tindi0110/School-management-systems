@@ -4,7 +4,7 @@ import {
     Plus, Search, Edit, Trash2, User as UserIcon,
     UserCheck, MapPin, Printer, TrendingUp, Download, ArrowRight
 } from 'lucide-react';
-import { studentsAPI, academicsAPI } from '../api/api';
+import { studentsAPI, academicsAPI, statsAPI } from '../api/api';
 import { useSelector } from 'react-redux';
 import Modal from '../components/Modal';
 import { StatCard } from '../components/Card';
@@ -31,6 +31,11 @@ const Students = () => {
     const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
     const [page, setPage] = useState(1);
     const [totalItems, setTotalItems] = useState(0);
+    const [institutionalTotal, setInstitutionalTotal] = useState(0);
+    const [activeCount, setActiveCount] = useState(0);
+    const [suspendedCount, setSuspendedCount] = useState(0);
+    const [boarderCount, setBoarderCount] = useState(0);
+    const [dayScholarCount, setDayScholarCount] = useState(0);
     const [pageSize] = useState(25);
 
     // Consolidated Form Data
@@ -55,6 +60,24 @@ const Students = () => {
     useEffect(() => {
         loadData();
     }, [page, selectedClassId, statusFilter]);
+
+    // Separate effect for institutional stats to avoid blocking registry pagination
+    useEffect(() => {
+        const loadStats = async () => {
+            try {
+                const res = await statsAPI.getDashboard();
+                const counts = res.data?.counts || {};
+                setInstitutionalTotal(counts.total_students || 0);
+                setActiveCount(counts.active_students || 0);
+                setSuspendedCount(counts.suspended_students || 0);
+                setBoarderCount(counts.boarder_count || 0);
+                setDayScholarCount(counts.day_scholar_count || 0);
+            } catch (error) {
+                console.error("Error loading registry stats:", error);
+            }
+        };
+        loadStats();
+    }, []);
 
     // Debounced search
     useEffect(() => {
@@ -96,8 +119,8 @@ const Students = () => {
                 setClasses(classesRes.value.data?.results ?? classesRes.value.data ?? []);
             }
 
-            // Dashboard stats removed from registry view for performance. 
-            // They are already visible on the main Dashboard.
+            // Registry stats now fetched in a separate one-time effect for performance. 
+
 
         } catch (error) {
             console.error("Critical error loading student registry:", error);
