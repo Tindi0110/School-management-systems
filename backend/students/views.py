@@ -421,6 +421,10 @@ class HealthRecordViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(instance)
         return Response(serializer.data, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
 
+    def update(self, request, *args, **kwargs):
+        """Redirect update to create logic for OneToOne consistency"""
+        return self.create(request, *args, **kwargs)
+
 class ActivityRecordViewSet(viewsets.ModelViewSet):
     queryset = ActivityRecord.objects.select_related('student').all()
     serializer_class = ActivityRecordSerializer

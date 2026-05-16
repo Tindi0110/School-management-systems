@@ -327,6 +327,20 @@ class HostelAssetViewSet(viewsets.ModelViewSet):
     serializer_class = HostelAssetSerializer
     permission_classes = [IsAuthenticated]
 
+    def perform_create(self, serializer):
+        code = self.request.data.get('asset_code')
+        if code == "":
+            serializer.save(asset_code=None)
+        else:
+            serializer.save()
+
+    def perform_update(self, serializer):
+        code = self.request.data.get('asset_code')
+        if code == "":
+            serializer.save(asset_code=None)
+        else:
+            serializer.save()
+
 class GuestLogViewSet(viewsets.ModelViewSet):
     queryset = GuestLog.objects.select_related('student_visited').all()
     serializer_class = GuestLogSerializer

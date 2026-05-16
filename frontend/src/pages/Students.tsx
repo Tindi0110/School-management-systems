@@ -33,6 +33,7 @@ const Students = () => {
     const [totalItems, setTotalItems] = useState(0);
     const [institutionalTotal, setInstitutionalTotal] = useState(0);
     const [activeCount, setActiveCount] = useState(0);
+    const [suspendedCount, setSuspendedCount] = useState(0);
     const [boarderCount, setBoarderCount] = useState(0);
     const [dayScholarCount, setDayScholarCount] = useState(0);
     const [pageSize] = useState(25);
@@ -105,6 +106,7 @@ const Students = () => {
                 const counts = statsRes.value.data?.counts || {};
                 setInstitutionalTotal(counts.total_students || 0);
                 setActiveCount(counts.active_students || 0);
+                setSuspendedCount(counts.suspended_students || 0);
                 setBoarderCount(counts.boarder_count || 0);
                 setDayScholarCount(counts.day_scholar_count || 0);
             }
@@ -360,8 +362,9 @@ const Students = () => {
 
             {/* Dashboard Stats */}
             {loading ? renderSkeletonStats() : (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-md mb-8 no-print">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-md mb-8 no-print">
                     <StatCard title="Active Enrollment" value={activeCount.toString()} icon={<UserCheck size={18} />} gradient="linear-gradient(135deg, #0ba360, #3cba92)" />
+                    <StatCard title="Suspended" value={suspendedCount.toString()} icon={<UserIcon size={18} />} gradient="linear-gradient(135deg, #f43f5e, #e11d48)" />
                     <StatCard title="Boarders" value={boarderCount.toString()} icon={<MapPin size={18} />} gradient="var(--info)" />
                     <StatCard title="Day Scholars" value={dayScholarCount.toString()} icon={<UserIcon size={18} />} gradient="var(--secondary)" />
                     <StatCard title="Enrolled Capacity" value={`${classes.length > 0 ? Math.round((activeCount / classes.reduce((sum, c) => sum + (c.capacity || 40), 0)) * 100) : 0}%`} icon={<TrendingUp size={18} />} gradient="linear-gradient(135deg, #0f172a, #1e293b)" />
@@ -427,7 +430,7 @@ const Students = () => {
                             {classes.sort((a, b) => `${a.name}${a.stream}`.localeCompare(`${b.name}${b.stream}`)).map(c => (
                                 <div
                                     key={c.id}
-                                    className="group relative bg-white/60 hover:bg-white transition-all cursor-pointer p-6 rounded-2xl border border-slate-100 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5"
+                                    className="group relative bg-white/60 hover:bg-white transition-all cursor-pointer p-6 rounded-2xl border border-slate-100 hover:border-primary/30 shadow-sm hover:shadow-xl hover:shadow-primary/10"
                                     onClick={() => setSelectedClassId(c.id)}
                                 >
                                     <div className="absolute top-0 left-0 w-1 h-full bg-primary rounded-l-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>

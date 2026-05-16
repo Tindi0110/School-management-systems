@@ -11,12 +11,21 @@ interface ModalProps {
 }
 
 const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, footer, size = 'md' }) => {
-    // Close on Escape key — matching Budget Wear UX behaviour
+    // Close on Escape key and Body Scroll Lock
     useEffect(() => {
         if (!isOpen) return;
+        
+        // Lock scroll
+        document.body.style.overflow = 'hidden';
+        
         const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
         document.addEventListener('keydown', handleKey);
-        return () => document.removeEventListener('keydown', handleKey);
+        
+        return () => {
+            document.removeEventListener('keydown', handleKey);
+            // Restore scroll
+            document.body.style.overflow = 'unset';
+        };
     }, [isOpen, onClose]);
 
     if (!isOpen) return null;

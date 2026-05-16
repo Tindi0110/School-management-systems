@@ -188,7 +188,7 @@ const Medical = () => {
                                 <tr><td colSpan={6} className="text-center text-secondary py-12">No health records found</td></tr>
                             ) : (
                                 filteredRecords.map((record) => (
-                                    <tr key={record.id}>
+                                    <tr key={record.id} onClick={() => openModal(record)} className="cursor-pointer hover:bg-slate-50 transition-colors">
                                         <td>
                                             <div className="flex items-center gap-sm">
                                                 <Calendar size={14} className="text-secondary opacity-60" />

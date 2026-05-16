@@ -2076,7 +2076,7 @@ table.table {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background-color: transparent !important;
+  background-color: rgba(0, 0, 0, 0.4) !important;
   backdrop-filter: blur(8px) !important;      /* Restored blur */
   -webkit-backdrop-filter: blur(8px) !important; /* Restored webkit blur */
   display: flex;
@@ -2088,7 +2088,7 @@ table.table {
   padding: 1.5rem;
 }
 
-.modal-container {
+.modal {
   background-color: #ffffff !important;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05) !important;
   border-radius: 12px !important;

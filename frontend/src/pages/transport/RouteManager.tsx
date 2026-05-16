@@ -60,7 +60,7 @@ const RouteManager: React.FC<RouteManagerProps> = ({
                                     <span className="flex-1 font-bold text-slate-700">{p.point_name}</span>
                                     <span className="text-secondary flex items-center gap-1"><Clock size={10} /> {p.pickup_time}</span>
                                     <span className="badge badge-primary badge-xs font-bold">KES {parseFloat(p.additional_cost || 0).toLocaleString()}</span>
-                                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <div className="flex gap-1 transition-opacity">
                                         <Button variant="ghost" size="sm" className="text-primary p-0 h-5 w-5" onClick={() => onEditPoint(p)} icon={<Edit size={10} />} />
                                         <Button variant="ghost" size="sm" className="text-error p-0 h-5 w-5" onClick={() => onDeletePoint(p.id)} icon={<Trash2 size={10} />} />
                                     </div>

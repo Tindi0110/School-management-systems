@@ -286,11 +286,7 @@ const StudentProfile = () => {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            if (healthId) {
-                await studentsAPI.health.update(healthId, { ...healthForm, student: Number(id) });
-            } else {
-                await studentsAPI.health.create({ ...healthForm, student: Number(id) });
-            }
+            await studentsAPI.health.create({ ...healthForm, student: Number(id) });
             await loadCoreStudentData(); // Refresh health record in core data
             setIsHealthModalOpen(false);
             toast.success('Health record updated successfully');

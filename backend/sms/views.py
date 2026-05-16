@@ -56,6 +56,7 @@ def dashboard_stats(request):
     counts_agg = Student.objects.aggregate(
         total_students=Count('id'),
         active_students=Count('id', filter=Q(status='ACTIVE')),
+        suspended_students=Count('id', filter=Q(status='SUSPENDED')),
         boarder_count=Count('id', filter=Q(status='ACTIVE', category='BOARDING')),
         day_scholar_count=Count('id', filter=Q(status='ACTIVE', category='DAY'))
     )
