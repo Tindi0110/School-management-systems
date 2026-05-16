@@ -3000,3 +3000,51 @@ textarea.input-modern {
   content-visibility: auto;
   contain-intrinsic-size: 0 500px;
 }
+
+/* ──────────────────────────────────────────────────────────────────────────
+   MODERN NOTIFICATION PANEL
+   ────────────────────────────────────────────────────────────────────────── */
+
+.notification-panel {
+  animation: notifSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: top right;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background-color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+@keyframes notifSlideIn {
+  from { opacity: 0; transform: scale(0.95) translateY(-10px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.notification-item {
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.notification-item:hover {
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+.notification-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--primary);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.notification-item.unread::before {
+  opacity: 1;
+}
+
+.notification-item.alert::before {
+  background: var(--error);
+}

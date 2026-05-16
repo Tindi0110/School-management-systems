@@ -14,7 +14,7 @@ import { Outlet, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { logout } from '../store/authSlice'
 import Sidebar from '../components/Sidebar'
-import { LogOut, Bell, Menu, Search } from 'lucide-react'
+import { LogOut, Bell, Menu, Search, Activity } from 'lucide-react'
 import { useToast } from '../context/ToastContext'
 import CommandPalette from '../components/CommandPalette'
 import PageTransition from '../components/common/PageTransition'
@@ -50,24 +50,42 @@ interface NotificationPanelProps {
 }
 
 const NotificationPanel = ({ notifications, alerts, onMarkRead, onClose }: NotificationPanelProps) => (
-  <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-2xl border border-gray-100 z-[100] max-h-[400px] overflow-hidden flex flex-col">
-    <div className="p-3 border-b bg-gray-50 flex justify-between items-center">
-      <span className="font-black text-xs uppercase tracking-wider text-gray-500">Notifications</span>
-      <button className="text-[10px] font-bold text-primary hover:underline" onClick={onClose}>Close</button>
+  <div className="absolute right-0 mt-4 w-[22rem] notification-panel rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] z-[100] max-h-[500px] overflow-hidden flex flex-col border border-white/50">
+    <div className="p-5 border-b border-gray-100/50 flex justify-between items-center bg-white/40">
+      <div className="flex items-center gap-2">
+        <Bell size={16} className="text-primary" />
+        <span className="font-black text-xs uppercase tracking-[0.2em] text-slate-800">Activity Center</span>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="bg-primary/10 text-primary text-[9px] font-black px-2 py-1 rounded-full uppercase tracking-tighter">
+          {notifications.filter(n => !n.is_read).length + alerts.length} New
+        </span>
+        <button className="text-[10px] font-black text-slate-400 hover:text-primary transition-colors uppercase" onClick={onClose}>Close</button>
+      </div>
     </div>
 
-    <div className="overflow-y-auto flex-1">
+    <div className="overflow-y-auto flex-1 custom-scrollbar">
       {alerts.length === 0 && notifications.length === 0 && (
-        <div className="p-8 text-center text-gray-400 italic text-xs">No active notifications</div>
+        <div className="p-12 text-center flex flex-col items-center justify-center gap-3">
+          <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-200">
+             <Bell size={24} />
+          </div>
+          <p className="m-0 text-slate-400 italic text-[11px] font-bold uppercase tracking-wider">No new activities</p>
+        </div>
       )}
 
       {alerts.map(alert => (
-        <div key={`alert-${alert.id}`} className="p-3 border-b bg-red-50">
-          <div className="flex gap-2">
-            <div className="mt-1 w-2 h-2 rounded-full bg-red-500 flex-shrink-0" />
-            <div>
-              <p className="m-0 font-bold text-xs text-red-900 uppercase tracking-tight">{alert.title}</p>
-              <p className="m-0 text-xs text-red-700 leading-tight mt-1">{alert.message}</p>
+        <div key={`alert-${alert.id}`} className="notification-item alert p-5 border-b border-gray-100/50 bg-red-50/20 group">
+          <div className="flex gap-4">
+            <div className="mt-1 w-10 h-10 rounded-2xl bg-red-500/10 flex items-center justify-center text-red-500 shrink-0 shadow-sm border border-red-500/10">
+              <Activity size={18} />
+            </div>
+            <div className="flex-1">
+              <p className="m-0 font-black text-xs text-red-600 uppercase tracking-tight mb-1">{alert.title}</p>
+              <p className="m-0 text-xs text-slate-600 leading-relaxed font-medium">{alert.message}</p>
+              <div className="mt-3 flex items-center gap-2">
+                 <span className="text-[9px] font-black text-red-400 uppercase bg-red-50 px-2 py-0.5 rounded">High Severity</span>
+              </div>
             </div>
           </div>
         </div>
@@ -76,21 +94,34 @@ const NotificationPanel = ({ notifications, alerts, onMarkRead, onClose }: Notif
       {notifications.map(notif => (
         <div
           key={`notif-${notif.id}`}
-          className={`p-3 border-b hover:bg-gray-50 transition-colors cursor-pointer ${notif.is_read ? 'opacity-60' : 'bg-blue-50/30'}`}
+          className={`notification-item p-5 border-b border-gray-100/50 group cursor-pointer ${notif.is_read ? 'opacity-60' : 'unread bg-blue-50/10'}`}
           onClick={() => !notif.is_read && onMarkRead(notif.id)}
         >
-          <div className="flex gap-2">
-            {!notif.is_read && <div className="mt-1.5 w-2 h-2 rounded-full bg-blue-500 flex-shrink-0" />}
-            <div className={notif.is_read ? 'pl-4' : ''}>
-              <p className="m-0 font-bold text-xs text-gray-800 tracking-tight">{notif.title}</p>
-              <p className="m-0 text-xs text-gray-600 leading-tight mt-1">{notif.message}</p>
-              <p className="m-0 text-[9px] text-gray-400 mt-1 uppercase font-bold">
-                {new Date(notif.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </p>
+          <div className="flex gap-4">
+            <div className={`mt-1 w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-sm border ${notif.is_read ? 'bg-slate-50 text-slate-400 border-slate-100' : 'bg-primary/10 text-primary border-primary/10'}`}>
+              <Bell size={18} />
+            </div>
+            <div className="flex-1">
+              <div className="flex justify-between items-start mb-1">
+                <p className={`m-0 font-black text-xs uppercase tracking-tight ${notif.is_read ? 'text-slate-500' : 'text-slate-800'}`}>{notif.title}</p>
+                <p className="m-0 text-[9px] font-black text-slate-400 uppercase tracking-tighter whitespace-nowrap ml-2">
+                  {new Date(notif.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </p>
+              </div>
+              <p className="m-0 text-xs text-slate-600 leading-relaxed font-medium">{notif.message}</p>
+              {!notif.is_read && (
+                <div className="mt-3 flex items-center gap-2">
+                   <span className="text-[9px] font-black text-primary group-hover:underline uppercase tracking-tighter">Mark as seen</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
       ))}
+    </div>
+    
+    <div className="p-4 bg-slate-50/50 border-t border-gray-100/50 text-center">
+        <button className="text-[10px] font-black text-primary uppercase tracking-[0.2em] hover:tracking-[0.3em] transition-all">View All Activity History</button>
     </div>
   </div>
 )
