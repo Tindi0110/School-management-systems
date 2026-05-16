@@ -106,7 +106,7 @@ const CirculationManager: React.FC<CirculationManagerProps> = ({
                                 </div>
                             </td>
                         </tr>
-                    ))}
+                    )))}
                 </tbody>
             </table>
             {/* Pagination */}
