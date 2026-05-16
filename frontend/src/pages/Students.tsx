@@ -4,7 +4,7 @@ import {
     Plus, Search, Edit, Trash2, User as UserIcon,
     UserCheck, MapPin, Printer, TrendingUp, Download, ArrowRight
 } from 'lucide-react';
-import { studentsAPI, academicsAPI, statsAPI } from '../api/api';
+import { studentsAPI, academicsAPI } from '../api/api';
 import { useSelector } from 'react-redux';
 import Modal from '../components/Modal';
 import { StatCard } from '../components/Card';
@@ -31,11 +31,6 @@ const Students = () => {
     const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
     const [page, setPage] = useState(1);
     const [totalItems, setTotalItems] = useState(0);
-    const [institutionalTotal, setInstitutionalTotal] = useState(0);
-    const [activeCount, setActiveCount] = useState(0);
-    const [suspendedCount, setSuspendedCount] = useState(0);
-    const [boarderCount, setBoarderCount] = useState(0);
-    const [dayScholarCount, setDayScholarCount] = useState(0);
     const [pageSize] = useState(25);
 
     // Consolidated Form Data
@@ -43,6 +38,7 @@ const Students = () => {
         admission_number: '',
         full_name: '',
         gender: 'M',
+        date_of_birth: '',
         category: 'DAY',
         status: 'ACTIVE',
         current_class: '',
